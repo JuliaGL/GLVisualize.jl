@@ -5,7 +5,9 @@ const defaults = Dict(
 :primitive      => cube(0.1f0, 0.1f0, 0.1f0)
 )
 
-function visualize(vectorfield::Texture{Vector3{Float32}, 3}, ::Style{:Default}, customizations)
+function visualize(::Style{:Default},
+                    vectorfield::Texture{Vector3{Float32}, 3},
+                    customizations)
     data = Dict(
         :vectorfield    => vectorfield,
         :cube_from      => Vec3(first(xrange), first(yrange), first(zrange)),

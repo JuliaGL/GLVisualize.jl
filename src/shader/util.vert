@@ -1,16 +1,17 @@
-
+// stretch is 
 vec3 stretch(vec3 uvw, vec3 from, vec3 to)
- {
-   return from + (uvw * (to - from));
- }
+{
+    return from + (uvw * (to - from));
+}
 vec2 stretch(vec2 uv, vec2 from, vec2 to)
- {
-   return from + (uv * (to - from));
- }
- float stretch(float uv, float from, float to)
- {
-   return from + (uv * (to - from));
- }
+{
+    return from + (uv * (to - from));
+}
+float stretch(float uv, float from, float to)
+{
+    return from + (uv * (to - from));
+}
+
 
 const vec3 up = vec3(0,0,1);
 mat4 rotation(vec3 direction)
@@ -27,7 +28,9 @@ mat4 rotation(vec3 direction)
     
     return viewMatrix;
 }
-mat4 getmodelmatrix(vec3 xyz, vec3 scale)
+
+
+mat4 translate_scale(vec3 xyz, vec3 scale)
 {
    return mat4(
       vec4(scale.x, 0, 0, 0),
@@ -36,6 +39,28 @@ mat4 getmodelmatrix(vec3 xyz, vec3 scale)
       vec4(xyz, 1));
 }
 
+
+
+
+//Mapping 1D index to 1D, 2D and 3D arrays
+int ind2sub(int dim, int linearindex)
+{
+    return linearindex;
+}
+ivec2 ind2sub(ivec2 dim, int linearindex)
+{
+    return ivec2(linearindex % dim.x, linearindex / dim.x);
+}
+ivec3 ind2sub(ivec3 dim, int linearindex)
+{
+    return ivec3(linearindex / (dim.y * dim.z), (linearindex / dim.z) % dim.y, linearindex % dim.z);
+}
+
+
+
+
+
+//Some render functions
 void render(vec3 vertex, vec3 normal, mat4 model, mat4 view, mat4 projection)
 {
     mat4 modelview              = view * model;

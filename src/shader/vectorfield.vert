@@ -5,8 +5,20 @@ in vec3 vertex;
 in vec3 normal; // normal might not be an uniform, whereas the other will be allways uniforms
 in vec2 uv; // normal might not be an uniform, whereas the other will be allways uniforms
 
-uniform vec3 cube_from; 
-uniform vec3 cube_to; 
+struct Cube{
+    vec3 min; 
+    vec3 max;   
+};
+struct Camera{
+    mat4 view; 
+    mat4 projection;
+    mat4 projectionview;
+    vec4 window_size;
+    vec4 up;
+    vec4 lookat;
+    vec4 eyepos;
+};
+
 uniform vec2 color_range; 
 
 uniform sampler3D vectorfield;
@@ -26,7 +38,7 @@ void render(vec3 vertex, vec3 normal, vec2 uv,  mat4 model);
 vec3 stretch(vec3 uvw, vec3 from, vec3 to);
 mat4 rotation(vec3 direction);
 void render(vec3 vertex, vec3 normal, mat4 model);
-
+mat4 translate_scale(vec3 xyz, vec3 scale);
 
 void main(){
 
@@ -38,5 +50,11 @@ void main(){
     float vlength     = length(vector);
     mat4 rotation_mat = rotation(vector);
 
-    render(vertex, normal, model*getmodelmatrix(vectororigin, vec3(0.003, 0.003, 0.003))*rotation_mat, view, projection);
+    render(
+    	vertex, 
+    	normal_vector, 
+    	modelmatrix*translate_scale(vectororigin, vec3(1))*rotation_mat, 
+    	view, 
+    	projection
+    );
 }
