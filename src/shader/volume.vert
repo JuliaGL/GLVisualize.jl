@@ -1,11 +1,14 @@
 {{GLSL_VERSION}}
-{{in}} vec3 vertex;
-{{out}} vec3 V;
 
-uniform mat4 model;
+in vec3 vertex;
+in vec3 uvw;
+
+out vec3 frag_verposition;
+
+uniform mat4 projection, view;
 
 void main()
 {
-	V = vec3(model * vec4(vertex, 1.0));
-    gl_Position = vec4(0,0,0,1);
+    frag_verposition = vertex;
+    gl_Position 	 = projection * view * vec4(vertex, 1);
 }

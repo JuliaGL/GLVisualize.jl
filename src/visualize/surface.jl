@@ -1,49 +1,3 @@
-SURFACE(scale=1) = @compat Dict(
-  :vertex         => Vec3(0),
-  :offset         => GLBuffer(Float32[0,0, 0,1, 1,1, 1,0] * scale, 2),
-  :index          => indexbuffer(GLuint[0,1,2,2,3,0]),
-  :normal_vector  => 0f0,
-  :xscale         => 1f0,
-  :yscale         => 1f0,
-  :zscale         => 1f0,
-  :z              => 0f0,
-  :drawingmode    => GL_TRIANGLES,
-)
-
-CIRCLE(r=0.4f0, x=0f0, y=0f0, points=6) = @compat Dict(
-  :vertex         => Vec3(0),
-  :offset         => GLBuffer(gencircle(r, x, y, points) , 2),
-  :index          => indexbuffer(GLuint[i for i=0:points + 1]),
-  :normal_vector  => 0f0,
-  :xscale         => 1f0,
-  :yscale         => 1f0,
-  :zscale         => 1f0,
-  :z              => 0f0,
-  :drawingmode    => GL_TRIANGLE_FAN,
-)
-begin 
-local const cubedata = gencubenormals(Vec3(0), Vec3(1, 0, 0), Vec3(0,1, 0), Vec3(0,0,1))
-CUBE() = @compat Dict(
-  :vertex         => GLBuffer(cubedata[1]),
-  :normal_vector  => GLBuffer(cubedata[3]),
-  :index          => indexbuffer(cubedata[4]),
-
-  :offset         => Vec2(0), # For other geometry, the texture lookup offset is zero
-  :zscale         => 1f0,
-  :z              => 0f0,
-  :drawingmode    => GL_TRIANGLES
-)
-end
-POINT() = @compat Dict(
-  :vertex         => GLBuffer(Vec3[Vec3(0)]),
-  :offset         => Vec2(0), # For other geometry, the texture lookup offset is zero
-  :index          => indexbuffer(GLuint[0]),
-  :normal_vector  => GLBuffer(Vec3[Vec3(0,0,1)]),
-  :zscale         => 1f0,
-  :z              => 0f0,
-  :drawingmode    => GL_POINTS
-)
-
 function visualize(style::Style{:Default}, datapoints::Matrix{Float32}, attribute::Symbol, data::Dict{Symbol,Any})
   data[attribute]=datapoints
   surf(style, data)
@@ -90,7 +44,7 @@ function surf(::Style{:Default}, data::Dict{Symbol, Any})
   customattributes[:griddimensions] = Vec2(yn,xn)
   fragdatalocation = [(0, "fragment_color"),(1, "fragment_groupid")]
   program = TemplateProgram(
-    joinpath(shaderdir, "surface.vert"), joinpath(shaderdir, "phongblinn.frag"), 
+    File(shaderdir, "surface.vert"), File(shaderdir, "phongblinn.frag"), 
     view=customview, attributes=customattributes, fragdatalocation=fragdatalocation
   )
   obj = instancedobject(customattributes, (xn)*(yn), program, primitive[:drawingmode])

@@ -3,33 +3,23 @@ module Romeo
 using GLWindow 
 using GLAbstraction
 using ModernGL
-using ImmutableArrays
+using FixedSizeArrays
+using GeometryTypes
+using ColorTypes
 using Reactive
 using GLFW
-using Images
 using Quaternions
 using GLText
 using Compat
-using Color
 using FixedPointNumbers
+using ImageIO
+using FileIO
+
 import Mustache
 
-const sourcedir = Pkg.dir("Romeo", "src")
+const sourcedir = Pkg.dir("GLVisualize", "src")
 const shaderdir = joinpath(sourcedir, "shader")
 
-function maxper(v0::Vector3, v1::Vector3)
-	return Vector3(max(v0[1], v1[1]),
-            max(v0[2], v1[2]),
-            max(v0[3], v1[3]))
-end
-function minper(v0::Vector3, v1::Vector3)
-	return Vector3(min(v0[1], v1[1]),
-            min(v0[2], v1[2]),
-            min(v0[3], v1[3]))
-end
-
-Base.minimum{T, NDIM}(x::Array{Vector3{T},NDIM}) = reduce(minper, x)
-Base.maximum{T, NDIM}(x::Array{Vector3{T},NDIM}) = reduce(maxper, x)
 
 include(joinpath(     sourcedir, "utils.jl"))
 include(joinpath(     sourcedir, "types.jl"))

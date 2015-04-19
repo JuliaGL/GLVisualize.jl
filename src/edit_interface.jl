@@ -5,7 +5,7 @@ TEXT_EDIT_DEFAULTS = @compat Dict{Symbol, Any}(
 
 ))
 edit(text::String, style=Style(:Default); customization...) = edit(style, text, mergedefault!(style, TEXT_EDIT_DEFAULTS, customization))
-edit(text::Texture{GLGlyph{Uint16}, 4, 2}, obj::RenderObject, style=Style(:Default); customization...) = edit(style, text, obj, mergedefault!(style, TEXT_EDIT_DEFAULTS, customization))
+edit(text::Texture{GLGlyph{Uint16}, 2}, obj::RenderObject, style=Style(:Default); customization...) = edit(style, text, obj, mergedefault!(style, TEXT_EDIT_DEFAULTS, customization))
 
 
 
@@ -27,7 +27,7 @@ MATRIX_EDITING_DEFAULTS = @compat(Dict(
 # High Level text rendering for one line or multi line text, which is decided by searching for the occurence of '\n' in text
 # Low level text rendering for one line text
 # Low level text rendering for multiple line text
-edit{T <: Union(AbstractFixedVector, Real)}(numbers::Texture{T, 1, 2}, style=Style(:Default); customization...) = edit(style, numbers, mergedefault!(style, MATRIX_EDITING_DEFAULTS, customization))
+edit{T <: Union(FixedVector, Real)}(numbers::Texture{T, 2}, style=Style(:Default); customization...) = edit(style, numbers, mergedefault!(style, MATRIX_EDITING_DEFAULTS, customization))
 edit{T <: Union(AbstractVector, Real)}(numbers::Input{T}, 			   style=Style(:Default); customization...) = edit(numbers.value, style; customization...)
 edit{T <: Union(AbstractVector, Real)}(numbers::T, 					   style=Style(:Default); customization...) = edit(style, numbers, mergedefault!(style, MATRIX_EDITING_DEFAULTS, customization))
 

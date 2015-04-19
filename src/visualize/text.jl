@@ -15,7 +15,7 @@ function visualize(style::Style{:Default}, text::String, data::Dict{Symbol, Any}
 end
 
 # This is the low-level text interface, which simply prepares the correct shader and cameras
-function visualize(::Style{:Default}, text::Texture{GLGlyph{Uint16}, 4, 2}, data::Dict{Symbol, Any})
+function visualize(::Style{:Default}, text::Texture{GLGlyph{Uint16}, 2}, data::Dict{Symbol, Any})
   screen             = data[:screen]
   camera             = screen.orthographiccam
   renderdata         = merge(data, data[:font].data) # merge font texture and uv informations -> details @ GLFont/src/types.jl

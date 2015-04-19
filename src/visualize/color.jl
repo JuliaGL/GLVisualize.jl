@@ -1,14 +1,11 @@
-begin 
-local color_chooser_shader = TemplateProgram(
-  joinpath(shaderdir, "colorchooser.vert"), joinpath(shaderdir, "colorchooser.frag"), 
-  fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
-)
 
-local COLOR_QUAD = genquad(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0))
+COLOR_QUAD = genquad(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0))
 
 #GLPlot.toopengl{T <: AbstractRGB}(colorinput::Input{T}) = toopengl(lift(x->AlphaColorValue(x, one(T)), RGBA{T}, colorinput))
 
-function visualize{X <: AbstractAlphaColorValue}(style::Style, color::X, data)
+function visualize{X <: AlphaColor}(style::Style, color::X, data)
+  color_chooser_shader = TemplateProgram(File(shaderdir, "colorchooser.vert"), File(shaderdir, "colorchooser.frag"), fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")])
+
   screen       = data[:screen]
   camera       = screen.orthographiccam
 
@@ -89,4 +86,3 @@ function color_chooser_boundingbox(obj)
   maxv = Vec3(model*Vec4(maximum(verts)...,0f0))
   AABB(minv,maxv)
 end
-end # local begin color chooser

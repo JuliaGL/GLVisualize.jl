@@ -1,4 +1,4 @@
-function visualize{T, D}(style::Style, img::Texture{T, D, 2}, data::Dict{Symbol, Any})
+function visualize{T}(style::Style, img::Texture{T, 2}, data::Dict{Symbol, Any})
   kernel = data[:kernel]
   w, h  = img.dims
   texparams = [
@@ -27,7 +27,7 @@ function visualize{T, D}(style::Style, img::Texture{T, D, 2}, data::Dict{Symbol,
   )
 
   fragdatalocation = [(0, "fragment_color"),(1, "fragment_groupid")]
-  textureshader    = TemplateProgram(joinpath(shaderdir, "uv_vert.vert"), joinpath(shaderdir, "texture.frag"), attributes=data, fragdatalocation=fragdatalocation)
+  textureshader    = TemplateProgram(File(shaderdir, "uv_vert.vert"), File(shaderdir, "texture.frag"), attributes=data, fragdatalocation=fragdatalocation)
 
   obj = RenderObject(data, textureshader)
 

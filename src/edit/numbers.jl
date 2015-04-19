@@ -1,5 +1,5 @@
 
-function edit{T <: Union(AbstractFixedVector, Real)}(style::Style{:Default}, numbertex::Texture{T, 1, 2}, customization::Dict{Symbol,Any})
+function edit{T <: Union(FixedVector, Real)}(style::Style{:Default}, numbertex::Texture{T, 2}, customization::Dict{Symbol,Any})
 
   backgroundcolor = customization[:backgroundcolor] 
   screen          = customization[:screen] 

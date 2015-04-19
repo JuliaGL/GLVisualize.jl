@@ -1,20 +1,22 @@
 {{GLSL_VERSION}}
+
 out vec4 FragColor;
+in vec3 frag_verposition;
 
 uniform sampler3D Density;
 
-uniform vec3 LightPosition = vec3(1.0, 1.0, 2.0);
-uniform vec3 LightIntensity = vec3(10.0);
-uniform float Absorption = 10.0;
+uniform vec3 LightPosition = vec3(0.25, 1.0, 3.0);
+uniform vec3 LightIntensity = vec3(15.0);
+uniform float Absorption = 1.0;
+
 uniform mat4 Modelview;
 uniform float FocalLength;
-uniform vec2 WindowSize;
-uniform vec3 RayOrigin;
+uniform vec3 eyepos;
 uniform vec3 Ambient = vec3(0.15, 0.15, 0.20);
+
 const int ViewSamples = 128;
-
-
 const float maxDist = sqrt(2.0);
+
 const int numSamples = 128;
 const float StepSize = maxDist/float(numSamples);
 const int numLightSamples = 32;
@@ -23,86 +25,113 @@ const float densityFactor = 5;
 
 const bool Jitter = false;
 
+
 float GetDensity(vec3 pos)
 {
     return texture(Density, pos).x;
 }
 
-struct Ray {
-    vec3 Origin;
-    vec3 Dir;
-};
-
-struct AABB {
-    vec3 Min;
-    vec3 Max;
-};
-
-bool IntersectBox(Ray r, AABB aabb, out float t0, out float t1)
+vec3 gennormal(vec3 uvw, vec3 gradient_delta)
 {
-    vec3 invR = 1.0 / r.Dir;
-    vec3 tbot = invR * (aabb.Min-r.Origin);
-    vec3 ttop = invR * (aabb.Max-r.Origin);
-    vec3 tmin = min(ttop, tbot);
-    vec3 tmax = max(ttop, tbot);
-    vec2 t = max(tmin.xx, tmin.yz);
-    t0 = max(t.x, t.y);
-    t = min(tmax.xx, tmax.yz);
-    t1 = min(t.x, t.y);
-    return t0 <= t1;
+    vec3 a,b;
+    a.x = texture(Density, uvw -vec3(gradient_delta.x,0.0,0.0) ).r;
+    b.x = texture(Density, uvw +vec3(gradient_delta.x,0.0,0.0) ).r;
+    a.y = texture(Density, uvw -vec3(0.0,gradient_delta.y,0.0) ).r;
+    b.y = texture(Density, uvw +vec3(0.0,gradient_delta.y,0.0) ).r;
+    a.z = texture(Density, uvw -vec3(0.0,0.0,gradient_delta.z) ).r;
+    b.z = texture(Density, uvw +vec3(0.0,0.0,gradient_delta.z) ).r;
+    return normalize(a - b);
+}
+vec3 blinn_phong(vec3 N, vec3 V, vec3 L, vec3 diffuse)
+{
+    // material properties
+    vec3 Ka = vec3(0.1);
+    vec3 Kd = vec3(1.0, 1.0, 1.0);
+    vec3 Ks = vec3(1.0, 1.0, 1.0);
+    float shininess = 50.0;
+
+    // diffuse coefficient
+    float diff_coeff = max(dot(L,N),0.0);
+
+    // specular coefficient
+    vec3 H = normalize(L+V);
+    float spec_coeff = pow(max(dot(H,N), 0.0), shininess);
+    if (diff_coeff <= 0.0)
+        spec_coeff = 0.0;
+
+    // final lighting model
+    return  Ka * vec3(0.8) +
+            Kd * diffuse  * diff_coeff +
+            Ks * vec3(0.8) * spec_coeff ;
+}
+
+bool is_outside(vec3 position)
+{
+    return (position.x > 1.0 || position.y > 1.0 || position.z > 1.0 || position.x < 0.0 || position.y < 0.0 || position.z < 0.0);
 }
 
 
-void main()
+vec4 volume(vec3 front, vec3 dir, float stepsize)
 {
-    vec3 rayDirection;
-    rayDirection.xy = 2.0 * gl_FragCoord.xy / WindowSize - 1.0;
-    rayDirection.x /= WindowSize.y / WindowSize.x;
-    rayDirection.z = -FocalLength;
-    rayDirection = (vec4(rayDirection, 0) * Modelview).xyz;
-
-    Ray eye = Ray( RayOrigin, normalize(rayDirection) );
-    AABB aabb = AABB(vec3(-1), vec3(1));
-
-    float tnear, tfar;
-    IntersectBox(eye, aabb, tnear, tfar);
-    if (tnear < 0.0) tnear = 0.0;
-
-    vec3 rayStart = eye.Origin + eye.Dir * tnear;
-    vec3 rayStop = eye.Origin + eye.Dir * tfar;
-    rayStart = 0.5 * (rayStart + 1.0);
-    rayStop = 0.5 * (rayStop + 1.0);
-
-    vec3 pos = rayStart;
-    vec3 viewDir = normalize(rayStop-rayStart) * StepSize;
+    vec3  stepsize_dir   = normalize(dir) * stepsize;
+    vec3  pos            = front;
     float T = 1.0;
-    vec3 Lo = Ambient;
+    vec3 Lo = vec3(0.0);
+    int i = 0;
+    pos += stepsize_dir;//apply first, to padd
+    for (i; i < numSamples && (!is_outside(pos) || i<3); ++i, pos += stepsize_dir) {
 
-
-    float remainingLength = distance(rayStop, rayStart);
-
-    for (int i=0; i < ViewSamples && remainingLength > 0.0;
-        ++i, pos += viewDir, remainingLength -= StepSize) {
-
-        float density = GetDensity(pos);
-        vec3 lightColor = vec3(1);
-        if (pos.z < 0.1) {
-            density = 10;
-            lightColor = 3*Ambient;
-        } else if (density <= 0.01) {
+        float density = texture(Density, pos).x * densityFactor;
+        if (density <= 0.0)
             continue;
-        }
 
-        T *= 1.0 - density * StepSize * Absorption;
+        T *= 1.0-density*stepsize*Absorption;
         if (T <= 0.01)
             break;
 
-        vec3 Li = lightColor;
-        Lo += Li * T * density * StepSize;
+        vec3 lightDir = normalize(LightPosition-pos)*lscale;
+        float Tl = 1.0;
+        vec3 lpos = pos + lightDir;
+        int s=0;
+        for (s; s < numLightSamples; ++s) {
+            float ld = texture(Density, lpos).x;
+            Tl *= 1.0-Absorption*stepsize*ld;
+            if (Tl <= 0.01) 
+            lpos += lightDir;
+        }
+
+        vec3 Li = LightIntensity*Tl;
+        Lo += Li*T*density*stepsize;
     }
-
-    //Lo = 1-Lo;
-
-    FragColor.rgb = rayStart;
-    FragColor.a = 1;
+    return vec4(Lo, 1-T);
 }
+vec4 isosurface(vec3 front, vec3 dir, float stepsize)
+{
+    vec3  stepsize_dir  = dir * stepsize;
+    vec3  pos           = front;
+    vec3  Lo            = vec3(0.0);
+    int   i             = 0;
+    pos += stepsize_dir;//apply first, to padd
+    for (i; i < numSamples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
+    {
+        float density = texture(Density, pos).x;
+        if (density <= 0.0)
+            continue;
+        if(abs(density - 0.5) < 0.05)
+        {
+            vec3 N = gennormal(pos, vec3(stepsize));
+            vec3 L = normalize(LightPosition - pos);
+            Lo = blinn_phong(N, pos, L, vec3(1,0,0));
+            break;
+        }
+
+    }
+    return vec4(Lo, 1);
+}
+
+void main()
+{
+
+    FragColor = volume(frag_verposition, normalize(frag_verposition-eyepos), StepSize);
+}
+

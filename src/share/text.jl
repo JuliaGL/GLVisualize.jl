@@ -14,7 +14,7 @@ end
 regreduce(arr, prefix="(", suffix=")") = Regex(reduce((v0, x) -> v0*"|"*prefix*escape_regex(x)*suffix, prefix*escape_regex(arr[1])*suffix, arr[2:end]))
 
 
-function update_groups!{T}(textGPU::Texture{GLGlyph{T}, 4, 2}, regexs::Dict{T, Regex}, start=1, stop=length(text_array))
+function update_groups!{T}(textGPU::Texture{GLGlyph{T}, 2}, regexs::Dict{T, Regex}, start=1, stop=length(text_array))
   textRam = textGPU.data[start:stop]
   text    = utf8(map(textRam) do x
     char(x.glyph)
@@ -42,7 +42,7 @@ function update_glyphpositions!{T}(text_array::AbstractArray{GLGlyph{T}}, start=
     end
   end
 end
-function update_glyphpositions!{T}(text_array::Texture{GLGlyph{T}, 4, 2}, start=1, stop=length(text_array))
+function update_glyphpositions!{T}(text_array::Texture{GLGlyph{T},2}, start=1, stop=length(text_array))
   textarray = data(text_array)
   line = textarray[start].line
   row  = textarray[start].row

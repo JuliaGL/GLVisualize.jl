@@ -5,6 +5,9 @@ function creategrid(;xrange::(Real, Real)=(-1,1), yrange::(Real, Real)=(-1,1), z
 	
 	v,uv,n,i = mergemesh(xyplane, zyplane, zxplane)
 
+	gridshader = TemplateProgram(File(shaderdir, "grid.vert"), File(shaderdir, "grid.frag"))
+
+
 	grid = RenderObject(@compat(Dict(
 			:vertexes 			  	=> GLBuffer(v),
 			:indexes			   	=> indexbuffer(i),
@@ -18,9 +21,6 @@ function creategrid(;xrange::(Real, Real)=(-1,1), yrange::(Real, Real)=(-1,1), z
 	postrender!(grid, render, grid.vertexarray)
 	return grid
 end
-
-initgrid() = global gridshader = TemplateProgram(joinpath(shaderdir,"grid.vert"), joinpath(shaderdir,"grid.frag"))
-init_after_context_creation(initgrid)
 
 export creategrid
 

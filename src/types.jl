@@ -4,7 +4,7 @@
 Glyph type for Text rendering.
 It doesn't offer any functionality, and is only used for multiple dispatch.
 =#
-immutable GLGlyph{T} <: AbstractFixedVector{T, 4}
+immutable GLGlyph{T} <: FixedVector{T, 4}
   glyph::T
   line::T
   row::T
