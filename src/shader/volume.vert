@@ -5,10 +5,10 @@ in vec3 uvw;
 
 out vec3 frag_verposition;
 
-uniform mat4 projection, view;
+uniform mat4 projection_view_model;
 
 void main()
 {
     frag_verposition = vertex;
-    gl_Position 	 = projection * view * vec4(vertex, 1);
+    gl_Position 	 = projection_view_model * vec4(vertex, 1);
 }
