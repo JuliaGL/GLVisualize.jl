@@ -129,7 +129,7 @@ COLOR_DEFAULTS = @compat(Dict(
   :model                    => scalematrix(Vec3(200,200,1))
 ))
 ))
-visualize(color::AbstractAlphaColorValue, style::Style=Style(:Default); customization...) = visualize(style, color, mergedefault!(style, COLOR_DEFAULTS, customization)) 
+visualize(color::AbstractAlphaColor, style::Style=Style(:Default); customization...) = visualize(style, color, mergedefault!(style, COLOR_DEFAULTS, customization)) 
 
 # END Color Rendering
 #################################################################################################################################

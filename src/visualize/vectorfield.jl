@@ -11,7 +11,7 @@ const Defaults = @compat Dict(
 const defaults = Dict(
 :boundingbox    => Cube(Vec3(-1, -1, -1), Vec3(1, 1, 1)),
 :colormap       => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)],
-:primitive      => cube(0.1f0, 0.1f0, 0.1f0)
+#:primitive      => cube(0.1f0, 0.1f0, 0.1f0)
 )
 
 function visualize(::Style{:Default},

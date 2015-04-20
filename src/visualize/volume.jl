@@ -3,7 +3,7 @@ abstract Mesh{Triangle}
 typealias UVWMesh Mesh{Triangle}
 
 Defaults = Dict(
-    #:hull                   => UVWMesh(Cube()),
+    :hull                   => GLUVMesh(Cube(Vec3(-1), Vec3(1))),
     :light_position         => Input(Vec3(0.25, 1.0, 3.0)),
     :light_intensity        => Input(Vec3(15.0)),
     :absorption             => Input(1f0),
@@ -12,9 +12,9 @@ Defaults = Dict(
 )
 function visualize{T}(::Style{:Default}, intensities::Texture{T, 1}, customizations)
 
-    model   = pop!(customizations, :model) # pull out variables to avoid duplications
-    screen  = pop!(customizations, :screen)
+    @materialize! model, screen = customizations # pull out variables to avoid duplications
     camera  = screen.perspectivecam
+
     data    = merge(Dict(
         #Vertex Shader Data
         :projection_view_model  => lift(*, camera.projectionview, model)

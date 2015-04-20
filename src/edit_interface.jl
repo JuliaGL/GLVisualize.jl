@@ -42,4 +42,4 @@ edit(obj::RenderObject, style=Style(:Default); customizations...) = edit(style, 
 
 #################################################################################################################################
 # Color Editing:
-edit(color::AbstractAlphaColorValue, style::Style=Style(:Default); customization...) = visualize(color, style; customization...) 
+edit(color::AbstractAlphaColor, style::Style=Style(:Default); customization...) = visualize(color, style; customization...) 

@@ -1,4 +1,4 @@
-module Romeo
+module GLVisualize
 
 using GLWindow 
 using GLAbstraction
@@ -47,5 +47,6 @@ export SURFACE  # function that generates a Surface primitive for every datapoin
 export CIRCLE   # function that generates Circular surface primitive for every datapoint
 export CUBE     # function that generates Cube primitives for every datapoint
 export POINT    # function that generates Point primitives for every datapoint
+
 
 end # module
