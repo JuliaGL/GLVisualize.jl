@@ -1,5 +1,3 @@
-
-
 function filtereselection(v0, selection, buttons)
   if !isempty(buttons) && first(buttons) == 0  # if any button is pressed && its the left button
     selection #return diffed index

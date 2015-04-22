@@ -1,4 +1,4 @@
-const Defaults = @compat Dict(
+const VectorfieldDefaults = @compat Dict(
     #:primitive      => Mesh()
     :cube           => Cube(Vec3(-1), Vec3(1)),
     :colorrange     => (-1,1),
@@ -8,15 +8,7 @@ const Defaults = @compat Dict(
 )
 
 
-const defaults = Dict(
-:boundingbox    => Cube(Vec3(-1, -1, -1), Vec3(1, 1, 1)),
-:colormap       => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)],
-#:primitive      => cube(0.1f0, 0.1f0, 0.1f0)
-)
-
-function visualize(::Style{:Default},
-                    vectorfield::Texture{Vector3{Float32}, 3},
-                    customizations)
+function visualize(::Style{:Default}, vectorfield::Texture{Vector3{Float32}, 3}, customizations)
     data = Dict(
         :vectorfield    => vectorfield,
         :cube_from      => Vec3(first(xrange), first(yrange), first(zrange)),
@@ -35,9 +27,13 @@ function visualize(::Style{:Default},
         attributes=data
     )
 
-    renderobject = instancedobject(data, length(vectorfield), program, GL_TRIANGLES)
-    prerender!(renderobject, glEnable, GL_DEPTH_TEST, glDepthFunc, GL_LEQUAL, glDisable, GL_CULL_FACE, enabletransparency)
-    renderobject
+    robj = instancedobject(data, length(vectorfield), program, GL_TRIANGLES)
+    prerender!(robj, 
+        glEnable,       GL_DEPTH_TEST, 
+        glDepthFunc,    GL_LEQUAL, 
+        glDisable,      GL_CULL_FACE, 
+        enabletransparency)
+    robj
 end
 
 let texture_parameters = [

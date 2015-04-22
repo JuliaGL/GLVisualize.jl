@@ -9,6 +9,6 @@ uniform mat4 projection_view_model;
 
 void main()
 {
-    frag_verposition = vertex;
+    frag_verposition = uvw;
     gl_Position 	 = projection_view_model * vec4(vertex, 1);
 }

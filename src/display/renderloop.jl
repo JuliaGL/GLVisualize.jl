@@ -68,16 +68,21 @@ lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
   end 
 end
 
-
-function renderloop(ROOT_SCREEN)
+function renderloop()
   global ROOT_SCREEN
+  while ROOT_SCREEN.inputs[:open].value
+    renderloop(ROOT_SCREEN)
+  end
+  GLFW.Terminate()
+end
+function renderloop(screen)
   yield() 
   glDisable(GL_SCISSOR_TEST)
   glBindFramebuffer(GL_FRAMEBUFFER, RENDER_FRAMEBUFFER)
   glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-  render(ROOT_SCREEN)
+  render(screen)
 
   #Read all the selection queries
   if !isempty(SELECTION_QUERIES)
@@ -100,9 +105,9 @@ function renderloop(ROOT_SCREEN)
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
   glClear(GL_COLOR_BUFFER_BIT)
   glDisable(GL_SCISSOR_TEST)
-  ROOT_SCREEN_size = ROOT_SCREEN.inputs[:framebuffer_size].value
+  ROOT_SCREEN_size = screen.inputs[:framebuffer_size].value
   glBlitFramebuffer(0,0, ROOT_SCREEN_size..., 0,0, ROOT_SCREEN_size..., GL_COLOR_BUFFER_BIT, GL_LINEAR)
-  GLFW.SwapBuffers(ROOT_SCREEN.nativewindow)
+  GLFW.SwapBuffers(screen.nativewindow)
   GLFW.PollEvents()
 end
 

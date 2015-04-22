@@ -1,15 +1,41 @@
+{{GLSL_VERSION}}
+
+struct AABB
+{
+    vec3 min;
+    vec3 max;
+};
+struct Rectangle
+{
+    vec2 origin;
+    vec2 width;
+};
+
 // stretch is 
-vec3 stretch(vec3 uvw, vec3 from, vec3 to)
+vec3 stretch(vec3 val, vec3 from, vec3 to)
 {
-    return from + (uvw * (to - from));
+    return from + (val * (to - from));
 }
-vec2 stretch(vec2 uv, vec2 from, vec2 to)
+vec2 stretch(vec2 val, vec2 from, vec2 to)
 {
-    return from + (uv * (to - from));
+    return from + (val * (to - from));
 }
-float stretch(float uv, float from, float to)
+float stretch(float val, float from, float to)
 {
-    return from + (uv * (to - from));
+    return from + (val * (to - from));
+}
+
+float normalize(float val, float from, float to)
+{
+    return (val-from) * (to - from);
+}
+float normalize(vec2 val, vec2 from, vec2 to)
+{
+    return (val-from) * (to - from);
+}
+float normalize(vec3 val, vec3 from, vec3 to)
+{
+    return (val-from) * (to - from);
 }
 
 
@@ -39,9 +65,6 @@ mat4 translate_scale(vec3 xyz, vec3 scale)
       vec4(xyz, 1));
 }
 
-
-
-
 //Mapping 1D index to 1D, 2D and 3D arrays
 int ind2sub(int dim, int linearindex)
 {
@@ -55,25 +78,58 @@ ivec3 ind2sub(ivec3 dim, int linearindex)
 {
     return ivec3(linearindex / (dim.y * dim.z), (linearindex / dim.z) % dim.y, linearindex % dim.z);
 }
-
-
-
-
-
-//Some render functions
-void render(vec3 vertex, vec3 normal, mat4 model, mat4 view, mat4 projection)
+vec2 linear_index(ivec2 dims, int index)
 {
-    mat4 modelview              = view * model;
-    mat3 normalmatrix           = mat3(modelview); // shoudl really be done on the cpu
-    vec4 position_camspace      = modelview * vec4(vertex,  1);
-    vec4 lightposition_camspace = view * vec4(light_position, 1);
+    ivec2 index2D    = ind2sub(dims, index);
+    return vec2(index2D) / vec2(dims);
+}
+vec3 linear_index(ivec3 dims, int index)
+{
+    ivec3 index3D = ind2sub(dims, index);
+    return vec2(index3D) / vec2(dims);
+}
+vec3 linear_texture(sampler2D tex, int index)
+{
+    return texture(tex, linear_index(textureSize(tex, 0), index));
+}
+
+
+
+
+//Implicit grid in a Cube via a 3D array
+vec3 position(AABB cube, ivec3 dims, int index)
+{
+    return stretch(linear_index(dims, index), cube.min, cube.max);
+}
+//Implicit grid on a plane via a 2D array
+vec3 position(Rectangle rectangle, ivec2 dims, int index)
+{
+    return vec3(stretch(linear_index(dims, index), rectangle.origin, rectangle.width), 0);
+}
+
+
+
+vec4 color(float intensity, sampler1D color_ramp, vec2 norm)
+{
+    return texture(color_ramp, normalize(intensity, norm.x, norm.y));
+}
+
+out vec3 o_normal;
+out vec3 o_lightdir;
+out vec3 o_vertex;
+out vec4 o_color;
+
+void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4])
+{
+    vec4 position_camspace  = viewmodel * vec4(vertex,  1);
     // normal in world space
-    o_normal            = normalize(normalmatrix * normal);
+    o_normal                = normal;
     // direction to light
-    o_lightdir          = normalize(lightposition_camspace.xyz - position_camspace.xyz);
+    o_lightdir              = normalize(light[3] - vertex);
     // direction to camera
-    o_vertex            = -position_camspace.xyz;
-    // texture coordinates to fragment shader
+    o_vertex                = -position_camspace.xyz;
+    // 
+    o_color                 = color;
     // screen space coordinates of the vertex
-    gl_Position  = projection * position_camspace; 
+    gl_Position             = projection * position_camspace; 
 }

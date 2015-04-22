@@ -14,8 +14,12 @@ using Compat
 using FixedPointNumbers
 using ImageIO
 using FileIO
+using MeshIO
 
 import Mustache
+import Base: merge, convert, show
+
+include("meshutil.jl")
 
 const sourcedir = Pkg.dir("GLVisualize", "src")
 const shaderdir = joinpath(sourcedir, "shader")
@@ -31,6 +35,7 @@ include_all(joinpath( sourcedir, "visualize"))
 include(joinpath(     sourcedir, "visualize_interface.jl"))
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
+export renderloop 
 export visualize    # Visualize an object
 export edit         # Edit an object
 
