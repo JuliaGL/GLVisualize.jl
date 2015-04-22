@@ -31,5 +31,5 @@ void main(){
     vec3 N 			= normalize(o_normal);
     vec3 light1 	= blinnphong(N, o_vertex, L, o_color.rgb);
     vec3 light2 	= blinnphong(N, o_vertex, -L, o_color.rgb);
-    fragment_color 	= vec4(light1+light2*0.5, o_color.a);
+    fragment_color 	= vec4(light1+light2, o_color.a);
 }

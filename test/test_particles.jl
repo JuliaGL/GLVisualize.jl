@@ -1,6 +1,6 @@
 using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive
 
-N 		= 20
+N = 20
 function func(x,y)
     R = sqrt(x^2 + y^2)
     sin(R)/R

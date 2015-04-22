@@ -88,9 +88,14 @@ vec3 linear_index(ivec3 dims, int index)
     ivec3 index3D = ind2sub(dims, index);
     return vec2(index3D) / vec2(dims);
 }
-vec3 linear_texture(sampler2D tex, int index)
+vec4 linear_texture(sampler2D tex, int index)
 {
     return texture(tex, linear_index(textureSize(tex, 0), index));
+}
+vec4 linear_texture(sampler2D tex, int index, vec2 offset)
+{   
+    ivec2 dims = textureSize(tex, 0);
+    return texture(tex, linear_index(dims, index) + (offset/vec2(dims)));
 }
 
 
@@ -102,6 +107,10 @@ vec3 position(AABB cube, ivec3 dims, int index)
     return stretch(linear_index(dims, index), cube.min, cube.max);
 }
 //Implicit grid on a plane via a 2D array
+vec3 position(Rectangle rectangle, ivec2 dims, int index, vec2 offset)
+{
+    return vec3(stretch(linear_index(dims, index) + offset, rectangle.origin, rectangle.width), 0);
+}
 vec3 position(Rectangle rectangle, ivec2 dims, int index)
 {
     return vec3(stretch(linear_index(dims, index), rectangle.origin, rectangle.width), 0);

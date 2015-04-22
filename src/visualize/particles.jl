@@ -40,18 +40,18 @@ end
 
 
 const SurfDefaults = @compat(Dict(
-    :primitive  => GLMesh2D(Rectangle(0,0,1/20,1/20)),
+    :primitive  => GLMesh2D(Rectangle(0f0,0f0,1f0,1f0)),
     :screen     => ROOT_SCREEN, 
     :model      => Input(eye(Mat4)),
     :color_ramp => RGBAU8[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1), rgbaU8(0,1,1,1), rgbaU8(0,0,1,1)],
     :light      => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
-    :grid_min   => Vec2(-1,-1),
+    :grid_min   => Vec2(0,0),
     :grid_max   => Vec2(1,1)
 ))
 
 export surf
 function surf(s::Style{:Default}, grid::Matrix{Float32}, 
-        customizations=SurfDefaults, norm=Vec2(minimum(grid), maximum(grid)))
+        customizations=SurfDefaults, norm=Vec2(minimum(grid), maximum(grid)), scale=Vec3((1f0 ./[size(grid)...])..., 1f0))
 
     @materialize! screen, color_ramp, primitive, light, model = customizations
     camera       = screen.perspectivecam
@@ -67,7 +67,8 @@ function surf(s::Style{:Default}, grid::Matrix{Float32},
         :projection     => camera.projection,
         :viewmodel      => lift(*, model, camera.view),
         :light          => light,
-        :norm           => norm
+        :norm           => norm,
+        :scale          => scale
 
     )), collect_for_gl(primitive), customizations)
 
