@@ -81,7 +81,7 @@ void main()
 	pos += vec3(vertex*scale.xy, intensity);
 
 	vec4 instance_color = color(intensity, color_ramp, norm);
-	render(pos, getnormal(z, (ind2sub(dims, gl_InstanceID)+vertex)/dims), instance_color, viewmodel, projection, light);
+	render(pos, vec3(0,0,1), instance_color, viewmodel, projection, light);
 }
 
 

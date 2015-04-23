@@ -27,7 +27,7 @@ float stretch(float val, float from, float to)
 
 float normalize(float val, float from, float to)
 {
-    return (val-from) * (to - from);
+    return (val-from) / (to - from);
 }
 float normalize(vec2 val, vec2 from, vec2 to)
 {
@@ -38,6 +38,15 @@ float normalize(vec3 val, vec3 from, vec3 to)
     return (val-from) * (to - from);
 }
 
+
+mat4 getmodelmatrix(vec3 xyz, vec3 scale)
+{
+   return mat4(
+      vec4(scale.x, 0, 0, 0),
+      vec4(0, scale.y, 0, 0),
+      vec4(0, 0, scale.z, 0),
+      vec4(xyz, 1));
+}
 
 const vec3 up = vec3(0,0,1);
 mat4 rotation(vec3 direction)
@@ -86,20 +95,28 @@ vec2 linear_index(ivec2 dims, int index)
 vec3 linear_index(ivec3 dims, int index)
 {
     ivec3 index3D = ind2sub(dims, index);
-    return vec2(index3D) / vec2(dims);
+    return vec3(index3D) / vec3(dims);
 }
 vec4 linear_texture(sampler2D tex, int index)
 {
     return texture(tex, linear_index(textureSize(tex, 0), index));
 }
+
 vec4 linear_texture(sampler2D tex, int index, vec2 offset)
 {   
     ivec2 dims = textureSize(tex, 0);
     return texture(tex, linear_index(dims, index) + (offset/vec2(dims)));
 }
 
+vec4 linear_texture(sampler3D tex, int index)
+{
+    return texture(tex, linear_index(textureSize(tex, 0), index));
+}
 
-
+vec4 getindex(sampler2D tex, int index)
+{
+    return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
+}
 
 //Implicit grid in a Cube via a 3D array
 vec3 position(AABB cube, ivec3 dims, int index)
