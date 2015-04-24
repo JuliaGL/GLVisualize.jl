@@ -107,7 +107,7 @@ function convert{T1, T2}(uvw::Type{UVW{T1}}, q::Quad{T2})
 end
 
 function convert{ATTRIB <: HomogenousAttributes, T}(::Type{ATTRIB}, q::Quad{T})
-	ATTRIB(map(attributes(ATTRIB)) do attrib
+	ATTRIB(map(attributelist(ATTRIB)) do attrib
 		convert(attrib, q)
 	end...)
 end
