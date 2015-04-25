@@ -1,5 +1,5 @@
 const VectorfieldDefaults = @compat Dict(
-    :primitive      => GLNormalMesh(Cube(Vec3(0), Vec3(0.1, 0.1, 1.0))),
+    :primitive      => GLNormalMesh(Cube(Vec3(-0.1,-0.1,-0.5), Vec3(0.1, 0.1, 0.5))),
     :boundingbox    => AABB(Vec3(-1), Vec3(1)),
     :norm           => Vec2(-1,1),
     :model          => Input(eye(Mat4)),
@@ -7,6 +7,9 @@ const VectorfieldDefaults = @compat Dict(
     :screen         => ROOT_SCREEN, 
     :color_ramp     => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)]
 )
+
+visualize(positions::Array{Vector3{Float32}, 3}, s=Style{:Default}(); kw_args...) = 
+    visualize(s, positions, merge(VectorfieldDefaults, Dict{Symbol, Any}(kw_args)))
 
 
 function visualize(::Style{:Default}, vectorfield::Texture{Vector3{Float32}, 3}, customizations=VectorfieldDefaults)

@@ -1,5 +1,5 @@
-visualize(x; customizations...) = visualize(string(x); customizations...)
-visualize(x::Function; customizations...) = visualize(methods(x); customizations...)
+#visualize(x; customizations...) = visualize(string(x); customizations...)
+#visualize(x::Function; customizations...) = visualize(methods(x); customizations...)
 
 
 #################################################################################################################################

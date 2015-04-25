@@ -31,7 +31,7 @@ void main()
 {
     vec3 pos            = position(AABB(cube_min, cube_max), textureSize(vectorfield, 0), gl_InstanceID);
     vec3 direction      = linear_texture(vectorfield, gl_InstanceID).xyz;
-    mat4 rot            = rotation(direction);
+    mat4 rot            = rotation(vec3(1,1,1));
     mat4 trans          = getmodelmatrix(pos, vec3(0.1));
     float intensity     = length(direction);
     vec4 instance_color = color(intensity, color_ramp, vec2(0,34));

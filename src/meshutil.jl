@@ -1,4 +1,4 @@
-
+import Base.convert
 # tries to find the concrete type with preference on a.
 use_concrete(a::DataType, b::DataType) = isleaftype(a) ? a : isleaftype(b) ? b : error("no concrete type given")
 
@@ -58,6 +58,13 @@ function collect_for_gl(m::GLUVWMesh)
         :uvw    => GLBuffer(attributes(m).uvw),
     )
 end
+function collect_for_gl(m::GLUVMesh2D)
+    @compat Dict(
+        :vertex => GLBuffer(vertices(m)),
+        :_      => indexbuffer(faces(m)),
+        :uv    => GLBuffer(attributes(m).uv),
+    )
+end
 function collect_for_gl(m::GLNormalMesh)
     @compat Dict(
         :vertex => GLBuffer(vertices(m)),
@@ -106,7 +113,8 @@ function convert{T1, T2}(uvw::Type{UVW{T1}}, q::Quad{T2})
     ]
 end
 
-function convert{ATTRIB <: HomogenousAttributes, T}(::Type{ATTRIB}, q::Quad{T})
+convert(::Type{PlainMesh}, q::Any) = MeshIO.PLAIN
+function convert{ATTRIB <: HomogenousAttributes}(::Type{ATTRIB}, q::Union(Quad, Rectangle))
 	ATTRIB(map(attributelist(ATTRIB)) do attrib
 		convert(attrib, q)
 	end...)
@@ -157,7 +165,8 @@ function convert{ET, IT, A}(::Type{Mesh{Point2{ET}, Triangle{IT}, A}}, r::Rectan
         Point2{ET}(r.x + r.w, r.y)
     ]
     faces = Triangle{IT}[Triangle{IT}(0,1,2),Triangle{IT}(2,3,0)]
-    Mesh(vertices, faces, A())
+    a = convert(A, r)
+    Mesh{Point2{ET}, Triangle{IT}, A}(vertices, faces, a)
 end
 
 #=

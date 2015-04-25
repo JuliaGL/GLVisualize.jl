@@ -1,4 +1,4 @@
-function visualize{T}(style::Style, img::Texture{T, 2}, data::Dict{Symbol, Any})
+function visualize{T <: Color}(style::Style, img::Texture{T, 2}, data::Dict{Symbol, Any})
   kernel = data[:kernel]
   w, h  = img.dims
   texparams = [

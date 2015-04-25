@@ -16,7 +16,6 @@ vec4 getindex(sampler2D tex, int index);
 
 
 void main(){
-    vec3 vert = getindex(positions, gl_InstanceID).xyz + vertex;
+    vec3 vert = getindex(positions, gl_InstanceID).xyz + vertex*0.1;
     render(vert, normal, particle_color, viewmodel, projection, light);
-    
 }

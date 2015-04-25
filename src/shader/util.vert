@@ -48,7 +48,7 @@ mat4 getmodelmatrix(vec3 xyz, vec3 scale)
       vec4(xyz, 1));
 }
 
-const vec3 up = vec3(0,0,1);
+const vec3 up = vec3(0,1,0);
 mat4 rotation(vec3 direction)
 {
     mat4 viewMatrix = mat4(1.0);
@@ -137,7 +137,7 @@ vec3 position(Rectangle rectangle, ivec2 dims, int index)
 
 vec4 color(float intensity, sampler1D color_ramp, vec2 norm)
 {
-    return texture(color_ramp, normalize(intensity, norm.x, norm.y));
+    return texture(color_ramp, intensity/34);
 }
 
 out vec3 o_normal;

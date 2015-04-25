@@ -92,14 +92,26 @@ const PositionDefaults = @compat(Dict(
     :light          => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
 ))
 
-function visualize(s::Style{:Default}, positions::Matrix{Point3{Float32}}, customizations=PositionDefaults)
+function visualize(positions::Union(Matrix{Point3{Float32}}, Signal{Matrix{Point3{Float32}}}), s=Style{:Default}(); kw_args...) 
+    visualize(s, positions, merge(PositionDefaults, Dict{Symbol, Any}(kw_args)))
+end
+function visualize(s::Style{:Default}, positions_s::Signal{Matrix{Point3{Float32}}}, customizations=PositionDefaults)
+    positions = Texture(positions_s.value)
+    lift(update!, Input(positions), positions_s)
+    visualize(s, positions, customizations)
+end
+
+visualize(s::Style{:Default}, positions::Matrix{Point3{Float32}}, customizations=PositionDefaults) =
+    visualize(s, Texture(positions), customizations)
+
+function visualize(s::Style{:Default}, positions::Texture{Point3{Float32}, 2}, customizations=PositionDefaults)
 
     @materialize! screen, primitive, model = customizations
     camera = screen.perspectivecam
     data = merge(@compat(Dict(
-        :positions       => Texture(positions),
-        :projection     => camera.projection,
-        :viewmodel      => lift(*, model, camera.view),
+        :positions       => positions,
+        :projection      => camera.projection,
+        :viewmodel       => lift(*, model, camera.view),
     )), collect_for_gl(primitive), customizations)
 
     program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "particles.vert"), File(shaderdir, "standard.frag"))

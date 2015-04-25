@@ -1,5 +1,35 @@
-  
-function edit()
+const ColorDefaults = @compat(Dict(
+    :quad   => GLUVMesh2D(Rectangle(-1f0,-1f0, 1f0,1f0)),
+    :model  => Input(eye(Mat4)),
+    :screen  => ROOT_SCREEN
+
+))
+
+function visualize{T}(rgba_color::RGBA{T}, ::Style{:Default}, customizations=ColorDefaults)
+    @materialize! screen, quad, model = customizations
+
+    camera = screen.perspectivecam
+
+    rdata = merge(@compat(Dict(
+        :projectionviewmodel => lift(*, camera.projectionview, model),
+        :color               => rgba_color,
+    )), collect_for_gl(quad))
+
+    shader = TemplateProgram(File(shaderdir, "colorchooser.vert"), File(shaderdir, "colorchooser.frag"), 
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")])
+
+    obj = RenderObject(rdata, shader, color_chooser_boundingbox)
+
+    prerender!(obj, 
+        glEnable,       GL_DEPTH_TEST, 
+        glDepthFunc,    GL_LESS, 
+        glDisable,      GL_CULL_FACE, 
+        enabletransparency)
+    postrender!(obj, render, obj.vertexarray) # Render the vertexarray
+    obj
+end
+
+function edit{T}(rgba::RGBA{T}, ::Style{:Default}, customizations)
 
   color = colorinput.value
 

@@ -4,6 +4,8 @@ const MeshDefaults = @compat(Dict(
     :light      => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
 ))
 
+visualize(mesh::Mesh, s=Style{:Default}(); kw_args...) = visualize(s, mesh, merge(MeshDefaults, Dict{Symbol, Any}(kw_args)))
+
 visualize(s::Style{:Default}, mesh::Mesh, customizations=MeshDefaults) = visualize(convert(GLNormalMesh, mesh), customizations)
 
 function visualize(s::Style{:Default}, mesh::GLNormalMesh, customizations=MeshDefaults)
