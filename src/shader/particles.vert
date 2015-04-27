@@ -8,7 +8,7 @@ uniform vec4 particle_color;
 
 uniform sampler2D positions;
 
-uniform mat4 viewmodel, projection;
+uniform mat4 viewmodel, projection, model;
 
 void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
@@ -16,6 +16,6 @@ vec4 getindex(sampler2D tex, int index);
 
 
 void main(){
-    vec3 vert = getindex(positions, gl_InstanceID).xyz + vertex*0.1;
+    vec3 vert = getindex(positions, gl_InstanceID).xyz + (model*vec4(vertex, 1)).xyz;
     render(vert, normal, particle_color, viewmodel, projection, light);
 }

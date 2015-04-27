@@ -20,3 +20,16 @@ function Base.split(condition::Function, associative::Associative)
   end
   A, B
 end
+
+macro visualize_gen(input, target)
+    esc(quote 
+        visualize(value::$input, s::Style, customizations=visualize_default(value, s)) = 
+            visualize($target(value), s, customizations)
+
+        function visualize(signal::Signal{$input}, s::Style, customizations=visualize_default(signal.value, s))
+            tex = $target(signal.value)
+            lift(update!, Input(tex), signal)
+            visualize(tex, s, customizations)
+        end
+    end)
+end

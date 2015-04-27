@@ -81,6 +81,7 @@ function renderloop(screen)
   glBindFramebuffer(GL_FRAMEBUFFER, RENDER_FRAMEBUFFER)
   glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+  yield() 
 
   render(screen)
 
@@ -99,6 +100,7 @@ function renderloop(screen)
       push!(SELECTION[key], convert(Matrix{Vector2{Int}}, data))
     end
   end
+  yield() 
 
   glReadBuffer(GL_COLOR_ATTACHMENT0)
   glBindFramebuffer(GL_READ_FRAMEBUFFER, RENDER_FRAMEBUFFER)
@@ -109,6 +111,8 @@ function renderloop(screen)
   glBlitFramebuffer(0,0, ROOT_SCREEN_size..., 0,0, ROOT_SCREEN_size..., GL_COLOR_BUFFER_BIT, GL_LINEAR)
   GLFW.SwapBuffers(screen.nativewindow)
   GLFW.PollEvents()
+  yield() 
+  
 end
 
 glClearColor(0, 0, 0, 0)

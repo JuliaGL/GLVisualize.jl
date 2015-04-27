@@ -19,6 +19,12 @@ using MeshIO
 import Mustache
 import Base: merge, convert, show
 
+
+
+visualize(value, s=Style{:Default}(); kw_args...) 		   = visualize(value, s, merge(visualize_default(value, s), Dict{Symbol, Any}(kw_args)))
+visualize(signal::Signal, s=Style{:Default}(); kw_args...) = visualize(signal, s, merge(visualize_default(signal.value, s), Dict{Symbol, Any}(kw_args)))
+
+
 include("meshutil.jl")
 
 const sourcedir = Pkg.dir("GLVisualize", "src")

@@ -79,27 +79,26 @@ rcoords = sort([[6(i-1)+1 for i = 1:n],[6(i-1)+2 for i = 1:n],[6(i-1)+3 for i = 
 rcoords = convert(Array{Int64,1}, rcoords)
 const r = map(Float32, ymat[rcoords,:])
 
-const planets = hcat([reinterpret(Point3{Float32}, r[3(i-1)+1:3(i-1)+3,:], (size(r, 2),)) for i=1:n]...)
+const planets = hcat([reinterpret(Point3{Float32}, r[3(i-1)+1:3(i-1)+3,:], (size(r, 2),)) for i=1:n]...);
 
-function send_frame(i)
-    global planets
-    const p = planets[i, 1:4]
+function send_frame(i, planets)
+    p = planets[i, 1:4]
     reshape(p, (2,2))
 end
-i_counter = 0
-function framefunc(_unused)
-    global i_counter
-    mod1(i_counter+=1, length(tspan))
-end
-const time_i = lift(framefunc, fpswhen(GLVisualize.ROOT_SCREEN.inputs[:open], 20.0))
 
-const positions = lift(send_frame, time_i)
-lift(println, positions)
+const time_i = Input(1)
+
+const positions = lift(send_frame, time_i, Input(planets))
 const robj = visualize(positions)
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 
 
-renderloop()
+@async renderloop()
+
+while GLVisualize.ROOT_SCREEN.inputs[:open].value
+    yield()
+    push!(time_i, mod1(time_i.value+1, size(planets,1)))
+end
 
 
 

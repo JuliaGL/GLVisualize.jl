@@ -1,6 +1,4 @@
-
-
-VolumeDefaults = Dict(
+visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
     :light_position         => Input(Vec3(0.25, 1.0, 3.0)),
     :light_intensity        => Input(Vec3(15.0)),
@@ -9,42 +7,21 @@ VolumeDefaults = Dict(
     :screen                 => ROOT_SCREEN
 )
 
-visualize{T}(s::Style{:Default}, intensities::Signal{Array{T, 3}}, customizations=VolumeDefaults) = 
-    visualize(s, Texture(intensities), customizations)
-
-function visualize{T}(s::Style{:Default}, intensities::Signal{Array{T, 3}}, customizations=VolumeDefaults)
-    tex = Texture(eltype(intensities.value), size(intensities.value))
-    lift(update!, Input(tex), intensities)
-    visualize(s, tex, customizations)
-end
+@visualize_gen Array{Float32, 3} Texture
 
 
-function visualize{T}(::Style{:Default}, intensities::Texture{T, 3}, customizations=VolumeDefaults)
+function visualize(intensities::Texture{Float32, 3}, s::Style, customizations=visualize_default(intensities, s))
+    @materialize! model, screen, absorption, hull = customizations # pull out variables to avoid duplications
 
-    @materialize! model, screen, absorption = customizations # pull out variables to avoid duplications
     camera  = screen.perspectivecam
-
     data    = merge(@compat(Dict(
-        #Vertex Shader Data
         :projection_view_model  => lift(*, camera.projectionview, model),
         :eye_position           => camera.eyeposition,
 
-        #Frag Shader Data
         :intensities            => intensities,
         :absorption             => absorption
-        
-    )), customizations, collect_for_gl(customizations[:hull]))
+    )), customizations, collect_for_gl(hull))
 
     shader = TemplateProgram(File(shaderdir, "volume.vert"), File(shaderdir, "volume.frag"))
-    robj   = RenderObject(data, shader)
-
-    postrender!(robj, render, robj.vertexarray, GL_TRIANGLES)
-    prerender!(robj,
-        glEnable    , GL_DEPTH_TEST, 
-        glEnable    , GL_BLEND, 
-        glBlendFunc , GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
-        glEnable    , GL_CULL_FACE,
-        glCullFace  , GL_FRONT
-    )
-    robj
+    std_renderobject(data, shader)
 end

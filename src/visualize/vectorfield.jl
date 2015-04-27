@@ -1,4 +1,4 @@
-const VectorfieldDefaults = @compat Dict(
+visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 3}), ::Style) = @compat Dict(
     :primitive      => GLNormalMesh(Cube(Vec3(-0.1,-0.1,-0.5), Vec3(0.1, 0.1, 0.5))),
     :boundingbox    => AABB(Vec3(-1), Vec3(1)),
     :norm           => Vec2(-1,1),
@@ -8,11 +8,7 @@ const VectorfieldDefaults = @compat Dict(
     :color_ramp     => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)]
 )
 
-visualize(positions::Array{Vector3{Float32}, 3}, s=Style{:Default}(); kw_args...) = 
-    visualize(s, positions, merge(VectorfieldDefaults, Dict{Symbol, Any}(kw_args)))
-
-
-function visualize(::Style{:Default}, vectorfield::Texture{Vector3{Float32}, 3}, customizations=VectorfieldDefaults)
+function visualize(vectorfield::Texture{Vector3{Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
     @materialize! screen, color_ramp, primitive, boundingbox = customizations
     camera       = screen.perspectivecam
     data = merge(@compat(Dict(
@@ -31,13 +27,7 @@ function visualize(::Style{:Default}, vectorfield::Texture{Vector3{Float32}, 3},
         File(shaderdir, "standard.frag"), 
     )
 
-    robj = instancedobject(data, length(vectorfield), program, GL_TRIANGLES)
-    prerender!(robj, 
-        glEnable,       GL_DEPTH_TEST, 
-        glDepthFunc,    GL_LEQUAL, 
-        glDisable,      GL_CULL_FACE, 
-        enabletransparency)
-    robj
+    instanced_renderobject(data, length(vectorfield), program)
 end
 
 let texture_parameters = [
@@ -47,9 +37,9 @@ let texture_parameters = [
     (GL_TEXTURE_WRAP_T,  GL_CLAMP_TO_EDGE),
     (GL_TEXTURE_WRAP_R,  GL_CLAMP_TO_EDGE),
   ]
-function visualize(s::Style, vectorfield::Array{Vector3{Float32}, 3}, customizations=VectorfieldDefaults)
+function visualize(vectorfield::Array{Vector3{Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
     _norm = map(norm, vectorfield)
     customizations[:norm] = Vec2(minimum(_norm), maximum(_norm))
-    visualize(s, Texture(vectorfield, parameters=texture_parameters), customizations)
+    visualize(Texture(vectorfield, parameters=texture_parameters), s, customizations)
 end
 end
