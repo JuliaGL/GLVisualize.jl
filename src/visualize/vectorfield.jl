@@ -1,10 +1,7 @@
-visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 3}), ::Style) = @compat Dict(
-    :primitive      => GLNormalMesh(Cube(Vec3(-0.1,-0.1,-0.5), Vec3(0.1, 0.1, 0.5))),
+visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 3}), ::Style, kw_args) = @compat Dict(
+    :primitive      => GLNormalMesh(Cube(Vec3(0), Vec3(0.1, 0.1, 1.0))),
     :boundingbox    => AABB(Vec3(-1), Vec3(1)),
     :norm           => Vec2(-1,1),
-    :model          => Input(eye(Mat4)),
-    :light          => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]), 
-    :screen         => ROOT_SCREEN, 
     :color_ramp     => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)]
 )
 

@@ -48,20 +48,24 @@ mat4 getmodelmatrix(vec3 xyz, vec3 scale)
       vec4(xyz, 1));
 }
 
-const vec3 up = vec3(0,1,0);
+mat4 rotationmatrix_z(float angle)
+{
+    return mat4(
+        cos(angle), -sin(angle), 0, 0,
+        sin(angle), cos(angle), 0,  0,
+        0, 0, 1, 0,
+        0, 0, 0, 1);
+}
+
+const vec3 up = vec3(0,0,1);
+
 mat4 rotation(vec3 direction)
 {
-    mat4 viewMatrix = mat4(1.0);
-
-    if(direction == up)
-    {
-        return viewMatrix;
+    direction = normalize(direction);
+    if (up == direction) {
+        return mat4(1.0);
     }
-    viewMatrix[0] = vec4(normalize(direction), 0);
-    viewMatrix[1] = vec4(normalize(cross(up, viewMatrix[0].xyz)), 0);
-    viewMatrix[2] = vec4(normalize(cross(viewMatrix[0].xyz, viewMatrix[1].xyz)), 0);
-    
-    return viewMatrix;
+    return rotationmatrix_z(acos(dot(direction, up)));
 }
 
 
@@ -92,6 +96,11 @@ vec2 linear_index(ivec2 dims, int index)
     ivec2 index2D    = ind2sub(dims, index);
     return vec2(index2D) / vec2(dims);
 }
+vec2 linear_index(ivec2 dims, int index, vec2 offset)
+{
+    vec2 index2D    = vec2(ind2sub(dims, index))+offset;
+    return index2D / vec2(dims);
+}
 vec3 linear_index(ivec3 dims, int index)
 {
     ivec3 index3D = ind2sub(dims, index);
@@ -117,6 +126,10 @@ vec4 getindex(sampler2D tex, int index)
 {
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
+vec4 getindex(sampler3D tex, int index)
+{
+    return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
+}
 
 //Implicit grid in a Cube via a 3D array
 vec3 position(AABB cube, ivec3 dims, int index)
@@ -137,7 +150,7 @@ vec3 position(Rectangle rectangle, ivec2 dims, int index)
 
 vec4 color(float intensity, sampler1D color_ramp, vec2 norm)
 {
-    return texture(color_ramp, intensity/34);
+    return texture(color_ramp, normalize(intensity, norm.x, norm.y));
 }
 
 out vec3 o_normal;

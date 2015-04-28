@@ -21,10 +21,6 @@ import Base: merge, convert, show
 
 
 
-visualize(value, s=Style{:Default}(); kw_args...) 		   = visualize(value, s, merge(visualize_default(value, s), Dict{Symbol, Any}(kw_args)))
-visualize(signal::Signal, s=Style{:Default}(); kw_args...) = visualize(signal, s, merge(visualize_default(signal.value, s), Dict{Symbol, Any}(kw_args)))
-
-
 include("meshutil.jl")
 
 const sourcedir = Pkg.dir("GLVisualize", "src")
@@ -32,13 +28,18 @@ const shaderdir = joinpath(sourcedir, "shader")
 
 
 include(joinpath(     sourcedir, "utils.jl"))
+export loop
+export bounce
+
 include(joinpath(     sourcedir, "types.jl"))
 include_all(joinpath( sourcedir, "display"))
+
+include(joinpath(     sourcedir, "visualize_interface.jl"))
+
 include(joinpath(     sourcedir, "color.jl"))
 include_all(joinpath( sourcedir, "share"))
 include_all(joinpath( sourcedir, "edit"))
 include_all(joinpath( sourcedir, "visualize"))
-include(joinpath(     sourcedir, "visualize_interface.jl"))
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
 export renderloop 

@@ -88,9 +88,12 @@ end
 
 const time_i = Input(1)
 
-const positions = lift(send_frame, time_i, Input(planets))
-const robj = visualize(positions)
+const positions     = lift(send_frame, time_i, Input(planets))
+const robj          = visualize(positions, model=scalematrix(Vec3(0.1f0)))
+const planet_lines  = [visualize(vec(planets[:, i]), :dots, particle_color=RGBAU8[rgbaU8(rand(3)...,1)]) for i=1:4]
+
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
+append!(GLVisualize.ROOT_SCREEN.renderlist, planet_lines)
 
 
 @async renderloop()

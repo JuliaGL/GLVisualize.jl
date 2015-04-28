@@ -14,7 +14,7 @@ function merge{N, M <: Mesh}(m::NTuple{N, M})
         append!(v, vertices(elem))
     end
     attribs = merge(map(attributes, m)) # merge all attributes
-    return M(v, f, attribs)
+    return Mesh(v, f, attribs)
 end
 function merge{N, A <: UVAttribute}(m::NTuple{N, A})
     a = first(m)
@@ -32,6 +32,8 @@ function merge{N, A <: NormalAttribute}(m::NTuple{N, A})
     end
     return A(uv)
 end
+
+
 function merge{N, A <: UVWAttribute}(m::NTuple{N, A})
     a = first(m)
     uvw = a.uvw
@@ -51,6 +53,13 @@ function collect_for_gl(m::GLUVMesh)
         :uv => GLBuffer(attributes(m).uv),
     )
 end
+function collect_for_gl(m::GLUVMesh2D)
+    @compat Dict(
+        :vertex => GLBuffer(vertices(m)),
+        :_ => indexbuffer(faces(m)),
+        :uv => GLBuffer(attributes(m).uv),
+    )
+end
 function collect_for_gl(m::GLUVWMesh)
     @compat Dict(
         :vertex => GLBuffer(vertices(m)),
@@ -63,6 +72,15 @@ function collect_for_gl(m::GLUVMesh2D)
         :vertex => GLBuffer(vertices(m)),
         :_      => indexbuffer(faces(m)),
         :uv    => GLBuffer(attributes(m).uv),
+    )
+end
+function collect_for_gl(m::GLNormalAttributeMesh)
+    @compat Dict(
+        :vertex         => GLBuffer(vertices(m)),
+        :normal         => GLBuffer(attributes(m).normal),
+        :_              => indexbuffer(faces(m)),
+        :attribute_id   => GLBuffer(attributes(m).attribute_id),
+        :attributes     => Texture(attributes(m).attributes),
     )
 end
 function collect_for_gl(m::GLNormalMesh)
@@ -84,16 +102,13 @@ immutable Quad{T}
 	height::Vector3{T}
 end
 
-function normal(q::Quad)
-    normal = normalize(cross(q.width, q.height))
-    Vector3{T}[normal for i=1:4]
-end
 
 function convert{T1, T2}(::Type{Normal3{T1}}, q::Quad{T2})
 	T = use_concrete(T1, T2)
 	normal = normalize(cross(q.width, q.height))
     Normal3{T}[normal for i=1:4]
 end
+
 function convert{T1, T2}(uv::Type{UV{T1}}, q::Quad{T2})
 	T = use_concrete(T1, T2)
 	uv = UV{T}[
@@ -103,6 +118,7 @@ function convert{T1, T2}(uv::Type{UV{T1}}, q::Quad{T2})
         UV{T}(1, 1)
     ]
 end
+
 function convert{T1, T2}(uvw::Type{UVW{T1}}, q::Quad{T2})
     T = use_concrete(T1, T2)
     v = UVW{T}[
@@ -114,11 +130,13 @@ function convert{T1, T2}(uvw::Type{UVW{T1}}, q::Quad{T2})
 end
 
 convert(::Type{PlainMesh}, q::Any) = MeshIO.PLAIN
+
 function convert{ATTRIB <: HomogenousAttributes}(::Type{ATTRIB}, q::Union(Quad, Rectangle))
 	ATTRIB(map(attributelist(ATTRIB)) do attrib
 		convert(attrib, q)
 	end...)
 end
+
 function convert{M <: Mesh, T}(::Type{M}, q::Quad{T})
     v = Vector3{T}[
         q.downleft,
@@ -127,7 +145,8 @@ function convert{M <: Mesh, T}(::Type{M}, q::Quad{T})
         q.downleft + q.width
     ]
     faces = [Triangle{T}(0,1,2), Triangle{T}(2,3,0)]
-    M(v, faces, convert(attributes(M), q))
+    a = convert(attributes(M), q)
+    M(v, faces, a)
 end
 
 
@@ -168,6 +187,29 @@ function convert{ET, IT, A}(::Type{Mesh{Point2{ET}, Triangle{IT}, A}}, r::Rectan
     a = convert(A, r)
     Mesh{Point2{ET}, Triangle{IT}, A}(vertices, faces, a)
 end
+
+function Base.merge{N, A <: NormalColorAttribute}(m::NTuple{N, A})
+    a = first(m)
+    normal  = a.normal
+    color   = [RGBAU8(a.color)]
+    index   = Float32[length(color)-1 for i=1:length(a.normal)]
+    for elem in m[2:end]
+        append!(normal, elem.normal)
+        push!(color, elem.color)
+        append!(index, Float32[length(color)-1 for i=1:length(elem.normal)])
+    end
+    return NormalGenericAttribute(normal, index, color)
+end
+
+function call{M <: Mesh}(::Type{M}, a::(Any, Any))
+    mesh = Mesh(a[1], a[2])
+end
+function call(::Type{GLNormalColorMesh}, a, b::Color)
+    mesh = Mesh{Point3{Float32}, Triangle{Uint32}, NormalAttribute{Normal3{Float32}}}(a)
+    attrib = NormalColorAttribute(mesh.attributes.normal, b)
+    GLNormalColorMesh(vertices(mesh), faces(mesh), attrib)
+end
+
 
 #=
 function RandSphere()
