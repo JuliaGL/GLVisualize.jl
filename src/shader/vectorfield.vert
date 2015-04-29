@@ -6,8 +6,8 @@ struct AABB
     vec3 max;
 };
 
-in vec3 vertex;
-in vec3 normal;
+in vec3 vertices;
+in vec3 normals;
 
 uniform vec3 light[4];
 uniform sampler3D vectorfield;
@@ -19,7 +19,7 @@ uniform vec3 cube_max;
 
 uniform mat4 view, model, projection;
 
-void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
+void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
 vec3 position(AABB cube, ivec3 dims, int index);
 vec4 getindex(sampler3D tex, int index);
@@ -35,7 +35,7 @@ void main()
     mat4 trans          = getmodelmatrix(pos, vec3(0.1));
     float intensity     = length(direction);
     vec4 instance_color = vec4(direction, 1);
-    render((rot*vec4(vertex, 1)).xyz, normal, instance_color, view*trans, projection, light);
+    render((rot*vec4(vertices, 1)).xyz, normals, instance_color, view*trans, projection, light);
 }
 
 

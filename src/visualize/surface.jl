@@ -17,7 +17,6 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
 end
 
 function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations=visualize_defaults(grid, s))
-    println("ima here")
     @materialize! screen, color_ramp, primitive, model = customizations
     camera       = screen.perspectivecam
     data = merge(@compat(Dict(
@@ -32,3 +31,30 @@ function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations
     instanced_renderobject(data, length(grid), program)
 end
 
+visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, style=:default; kw_args...) = visualize(x,y,z, Style{style}(), visualize_default(z, style, kw_args))
+
+
+function visualize{T <: Input{Matrix{Float32}}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z.value, s))
+    xt, yt, zt = Texture(x.value), Texture(y.value), Texture(z.value)
+    lift(update!, xt, x); lift(update!, yt, y); lift(update!, yt, y)
+    visualize(xt, yt, zt, s, customizations)
+end
+visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s)) = 
+    visualize(Texture(x),Texture(y), Texture(z), s, customizations)
+
+function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s))
+    @materialize! screen, color_ramp, primitive, model = customizations
+    camera       = screen.perspectivecam
+    data = merge(@compat(Dict(
+        :x              => x,
+        :y              => y,
+        :z              => z,
+        :color_ramp     => Texture(color_ramp),
+
+        :projection     => camera.projection,
+        :viewmodel      => lift(*, camera.view,model),
+    )), collect_for_gl(primitive), customizations)
+
+    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "surface2.vert"), File(shaderdir, "standard.frag"))
+    instanced_renderobject(data, length(x), program)
+end

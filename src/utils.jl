@@ -6,8 +6,6 @@ function include_all(folder::String)
   end
 end
 
-
-
 function Base.split(condition::Function, associative::Associative)
   A = similar(associative)
   B = similar(associative)
@@ -20,6 +18,7 @@ function Base.split(condition::Function, associative::Associative)
   end
   A, B
 end
+
 
 macro visualize_gen(input, target)
     esc(quote 
@@ -39,9 +38,11 @@ function fold_loop(v0, v1)
   v0 == last(range) && return first(range) 
   v0+step(range)
 end
+
 function loop(range::Range, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open])
   foldl(fold_loop, first(range), lift(tuple, fpswhen(stop_when, fps), range))
 end
+
 function fold_bounce(v0, v1)
   _, range = v1
   val, direction = v0
@@ -52,6 +53,7 @@ function fold_bounce(v0, v1)
   end
   (val, direction)
 end
+
 function bounce{T}(range::Range{T}, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open])
   lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, fpswhen(stop_when, fps), range)))
 end

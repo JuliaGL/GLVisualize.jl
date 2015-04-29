@@ -11,14 +11,16 @@ visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::Style, kw
 function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize_defaults(grid, s))
     @materialize! screen, color_ramp, primitive, model = customizations
     camera       = screen.perspectivecam
+    msh = collect_for_gl(primitive)
+    println(msh)
     data = merge(@compat(Dict(
         :y_scale        => grid,
         :color_ramp     => Texture(color_ramp),
 
         :projection     => camera.projection,
         :viewmodel      => lift(*, camera.view, model),
-    )), collect_for_gl(primitive), customizations)
+    )), msh, customizations)
 
-    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "position.vert"), File(shaderdir, "standard.frag"))
+    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "meshgrid.vert"), File(shaderdir, "standard.frag"))
     instanced_renderobject(data, length(grid), program)
 end
