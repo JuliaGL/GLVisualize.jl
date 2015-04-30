@@ -1,7 +1,5 @@
 
-RGBAU8 = RGBA{Ufixed8}
-rgba(r::Real, g::Real, b::Real, a::Real)   = RGBA{Float32}(r,g,b,a)
-rgbaU8(r::Real, g::Real, b::Real, a::Real) = RGBA{Ufixed8}(r,g,b,a)
+
 
 #GLPlot.toopengl{T <: AbstractRGB}(colorinput::Input{T}) = toopengl(lift(x->AlphaColorValue(x, one(T)), RGBA{T}, colorinput))
 #tohsva(rgba)     = HSVA(convert(HSV, rgba.c), rgba.alpha)

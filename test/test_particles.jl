@@ -1,4 +1,4 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive
 
 const N1 = 100
 const N2 = 300

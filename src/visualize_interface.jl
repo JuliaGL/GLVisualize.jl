@@ -15,6 +15,6 @@ function visualize_default(value::Any, style::Symbol, kw_args::Vector{Any}, defa
 	merge(parameters_calculated, parameters_dict)
 end
 
-visualize(value::Any, 	  style=:default; kw_args...) = visualize(value,  Style{style}(), visualize_default(value, 	      style, kw_args))
-visualize(signal::Signal, style=:default; kw_args...) = visualize(signal, Style{style}(), visualize_default(signal.value, style, kw_args))
-visualize(file::File, 	  style=:default; kw_args...) = visualize(read(file), style; kw_args...)
+visualize(value::Any, 	  style::Symbol=:default; kw_args...) = visualize(value,  Style{style}(), visualize_default(value, 	      style, kw_args))
+visualize(signal::Signal, style::Symbol=:default; kw_args...) = visualize(signal, Style{style}(), visualize_default(signal.value, style, kw_args))
+visualize(file::File, 	  style::Symbol=:default; kw_args...) = visualize(read(file), style; kw_args...)

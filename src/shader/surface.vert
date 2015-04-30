@@ -5,7 +5,7 @@ struct Rectangle
     vec2 width;
 };
 
-in vec2 vertex;
+in vec2 vertices;
 
 uniform vec3 light[4];
 uniform sampler1D color_ramp;
@@ -21,7 +21,7 @@ uniform vec3 scale;
 
 uniform mat4 viewmodel, projection;
 
-void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
+void render(vec3 vertices, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 ivec2 ind2sub(ivec2 dim, int linearindex);
 vec2 linear_index(ivec2 dims, int index, vec2 offset);
 vec3 position(Rectangle rectangle, ivec2 dims, int index);
@@ -78,11 +78,11 @@ void main()
 {
 	ivec2 dims 		= textureSize(z, 0);
 	vec3 pos 		= position(Rectangle(grid_min, grid_max), dims, gl_InstanceID);
-	float intensity = linear_texture(z, gl_InstanceID, vertex).x;
-	pos += vec3(vertex*scale.xy, intensity);
+	float intensity = linear_texture(z, gl_InstanceID, vertices).x;
+	pos += vec3(vertices*scale.xy, intensity);
 
 	vec4 instance_color = color(intensity, color_ramp, color_norm);
-	vec3 normalvec = getnormal(z, linear_index(dims, gl_InstanceID, vertex));
+	vec3 normalvec = getnormal(z, linear_index(dims, gl_InstanceID, vertices));
 	render(pos, normalvec, instance_color, viewmodel, projection, light);
 }
 

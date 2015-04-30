@@ -1,6 +1,6 @@
 visualize_default(::Mesh, ::Style, kw_args...) = Dict{Symbol, Any}()
 
-visualize(mesh::Mesh, s::Style, customizations=visualize_default(mesh, s)) = visualize(convert(GLNormalMesh, mesh), customizations)
+#visualize(mesh::Mesh, s::Style, customizations=visualize_default(mesh, s)) = visualize(convert(GLNormalMesh, mesh), s, customizations)
 
 function visualize(mesh::GLNormalMesh, s::Style, customizations=visualize_default(mesh, s))
     @materialize! screen, model = customizations

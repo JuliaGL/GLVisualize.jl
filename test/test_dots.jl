@@ -1,5 +1,4 @@
-
-using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive, ModernGL
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ModernGL
 
 
 const randrange = -0.01f0:eps(Float32):0.01f0

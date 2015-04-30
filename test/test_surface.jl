@@ -1,4 +1,4 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, Meshes
 
 const N = 128
 function send_frame(i)
