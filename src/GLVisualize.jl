@@ -14,6 +14,7 @@ using Compat
 using FixedPointNumbers
 using ImageIO
 using FileIO
+using MeshIO
 using Meshes
 
 import Mustache

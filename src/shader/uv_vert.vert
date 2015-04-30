@@ -1,5 +1,5 @@
 {{GLSL_VERSION}}
-
+{{GLSL_EXTENSIONS}}
 in vec2 vertices;
 in vec2 texturecoordinates;
 

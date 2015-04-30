@@ -1,4 +1,4 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, Meshes
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, Meshes, MeshIO
 
 function funcy(x,y,z)
     Vec3(sin(x),cos(y),tan(z))

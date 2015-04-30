@@ -1,5 +1,5 @@
 {{GLSL_VERSION}}
-
+{{GLSL_EXTENSIONS}}
 struct AABB
 {
     vec3 min;

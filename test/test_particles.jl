@@ -1,4 +1,4 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes
 
 const N1 = 100
 const N2 = 300
@@ -26,7 +26,7 @@ const time_i = foldl(framefunc, 1f0, fpswhen(GLVisualize.ROOT_SCREEN.inputs[:ope
 
 const positions = lift(send_frame, time_i)
 
-const robj 		= visualize(positions, model=scalematrix(Vec3(0.03f0)))
+const robj = visualize(positions, particle_color=RGBA(rand(Float32,3)..., 1f0), model=scalematrix(Vec3(0.03f0)))
 
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 

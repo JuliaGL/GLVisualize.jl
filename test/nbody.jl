@@ -1,5 +1,5 @@
 using ODE
-using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive
+using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive, ColorTypes
 
 function F(t,y)
     
@@ -69,7 +69,7 @@ end
     
 #Solve the system
 tf = 50
-stepsPerUnitTime = 5000
+stepsPerUnitTime = 500
 tspan = linspace(0,tf,tf*stepsPerUnitTime)
 t,y = ode23s(F, y0, tspan; points=:specified);
 
@@ -87,10 +87,11 @@ function send_frame(i, planets)
 end
 
 const time_i = Input(1)
-
+println(size(planets[:, 1]))
 const positions     = lift(send_frame, time_i, Input(planets))
 const robj          = visualize(positions, model=scalematrix(Vec3(0.1f0)))
-const planet_lines  = [visualize(vec(planets[:, i]), :dots, particle_color=RGBAU8[rgbaU8(rand(3)...,1)]) for i=1:4]
+len = length(planets[:, 1])
+const planet_lines  = [visualize(reshape(planets[:, i], (250, 100)), particle_color=RGBA(rand(Float32,3)..., 0.4f0), model=scalematrix(Vec3(0.01f0))) for i=1:4]
 
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 append!(GLVisualize.ROOT_SCREEN.renderlist, planet_lines)

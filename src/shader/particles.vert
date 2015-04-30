@@ -1,5 +1,5 @@
 {{GLSL_VERSION}}
-
+{{GLSL_EXTENSIONS}}
 in vec3 vertices;
 in vec3 normals;
 

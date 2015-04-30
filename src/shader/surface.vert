@@ -1,4 +1,5 @@
 {{GLSL_VERSION}}
+{{GLSL_EXTENSIONS}}
 struct Rectangle
 {
     vec2 origin;

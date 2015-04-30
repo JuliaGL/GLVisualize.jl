@@ -25,15 +25,15 @@ float stretch(float val, float from, float to)
     return from + (val * (to - from));
 }
 
-float normalize(float val, float from, float to)
+float _normalize(float val, float from, float to)
 {
     return (val-from) / (to - from);
 }
-float normalize(vec2 val, vec2 from, vec2 to)
+vec2 _normalize(vec2 val, vec2 from, vec2 to)
 {
     return (val-from) * (to - from);
 }
-float normalize(vec3 val, vec3 from, vec3 to)
+vec3 _normalize(vec3 val, vec3 from, vec3 to)
 {
     return (val-from) * (to - from);
 }
@@ -150,7 +150,7 @@ vec3 position(Rectangle rectangle, ivec2 dims, int index)
 
 vec4 color(float intensity, sampler1D color_ramp, vec2 norm)
 {
-    return texture(color_ramp, normalize(intensity, norm.x, norm.y));
+    return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
 
 out vec3 o_normal;

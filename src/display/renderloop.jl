@@ -20,16 +20,16 @@ end
 
 
 windowhints = [
-  (GLFW.SAMPLES,      0), 
-  (GLFW.DEPTH_BITS,   0), 
-  (GLFW.ALPHA_BITS,   0), 
-  (GLFW.STENCIL_BITS, 0),
-  (GLFW.AUX_BUFFERS,  0)
+    (GLFW.SAMPLES,      0), 
+    (GLFW.DEPTH_BITS,   0), 
+    (GLFW.ALPHA_BITS,   0), 
+    (GLFW.STENCIL_BITS, 0),
+    (GLFW.AUX_BUFFERS,  0)
 ]
 
 const ROOT_SCREEN = createwindow("Romeo", 1920, 1280, windowhints=windowhints, debugging=false)
 insert_selectionquery!(:mouse_hover, lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
-  Rectangle{Int}(mpos[1], mpos[2], 1,1)
+    Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
 end)
 
 
