@@ -1,5 +1,5 @@
 visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 3}), ::Style, kw_args) = @compat Dict(
-    :primitive      => GLNormalMesh(Cube(Vec3(0), Vec3(0.1, 0.1, 1.0))),
+    :primitive      => GLNormalMesh(Cube(Vec3(-0.05,-0.05, -0.5), Vec3(0.05,0.05, 0.5))),
     :boundingbox    => AABB(Vec3(-1), Vec3(1)),
     :norm           => Vec2(-1,1),
     :color_ramp     => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)]

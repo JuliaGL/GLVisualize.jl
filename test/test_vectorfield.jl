@@ -5,7 +5,7 @@ function funcy(x,y,z)
 end
  
 N = 7
-const directions  = Vec3[Vec3(1,0,0) for x=1:N,y=1:N, z=1:N]
+const directions  = Vec3[funcy(x,y,z) for x=1:N,y=1:N, z=1:N]
 dirlen 	= 1f0
 baselen = 0.02f0
 axis 	= [

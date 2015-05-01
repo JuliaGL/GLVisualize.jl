@@ -56,18 +56,41 @@ mat4 rotationmatrix_z(float angle)
         0, 0, 1, 0,
         0, 0, 0, 1);
 }
+mat4 rotationmatrix_y(float angle)
+{
+    return mat4(
+        cos(angle), 0, sin(angle), 0,
+        0, 1, 0, 0,
+        -sin(angle), 0, cos(angle), 0,
+        0, 0, 0, 1);
+}
 
-const vec3 up = vec3(0,0,1);
+const vec3 UP_VECTOR = vec3(0,0,1);
 
 mat4 rotation(vec3 direction)
 {
     direction = normalize(direction);
-    if (up == direction) {
-        return mat4(1.0);
-    }
-    return rotationmatrix_z(acos(dot(direction, up)));
-}
+    mat4 rot = mat4(1.0);
+    if(direction == UP_VECTOR)
+        return rot;
+    vec3 xaxis = normalize(cross(UP_VECTOR, direction));
 
+    vec3 yaxis = normalize(cross(direction, xaxis));
+
+    rot[0][0] = xaxis.x;
+    rot[1][0] = yaxis.x;
+    rot[2][0] = direction.x;
+
+    rot[0][1] = xaxis.y;
+    rot[1][1] = yaxis.y;
+    rot[2][1] = direction.y;
+
+    rot[0][2] = xaxis.z;
+    rot[1][2] = yaxis.z;
+    rot[2][2] = direction.z;
+
+    return rot;
+}
 
 mat4 translate_scale(vec3 xyz, vec3 scale)
 {
