@@ -9,11 +9,12 @@ const directions  = Vec3[funcy(x,y,z) for x=1:N,y=1:N, z=1:N]
 dirlen 	= 1f0
 baselen = 0.02f0
 axis 	= [
-	GLNormalColorMesh(GLNormalMesh(Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen))), RGBA(1f0,0f0,0f0,1f0)), 
-	GLNormalColorMesh(GLNormalMesh(Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen))), RGBA(0f0,1f0,0f0,1f0)), 
-	GLNormalColorMesh(GLNormalMesh(Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen))), RGBA(0f0,0f0,1f0,1f0))
+	(Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
+	(Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+	(Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
 ]
-
+axis = map(GLNormalMesh, axis)
+println(typeof(axis))
 axis 	= merge(axis)
 
 robj1 	= visualize(axis)
