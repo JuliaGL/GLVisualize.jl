@@ -24,7 +24,7 @@ function visualize(vectorfield::Texture{Vector3{Float32}, 3}, s::Style, customiz
         File(shaderdir, "standard.frag"), 
     )
 
-    instanced_renderobject(data, length(vectorfield), program)
+    instanced_renderobject(data, length(vectorfield), program, Input(boundingbox))
 end
 
 let texture_parameters = [

@@ -20,5 +20,5 @@ function visualize(intensities::Texture{Float32, 3}, s::Style, customizations=vi
     )), customizations, collect_for_gl(hull))
 
     shader = TemplateProgram(File(shaderdir, "volume.vert"), File(shaderdir, "volume.frag"))
-    std_renderobject(data, shader)
+    std_renderobject(data, shader, Input(AABB(hull.vertices)))
 end

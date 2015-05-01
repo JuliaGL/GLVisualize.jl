@@ -16,7 +16,7 @@ function visualize(positions::GLBuffer{Point3{Float32}}, s::Style{:dots}, custom
     )), customizations)
 
     program = TemplateProgram(File(shaderdir, "dots.vert"), File(shaderdir, "dots.frag"))
-    robj = std_renderobject(data, program, primitive=GL_POINTS)
+    robj = std_renderobject(data, program, Input(AABB(gpu_data(positions))), primitive=GL_POINTS)
     prerender!(robj, glPointSize, point_size)
     robj
 end

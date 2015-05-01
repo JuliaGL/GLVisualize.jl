@@ -16,7 +16,7 @@ function visualize(positions::Texture{Point3{Float32}, 2}, s::Style, customizati
     )), collect_for_gl(primitive), customizations)
 
     program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "particles.vert"), File(shaderdir, "standard.frag"))
-    instanced_renderobject(data, length(positions), program)
+    instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
 end
 
 

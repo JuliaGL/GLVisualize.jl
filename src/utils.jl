@@ -57,3 +57,4 @@ end
 function bounce{T}(range::Range{T}, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open])
   lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, fpswhen(stop_when, fps), range)))
 end
+

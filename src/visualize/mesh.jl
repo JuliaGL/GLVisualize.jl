@@ -11,7 +11,7 @@ function visualize(mesh::GLNormalMesh, s::Style, customizations=visualize_defaul
     )), collect_for_gl(mesh), customizations)
 
     shader  = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "standard.vert"), File(shaderdir, "standard.frag"))
-    std_renderobject(data, shader)
+    std_renderobject(data, shader, Input(AABB(mesh.vertices)))
 end
 
 function visualize(mesh::GLNormalAttributeMesh, s::Style, customizations=visualize_default(mesh, s))
@@ -22,5 +22,5 @@ function visualize(mesh::GLNormalAttributeMesh, s::Style, customizations=visuali
         :projection      => camera.projection,
     )), collect_for_gl(mesh), customizations)
     shader  = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "attribute_mesh.vert"), File(shaderdir, "standard.frag"))
-    std_renderobject(data, shader)
+    std_renderobject(data, shader, Input(AABB(mesh.vertices)))
 end
