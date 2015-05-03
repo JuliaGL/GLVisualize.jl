@@ -1,4 +1,4 @@
-
+#=
 COLOR_QUAD = genquad(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0))
 
 #GLPlot.toopengl{T <: AbstractRGB}(colorinput::Input{T}) = toopengl(lift(x->AlphaColorValue(x, one(T)), RGBA{T}, colorinput))
@@ -85,3 +85,4 @@ function color_chooser_boundingbox(obj)
   maxv = Vec3(model*Vec4(maximum(verts)...,0f0))
   AABB(minv,maxv)
 end
+=#

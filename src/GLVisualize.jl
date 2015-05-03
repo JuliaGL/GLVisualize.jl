@@ -16,7 +16,7 @@ using ImageIO
 using FileIO
 using MeshIO
 using Meshes
-
+using AbstractGPUArray
 import Mustache
 import Base: merge, convert, show
 
@@ -30,6 +30,7 @@ const shaderdir = joinpath(sourcedir, "shader")
 
 include(joinpath(     sourcedir, "utils.jl"))
 include(joinpath(     sourcedir, "boundingbox.jl"))
+
 export loop
 export bounce
 

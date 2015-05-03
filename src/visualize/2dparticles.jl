@@ -1,11 +1,11 @@
-visualize_default(::Union(Texture{Point3{Float32}, 2}, Array{Point3{Float32}, 2}), ::Style, kw_args...) = @compat(Dict(
-    :primitive      => GLNormalMesh(Cube(Vec3(0), Vec3(1))),
+visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}), ::Style, kw_args...) = @compat(Dict(
+    :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
     :particle_color => RGBA(1f0, 0f0, 0f0, 1f0),
 ))
 
 @visualize_gen Array{Point3{Float32}, 2} Texture
 
-function visualize(positions::Texture{Point3{Float32}, 2}, s::Style, customizations=visualize_default(positions, s))
+function visualize(positions::Texture{Point2{Float32}, 2}, s::Style, customizations=visualize_default(positions, s))
     @materialize! screen, primitive = customizations
     camera = screen.perspectivecam
     data = merge(@compat(Dict(
@@ -14,7 +14,7 @@ function visualize(positions::Texture{Point3{Float32}, 2}, s::Style, customizati
         :viewmodel       => camera.view,
     )), collect_for_gl(primitive), customizations)
 
-    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "particles.vert"), File(shaderdir, "standard.frag"))
+    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "particles2D.vert"), File(shaderdir, "distance_shape.frag"))
     instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
 end
 

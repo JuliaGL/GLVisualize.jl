@@ -1,3 +1,4 @@
+#=
 function creategrid(;xrange::(Real, Real)=(-1,1), yrange::(Real, Real)=(-1,1), zrange::(Real, Real)=(-1,1), camera=pcamera)
 	xyplane = genquad(Vec3(0, 0, 0), Vec3(1, 0, 0), Vec3(0, 1, 0))
 	zyplane = genquad(Vec3(0, 0, 0), Vec3(0, 0, 1.2), Vec3(0, 1, 0))
@@ -24,3 +25,4 @@ end
 
 export creategrid
 
+=#
