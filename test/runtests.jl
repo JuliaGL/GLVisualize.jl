@@ -28,6 +28,7 @@ grid[2,1] = directions
 grid[2,2] = volume_norm
 msh= GLNormalMesh(AABB(Vec3(-1), Vec3(1)))
 
+results = map(grid) do obj
 	trans = Input(eye(Mat4)) # get a handle to the translation matrix
 	(trans, visualize(obj, model=trans))
 end
