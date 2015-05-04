@@ -2,21 +2,25 @@
 {{GLSL_EXTENSIONS}}
 
 in vec2 vertices;
-in vec2 uv;
+in vec2 texturecoordinates;
 
 uniform vec3 light[4];
 uniform vec4 particle_color;
 
 uniform sampler2D positions;
 
-uniform mat4 viewmodel, projection, model;
-
-void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
+uniform mat4 projectionviewmodel;
 
 vec4 getindex(sampler2D tex, int index);
 
 
+out vec2 o_uv;
+out vec4 o_color;
+
+
 void main(){
-    vec3 vert = getindex(positions, gl_InstanceID).xy + (model*vec4(vertices, 1)).xy;
-    render(vert, vec3(0,1,0), particle_color, viewmodel, projection, light);
+    vec2 vert 		= getindex(positions, gl_InstanceID).xy + vertices*0.1;
+    o_uv 			= texturecoordinates;
+    o_color 		= particle_color;
+    gl_Position     = projectionviewmodel * vec4(vert,float(gl_InstanceID)/10000000.0,1); 
 }

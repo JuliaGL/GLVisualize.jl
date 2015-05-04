@@ -3,19 +3,18 @@ visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}
     :particle_color => RGBA(1f0, 0f0, 0f0, 1f0),
 ))
 
-@visualize_gen Array{Point3{Float32}, 2} Texture
+@visualize_gen Array{Point2{Float32}, 2} Texture
 
 function visualize(positions::Texture{Point2{Float32}, 2}, s::Style, customizations=visualize_default(positions, s))
-    @materialize! screen, primitive = customizations
+    @materialize! screen, primitive, model = customizations
     camera = screen.perspectivecam
     data = merge(@compat(Dict(
-        :positions       => positions,
-        :projection      => camera.projection,
-        :viewmodel       => camera.view,
+        :positions           => positions,
+        :projectionviewmodel => lift(*, camera.projectionview, model),
     )), collect_for_gl(primitive), customizations)
 
     program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "particles2D.vert"), File(shaderdir, "distance_shape.frag"))
-    instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
+    instanced_renderobject(data, length(positions), program)
 end
 
 
