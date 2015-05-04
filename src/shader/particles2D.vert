@@ -19,7 +19,7 @@ out vec4 o_color;
 
 
 void main(){
-    vec2 vert 		= getindex(positions, gl_InstanceID).xy + vertices*0.1;
+    vec2 vert 		= getindex(positions, gl_InstanceID).xy + vertices*0.01;
     o_uv 			= texturecoordinates;
     o_color 		= particle_color;
     gl_Position     = projectionviewmodel * vec4(vert,float(gl_InstanceID)/10000000.0,1); 

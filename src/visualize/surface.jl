@@ -26,7 +26,7 @@ function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations
         :color_ramp     => Texture(color_ramp),
 
         :projection     => camera.projection,
-        :viewmodel      => lift(*, camera.view,model),
+        :viewmodel      => lift(*, camera.view, model),
     )), collect_for_gl(primitive), customizations)
 
     bb = lift(particle_grid_bb, grid_min, grid_max, color_norm) # This is not accurate. color_norm doesn't need to reflect the real height. also it doesn't get recalculated when the texture changes.
@@ -61,7 +61,7 @@ function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface
         :color_ramp     => Texture(color_ramp),
 
         :projection     => camera.projection,
-        :viewmodel      => lift(*, camera.view,model),
+        :viewmodel      => lift(*, camera.view, model),
     )), collect_for_gl(primitive), customizations)
 
     min_x, min_y, min_z = minimum(x), minimum(y), minimum(z)

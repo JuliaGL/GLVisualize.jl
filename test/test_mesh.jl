@@ -1,5 +1,4 @@
 using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, Meshes, MeshIO
-
  
 function create_example_mesh()
     # volume of interest
@@ -23,11 +22,23 @@ function create_example_mesh()
     msh = GLNormalMesh(vol, 0.0f0)
     return msh
 end
+
 msh  = create_example_mesh()
-println(size(msh.faces))
-println(size(msh.vertices))
-println(size(msh.normals))
 robj = visualize(msh)
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
+
+dirlen 	= 1f0
+baselen = 0.02f0
+axis 	= [
+	(Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
+	(Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+	(Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+]
+axis = map(GLNormalMesh, axis)
+axis = merge(axis)
+
+robj1 	= visualize(axis)
+push!(GLVisualize.ROOT_SCREEN.renderlist, robj1)
+
 
 renderloop()
