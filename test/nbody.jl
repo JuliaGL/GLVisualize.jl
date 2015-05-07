@@ -97,8 +97,9 @@ push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 append!(GLVisualize.ROOT_SCREEN.renderlist, planet_lines)
 
 
-@async renderloop()
-
+@async renderloop() 
+# you can also "manually" push into the signal. For that the renderloop has to be started asynchronous
+# while the loop that updates the signal is the blocking one
 while GLVisualize.ROOT_SCREEN.inputs[:open].value
     yield()
     push!(time_i, mod1(time_i.value+1, size(planets,1)))
