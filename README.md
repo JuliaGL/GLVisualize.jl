@@ -5,6 +5,8 @@
 This is the successor of GLPlot, and will soon be the core of it.
 Right now it relies on a mixture of packages not in METADATA and different branches in these packages, so installation is a little tricky. But here is a script adding the packages and checking out the correct branches:
 ```Julia
+Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
+
 !isa(Pkg.installed("GLWindow"), VersionNumber) && Pkg.add("GLWindow")
 Pkg.checkout("GLWindow", "julia04")
 
