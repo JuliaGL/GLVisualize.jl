@@ -9,7 +9,6 @@ using ColorTypes
 using Reactive
 using GLFW
 using Quaternions
-using GLText
 using Compat
 using FixedPointNumbers
 using ImageIO

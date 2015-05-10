@@ -57,9 +57,3 @@ end
 function bounce{T}(range::Range{T}, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open])
   lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, fpswhen(stop_when, fps), range)))
 end
-
-makesignal(s::Signal) = s
-makesignal(v)         = Input(v)
-function Reactive.lift(f::Reactive.Callable, inputs...)
-    lift(f, map(makesignal, inputs)...)
-end

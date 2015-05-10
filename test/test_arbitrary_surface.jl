@@ -9,7 +9,7 @@ y = map(Float32, r*sin(t)')
 
 f(x,y)  = exp(-10x.^2-20y.^2)  # arbitrary function of f
 z       = Float32[Float32(f(x[k,j],y[k,j])) for k=1:size(x,1),j=1:size(x,2)]
-robj     = visualize(x, y, z, :surface)
+robj    = visualize(x, y, z, :surface)
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 
 renderloop()
