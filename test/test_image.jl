@@ -4,10 +4,8 @@ function play{T}(array::Array{T, 3}, slice)
 	array[:, :, slice]
 end
 
-
-
 img 	= read(file"test.gif")
-giff = lift(play, img.data, bounce(1:size(img, 3)))
+giff 	= lift(play, img.data, bounce(1:size(img, 3)))
 robj1 	= visualize(giff)
 
 robj2 	= visualize(file"drawing.jpg", model=translationmatrix(Vec3(0,1000,0)))

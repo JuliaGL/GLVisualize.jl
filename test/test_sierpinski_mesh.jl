@@ -1,0 +1,78 @@
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, Meshes, MeshIO
+importall Base
+
+immutable Pyramid{T}
+	middle::Point3{T}
+	length::T
+	width::T
+end
+typealias Point3f Point3{Float32}
+
+getindex{FT, IndexOffset}(r::Pyramid, T::Type{Face3{FT, IndexOffset}}) = T[
+    T(1,4,2)+IndexOffset, T(1,3,4)+IndexOffset, T(1,5,3)+IndexOffset, T(1,2,5)+IndexOffset,#sides
+    T(3,4,5)+IndexOffset, T(5,4,2)+IndexOffset
+]
+
+function getindex{PT}(p::Pyramid, T::Type{Point3{PT}})
+	leftup = T(p.width / 2, p.width / 2, 0)
+	leftdown = T(p.width / 2, -p.width / 2, 0)
+	T[
+	    T(p.middle + T(0,0,p.length)), #tip
+	    T(p.middle + leftup),
+	    T(p.middle - leftup),
+	    T(p.middle + leftdown),
+	    T(p.middle - leftdown)
+	]
+end
+function getindex{PT}(p::Pyramid, T::Type{Normal3{PT}})
+	T[
+	    T(0,0,1), #tip
+	    T(0,0,1),
+	    T(0,0,1),
+	    T(0,0,1),
+	    T(0,0,1),
+	]
+end
+
+function translate{T <: Pyramid}(a::T, offset::Point3)
+	T(a.middle+offset, a.length, a.width)
+end
+function scale{T <: Pyramid}(a::T, scale::Point3)
+	T(a.middle.*scale, a.length*scale.z, a.width*scale.x)
+end
+function sierpinski(n, positions=Point3{Float32}[])
+    if n == 0
+        push!(positions, Point3f(0))
+        positions
+    else
+        t = sierpinski(n - 1, positions)
+        for i=1:length(t)
+        	t[i] = t[i] * 0.5f0
+        end
+        t_copy = copy(t)
+        mv = (0.5^n * 2^n)/2f0
+        mw = (0.5^n * 2^n)/4f0
+        append!(t, [p + Point3f(mw, mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f(mw, -mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f(-mw, -mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f(-mw, mw, -mv) 	for p in t_copy])
+        t
+    end
+end
+const n = 9
+positions = sierpinski(n)
+pstride = 2048*2
+len = length(positions)
+if len % pstride != 0
+	append!(positions, fill(Point3f(typemax(Float32)), pstride-(len%pstride))) # append if can't be reshaped with 1024
+end
+positions = reshape(positions, (pstride, div(length(positions), pstride)))
+const robj = visualize(
+	positions, 
+	model 		= scalematrix(Vec3(0.5^n)), 
+	primitive 	= GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0))
+)
+
+push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
+
+renderloop()
