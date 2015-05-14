@@ -4,7 +4,17 @@ visualize_default(::Union(Texture{Point3{Float32}, 2}, Array{Point3{Float32}, 2}
 ))
 
 @visualize_gen Array{Point3{Float32}, 2} Texture
-
+#=
+function visualize(positions::Vector{Point3{Float32}}, s::Style, customizations=visualize_default(positions, s))
+    len         = length(positions)
+    estimate    = sqrt(len)
+    pstride     = 2048
+    if len % pstride != 0
+        append!(positions, fill(Point3f(typemax(Float32)), pstride-(len%pstride))) # append if can't be reshaped with 1024
+    end
+    positions = reshape(positions, (pstride, div(length(positions), pstride)))
+end
+=#
 function visualize(positions::Texture{Point3{Float32}, 2}, s::Style, customizations=visualize_default(positions, s))
     @materialize! screen, primitive = customizations
     camera = screen.perspectivecam

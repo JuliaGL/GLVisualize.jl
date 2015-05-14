@@ -28,7 +28,6 @@ const shaderdir = joinpath(sourcedir, "shader")
 
 include(joinpath(     sourcedir, "utils.jl"))
 include(joinpath(     sourcedir, "boundingbox.jl"))
-
 export loop
 export bounce
 
@@ -43,16 +42,10 @@ include_all(joinpath( sourcedir, "edit"))
 include_all(joinpath( sourcedir, "visualize"))
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
-export renderloop 
+export renderloop   # starts the renderloop
 export visualize    # Visualize an object
 export edit         # Edit an object
 
-export RGBAU8       # typealias for RGBA ufixed 8 value
-export rgba         # function for creating a rgba Float32 color
-export rgbaU8       # function for creating a rgba Ufixed8 color
-
-export tohsva       # Convert to HSVA
-export torgba       # Converts to RGBA
 
 
 end # module
