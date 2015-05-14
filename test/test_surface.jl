@@ -9,7 +9,7 @@ function xy(x,y,i)
 end
 generate(i) 		= Float32[xy(Float32(x),Float32(y),Float32(i)) for x=1:N, y=1:N]
 const heightfield 	= lift(generate, bounce(1f0:200f0))
-const robj 			= visualize(heightfield, :surface, color_norm=Vec2(-1, 1))
+const robj 			= visualize(heightfield, :surface, color_norm=Vec2(-0.5, 1))
 
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 
