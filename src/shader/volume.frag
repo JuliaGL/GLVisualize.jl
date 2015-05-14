@@ -151,6 +151,6 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 }
 void main()
 {
-    frag_color = volume(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+    frag_color = mip(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
 }
 
