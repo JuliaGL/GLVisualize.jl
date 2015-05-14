@@ -10,8 +10,9 @@
 | [![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/dots.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_dots.jl)|[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/barplot.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_barplot.jl)|[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/particles.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_particles.jl) |
 | --- | --- | --- | 
 | [![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/arbitrary_surf.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_arbitrary_surface.jl)|[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/image.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_image.jl)|[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/sierpinski.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_sierpinski_mesh.jl) | 
+Please click on the examples to see the code, which produced the image.
 
-This is the successor of GLPlot, and will soon be the core of it.
+This is basically the successor of GLPlot, and will soon be its new rendering core.
 Right now it relies on a mixture of packages not in METADATA and different branches in these packages, so installation is a little tricky. 
 But here is a script adding the packages and checking out the correct branches:
 ```Julia
