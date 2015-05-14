@@ -1,5 +1,5 @@
 visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 3}), ::Style, kw_args) = @compat Dict(
-    :primitive      => GLNormalMesh(Cube(Vec3(-0.05,-0.05, -0.5), Vec3(0.05,0.05, 0.5))),
+    :primitive      => GLNormalMesh(Pyramid(Point3{Float32}(0,0,-0.1), 0.2f0, 0.05f0)),
     :boundingbox    => AABB(Vec3(-1), Vec3(1)),
     :norm           => Vec2(-1,1),
     :color_ramp     => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)]
@@ -8,6 +8,7 @@ visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 
 function visualize(vectorfield::Texture{Vector3{Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
     @materialize! screen, color_ramp, primitive, boundingbox = customizations
     camera       = screen.perspectivecam
+    println(AABB(primitive.vertices))
     data = merge(@compat(Dict(
         :vectorfield    => vectorfield,
         :cube_min       => boundingbox.min,

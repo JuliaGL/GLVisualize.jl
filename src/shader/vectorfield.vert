@@ -37,10 +37,9 @@ void main()
     vec3 direction      = getindex(vectorfield, gl_InstanceID).xyz;
     mat4 rot            = rotation(direction);
     mat4 trans          = getmodelmatrix(pos, vec3(1.0));
-    mat4 scl          	= getmodelmatrix(vec3(0), vec3(0.1));
     float intensity     = length(direction);
     vec4 instance_color = color(intensity, color_ramp, norm);
-    render(vertices*vec3(0.5, 0.5, 0.3), normals, instance_color, view*trans*rot, projection, light);
+    render(vertices, normals, instance_color, view*trans*rot, projection, light);
 }
 
 
