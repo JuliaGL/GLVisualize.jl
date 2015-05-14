@@ -24,7 +24,9 @@ function create_example_mesh()
 end
 
 msh  = create_example_mesh()
-robj = visualize(msh)
+boundingbox = AABB(msh.vertices)
+scale = 1f0 / maximum(boundingbox.max - boundingbox.min)
+robj = visualize(msh, model=scalematrix(Vec3(scale))*translationmatrix(-boundingbox.min-Vec3(0.5)))
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 
 dirlen 	= 1f0

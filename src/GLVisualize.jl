@@ -1,5 +1,6 @@
 module GLVisualize
 
+using GLFW
 using GLWindow 
 using GLAbstraction
 using ModernGL
@@ -7,7 +8,6 @@ using FixedSizeArrays
 using GeometryTypes
 using ColorTypes
 using Reactive
-using GLFW
 using Quaternions
 using Compat
 using FixedPointNumbers
@@ -16,7 +16,6 @@ using FileIO
 using MeshIO
 using Meshes
 using AbstractGPUArray
-import Mustache
 import Base: merge, convert, show
 
 
@@ -54,13 +53,6 @@ export rgbaU8       # function for creating a rgba Ufixed8 color
 
 export tohsva       # Convert to HSVA
 export torgba       # Converts to RGBA
-
-# Surface Rendering
-export mix      # mix colors
-export SURFACE  # function that generates a Surface primitive for every datapoint, with an optional gap between the surfaces
-export CIRCLE   # function that generates Circular surface primitive for every datapoint
-export CUBE     # function that generates Cube primitives for every datapoint
-export POINT    # function that generates Point primitives for every datapoint
 
 
 end # module
