@@ -1,23 +1,17 @@
-#Base.depwarn(msg, funcsym)=error(msg, funcsym)
-
 using GLVisualize, AbstractGPUArray, GLAbstraction, MeshIO, GeometryTypes, Reactive
 
 const N = 128
-
-counter = 15.0f0
-function test(counter)
-	N
-	volume 	= Float32[sin(x/counter)+sin(y/counter)+sin(z/counter) for x=1:N, y=1:N, z=1:N]
-	counter += 1f0
-	max 	= maximum(volume)
-	min 	= minimum(volume)
-	volume 	= (volume .- min) ./ (max .- min)
-	volume
+volume 	= Float32[sin(x/15.0)+sin(y/15.0)+sin(z/15.0) for x=1:N, y=1:N, z=1:N]
+max 	= maximum(volume)
+min 	= minimum(volume)
+volume 	= (volume .- min) ./ (max .- min)
+#=
+using NPZ
+volume 	= map(npzread("mri.npz")["data"]) do x
+	Float32(x)/256f0
 end
-
-vol = lift(test, Input(20f0)) 
-
-obj = visualize(vol)
+=#
+obj = visualize(volume, mode=translationmatrix(Vec3(-0.5)))
 
 push!(GLVisualize.ROOT_SCREEN.renderlist, obj)
 
