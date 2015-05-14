@@ -1,6 +1,6 @@
 using GLVisualize, AbstractGPUArray, GLAbstraction, Meshes, GeometryTypes, Reactive
 
-const robj = visualize(rand(Float32, 50,50))
+const robj = visualize(Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:10, j=1:10])
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
 
 

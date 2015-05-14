@@ -1,25 +1,26 @@
 function include_all(folder::String)
-  for file in readdir(folder)
-    if endswith(file, ".jl")
-        include(joinpath(folder, file))
+    for file in readdir(folder)
+        if endswith(file, ".jl")
+            include(joinpath(folder, file))
+        end
     end
-  end
 end
 
+# Splits a dictionary in two dicts, via a condition
 function Base.split(condition::Function, associative::Associative)
-  A = similar(associative)
-  B = similar(associative)
-  for (key, value) in associative
-    if condition(key, value)
-      A[key] = value
-    else
-      B[key] = value
+    A = similar(associative)
+    B = similar(associative)
+    for (key, value) in associative
+        if condition(key, value)
+            A[key] = value
+        else
+            B[key] = value
+        end
     end
-  end
-  A, B
+    A, B
 end
 
-
+#creates methods to accept signals, which then gets transfert to an OpenGL target type
 macro visualize_gen(input, target)
     esc(quote 
         visualize(value::$input, s::Style, customizations=visualize_default(value, s)) = 
@@ -33,27 +34,26 @@ macro visualize_gen(input, target)
     end)
 end
 
-function fold_loop(v0, v1)
-  _, range = v1
-  v0 == last(range) && return first(range) 
-  v0+step(range)
+function fold_loop(v0, timediff_range)
+    _, range = timediff_range
+    v0 == last(range) && return first(range) 
+    v0+step(range)
 end
 
-function loop(range::Range, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open])
-  foldl(fold_loop, first(range), lift(tuple, fpswhen(stop_when, fps), range))
-end
+loop(range::Range, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open]) =
+    foldl(fold_loop, first(range), lift(tuple, fpswhen(stop_when, fps), range))
+
 
 function fold_bounce(v0, v1)
-  _, range = v1
-  val, direction = v0
-  val += step(range)*direction
-  if val > last(range) || val < first(range) 
+    _, range = v1
+    val, direction = v0
+    val += step(range)*direction
+    if val > last(range) || val < first(range) 
     direction = -direction
     val += step(range)*direction
-  end
-  (val, direction)
+    end
+    (val, direction)
 end
 
-function bounce{T}(range::Range{T}, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open])
-  lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, fpswhen(stop_when, fps), range)))
-end
+bounce{T}(range::Range{T}, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open]) = 
+    lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, fpswhen(stop_when, fps), range)))

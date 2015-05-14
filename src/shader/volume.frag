@@ -15,7 +15,7 @@ uniform mat4 model;
 
 uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
-const int view_samples = 124;
+const int view_samples = 256;
 const float max_distance = sqrt(2.0);
 
 const int num_samples = 256;
@@ -147,10 +147,10 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
             maximum = density;
         }
     }
-  return vec4(maximum);
+    return vec4(maximum);
 }
 void main()
 {
-    frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+    frag_color = mip(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
 }
 

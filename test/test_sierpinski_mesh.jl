@@ -25,18 +25,15 @@ function sierpinski(n, positions=Point3{Float32}[])
         t
     end
 end
-const n 	= 9
+const n 	= 8
 positions 	= sierpinski(n)
 
 len         = length(positions)
-println(len)
-estimate    = sqrt(len)
 pstride     = 2048
 if len % pstride != 0
     append!(positions, fill(Point3f(typemax(Float32)), pstride-(len%pstride))) # append if can't be reshaped with 1024
 end
 positions = reshape(positions, (pstride, div(length(positions), pstride)))
-
 const robj = visualize(
 	positions, 
 	model 		= scalematrix(Vec3(0.5^n)), 
