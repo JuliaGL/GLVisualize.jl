@@ -14,15 +14,15 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
     // specular coefficient
     vec3 H = normalize(L+V);
     
-    float spec_coeff = pow(max(dot(H,N), 0.0), 10.0);
+    float spec_coeff = pow(max(dot(H,N), 0.0), 8.0);
     if (diff_coeff <= 0.0)
         spec_coeff = 0.0;
 
     // final lighting model
     return  vec3(
-            vec3(0.1)  * vec3(0.1)  +
+            vec3(0.1)  * vec3(0.3)  +
             vec3(0.9)  * color * diff_coeff +
-            vec3(0.9) * spec_coeff);
+            vec3(0.3) * spec_coeff);
 }
 
 void main(){

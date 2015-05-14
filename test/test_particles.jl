@@ -3,11 +3,11 @@ using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, Col
 const N1 = 100
 const N2 = 300
 
-generate(x,i) = Point3{Float32}(	
-		sin(x/500)*3,
-		cos(x/50)*(i/(x/100))*2, 
-		cos(x/1000+(i/100))*2
-	)
+generate(x,i) = Point3{Float32}(
+	sin(x/500)*3,
+	cos(x/50)*(i/(x/100))*2, 
+	cos(x/1000+(i/100))*2
+)
 
 
 function update_data(i)

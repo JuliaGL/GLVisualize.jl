@@ -1,5 +1,6 @@
 visualize_default{T <: Color}(image::Union(Texture{T, 2}, Matrix{T}), ::Style, kw_args...) = @compat(
     Dict(:primitive  => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(image)...))))
+
 visualize_default(image::AbstractImage, s::Style, kw_args...) = visualize_default(image.data, s, kw_args...)
 
 visualize{T <: Color}(img::Array{T, 2}, s::Style, customizations=visualize_default(img, s)) = 
