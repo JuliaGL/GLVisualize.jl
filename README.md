@@ -1,7 +1,5 @@
 # GLVisualize
 
-[![Build Status](https://travis-ci.org/SimonDanisch/GLVisualize.jl.svg?branch=master)](https://travis-ci.org/SimonDanisch/GLVisualize.jl)
-
 
 |[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/vectorfield.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_vectorfield.jl)|[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/isosurface.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_isosurface.jl)|[![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/surface.jpg?raw=true)](https://github.com/JuliaGL/GLVisualize.jl/blob/master/test/test_surface.jl) | 
 | --- | --- | --- | 
