@@ -2,6 +2,15 @@
 
 [![Build Status](https://travis-ci.org/SimonDanisch/GLVisualize.jl.svg?branch=master)](https://travis-ci.org/SimonDanisch/GLVisualize.jl)
 
+
+![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/vectorfield.jpg?raw=true) |  ![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/vectorfield.jpg?raw=true)
+:-------------------------:|:-------------------------:
+![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/vectorfield.jpg?raw=true)  |  ![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/vectorfield.jpg?raw=true)
+
+
+
+
+
 This is the successor of GLPlot, and will soon be the core of it.
 Right now it relies on a mixture of packages not in METADATA and different branches in these packages, so installation is a little tricky. 
 But here is a script adding the packages and checking out the correct branches:
