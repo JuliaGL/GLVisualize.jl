@@ -1,4 +1,4 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, FileIO, ImageIO, ModernGL
+using GLVisualize
 
 n = 100
 h = 1./n

@@ -61,8 +61,8 @@ glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 
 
 lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
   if all(x->x>0, window_size)
-    resize!(COLOR_BUFFER, tuple(window_size...))
-    resize!(STENCIL_BUFFER, tuple(window_size...))
+    resize_nocopy!(COLOR_BUFFER, tuple(window_size...))
+    resize_nocopy!(STENCIL_BUFFER, tuple(window_size...))
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil[1])
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, (window_size)...)
   end 
@@ -81,10 +81,9 @@ function renderloop(screen)
   glBindFramebuffer(GL_FRAMEBUFFER, RENDER_FRAMEBUFFER)
   glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-  yield() 
-
+  
   render(screen)
-
+  yield() 
   #Read all the selection queries
   if !isempty(SELECTION_QUERIES)
     glReadBuffer(GL_COLOR_ATTACHMENT1)
