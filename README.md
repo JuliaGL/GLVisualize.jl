@@ -65,7 +65,7 @@ Pkg.checkout("Meshes", "meshes2.0")
 Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.jl.git")
 Pkg.checkout("AbstractGPUArray", "master")
 
-Pkg.clone("https://github.com/SimonDanisch/Packing.jl.git")
+Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
 Pkg.checkout("Packing", "master")
 
 Pkg.add("Cairo")
