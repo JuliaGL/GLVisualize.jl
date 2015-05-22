@@ -62,7 +62,7 @@ Pkg.checkout("MeshIO", "master")
 Pkg.add("Meshes")
 Pkg.checkout("Meshes", "meshes2.0")
 
-Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.git")
+Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.jl.git")
 Pkg.checkout("AbstractGPUArray", "master")
 
 Pkg.clone("https://github.com/SimonDanisch/Packing.jl.git")
