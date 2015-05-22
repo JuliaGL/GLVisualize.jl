@@ -65,4 +65,10 @@ Pkg.checkout("Meshes", "meshes2.0")
 Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.git")
 Pkg.checkout("AbstractGPUArray", "master")
 
+Pkg.clone("https://github.com/SimonDanisch/Packing.jl.git")
+Pkg.checkout("Packing", "master")
+
+Pkg.add("Cairo")
+Pkg.checkout("Cairo", "master")
+
 ```

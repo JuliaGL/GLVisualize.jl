@@ -16,6 +16,9 @@ using FileIO
 using MeshIO
 using Meshes
 using AbstractGPUArray
+using Packing
+using Cairo
+
 import Base: merge, convert, show
 
 
@@ -35,11 +38,13 @@ include(joinpath(     sourcedir, "types.jl"))
 include_all(joinpath( sourcedir, "display"))
 
 include(joinpath(     sourcedir, "visualize_interface.jl"))
+include(joinpath("texture_atlas", "texture_atlas.jl"))
 
 include(joinpath(     sourcedir, "color.jl"))
 include_all(joinpath( sourcedir, "share"))
 include_all(joinpath( sourcedir, "edit"))
 include_all(joinpath( sourcedir, "visualize"))
+
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
 export renderloop   # starts the renderloop
