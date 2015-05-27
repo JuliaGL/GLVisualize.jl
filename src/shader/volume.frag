@@ -16,13 +16,13 @@ uniform mat4 model;
 uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
 const int view_samples = 256;
-const float max_distance = sqrt(2.0);
+const float max_distance = sqrt(1.0);
 
-const int num_samples = 256;
+const int num_samples = 512;
 const float step_size = max_distance/float(num_samples);
 const int num_ligth_samples = 32;
 const float lscale = max_distance / float(num_ligth_samples);
-const float density_factor = 5;
+const float density_factor =9;
 
 
 
@@ -117,7 +117,7 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
         float density = texture(intensity, pos).x;
         if (density <= 0.0)
             continue;
-        if(abs(density - 0.3) < 0.01)
+        if(abs(density - 0.12) < 0.06)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
@@ -151,6 +151,6 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 }
 void main()
 {
-    frag_color = mip(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+    frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
 }
 

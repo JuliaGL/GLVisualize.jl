@@ -4,7 +4,8 @@ in vec3 vertices;
 in vec3 normals;
 
 uniform vec3 light[4];
-uniform vec4 particle_color;
+
+{{particle_color_type}} particle_color;
 
 uniform sampler2D positions;
 
@@ -16,6 +17,9 @@ vec4 getindex(sampler2D tex, int index);
 
 
 void main(){
-    vec3 vert = getindex(positions, gl_InstanceID).xyz + (model*vec4(vertices, 1)).xyz;
-    render(vert, normals, particle_color, viewmodel, projection, light);
+	int index = gl_InstanceID;
+    vec3 vert  = getindex(positions, index).xyz + (model*vec4(vertices, 1)).xyz;
+
+    vec4 color = {{particle_color_calculation}};
+    render(vert, normals, color, viewmodel, projection, light);
 }
