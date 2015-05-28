@@ -68,6 +68,9 @@ lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
   end 
 end
 
+
+postprocess_robj = postprocess(COLOR_BUFFER, ROOT_SCREEN)
+
 function renderloop()
   global ROOT_SCREEN
   while ROOT_SCREEN.inputs[:open].value
@@ -100,14 +103,11 @@ function renderloop(screen)
     end
   end
   yield() 
-
-  glReadBuffer(GL_COLOR_ATTACHMENT0)
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, RENDER_FRAMEBUFFER)
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
-  glClear(GL_COLOR_BUFFER_BIT)
   glDisable(GL_SCISSOR_TEST)
-  ROOT_SCREEN_size = screen.inputs[:framebuffer_size].value
-  glBlitFramebuffer(0,0, ROOT_SCREEN_size..., 0,0, ROOT_SCREEN_size..., GL_COLOR_BUFFER_BIT, GL_LINEAR)
+  glBindFramebuffer(GL_FRAMEBUFFER, 0)
+  glClear(GL_COLOR_BUFFER_BIT)
+
+  render(postprocess_robj)
   GLFW.SwapBuffers(screen.nativewindow)
   GLFW.PollEvents()
   yield() 
