@@ -9,7 +9,6 @@ generate(x,i) = Point3{Float32}(
 	cos(x/1000+(i/100))*2
 )
 
-
 function update_data(i)
     positions = [generate(x, i) for x=1:N1*N2]
 	reshape(positions, (N1, N2)) # needs to be 2D right now, as otherwise it can become to big for a texture very quickly. Will be automized at some point
