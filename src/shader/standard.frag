@@ -4,8 +4,11 @@ in vec3 o_normal;
 in vec3 o_lightdir;
 in vec3 o_vertex;
 in vec4 o_color;
+flat in uvec2 o_id;
 
 out vec4 fragment_color;
+out uvec2 fragment_groupid;
+
 
 vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
 {
@@ -31,4 +34,6 @@ void main(){
     vec3 light1 	= blinnphong(N, o_vertex, L, o_color.rgb);
     vec3 light2 	= blinnphong(N, o_vertex, -L, o_color.rgb);
     fragment_color 	= vec4(light1+light2*0.4, o_color.a);
+    if(fragment_color.a > 0.0)
+        fragment_groupid = o_id;
 }

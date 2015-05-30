@@ -173,7 +173,6 @@ vec3 position(Rectangle rectangle, ivec2 dims, int index)
 }
 
 
-
 vec4 color(float intensity, sampler1D color_ramp, vec2 norm)
 {
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
@@ -183,6 +182,8 @@ out vec3 o_normal;
 out vec3 o_lightdir;
 out vec3 o_vertex;
 out vec4 o_color;
+
+
 
 void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4])
 {
