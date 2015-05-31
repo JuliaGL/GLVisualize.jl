@@ -30,7 +30,7 @@ positions 	= sierpinski(n)
 
 len         = length(positions)
 pstride     = 2048
-if len % pstride != 0
+if len % pstride != 0 # sadly this is needed right now, as I have to put particles into a 2D texture. Will be automated
     append!(positions, fill(Point3f(typemax(Float32)), pstride-(len%pstride))) # append if can't be reshaped with 1024
 end
 positions = reshape(positions, (pstride, div(length(positions), pstride)))
