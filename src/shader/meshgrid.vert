@@ -24,7 +24,7 @@ uniform mat4 viewmodel, projection;
 void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
 vec3 position(Rectangle rectangle, ivec2 dims, int index);
-vec3 linear_texture(sampler2D tex, int index);
+vec4 linear_texture(sampler2D tex, int index);
 vec4 color(float intensity, sampler1D color_ramp, vec2 norm);
 
 
