@@ -1,4 +1,5 @@
 //precision mediump float;
+{{GLSL_VERSION}}
 
 //texcoords computed in vertex step
 //to avoid dependent texture reads

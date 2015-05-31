@@ -25,7 +25,7 @@ function sierpinski(n, positions=Point3{Float32}[])
         t
     end
 end
-const n 	= 8
+const n 	= 3
 positions 	= sierpinski(n)
 
 len         = length(positions)

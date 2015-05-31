@@ -1,7 +1,7 @@
 using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes
 
-const N1 = 50
-const N2 = 100
+const N1 = 500
+const N2 = 500
 
 generate(x,i) = Point3{Float32}(
 	sin(x/500)*3,

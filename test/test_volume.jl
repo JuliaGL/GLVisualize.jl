@@ -11,6 +11,7 @@ using NPZ
 volume 	= map(npzread("mri.npz")["data"]) do x
 	Float32(x)/256f0
 end
+println(size(volume))
 obj = visualize(volume, model=translationmatrix(Vec3(-0.5)))
 
 push!(GLVisualize.ROOT_SCREEN.renderlist, obj)
