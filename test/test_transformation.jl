@@ -51,21 +51,42 @@ function get_diff(inputs)
 	return keepwhen(mousedown, Vec2(0), mousedraggdiff)
 end
 t = lift(first, get_diff(inputs))
+AND(a,b) = a&&b
+leftmousedown_lift(mousebuttons) = length(mousebuttons) == 1 && first(mousebuttons)
+ctrldown_lift(keyboardkeys) 	 = length(keyboardkeys) == 1 && first(keyboardkeys) == GLFW.KEY_LEFT_CONTROL
+leftdown = lift(leftmousedown_lift, inputs[:mousebuttonspressed])
+ctrldown = lift(ctrldown_lift, inputs[:buttonspressed])
+leftdown_ctrldown = lift(AND, leftdown, ctrldown)
 
-
-leftdown_ctrldown_lift(mousebuttons, keyboardkeys) = length(mousebuttons) == 1 && first(mousebuttons) == 0 && length(keyboardkeys) == 1 && first(keyboardkeys) == GLFW.KEY_LEFT_CONTROL
-leftdown_ctrldown = lift(leftdown_ctrldown_lift, inputs[:mousebuttonspressed], inputs[:buttonspressed])
 t = keepwhen(leftdown_ctrldown, 0f0, t)
-lift(println, t)
 iscat(x) = x[1] == 2
 mouse_hover = lift(first,GLVisualize.SELECTION[:mouse_hover])
 is_cat 	= lift(iscat, mouse_hover)
+
+cat_gizmo = lift(AND, is_cat, ctrldown)
+
 t_trans = keepwhen(is_cat, 0f0, t)
 
 model 	= getmodel(Input(0f0), Input(0f0), Input(0f0), lift(/,t_trans, 10f0), Input(0f0), Input(0f0))
 
 msh 	= GLNormalMesh(file"cat.obj")
+
 robj 	= visualize(msh, model=model)
+
+dirlen 	= 1f0
+baselen = 0.02f0
+gizmo_mesh 	= [
+	(Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
+	(Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+	(Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+]
+gizmo_mesh = map(GLNormalMesh, gizmo_mesh)
+gizmo_mesh = merge(gizmo_mesh)
+
+
+gizmo = visualize(gizmo_mesh, visible=cat_gizmo)
+
 push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
+push!(GLVisualize.ROOT_SCREEN.renderlist, gizmo)
 
 renderloop()
