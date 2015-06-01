@@ -19,3 +19,12 @@ function Cairo.select_font_face(cc::CairoContext, font::FontDescription)
 	set_font_size(cc, font.size)
 end
 
+using FreeType
+
+library = Array(FT_Library, 1)
+face = Array(FT_Face, 1)
+error = FT_Init_FreeType(library)
+error == 0
+face = (FT_Face)[C_NULL]
+err = FT_New_Face(ftLib[1], faceName, int32(faceIndex), face)
+faceRec = unsafe_load(face[1])
