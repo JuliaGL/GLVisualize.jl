@@ -22,8 +22,9 @@ function visualize(mesh::GLNormalAttributeMesh, s::Style, customizations=visuali
     @materialize! screen, model = customizations
     camera = screen.perspectivecam
     data = merge(@compat(Dict(
-        :viewmodel       => lift(*, camera.view, model),
-        :projection      => camera.projection,
+        :model          => model,
+        :view           => camera.view,
+        :projection     => camera.projection,
     )), collect_for_gl(mesh), customizations)
     shader  = TemplateProgram(
         File(shaderdir, "util.vert"), 
