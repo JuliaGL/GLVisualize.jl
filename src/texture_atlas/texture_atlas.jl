@@ -34,10 +34,10 @@ type TextureAtlas
 		Texture(GLSpriteAttribute, (1024, 4))
 	)
 end
+const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
+@assert isfile(fn)
 
-
-const DEFAULT_FONT_FACE = newface("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf")
-
+const DEFAULT_FONT_FACE = newface(fn)
 const FONT_EXTENDS = Dict{Char, FontExtent}()
 
 
