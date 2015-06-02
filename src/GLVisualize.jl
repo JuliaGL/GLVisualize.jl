@@ -17,7 +17,9 @@ using MeshIO
 using Meshes
 using AbstractGPUArray
 using Packing
-using Cairo
+using FreeFontAbstraction
+
+FreeFontAbstraction.init()
 
 import Base: merge, convert, show
 
@@ -50,7 +52,6 @@ include(joinpath(     sourcedir, "edit_interface.jl"))
 export renderloop   # starts the renderloop
 export visualize    # Visualize an object
 export edit         # Edit an object
-
 
 
 end # module

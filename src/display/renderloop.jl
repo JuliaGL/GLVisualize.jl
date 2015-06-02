@@ -78,6 +78,7 @@ function renderloop()
         renderloop(ROOT_SCREEN)
     end
     GLFW.Terminate()
+    FreeFontAbstraction.done()
 end
 
 

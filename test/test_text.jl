@@ -1,4 +1,4 @@
-using Cairo, GeometryTypes, FixedSizeArrays, GLAbstraction, ModernGL, GLVisualize, ColorTypes, FixedPointNumbers, Compat, MeshIO, Meshes
+using GeometryTypes, GLAbstraction, ModernGL, GLVisualize
 using FileIO
 
 include("utf8_example_text.jl")
