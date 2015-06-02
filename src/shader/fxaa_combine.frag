@@ -28,5 +28,6 @@ out vec4 fragment_color;
 void main() {
     //can also use gl_FragCoord.xy
     vec2 fragCoord 	= vTexCoord0 * resolution; 
-    fragment_color 	= fxaa(u_texture0, fragCoord, resolution, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);
+    fragment_color 	= texture(u_texture0, vTexCoord0);
+    //fragment_color 	= fxaa(u_texture0, fragCoord, resolution, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM); // uncomment for anti aliasing
 }
