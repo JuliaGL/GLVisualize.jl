@@ -16,9 +16,9 @@ function calc_position(glyphs)
     for (i,glyph) in enumerate(glyphs)
         if '\n' == glyph
             if i<2
-                last_pos = PF16(last_pos.x, last_pos.y-50.0)
+                last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
             else
-                last_pos = PF16(first(positions).x, positions[i-1].y-50.0)
+                last_pos = PF16(first(positions).x, positions[i-1].y-extent.advance.y)
             end
             positions[i] = last_pos
         else
