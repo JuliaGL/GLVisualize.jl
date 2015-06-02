@@ -17,9 +17,9 @@ using MeshIO
 using Meshes
 using AbstractGPUArray
 using Packing
-using FreeFontAbstraction
+using FreeTypeAbstraction
 
-FreeFontAbstraction.init()
+FreeTypeAbstraction.init()
 
 import Base: merge, convert, show
 
