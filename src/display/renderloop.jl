@@ -107,9 +107,11 @@ function renderloop(screen)
     end
     yield() 
     glDisable(GL_SCISSOR_TEST)
+    
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    glViewport(screen.area.value)
     glClear(GL_COLOR_BUFFER_BIT)
-
+    
     render(postprocess_robj)
     GLFW.SwapBuffers(screen.nativewindow)
     GLFW.PollEvents()
