@@ -14,6 +14,7 @@ function calc_position(glyphs)
     positions = fill(PF16(0.0), length(glyphs))
     lastglyph = first(glyphs)
     for (i,glyph) in enumerate(glyphs)
+        extent = FONT_EXTENDS[glyph]
         if '\n' == glyph
             if i<2
                 last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
@@ -22,9 +23,10 @@ function calc_position(glyphs)
             end
             positions[i] = last_pos
         else
-            extent = FONT_EXTENDS[glyph]
+            
             last_pos += PF16(extent.advance.x, 0)
-            finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
+            finalpos = last_pos
+            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
             (i>1) && (finalpos += PF16(kerning(lastglyph, glyph, DEFAULT_FONT_FACE, 64f0)))
             positions[i] = finalpos
         end

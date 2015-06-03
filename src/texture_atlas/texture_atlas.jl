@@ -31,7 +31,7 @@ type TextureAtlas
 		Dict{Any, Int}(),
 		1,
 		Texture(fill(Ufixed8(0.0), initial_size...)),
-		Texture(GLSpriteAttribute, (1024, 4))
+		Texture(GLSpriteAttribute, (1024, 2))
 	)
 end
 const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
@@ -46,14 +46,12 @@ const local TEXTURE_ATLAS = TextureAtlas[]
 get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
 end
 Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do 
-	uv, rect, extent = render(glyph, font, texture_atlas)
+	uv, rect, extent 	= render(glyph, font, texture_atlas)
 	FONT_EXTENDS[glyph] = extent
-	attributes 	= GLSpriteAttribute[
-		GLSpriteAttribute(rect.w, rect.h, uv.x, uv.y+uv.h),
-		GLSpriteAttribute(rect.w, rect.h, uv.x, uv.y),
-		
-		GLSpriteAttribute(rect.w, rect.h, uv.x+uv.w, uv.y),
-		GLSpriteAttribute(rect.w, rect.h, uv.x+uv.w, uv.y+uv.h),
+	bearing 			= extent.horizontal_bearing
+	attributes 			= GLSpriteAttribute[
+		GLSpriteAttribute(uv.x, uv.y, uv.x+uv.w, uv.y+uv.h), # last remaining digits are optional, so we use them to cache this calculation
+		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), uv.w, uv.h), 
 	]
 	i = texture_atlas.index
 	texture_atlas.attributes[i, :] 		 = attributes
