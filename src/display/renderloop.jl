@@ -78,6 +78,7 @@ function renderloop()
         renderloop(ROOT_SCREEN)
     end
     GLFW.Terminate()
+    FreeTypeAbstraction.done()
 end
 
 
@@ -111,7 +112,6 @@ function renderloop(screen)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
     glViewport(screen.area.value)
     glClear(GL_COLOR_BUFFER_BIT)
-    
     render(postprocess_robj)
     GLFW.SwapBuffers(screen.nativewindow)
     GLFW.PollEvents()

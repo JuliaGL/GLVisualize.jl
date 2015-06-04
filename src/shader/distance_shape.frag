@@ -21,5 +21,5 @@ vec4 radial_grad(float len, vec4 a, vec4 b) {
 void main(){
     float len      = length(o_uv-0.5);
     float dist_aa  = aastep(0.5, len);
-    fragment_color = mix(o_color, vec4(0), dist_aa);
+    fragment_color = vec4(o_uv,0.1,0.0);
 }

@@ -1,12 +1,13 @@
-visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}), ::Style, kw_args...) = @compat(Dict(
-    :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+
+visualize_default{T <: Real}(::Union(Texture{Point2{T}, 2}, Array{Point2{T}, 2}), ::Style, kw_args...) = @compat(Dict(
+    :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 19f0,32f0)),
+    :particle_color => RGBA(1f0, 0f0, 0f0, 1f0),
 ))
 
-@visualize_gen Array{Point2{Float32}, 2} Texture
 
-function visualize(positions::Texture{Point2{Float32}, 2}, s::Style, customizations=visualize_default(positions, s))
+function visualize{T <: Real}(positions::Texture{Point2{T}, 2}, s::Style, customizations=visualize_default(positions, s))
     @materialize! screen, primitive, model = customizations
-    camera = screen.perspectivecam
+    camera = screen.orthographiccam
     data = merge(@compat(Dict(
         :positions           => positions,
         :projectionviewmodel => lift(*, camera.projectionview, model),

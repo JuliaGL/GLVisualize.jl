@@ -17,4 +17,5 @@ GeometryTypes.Rectangle(fe::FontExtent) 			= Rectangle(0,0,round(Int, fe.scale.x
 function Cairo.select_font_face(cc::CairoContext, font::FontDescription) 
 	select_font_face(cc, font.name, font.slant, font.weight)
 	set_font_size(cc, font.size)
-end 
+end
+

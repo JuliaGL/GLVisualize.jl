@@ -10,7 +10,6 @@ end
 
 function visualize_default(particles::Union(Texture{Point3{Float32}, 2}, Array{Point3{Float32}, 2}), ::Style, kw_args...)
     color = get(kw_args[1], :color, RGBA(1f0, 0f0, 0f0, 1f0))
-    println("julia: ", )
     delete!(kw_args[1], :color)
     color = texture_or_scalar(color)
     Dict(
@@ -43,8 +42,8 @@ function visualize(positions::Texture{Point3{Float32}, 2}, s::Style, customizati
         File(shaderdir, "util.vert"), 
         File(shaderdir, "particles.vert"), 
         File(shaderdir, "standard.frag"), attributes=data)
-    bb = AABB(gpu_data(positions))
-    instanced_renderobject(data, length(positions), program, Input(bb))
+    bb = lift(*,model, AABB(gpu_data(positions)))
+    instanced_renderobject(data, length(positions), program, bb)
 end
 
 

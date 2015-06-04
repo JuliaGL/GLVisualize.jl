@@ -16,7 +16,7 @@ type TextureAtlas
 	rectangle_packer::RectanglePacker
 	mapping 		::Dict{Any, Int} # styled glyph to index in sprite_attributes
 	index 			::Int
-	images 			::Texture{BGRA{Ufixed8}, 2}
+	images 			::Texture{Ufixed8, 2}
 	attributes 		::Texture{GLSpriteAttribute, 2}
 	# sprite_attributes layout
 	# can be compressed quite a bit more
@@ -30,48 +30,28 @@ type TextureAtlas
 		RectanglePacker(Rectangle(0, 0, initial_size...)),
 		Dict{Any, Int}(),
 		1,
-		Texture(fill(BGRA{Ufixed8}(1.0,0.0,0.0,0.0), initial_size...)),
-		Texture(GLSpriteAttribute, (1024, 4))
+		Texture(fill(Ufixed8(0.0), initial_size...)),
+		Texture(GLSpriteAttribute, (1024, 2))
 	)
 end
-immutable FontExtent{T}
-    bearing::Vector2{T}
-    scale::Vector2{T}
-    advance::Vector2{T}
-end
-immutable FontDescription
-    name   ::UTF8String
-    slant  ::Int32
-    weight ::Int32
-    size   ::Float64
-end
-typealias CairoFontExtent FontExtent{Float64}
-FontExtent(cc::CairoContext, c::Char)               = FontExtent(cc, string(c))
-FontExtent(cc::CairoContext, t::AbstractString)     = reinterpret(CairoFontExtent, text_extents(cc, t), (1,))[1]
-GeometryTypes.Rectangle(cc::CairoContext, c::Char)  = Rectangle(FontExtent(cc, c))
-GeometryTypes.Rectangle(fe::FontExtent)             = Rectangle(0,0,round(Int, fe.scale.x), round(Int, fe.scale.y))
-function Cairo.select_font_face(cc::CairoContext, font::FontDescription) 
-    select_font_face(cc, font.name, font.slant, font.weight)
-    set_font_size(cc, font.size)
-end 
-const DEFAULT_FONT_FACE = FontDescription("Meslo LG L DZ", Cairo.FONT_SLANT_NORMAL, Cairo.FONT_WEIGHT_NORMAL,50.0)
-const CAIRO_CONTEXT = CairoContext(CairoARGBSurface(zeros(Uint32, 1024, 1024)))
-select_font_face(CAIRO_CONTEXT, DEFAULT_FONT_FACE) 
+const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
+@assert isfile(fn)
 
+const DEFAULT_FONT_FACE = newface(fn)
+const FONT_EXTENDS = Dict{Char, FontExtent}()
 
 
 begin 
 const local TEXTURE_ATLAS = TextureAtlas[]
-get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[]
+get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
 end
-Base.get!(texture_atlas::TextureAtlas, glyph::Char, font::FontDescription) = get!(texture_atlas.mapping, (glyph, font)) do 
-	uv, rect 	= render(glyph, font, texture_atlas)
-	attributes 	= GLSpriteAttribute[
-		GLSpriteAttribute(rect.w, rect.h, uv.x, uv.y+uv.h),
-		GLSpriteAttribute(rect.w, rect.h, uv.x, uv.y),
-		
-		GLSpriteAttribute(rect.w, rect.h, uv.x+uv.w, uv.y),
-		GLSpriteAttribute(rect.w, rect.h, uv.x+uv.w, uv.y+uv.h),
+Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do 
+	uv, rect, extent 	= render(glyph, font, texture_atlas)
+	FONT_EXTENDS[glyph] = extent
+	bearing 			= extent.horizontal_bearing
+	attributes 			= GLSpriteAttribute[
+		GLSpriteAttribute(uv.x, uv.y, uv.x+uv.w, uv.y+uv.h), # last remaining digits are optional, so we use them to cache this calculation
+		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), uv.w, uv.h), 
 	]
 	i = texture_atlas.index
 	texture_atlas.attributes[i, :] 		 = attributes
@@ -80,7 +60,7 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font::FontDescription) = get
 end
 
 
-Base.get!(texture_atlas::TextureAtlas, glyphs::AbstractString, font::FontDescription) = 
+Base.get!(texture_atlas::TextureAtlas, glyphs::AbstractString, font) = 
 	map(glyph->get!(texture_atlas, glyph, font), collect(glyphs))
 
 map_fonts(
@@ -89,22 +69,12 @@ map_fonts(
         texture_atlas 	= get_texture_atlas()
         ) = get!(texture_atlas, text, font)
 
-
-function GLAbstraction.render(glyph::Char, font::FontDescription, ta::TextureAtlas, cc=CAIRO_CONTEXT)
+function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
 	#select_font_face(cc, font)
-	glyph 	= utf8(string(glyph))
-	extent 	= FontExtent(cc, glyph)
-	rect 	= Rectangle(extent)
+	bitmap, extent = renderface(face, glyph)
+	rect 	= Rectangle(0,0,size(bitmap)...)
     uv 		= push!(ta.rectangle_packer, rect).area #find out where to place the rectangle
-    cw, ch  = cc.surface.width, cc.surface.height
-    rect.w > cw || rect.h > ch && error("surface is too small.") #TODO resize surface
-	save(cc)
-	set_source_rgba(cc, 0,0,0,1)
-	paint(cc)
-	set_source_rgba(cc, 1,1,1, 1)
-    move_to(cc, (-extent.bearing)...)
-    show_text(cc, glyph)
-    data = reinterpret(BGRA{Ufixed8}, cc.surface.data)
-    ta.images[uv] = data[rect]
-    uv,rect
+    uv == nothing && error("texture atlas is too small.") #TODO resize surface
+    ta.images[uv] = reinterpret(Ufixed8, bitmap)
+    uv, rect, extent
 end

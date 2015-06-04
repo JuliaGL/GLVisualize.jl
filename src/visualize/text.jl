@@ -6,29 +6,39 @@ visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}
 ))
 
 
-function calc_position(glyphs, cc=CAIRO_CONTEXT)
-    last_pos  = Point2{Float16}(0.0)
-    positions = fill(Point2{Float16}(0.0), length(glyphs))
+
+function calc_position(glyphs)
+    const PF16 = Point2{Float16}
+    global FONT_EXTENDS
+    last_pos  = PF16(0.0)
+    positions = fill(PF16(0.0), length(glyphs))
+    lastglyph = first(glyphs)
     for (i,glyph) in enumerate(glyphs)
+        extent = FONT_EXTENDS[glyph]
         if '\n' == glyph
             if i<2
-                last_pos = Point2{Float16}(last_pos.x, last_pos.y-50.0)
+                last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
             else
-                last_pos = Point2{Float16}(first(positions).x, positions[i-1].y-50.0)
+                last_pos = PF16(first(positions).x, positions[i-1].y-extent.advance.y)
             end
             positions[i] = last_pos
         else
-            extent = FontExtent(cc, glyph)
-            last_pos += Point2{Float16}(extent.advance)
-            positions[i] = Point2{Float16}(last_pos.x+extent.bearing.x, last_pos.y-(extent.bearing.y+extent.scale.y))
+            
+            last_pos += PF16(extent.advance.x, 0)
+            finalpos = last_pos
+            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
+            (i>1) && (finalpos += PF16(kerning(lastglyph, glyph, DEFAULT_FONT_FACE, 64f0)))
+            positions[i] = finalpos
         end
+        lastglyph = glyph
     end
     positions
 end
 
 function GLVisualize.visualize(text::AbstractString, s::Style, customizations=visualize_default(glyphs, s))
-    positions   = Texture(reshape(calc_position(text), (length(text), 1)))
     glyphs      = map_fonts(text)
+    positions   = Texture(reshape(calc_position(text), (length(text), 1)))
+
     glyphs      = Texture(reshape(map(x->GLSprite(x, 0), glyphs), (length(glyphs), 1)))
     visualize(glyphs, positions, s, customizations)  
 end 

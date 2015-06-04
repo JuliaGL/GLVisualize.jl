@@ -52,7 +52,7 @@ function findclosestsquare(n::Real)
     (candidates[end], div(n/candidates[end]))
 end
 
-w,h 	 = findclosestsquare(length(TEST_DATA)) 
+w,h = findclosestsquare(length(TEST_DATA)) 
 
 println("test array size: ", w, " ", h)
 grid = reshape(TEST_DATA, (Int(w), Int(h)))
