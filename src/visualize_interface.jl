@@ -2,6 +2,7 @@ const SHARED_DEFAULTS = @compat(Dict(
     :screen     => ROOT_SCREEN, 
     :model      => Input(eye(Mat4)),
     :light      => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
+    
 ))
 
 visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)), 

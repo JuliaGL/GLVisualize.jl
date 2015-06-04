@@ -11,19 +11,19 @@ in vec3 normals;
 
 uniform vec3 light[4];
 uniform sampler3D vectorfield;
-uniform sampler1D color_ramp;
+uniform sampler1D color;
 uniform vec2 norm;
 
 uniform vec3 cube_min;
 uniform vec3 cube_max;
 
-uniform mat4 view, model, projection;
+uniform mat4 viewmodel, projection;
 
 void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
 vec3 position(AABB cube, ivec3 dims, int index);
 vec4 getindex(sampler3D tex, int index);
-vec4 color(float intensity, sampler1D color_ramp, vec2 norm);
+vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 mat4 rotation(vec3 direction);
 mat4 getmodelmatrix(vec3 xyz, vec3 scale);
 mat4 rotationmatrix_y(float angle);
@@ -33,13 +33,15 @@ mat4 rotationmatrix_y(float angle);
 
 void main()
 {
-    vec3 pos            = position(AABB(cube_min, cube_max), textureSize(vectorfield, 0), gl_InstanceID);
+	ivec3 dims 			= textureSize(vectorfield, 0);
+	vec3 cell_size 		= (cube_max-cube_min)/vec3(dims);
+    vec3 pos            = position(AABB(cube_min, cube_max), dims, gl_InstanceID);
     vec3 direction      = getindex(vectorfield, gl_InstanceID).xyz;
     mat4 rot            = rotation(direction);
-    mat4 trans          = getmodelmatrix(pos, vec3(1.0));
+    mat4 trans          = getmodelmatrix(pos+(cell_size/2.0), cell_size);
     float intensity     = length(direction);
-    vec4 instance_color = color(intensity, color_ramp, norm);
-    render(vertices, normals, instance_color, view*trans*rot, projection, light);
+    vec4 instance_color = color_lookup(intensity, color, norm);
+    render(vertices, normals, instance_color, viewmodel*trans*rot, projection, light);
 }
 
 

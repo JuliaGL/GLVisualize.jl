@@ -9,7 +9,7 @@ struct Rectangle
 in vec2 vertices;
 
 uniform vec3 light[4];
-uniform sampler1D color_ramp;
+uniform sampler1D color;
 uniform vec2 color_norm;
 
 uniform sampler2D z;
@@ -27,7 +27,7 @@ ivec2 ind2sub(ivec2 dim, int linearindex);
 vec2 linear_index(ivec2 dims, int index, vec2 offset);
 vec3 position(Rectangle rectangle, ivec2 dims, int index);
 vec4 linear_texture(sampler2D tex, int index, vec2 offset);
-vec4 color(float intensity, sampler1D color_ramp, vec2 norm);
+vec4 color_lookup(float intensity, sampler1D color, vec2 norm);
 
 
 bool isinbounds(vec2 uv)
@@ -80,9 +80,9 @@ void main()
 	ivec2 dims 		= textureSize(z, 0);
 	vec3 pos 		= position(Rectangle(grid_min, grid_max), dims, gl_InstanceID);
 	float intensity = linear_texture(z, gl_InstanceID, vertices).x;
-	pos += vec3(vertices*scale.xy, intensity);
+	pos += vec3(vertices*scale.xy, scale.z*intensity);
 
-	vec4 instance_color = color(intensity, color_ramp, color_norm);
+	vec4 instance_color = color_lookup(intensity, color, color_norm);
 	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
 	render(pos, normalvec, instance_color, viewmodel, projection, light);
 }

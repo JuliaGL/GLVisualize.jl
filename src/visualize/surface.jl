@@ -6,28 +6,28 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
     grid_max    = get(kw_args[1], :grid_max, Vec2( 1,  1))
     grid_length = grid_max - grid_min
     scale = Vec3((1f0 ./[size(grid)...])..., 1f0)
-    @compat(Dict(
+    Dict(
         :primitive  => GLMesh2D(Rectangle(0f0,0f0,1f0,1f0)),
-        :color_ramp => RGBAU8[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1), rgbaU8(0,1,1,1), rgbaU8(0,0,1,1)],
+        :color      => RGBAU8[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1), rgbaU8(0,1,1,1), rgbaU8(0,0,1,1)],
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :color_norm => Vec2(minimum(grid), maximum(grid)), 
         :scale      => scale .* Vec3(grid_length..., 1f0)
-    ))
+    )
 end
 
 
 function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations=visualize_defaults(grid, s))
-    @materialize! screen, color_ramp, primitive, model = customizations
+    @materialize! screen, color, primitive, model = customizations
     @materialize grid_min, grid_max, color_norm = customizations
     camera       = screen.perspectivecam
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :z              => grid,
-        :color_ramp     => Texture(color_ramp),
+        :color          => Texture(color),
 
         :projection     => camera.projection,
         :viewmodel      => lift(*, camera.view, model),
-    )), collect_for_gl(primitive), customizations)
+    ), collect_for_gl(primitive), customizations)
 
     bb = lift(particle_grid_bb, grid_min, grid_max, color_norm) # This is not accurate. color_norm doesn't need to reflect the real height. also it doesn't get recalculated when the texture changes.
 
@@ -52,13 +52,13 @@ visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, s::Style{:surface}, customizat
     visualize(Texture(x),Texture(y), Texture(z), s, customizations)
 
 function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s))
-    @materialize! screen, color_ramp, primitive, model = customizations
+    @materialize! screen, color, primitive, model = customizations
     camera       = screen.perspectivecam
     data = merge(@compat(Dict(
         :x              => x,
         :y              => y,
         :z              => z,
-        :color_ramp     => Texture(color_ramp),
+        :color          => Texture(color),
 
         :projection     => camera.projection,
         :viewmodel      => lift(*, camera.view, model),

@@ -1,6 +1,5 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, Meshes, MeshIO
  
-function create_example_mesh()
+function mesh_data()
     # volume of interest
     x_min, x_max = -1, 15
     y_min, y_max = -1, 5
@@ -18,29 +17,23 @@ function create_example_mesh()
     f3(x,y,z) = max(b3(x,y,z), s3(x,y,z))  # INTERSECTION
     f(x,y,z) = min(f1(x,y,z), f2(x,y,z), f3(x,y,z))
  
-    vol = volume(f, x_min,y_min,z_min,x_max,y_max,z_max, scale)
-    msh = GLNormalMesh(vol, 0.0f0)
-    return msh
+    vol  = volume(f, x_min,y_min,z_min,x_max,y_max,z_max, scale)
+    msh  = GLNormalMesh(vol, 0.0f0)
+
+    baselen = 0.4f0
+    dirlen  = 2f0
+    axis    = [
+        (Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
+        (Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+        (Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+    ]
+    
+    axis = map(GLNormalMesh, axis)
+    axis = merge(axis)
+
+    return msh, axis
 end
 
-msh  = create_example_mesh()
-boundingbox = AABB(msh.vertices)
-scale = 1f0 / maximum(boundingbox.max - boundingbox.min)
-robj = visualize(msh, model=scalematrix(Vec3(scale))*translationmatrix(-boundingbox.min-Vec3(0.5)))
-push!(GLVisualize.ROOT_SCREEN.renderlist, robj)
-
-dirlen 	= 1f0
-baselen = 0.02f0
-axis 	= [
-	(Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
-	(Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
-	(Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
-]
-axis = map(GLNormalMesh, axis)
-axis = merge(axis)
-
-robj1 	= visualize(axis)
-push!(GLVisualize.ROOT_SCREEN.renderlist, robj1)
+ push!(TEST_DATA, mesh_data()...)
 
 
-renderloop()

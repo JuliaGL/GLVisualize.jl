@@ -37,6 +37,13 @@ export bounce
 include(joinpath(     sourcedir, "types.jl"))
 include_all(joinpath( sourcedir, "display"))
 
+view(robj::RenderObject, screen=ROOT_SCREEN) = push!(screen.renderlist, robj)
+view(robj::Vector{RenderObject}, screen=ROOT_SCREEN) = append!(screen.renderlist, robj)
+
+export view
+
+
+
 include(joinpath(     sourcedir, "visualize_interface.jl"))
 include(joinpath("texture_atlas", "texture_atlas.jl"))
 

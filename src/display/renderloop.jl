@@ -116,8 +116,8 @@ function renderloop(screen)
     GLFW.SwapBuffers(screen.nativewindow)
     GLFW.PollEvents()
     yield() 
-
+    sleep(0.001)
 end
 
-glClearColor(0, 0, 0, 0)
+glClearColor(0.09411764705882353,0.24058823529411763,0.2401960784313726, 0)
 

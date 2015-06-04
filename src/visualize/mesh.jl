@@ -1,4 +1,7 @@
 visualize_default(::Mesh, ::Style, kw_args...) = Dict{Symbol, Any}()
+visualize_default(::GLNormalMesh, ::Style, kw_args...) = Dict{Symbol, Any}(
+    :color      => RGBA(0.282f0,0.4627f0, 1.0f0, 1.0f0)
+)
 
 #visualize(mesh::Mesh, s::Style, customizations=visualize_default(mesh, s)) = visualize(convert(GLNormalMesh, mesh), s, customizations)
 

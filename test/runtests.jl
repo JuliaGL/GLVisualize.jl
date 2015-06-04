@@ -1,46 +1,68 @@
-using GeometryTypes, MeshIO, Meshes, ColorTypes, GLAbstraction, GLVisualize, Reactive
+using GLAbstraction, GLVisualize, Reactive
+using GeometryTypes, ColorTypes
+using MeshIO, Meshes,FileIO, WavefrontObj
+
 using Base.Test
 
-dirlen 	= 1f0
-baselen = 0.02f0
-axis 	= [
-	(Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
-	(Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
-	(Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+const TEST_DATA = Any[]
+typealias Point3f Point3{Float32}
+const tests = [
+	"barplot",
+	"surface",
+	"isosurface",
+	"vectorfield",
+	"obj",
+	"mesh",
+	"particles",
+	"dots",
+	"volume",
+	"sierpinski_mesh",
+	"text"
 ]
-axis = map(GLNormalMesh, axis)
-const axis_mesh = merge(axis)
-const N1 = 7
-funcy(x,y,z) = Vec3(sin(x),cos(y),tan(z))
-const directions  = Vec3[funcy(x,y,z) for x=1:N1,y=1:N1, z=1:N1]
 
-const N = 128
-const counter = 15f0
-volume 	= Float32[sin(x/counter)+sin(y/counter)+sin(z/counter) for x=1:N, y=1:N, z=1:N]
-max 	= maximum(volume)
-min 	= minimum(volume)
-const volume_norm 	= (volume .- min) ./ (max .- min)
-const grid = Array(Any, 2,2)
-
-grid[1,1] = rand(Float32, 50,50)
-grid[1,2] = axis_mesh
-grid[2,1] = directions
-grid[2,2] = volume_norm
-msh= GLNormalMesh(AABB(Vec3(-1), Vec3(1)))
-
-results = map(grid) do obj
-	trans = Input(eye(Mat4)) # get a handle to the translation matrix
-	(trans, visualize(obj, model=trans))
+for test_name in tests
+	println("loading: ", test_name, "...")
+	include(string("test_", test_name, ".jl"))
+	println("...", test_name, " loaded!")
 end
 
-grid_position = Vec3(0,0,0)
-direction = Vec3(1,0,0)
-for (model, robj) in results
-	bb = robj.boundingbox.value
-	push!(model, translationmatrix(grid_position-bb.min))
-	grid_position += ((bb.max-bb.min).*direction)
+
+function findclosestsquare(n::Real)
+    # a cannot be greater than the square root of n
+    # b cannot be smaller than the square root of n
+    # we get the maximum allowed value of a
+    amax = floor(sqrt(n));
+    if 0 == rem(n, amax)
+        # special case where n is a square number
+        return (amax, n / amax)
+    end
+    # Get its prime factors of n
+    primeFactors  = factor(n);
+    # Start with a factor 1 in the list of candidates for a
+    candidates = Int[1]
+    for (f, _) in primeFactors
+        # Add new candidates which are obtained by multiplying
+        # existing candidates with the new prime factor f
+        # Set union ensures that duplicate candidates are removed
+        candidates  = union(candidates, f .* candidates);
+        # throw out candidates which are larger than amax
+        filter!(x-> x <= amax, candidates)
+    end
+    # Take the largest factor in the list d
+    (Int(candidates[end])::Int, Int(n/candidates[end])::Int)::Tuple{Int, Int}
 end
 
-append!(GLVisualize.ROOT_SCREEN.renderlist, vec(map(last, results)))
+w,h 	 = findclosestsquare(length(TEST_DATA)) 
+println(typeof(w))
+
+w = Int(w)
+h = Int(h)
+println("test array size: ", w, " ", h)
+grid = Array(Any, w,h)
+for i=1:w, j=1:h
+	grid[i,j] = TEST_DATA[sub2ind(size(grid), i,j)]
+end
+println("viewing it right now")
+view(visualize(grid))
 
 renderloop()

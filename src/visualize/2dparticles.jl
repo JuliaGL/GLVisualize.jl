@@ -1,6 +1,5 @@
 visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}), ::Style, kw_args...) = @compat(Dict(
     :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :particle_color => RGBA(1f0, 0f0, 0f0, 1f0),
 ))
 
 @visualize_gen Array{Point2{Float32}, 2} Texture

@@ -8,14 +8,16 @@ function texture_or_scalar{A <: Array}(x::Signal{A})
 end
 
 
-function visualize_default(::Union(Texture{Point3{Float32}, 2}, Array{Point3{Float32}, 2}), ::Style, kw_args...)
-    particle_color = get(kw_args[1], :particle_color, RGBA(1f0, 0f0, 0f0, 1f0))
-    delete!(kw_args[1], :particle_color)
-    particle_color = texture_or_scalar(particle_color)
-    @compat(Dict(
-        :primitive      => GLNormalMesh(Cube(Vec3(0), Vec3(1))),
-        :particle_color => particle_color,
-    ))
+function visualize_default(particles::Union(Texture{Point3{Float32}, 2}, Array{Point3{Float32}, 2}), ::Style, kw_args...)
+    color = get(kw_args[1], :color, RGBA(1f0, 0f0, 0f0, 1f0))
+    println("julia: ", )
+    delete!(kw_args[1], :color)
+    color = texture_or_scalar(color)
+    Dict(
+        :primitive  => GLNormalMesh(Cube(Vec3(0), Vec3(1))),
+        :color      => color,
+        :scale      => Vec3(0.03)
+    )
 end
 @visualize_gen Array{Point3{Float32}, 2} Texture
 #=
@@ -30,18 +32,19 @@ function visualize(positions::Vector{Point3{Float32}}, s::Style, customizations=
 end
 =#
 function visualize(positions::Texture{Point3{Float32}, 2}, s::Style, customizations=visualize_default(positions, s))
-    @materialize! screen, primitive = customizations
+    @materialize! screen, primitive, model = customizations
     camera = screen.perspectivecam
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :positions       => positions,
         :projection      => camera.projection,
-        :viewmodel       => camera.view,
-    )), collect_for_gl(primitive), customizations)
+        :viewmodel       => lift(*, camera.view, model),
+    ), collect_for_gl(primitive), customizations)
     program = TemplateProgram(
         File(shaderdir, "util.vert"), 
         File(shaderdir, "particles.vert"), 
         File(shaderdir, "standard.frag"), attributes=data)
-    instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
+    bb = AABB(gpu_data(positions))
+    instanced_renderobject(data, length(positions), program, Input(bb))
 end
 
 

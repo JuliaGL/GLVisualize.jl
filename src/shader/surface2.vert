@@ -3,7 +3,7 @@
 in vec2 vertices;
 
 uniform vec3 light[4];
-uniform sampler1D color_ramp;
+uniform sampler1D color;
 uniform vec2 color_norm;
 
 uniform sampler2D x;
@@ -22,7 +22,7 @@ void render(vec3 vertices, vec3 normal, vec4 color, mat4 viewmodel, mat4 project
 ivec2 ind2sub(ivec2 dim, int linearindex);
 vec2 linear_index(ivec2 dims, int index, vec2 offset);
 vec4 linear_texture(sampler2D tex, int index, vec2 offset);
-vec4 color(float intensity, sampler1D color_ramp, vec2 norm);
+vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 
 
 bool isinbounds(vec2 uv)
@@ -78,7 +78,7 @@ void main()
 	pos.y 			= linear_texture(y, gl_InstanceID, vertices).x;
 	pos.z 			= linear_texture(z, gl_InstanceID, vertices).x;
 	//pos 			+= vec3(vertices*scale.xy, 0.0);
-	vec4 instance_color = color(pos.z, color_ramp, color_norm);
+	vec4 instance_color = color_lookup(pos.z, color, color_norm);
 	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
 	render(pos, normalvec, instance_color, viewmodel, projection, light);
 }

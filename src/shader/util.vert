@@ -173,7 +173,7 @@ vec3 position(Rectangle rectangle, ivec2 dims, int index)
 }
 
 
-vec4 color(float intensity, sampler1D color_ramp, vec2 norm)
+vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm)
 {
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
