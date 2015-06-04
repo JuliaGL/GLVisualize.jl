@@ -3,7 +3,7 @@
 out vec4 frag_color;
 in vec3 frag_vertposition;
 
-uniform sampler3D intensity;
+uniform sampler3D intensities;
 
 uniform vec3 light_position = vec3(1.0, 1.0, 3.0);
 uniform vec3 light_intensity = vec3(15.0);
@@ -28,18 +28,18 @@ const float density_factor =9;
 
 float GetDensity(vec3 pos)
 {
-    return texture(intensity, pos).x;
+    return texture(intensities, pos).x;
 }
 
 vec3 gennormal(vec3 uvw, vec3 gradient_delta)
 {
     vec3 a,b;
-    a.x = texture(intensity, uvw -vec3(gradient_delta.x,0.0,0.0) ).r;
-    b.x = texture(intensity, uvw +vec3(gradient_delta.x,0.0,0.0) ).r;
-    a.y = texture(intensity, uvw -vec3(0.0,gradient_delta.y,0.0) ).r;
-    b.y = texture(intensity, uvw +vec3(0.0,gradient_delta.y,0.0) ).r;
-    a.z = texture(intensity, uvw -vec3(0.0,0.0,gradient_delta.z) ).r;
-    b.z = texture(intensity, uvw +vec3(0.0,0.0,gradient_delta.z) ).r;
+    a.x = texture(intensities, uvw -vec3(gradient_delta.x,0.0,0.0) ).r;
+    b.x = texture(intensities, uvw +vec3(gradient_delta.x,0.0,0.0) ).r;
+    a.y = texture(intensities, uvw -vec3(0.0,gradient_delta.y,0.0) ).r;
+    b.y = texture(intensities, uvw +vec3(0.0,gradient_delta.y,0.0) ).r;
+    a.z = texture(intensities, uvw -vec3(0.0,0.0,gradient_delta.z) ).r;
+    b.z = texture(intensities, uvw +vec3(0.0,0.0,gradient_delta.z) ).r;
     return normalize(a - b);
 }
 vec3 blinn_phong(vec3 N, vec3 V, vec3 L, vec3 diffuse)
@@ -81,7 +81,7 @@ vec4 volume(vec3 front, vec3 dir, float stepsize)
     pos += stepsize_dir;//apply first, to padd
     for (i; i < num_samples && (!is_outside(pos) || i<3); ++i, pos += stepsize_dir) {
 
-        float density = texture(intensity, pos).x * density_factor;
+        float density = texture(intensities, pos).x * density_factor;
         if (density <= 0.0)
             continue;
 
@@ -94,7 +94,7 @@ vec4 volume(vec3 front, vec3 dir, float stepsize)
         vec3 lpos = pos + lightDir;
         int s=0;
         for (s; s < num_ligth_samples; ++s) {
-            float ld = texture(intensity, lpos).x;
+            float ld = texture(intensities, lpos).x;
             Tl *= 1.0-absorption*stepsize*ld;
             if (Tl <= 0.01) 
             lpos += lightDir;
@@ -114,7 +114,7 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     pos += stepsize_dir;//apply first, to padd
     for (i; i < num_samples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
     {
-        float density = texture(intensity, pos).x;
+        float density = texture(intensities, pos).x;
         if (density <= 0.0)
             continue;
         if(abs(density - 0.7) < 0.06)
@@ -139,7 +139,7 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
     float maximum        = 0.0;
     for (i; i < num_samples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
     {
-        float density = texture(intensity, pos).x;
+        float density = texture(intensities, pos).x;
         if (density <= 0.0)
             continue;
         if(maximum < density)
