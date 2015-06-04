@@ -4,11 +4,12 @@ in vec3 vertex;
 
 out vec4 o_color;
 
-uniform sampler1D particle_color;
+{{color_type}} color;
 uniform mat4 projectionviewmodel;
 
 void main()
 {
-	o_color 	= texture(particle_color, float(gl_VertexID)/float(textureSize(particle_color, 0)));
+	int index   = gl_VertexID;
+	o_color 	= {{color_calculation}}
 	gl_Position = projectionviewmodel * vec4(vertex, 1);
 }

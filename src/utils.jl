@@ -21,12 +21,12 @@ function Base.split(condition::Function, associative::Associative)
 end
 
 #creates methods to accept signals, which then gets transfert to an OpenGL target type
-macro visualize_gen(input, target)
+macro visualize_gen(input, target, S)
     esc(quote 
-        visualize(value::$input, s::Style, customizations=visualize_default(value, s)) = 
+        visualize(value::$input, s::$S, customizations=visualize_default(value, s)) = 
             visualize($target(value), s, customizations)
 
-        function visualize(signal::Signal{$input}, s::Style, customizations=visualize_default(signal.value, s))
+        function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
             tex = $target(signal.value)
             lift(update!, Input(tex), signal)
             visualize(tex, s, customizations)
@@ -57,3 +57,11 @@ end
 
 bounce{T}(range::Range{T}, fps=30.0; stop_when=GLVisualize.ROOT_SCREEN.inputs[:open]) = 
     lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, fpswhen(stop_when, fps), range)))
+# scalars can be uploaded directly to gpu, but not arrays
+texture_or_scalar(x) = x
+texture_or_scalar(x::Array) = Texture(x)
+function texture_or_scalar{A <: Array}(x::Signal{A})
+    tex = Texture(x.value)
+    lift(update!, tex, x)
+    tex
+end

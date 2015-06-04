@@ -1,3 +1,4 @@
+using GLVisualize, GeometryTypes, MeshIO, Meshes, GLAbstraction
 typealias Point3f Point3{Float32}
 
 function sierpinski(n, positions=Point3f[])
@@ -19,9 +20,10 @@ function sierpinski(n, positions=Point3f[])
         t
     end
 end
-function sierpinski_data(n)
-    positions 	= sierpinski(n)
-    return (positions, :scale => Vec3(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
-end
 
-push!(TEST_DATA, sierpinski_data(4))
+
+n=5
+positions   = sierpinski(n)
+
+view(visualize(positions, primitive = GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)), scale=Vec3(0.5^n)))
+renderloop()

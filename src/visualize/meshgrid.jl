@@ -12,7 +12,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
         :norm       => Vec2(minimum(grid), maximum(grid))
     )
 end
-@visualize_gen Matrix{Float32} Texture
+@visualize_gen Matrix{Float32} Texture Style
 
 function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize_defaults(grid, s))
     @materialize! screen, color, primitive, model = customizations

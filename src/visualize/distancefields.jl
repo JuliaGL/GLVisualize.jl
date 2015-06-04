@@ -3,7 +3,7 @@ visualize_default(distancefield::Union(Texture{Float32, 2}, Array{Float32, 2}), 
     :primitive      => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(distancefield)...))
 ))
 
-@visualize_gen Array{Float32, 2} Texture
+@visualize_gen Array{Float32, 2} Texture Style
 
 function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield}, customizations=visualize_default(positions, s))
     @materialize! screen, primitive, model = customizations

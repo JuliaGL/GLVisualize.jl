@@ -1,22 +1,31 @@
-visualize_default(::Union(GLBuffer{Point3{Float32}}, Array{Point3{Float32}, 1}), ::Style{:dots}, kw_args...) = @compat(Dict(
-    :particle_color => RGBAU8[rgbaU8(1,0,0,1)],
-    :point_size     => 1f0
-))
 
-@visualize_gen Vector{Point3{Float32}} GLBuffer
+function visualize_default(::Vector{Point3{Float32}}, ::Style{:dots}, kw_args...)
+    color = get(kw_args[1], :color, RGBA(1f0, 0f0, 0f0, 1f0))
+    delete!(kw_args[1], :color)
+    color = texture_or_scalar(color)
+
+    Dict(
+        :color       => color,
+        :point_size  => 1f0
+    )
+end
+@visualize_gen Vector{Point3{Float32}} GLBuffer Style{:dots}
 
 function visualize(positions::GLBuffer{Point3{Float32}}, s::Style{:dots}, customizations=visualize_default(positions, s))
-    println(customizations[:point_size])
-    @materialize! screen, model, particle_color, point_size = customizations
+    @materialize! screen, model, color, point_size = customizations
     camera = screen.perspectivecam
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :vertex              => positions,
-        :particle_color      => Texture(particle_color),
+        :color               => color,
         :projectionviewmodel => lift(*, camera.projectionview, model),
-    )), customizations)
+    ), customizations)
 
-    program = TemplateProgram(File(shaderdir, "dots.vert"), File(shaderdir, "dots.frag"))
-    robj = std_renderobject(data, program, Input(AABB(gpu_data(positions))), GL_POINTS)
+    program = TemplateProgram(
+        File(shaderdir, "dots.vert"), 
+        File(shaderdir, "dots.frag"), 
+        attributes=data
+    )
+    robj    = std_renderobject(data, program, Input(AABB(gpu_data(positions))), GL_POINTS)
     prerender!(robj, glPointSize, point_size)
     robj
 end
