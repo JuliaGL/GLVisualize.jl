@@ -16,3 +16,5 @@ FileIO
 MeshIO
 Meshes
 AbstractGPUArray
+FreeType
+FreeTypeAbstraction
