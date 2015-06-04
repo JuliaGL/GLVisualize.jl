@@ -7,6 +7,7 @@ using Base.Test
 const TEST_DATA = Any[]
 typealias Point3f Point3{Float32}
 const tests = [
+    "volume",
 	"barplot",
 	"surface",
 	"isosurface",
@@ -15,7 +16,6 @@ const tests = [
 	"mesh",
 	"particles",
 	"dots",
-	"volume",
 	"sierpinski_mesh",
 	"text"
 ]
@@ -31,10 +31,10 @@ function findclosestsquare(n::Real)
     # a cannot be greater than the square root of n
     # b cannot be smaller than the square root of n
     # we get the maximum allowed value of a
-    amax = floor(sqrt(n));
+    amax = floor(Int, sqrt(n));
     if 0 == rem(n, amax)
         # special case where n is a square number
-        return (amax, n / amax)
+        return (amax, div(n, amax))
     end
     # Get its prime factors of n
     primeFactors  = factor(n);
@@ -49,19 +49,13 @@ function findclosestsquare(n::Real)
         filter!(x-> x <= amax, candidates)
     end
     # Take the largest factor in the list d
-    (Int(candidates[end])::Int, Int(n/candidates[end])::Int)::Tuple{Int, Int}
+    (candidates[end], div(n/candidates[end]))
 end
 
 w,h 	 = findclosestsquare(length(TEST_DATA)) 
-println(typeof(w))
 
-w = Int(w)
-h = Int(h)
 println("test array size: ", w, " ", h)
-grid = Array(Any, w,h)
-for i=1:w, j=1:h
-	grid[i,j] = TEST_DATA[sub2ind(size(grid), i,j)]
-end
+grid = reshape(TEST_DATA, (Int(w), Int(h)))
 println("viewing it right now")
 view(visualize(grid))
 

@@ -10,5 +10,5 @@ uniform mat4 projection_view_model;
 void main()
 {
     frag_vertposition = texturecoordinates;
-    gl_Position 	 = projection_view_model * vec4(vertices, 1);
+    gl_Position 	  = projection_view_model * vec4(vertices, 1);
 }

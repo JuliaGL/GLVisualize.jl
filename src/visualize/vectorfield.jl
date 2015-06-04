@@ -37,6 +37,6 @@ let texture_parameters = [
 function visualize(vectorfield::Array{Vector3{Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
     _norm = map(norm, vectorfield)
     customizations[:norm] = Vec2(minimum(_norm), maximum(_norm))
-    visualize(Texture(vectorfield, parameters=texture_parameters), s, customizations)
+    visualize(Texture(vectorfield), s, customizations)
 end
 end

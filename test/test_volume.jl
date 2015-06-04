@@ -4,4 +4,5 @@ function volume_data(N)
 	min 	= minimum(volume)
 	volume 	= (volume .- min) ./ (max .- min)
 end
-push!(TEST_DATA, volume_data(128))
+
+push!(TEST_DATA, volume_data(64))
