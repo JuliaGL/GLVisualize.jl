@@ -15,12 +15,15 @@ uniform mat4 model;
 
 uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
-const int view_samples = 256;
+uniform float algorithm;
+uniform float isovalue;
+
+const int view_samples = 128;
 const float max_distance = sqrt(1.0);
 
-const int num_samples = 256;
+const int num_samples = 128;
 const float step_size = max_distance/float(num_samples);
-const int num_ligth_samples = 32;
+const int num_ligth_samples = 16;
 const float lscale = max_distance / float(num_ligth_samples);
 const float density_factor =9;
 
@@ -111,23 +114,25 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     vec3  pos           = front;
     vec3  Lo            = vec3(0.0);
     int   i             = 0;
+    vec4 color          = vec4(0.0);
     pos += stepsize_dir;//apply first, to padd
     for (i; i < num_samples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
     {
         float density = texture(intensities, pos).x;
         if (density <= 0.0)
             continue;
-        if(abs(density - 0.7) < 0.06)
+        if(abs(density - isovalue) < 0.01)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
             vec3 L2 = -L;
             Lo     = blinn_phong(N, pos, L, vec3(1,0,0));
             Lo     += blinn_phong(N, pos, L2, vec3(1,0,0));
+            color = vec4(Lo, 1);
             break;
         }
     }
-    return vec4(Lo, 1);
+    return color;
 }
 vec4 mip(vec3 front, vec3 dir, float stepsize)
 {
@@ -151,6 +156,11 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 }
 void main()
 {
-    frag_color = mip(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+    if(algorithm == 1.0)
+        frag_color = volume(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+    else if(algorithm == 2.0)
+        frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+    else
+        frag_color = mip(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
 }
 

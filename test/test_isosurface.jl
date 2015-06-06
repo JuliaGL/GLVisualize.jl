@@ -6,4 +6,4 @@ function create_isosurf(N)
 	return GLNormalMesh(volume, 0.5f0)
 end
 
-push!(TEST_DATA, create_isosurf(128))
+push!(TEST_DATA, create_isosurf(64))

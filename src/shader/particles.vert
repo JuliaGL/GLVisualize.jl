@@ -14,11 +14,12 @@ uniform mat4 viewmodel, projection;
 void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
 vec4 getindex(sampler2D tex, int index);
+vec4 getindex(sampler1D tex, int index);
 
 
 void main(){
 	int index = gl_InstanceID;
-    vec3 vert  = getindex(positions, index).xyz + (scale*vertices);
+    vec3 vert = getindex(positions, index).xyz + (scale*vertices);
 
     vec4 c = {{color_calculation}};
     render(vert, normals, c, viewmodel, projection, light);

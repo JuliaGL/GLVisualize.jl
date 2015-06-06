@@ -28,7 +28,32 @@ windowhints = [
 ]
 
 const ROOT_SCREEN = createwindow("Romeo", 1920, 1280, windowhints=windowhints, debugging=false)
+const TIMER_SIGNAL = fpswhen(GLVisualize.ROOT_SCREEN.inputs[:open], 30.0)
 
+function fold_loop(v0, timediff_range)
+    _, range = timediff_range
+    v0 == last(range) && return first(range) 
+    v0+step(range)
+end
+
+loop(range::Range; t=TIMER_SIGNAL) =
+    foldl(fold_loop, first(range), lift(tuple, t, range))
+
+
+function fold_bounce(v0, v1)
+    _, range = v1
+    val, direction = v0
+    val += step(range)*direction
+    if val > last(range) || val < first(range) 
+    direction = -direction
+    val += step(range)*direction
+    end
+    (val, direction)
+end
+
+bounce{T}(range::Range{T}; t=TIMER_SIGNAL) = 
+    lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, t, range)))
+    
 insert_selectionquery!(:mouse_hover, lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
     Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
 end)

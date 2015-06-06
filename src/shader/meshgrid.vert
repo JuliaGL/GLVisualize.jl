@@ -11,7 +11,7 @@ in vec3 vertices;
 in vec3 normals;
 
 uniform vec3 light[4];
-uniform sampler1D color_ramp;
+uniform sampler1D color;
 uniform vec2 norm;
 
 uniform sampler2D y_scale;
@@ -35,7 +35,7 @@ void main()
 	float intensity = linear_texture(y_scale, gl_InstanceID).x;
 	pos += vertices*vec3(scale.xy, scale.z*intensity);
 
-	vec4 instance_color = color_lookup(intensity, color_ramp, norm);
+	vec4 instance_color = color_lookup(intensity, color, norm);
 	render(pos, normals, instance_color, viewmodel, projection, light);
 }
 

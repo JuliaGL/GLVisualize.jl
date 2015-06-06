@@ -148,6 +148,10 @@ uvec4 getindex(usampler2D tex, int index)
 {
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
+vec4 getindex(sampler1D tex, int index)
+{
+    return texelFetch(tex, index, 0);
+}
 vec4 getindex(sampler2D tex, int index)
 {
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);

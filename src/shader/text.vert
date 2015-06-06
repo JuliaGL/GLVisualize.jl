@@ -34,8 +34,10 @@ void main(){
     uvec2 glyph 	  = getindex(glyphs, 	index).xy;
     vec4  uv_dims  	  = texelFetch(uvs, ivec2(glyph.x, 0), 0);
     vec4  attributes2 = texelFetch(uvs, ivec2(glyph.x, 1), 0);
+    
     vec2  bearing 	  = attributes2.xy;
     vec2  glyph_scale = attributes2.zw;
+
     vec2  position	  = getindex(positions, index).xy+bearing;
 
     o_uv 			  = getuv(uv_dims, gl_VertexID);

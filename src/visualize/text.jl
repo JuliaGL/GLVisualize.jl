@@ -1,8 +1,8 @@
 
 visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}, AbstractString), ::Style, kw_args...) = @compat(Dict(
-    :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :styles         => Texture([RGBAU8(0,0,0,1)]),
-    :atlas          => get_texture_atlas()
+    :primitive     => GLMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+    :style         => Texture([RGBAU8(0,0,0,1)]),
+    :atlas         => get_texture_atlas()
 ))
 
 
@@ -45,19 +45,21 @@ end
 
 function GLVisualize.visualize(glyphs::Texture{GLSprite, 2}, positions::Texture{Point2{Float16},2},
         s::Style, customizations=visualize_default(glyphs, s))#, ::Style{:default}, customization::Dict{Symbol, Any})
-    @materialize! screen, atlas = customizations
+    @materialize! screen, atlas, primitive = customizations
     camera = screen.orthographiccam
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :positions           => positions,
         :glyphs              => glyphs,
         :projectionviewmodel => camera.projectionview,
         :uvs                 => atlas.attributes,
         :images              => atlas.images,
-    )), collect_for_gl(GLMesh2D(Rectangle(0f0,0f0,1f0,1f0))))
+    ), collect_for_gl(primitive), customizations)
+
     shader = TemplateProgram(
         File(GLVisualize.shaderdir, "util.vert"), 
         File(GLVisualize.shaderdir, "text.vert"), 
-        File(GLVisualize.shaderdir, "text.frag"))
+        File(GLVisualize.shaderdir, "text.frag")
+    )
 
     instanced_renderobject(data, length(glyphs), shader)
 end

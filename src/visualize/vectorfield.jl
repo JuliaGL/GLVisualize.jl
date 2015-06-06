@@ -34,9 +34,15 @@ let texture_parameters = [
     (GL_TEXTURE_WRAP_T,  GL_CLAMP_TO_EDGE),
     (GL_TEXTURE_WRAP_R,  GL_CLAMP_TO_EDGE),
   ]
+
+function visualize(vectorfield::Signal{Array{Vector3{Float32}, 3}}, s::Style, customizations=visualize_default(vectorfield, s))
+    tex = Texture(vectorfield.value, parameters=texture_parameters)
+    lift(update!, tex, vectorfield)
+    visualize(tex, s, customizations)
+end
 function visualize(vectorfield::Array{Vector3{Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
     _norm = map(norm, vectorfield)
     customizations[:norm] = Vec2(minimum(_norm), maximum(_norm))
-    visualize(Texture(vectorfield), s, customizations)
+    visualize(Texture(vectorfield, parameters=texture_parameters), s, customizations)
 end
 end
