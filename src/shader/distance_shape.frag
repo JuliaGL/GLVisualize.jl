@@ -4,9 +4,8 @@ in vec4 o_color;
 in vec2 o_uv;
 flat in int o_technique;
 flat in int o_style;
+flat in uvec2 o_id;
 
-
-out vec4 fragment_color;
 
 uniform sampler2D images;
 uniform float thickness;
@@ -14,6 +13,7 @@ uniform float thickness;
 const int SPRITE = 1;
 const int CIRCLE = 2;
 const int SQUARE = 3;
+
 const int OUTLINED = 4;
 const int FILLED = 5;
 
@@ -42,12 +42,15 @@ float circle(vec2 uv)
 }
 float square(vec2 uv)
 {
-	float len = length(uv-0.5);
+    float edge = 0.0;
 	if(o_style==FILLED)
-		return aastep(0.5, len);
+		return (uv.x*0.0)+1;
 	if(o_style==OUTLINED)
-		return aastep(0.5, 0.5-thickness, len);
+		return aastep(0.5, 0.5-thickness, uv.x);
 }
+
+out uvec2 fragment_groupid;
+out vec4 fragment_color;
 
 void main(){
     float alpha = 0;
@@ -57,6 +60,8 @@ void main(){
     	alpha = circle(o_uv);
     if(o_technique == SQUARE)
     	alpha = square(o_uv);
-
-    fragment_color = vec4(o_color.rgb, o_color.a*alpha);
+    alpha *= 0.5;
+    fragment_color = vec4(o_color.rgb, alpha);
+    if (alpha > 0.0)
+        fragment_groupid = o_id;
 }

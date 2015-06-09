@@ -1,7 +1,7 @@
 
 visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}, AbstractString), ::Style, kw_args...) = @compat(Dict(
     :primitive     => GLMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :style         => Texture([RGBAU8(0,0,0,1)]),
+    :styles        => Texture([RGBAU8(0,0,0,1)]),
     :atlas         => get_texture_atlas()
 ))
 
@@ -15,7 +15,7 @@ function calc_position(glyphs)
     lastglyph = first(glyphs)
     for (i,glyph) in enumerate(glyphs)
         extent = FONT_EXTENDS[glyph]
-        if '\n' == glyph
+        if lastglyph == '\n'
             if i<2
                 last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
             else
@@ -23,7 +23,6 @@ function calc_position(glyphs)
             end
             positions[i] = last_pos
         else
-            
             last_pos += PF16(extent.advance.x, 0)
             finalpos = last_pos
             #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
@@ -36,23 +35,29 @@ function calc_position(glyphs)
 end
 
 function GLVisualize.visualize(text::AbstractString, s::Style, customizations=visualize_default(glyphs, s))
-    glyphs      = map_fonts(text)
-    positions   = Texture(reshape(calc_position(text), (length(text), 1)))
+    glyphs      = texture_buffer(map(GLSprite, map_fonts(text)))
+    positions   = texture_buffer(calc_position(text))
+    style_index = texture_buffer(fill(GLSpriteStyle(0,0), length(text)))
 
-    glyphs      = Texture(reshape(map(x->GLSprite(x, 0), glyphs), (length(glyphs), 1)))
-    visualize(glyphs, positions, s, customizations)  
+    visualize(glyphs, positions, style_index, s, customizations)  
 end 
 
-function GLVisualize.visualize(glyphs::Texture{GLSprite, 2}, positions::Texture{Point2{Float16},2},
+function GLVisualize.visualize(
+        glyphs::Texture{GLSprite, 1}, 
+        positions::Texture{Point2{Float16},1},
+        style_index::Texture{GLSpriteStyle, 1}, 
         s::Style, customizations=visualize_default(glyphs, s))#, ::Style{:default}, customization::Dict{Symbol, Any})
-    @materialize! screen, atlas, primitive = customizations
+    
+    @materialize! screen, atlas, primitive, model = customizations
     camera = screen.orthographiccam
     data = merge(Dict(
         :positions           => positions,
         :glyphs              => glyphs,
-        :projectionviewmodel => camera.projectionview,
         :uvs                 => atlas.attributes,
         :images              => atlas.images,
+        :style_index         => style_index,
+        :projectionviewmodel => lift(*, camera.projectionview, model),
+
     ), collect_for_gl(primitive), customizations)
 
     shader = TemplateProgram(

@@ -186,8 +186,6 @@ out vec3 o_normal;
 out vec3 o_lightdir;
 out vec3 o_vertex;
 out vec4 o_color;
-flat out uvec2 o_id;
-
 
 
 void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4])
@@ -201,7 +199,6 @@ void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projectio
     o_vertex                = -position_camspace.xyz;
     // 
     o_color                 = color;
-    o_id                    = uvec2(0);
     // screen space coordinates of the vertex
     gl_Position             = projection * position_camspace; 
 }

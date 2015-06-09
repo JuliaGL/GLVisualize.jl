@@ -7,8 +7,10 @@ in vec2 texturecoordinates;
 uniform vec3 light[4];
 uniform vec4 color;
 uniform vec2 scale;
+uniform float technique;
+uniform uint objectid;
 
-uniform sampler2D positions;
+uniform samplerBuffer positions;
 
 uniform mat4 projectionviewmodel;
 
@@ -20,13 +22,15 @@ out vec2 o_uv;
 out vec4 o_color;
 flat out int o_technique;
 flat out int o_style;
+flat out uvec2 o_id;
 
 void main(){
 	int index 		= gl_InstanceID;
-    vec2 vert 		= getindex(positions, index).xy + (vertices*scale);
+    vec2 vert 		= texelFetch(positions, index).xy + (vertices*scale);
     o_uv 			= texturecoordinates;
-    o_technique 	= 2;
+    o_technique 	= int(technique);
     o_style 		= 5;
     o_color 		= color;
+    o_id 			= uvec2(objectid, index+1);
     gl_Position     = projectionviewmodel * vec4(vert, 0.0, 1); 
 }

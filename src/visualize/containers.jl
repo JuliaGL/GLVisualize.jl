@@ -22,7 +22,7 @@ function visualize(grid::Matrix, s::Style, customizations=visualize_default(grid
 		bb = robj.boundingbox.value
 		width = bb.max-bb.min
 		model_scale = 1f0/max(width.x, width.y)
-		push!(model, translationmatrix(Vec3(i-1,j-1,0))*scalematrix(model_scale*scale)*translationmatrix(-bb.min)) # update transformation matrix
+		push!(model, translationmatrix(Vec3(i-1, j-1, 0).*scale)*scalematrix(model_scale*scale)*translationmatrix(-bb.min)) # update transformation matrix
 	end
 	vec(map(last, results))
 end

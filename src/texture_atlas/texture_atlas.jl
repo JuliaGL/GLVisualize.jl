@@ -1,8 +1,14 @@
-immutable Sprite{T} <: FixedVector{T, 2}
+immutable Sprite{T} <: FixedVector{T, 1}
 	attribute_id::T # lookup attribute_id for attribute texture
-	style_id::T # style_id to look up in a style array (e.g. an array of colors)
 end
-typealias GLSprite Sprite{Uint16}
+immutable SpriteStyle{T} <: FixedVector{T, 2}
+	color_id::T # lookup attribute_id for attribute texture
+	technique::T
+end
+
+typealias GLSprite Sprite{Uint32}
+typealias GLSpriteStyle SpriteStyle{Uint16}
+
 immutable SpriteAttribute{T} <: FixedVector{T, 4}
 	u::T
 	v::T
@@ -68,6 +74,10 @@ map_fonts(
 		font 			= DEFAULT_FONT_FACE, 
         texture_atlas 	= get_texture_atlas()
         ) = get!(texture_atlas, text, font)
+get_font!(char::Char, 
+		font 			= DEFAULT_FONT_FACE, 
+        texture_atlas 	= get_texture_atlas()) = get!(texture_atlas, char, font)
+
 
 function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
 	#select_font_face(cc, font)

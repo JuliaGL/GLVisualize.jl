@@ -29,7 +29,8 @@ mat4 getmodelmatrix(vec3 xyz, vec3 scale);
 mat4 rotationmatrix_y(float angle);
 
 
-
+uniform uint objectid;
+flat out uvec2 o_id;
 
 void main()
 {
@@ -42,6 +43,7 @@ void main()
     float intensity     = length(direction);
     vec4 instance_color = color_lookup(intensity, color, norm);
     render(vertices, normals, instance_color, viewmodel*trans*rot, projection, light);
+    o_id                = uvec2(objectid, gl_InstanceID);
 }
 
 

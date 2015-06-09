@@ -25,7 +25,12 @@ function visualize{T <: Color}(img::Texture{T, 2}, s::Style, customizations=visu
     )), collect_for_gl(primitive))
 
     fragdatalocation = [(0, "fragment_color"),(1, "fragment_groupid")]
-    textureshader    = TemplateProgram(File(shaderdir, "uv_vert.vert"), File(shaderdir, "texture.frag"), attributes=data, fragdatalocation=fragdatalocation)
+    textureshader    = TemplateProgram(
+        File(shaderdir, "uv_vert.vert"), 
+        File(shaderdir, "texture.frag"), 
+        attributes=data, 
+        fragdatalocation=fragdatalocation
+    )
 
     obj = std_renderobject(data, textureshader, Input(AABB(Vec3(0), Vec3(size(img)...,0)))) # really not a good boundingbox.
 

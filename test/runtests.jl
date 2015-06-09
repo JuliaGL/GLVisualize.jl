@@ -21,7 +21,8 @@ const tests = [
 	"sierpinski_mesh",
 	"arbitrary_surface",
     "text",
-    "particles2D"
+    "particles2D",
+    "image"
 ]
 
 for test_name in tests

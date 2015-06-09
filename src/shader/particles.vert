@@ -7,7 +7,7 @@ uniform vec3 light[4];
 
 {{color_type}} color;
 
-uniform sampler2D positions;
+uniform samplerBuffer positions;
 
 uniform vec3 scale;
 uniform mat4 viewmodel, projection;
@@ -17,10 +17,13 @@ vec4 getindex(sampler2D tex, int index);
 vec4 getindex(sampler1D tex, int index);
 
 
+uniform uint objectid;
+flat out uvec2 o_id;
+
 void main(){
 	int index = gl_InstanceID;
-    vec3 vert = getindex(positions, index).xyz + (scale*vertices);
-
-    vec4 c = {{color_calculation}};
+    vec3 vert = texelFetch(positions, index).xyz + (scale*vertices);
+    vec4 c 	  = {{color_calculation}};
     render(vert, normals, c, viewmodel, projection, light);
+    o_id      = uvec2(objectid, index);
 }

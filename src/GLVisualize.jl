@@ -17,7 +17,7 @@ using MeshIO
 using Meshes
 using AbstractGPUArray
 using Packing
-using FreeTypeAbstraction
+using FreeType.FreeTypeAbstraction
 
 FreeTypeAbstraction.init()
 
@@ -48,6 +48,11 @@ export view
 
 include(joinpath(     sourcedir, "visualize_interface.jl"))
 include(joinpath("texture_atlas", "texture_atlas.jl"))
+
+export GLSpriteStyle
+export GLSprite
+export SpriteStyle
+export Sprite
 
 include(joinpath(     sourcedir, "color.jl"))
 include_all(joinpath( sourcedir, "share"))

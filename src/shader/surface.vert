@@ -74,6 +74,8 @@ vec3 getnormal(sampler2D zvalues, vec2 uv)
     return normalize(result); // normal should be zero, but needs to be here, because the dead-code elimanation of GLSL is overly enthusiastic
 }
 
+uniform uint objectid;
+flat out uvec2 o_id;
 
 void main()
 {
@@ -81,7 +83,7 @@ void main()
 	vec3 pos 		= position(Rectangle(grid_min, grid_max), dims, gl_InstanceID);
 	float intensity = linear_texture(z, gl_InstanceID, vertices).x;
 	pos += vec3(vertices*scale.xy, scale.z*intensity);
-
+	o_id                = uvec2(objectid, gl_InstanceID);
 	vec4 instance_color = color_lookup(intensity, color, color_norm);
 	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
 	render(pos, normalvec, instance_color, viewmodel, projection, light);

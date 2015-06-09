@@ -69,6 +69,8 @@ vec3 getnormal(sampler2D zvalues, vec2 uv)
     return normalize(result); // normal should be zero, but needs to be here, because the dead-code elimanation of GLSL is overly enthusiastic
 }
 
+uniform uint objectid;
+flat out uvec2 o_id;
 
 void main()
 {
@@ -81,6 +83,7 @@ void main()
 	vec4 instance_color = color_lookup(pos.z, color, color_norm);
 	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
 	render(pos, normalvec, instance_color, viewmodel, projection, light);
+	o_id                = uvec2(objectid, gl_InstanceID);
 }
 
 

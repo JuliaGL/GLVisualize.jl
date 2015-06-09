@@ -8,5 +8,5 @@ end
 
 const vol_data = volume_data(64)
 push!(TEST_DATA, (vol_data, :mip))
-push!(TEST_DATA, (vol_data, :absorption, :absorption=>bounce(0f0:0.1f0:50f0)))
+push!(TEST_DATA, (vol_data, :absorption, :absorption=>bounce(0f0:1f0:50f0)))
 push!(TEST_DATA, (vol_data, :iso, :isovalue=>bounce(0f0:0.01f0:1f0)))
