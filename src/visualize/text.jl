@@ -1,11 +1,19 @@
 
 visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}, AbstractString), ::Style, kw_args...) = @compat(Dict(
-    :primitive     => GLMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+    :primitive     => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
     :styles        => Texture([RGBAU8(0,0,0,1)]),
-    :atlas         => get_texture_atlas()
+    :atlas         => get_texture_atlas(),
+    :technique     => :sprite
 ))
 
-
+let TECHNIQUE_MAP = Dict(
+        :sprite => Cint(1),
+        :circle => Cint(2),
+        :square => Cint(3),
+    )
+    global to_gl_technique
+    to_gl_technique(technique) = TECHNIQUE_MAP[technique]
+end
 
 function calc_position(glyphs)
     const PF16 = Point2{Float16}
@@ -38,7 +46,6 @@ function GLVisualize.visualize(text::AbstractString, s::Style, customizations=vi
     glyphs      = texture_buffer(map(GLSprite, map_fonts(text)))
     positions   = texture_buffer(calc_position(text))
     style_index = texture_buffer(fill(GLSpriteStyle(0,0), length(text)))
-
     visualize(glyphs, positions, style_index, s, customizations)  
 end 
 
@@ -48,7 +55,7 @@ function GLVisualize.visualize(
         style_index::Texture{GLSpriteStyle, 1}, 
         s::Style, customizations=visualize_default(glyphs, s))#, ::Style{:default}, customization::Dict{Symbol, Any})
     
-    @materialize! screen, atlas, primitive, model = customizations
+    @materialize! screen, atlas, primitive, model, technique = customizations
     camera = screen.orthographiccam
     data = merge(Dict(
         :positions           => positions,
@@ -57,15 +64,60 @@ function GLVisualize.visualize(
         :images              => atlas.images,
         :style_index         => style_index,
         :projectionviewmodel => lift(*, camera.projectionview, model),
+        :technique           => lift(to_gl_technique, technique)
 
     ), collect_for_gl(primitive), customizations)
 
     shader = TemplateProgram(
         File(GLVisualize.shaderdir, "util.vert"), 
         File(GLVisualize.shaderdir, "text.vert"), 
-        File(GLVisualize.shaderdir, "text.frag")
+        File(GLVisualize.shaderdir, "distance_shape.frag")
     )
-
     instanced_renderobject(data, length(glyphs), shader)
 end
 
+
+cursor_visible(range) = isempty(range) && first(range) > 0
+cool_color(i)         = RGBA(sin(i), 1f0, 1f0, 1f0)
+function cursor(positions, screen, range)
+    camera = screen.orthographiccam
+    atlas = GLVisualize.get_texture_atlas()
+    data = merge(Dict(
+        :visible             => lift(cursor_visible, range),
+        :offset              => lift(Cint, lift(first, range)),
+        :color               => lift(cool_color, bounce(0f0:0.2f0:1f0)),
+        :positions           => positions,
+        :glyph               => Sprite{GLuint}(GLVisualize.get_font!('|')),
+        :uvs                 => atlas.attributes,
+        :images              => atlas.images,
+        :projectionviewmodel => camera.projectionview,
+
+    ), collect_for_gl(GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0))))
+
+    shader = TemplateProgram(
+        File(GLVisualize.shaderdir, "util.vert"), 
+        File(GLVisualize.shaderdir, "text_single.vert"), 
+        File(GLVisualize.shaderdir, "text.frag")
+    )
+    std_renderobject(data, shader)
+end
+export cursor
+
+
+function add_edit(inputs, background, text, t)
+    selection = inputs[:selection]
+    selection = lift(last, foldl(move_cursor, 
+                    (selection.value, selection.value), 
+                    selection, 
+                    inputs[:arrow_navigation], 
+                    Input(t)))
+    is_text(x) = x[2][1] == background.id || x[2][1] == text.id
+    selection  = keepwhen(
+        lift(is_text, inputs[:mousedragdiff_objectid]), 
+        0:0, selection
+    )
+
+    foldl(visualize_selection, 0:0, selection, Input(background[:style_index]))
+    selection
+end
+export add_edit

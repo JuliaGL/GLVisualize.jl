@@ -56,8 +56,8 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	FONT_EXTENDS[glyph] = extent
 	bearing 			= extent.horizontal_bearing
 	attributes 			= GLSpriteAttribute[
-		GLSpriteAttribute(uv.x, uv.y, uv.x+uv.w, uv.y+uv.h), # last remaining digits are optional, so we use them to cache this calculation
-		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), uv.w, uv.h), 
+		GLSpriteAttribute(uv.x, uv.y, uv.w, uv.h), # last remaining digits are optional, so we use them to cache this calculation
+		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), extent.advance...), 
 	]
 	i = texture_atlas.index
 	texture_atlas.attributes[i, :] 		 = attributes

@@ -2,7 +2,7 @@
 visualize_default{T <: Real}(::Union(Texture{Point2{T}, 1}, Array{Point2{T}, 2}, Vector{Point2{T}}), ::Style, kw_args...) = @compat(Dict(
     :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
     :color          => RGBA(1f0, 0f0, 0f0, 1f0),
-    :scale          => Vec2(16,25),
+    :scale          => Vec2(50, 50),
     :technique      => :circle
 ))
 
@@ -16,14 +16,7 @@ visualize(locations::Vector{Point2{Float32}}, s::Style, customizations=visualize
     visualize(texture_buffer(locations), s, customizations)
 
 
-let TECHNIQUE_MAP = Dict(
-        :sprite => 1f0,
-        :circle => 2f0,
-        :square => 3f0,
-    )
-    global to_gl_technique
-    to_gl_technique(technique) = TECHNIQUE_MAP[technique]
-end
+
 function visualize{T <: Real}(positions::Texture{Point2{T}, 1}, s::Style, customizations=visualize_default(positions, s))
     @materialize! screen, primitive, model, technique = customizations
     camera = screen.orthographiccam

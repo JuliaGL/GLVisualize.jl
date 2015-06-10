@@ -52,7 +52,6 @@ function get_drag_diff(inputs)
 	return keepwhen(mousedown, (Vec2(0), Vector2(0)), mousedraggdiff)
 end
 
-AND(a,b) = a&&b
 leftmousedown_lift(mousebuttons) = length(mousebuttons) == 1 && first(mousebuttons)
 ctrldown_lift(keyboardkeys) 	 = length(keyboardkeys) == 1 && first(keyboardkeys) == GLFW.KEY_LEFT_CONTROL
 leftdown = lift(leftmousedown_lift, inputs[:mousebuttonspressed])

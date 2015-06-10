@@ -62,6 +62,5 @@ void main(){
     	alpha = square(o_uv);
     alpha *= 0.5;
     fragment_color = vec4(o_color.rgb, alpha);
-    if (alpha > 0.0)
-        fragment_groupid = o_id;
+    fragment_groupid = o_id;
 }

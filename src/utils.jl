@@ -43,5 +43,7 @@ function texture_or_scalar{A <: Array}(x::Signal{A})
     lift(update!, tex, x)
     tex
 end
-Texture2D{T}(x::Vector{T}) = Texture(reshape(x, close_to_square(length(x))))
-to2d(x::Vector) = reshape(x, close_to_square(length(x)))
+
+isnotempty(x) = !isempty(x)
+AND(a,b) = a&&b
+

@@ -1,7 +1,15 @@
-function visualize_default{T}(particles::Union(Texture{Point3{T}, 2}, Texture{Point3{T}, 1}, Vector{Point3{T}}, Array{Point3{T}, 2}), s::Style, kw_args...)
-    #color = get(kw_args[1], :color, RGBA(1f0, 0f0, 0f0, 1f0))
-    #delete!(kw_args[1], :color)
-    color = texture_or_scalar(RGBA(1f0, 0f0, 0f0, 1f0))
+function Base.delete!(dict::Dict, key, default)
+    haskey(dict, key) && return pop!(dict, key)
+    return default
+end
+function visualize_default{T <: Point3}(
+        particles::Union(Texture{T, 1}, Vector{T}), 
+        s::Style, kw_args=Dict()
+    )
+    color = delete!(kw_args, :color, RGBA(1f0, 0f0, 0f0, 1f0))
+    println(typeof(color))
+    color = texture_or_scalar(color)
+    println(typeof(color))
     Dict(
         :primitive  => GLNormalMesh(Cube(Vec3(0), Vec3(1))),
         :color      => color,
@@ -9,19 +17,12 @@ function visualize_default{T}(particles::Union(Texture{Point3{T}, 2}, Texture{Po
     )
 end
 
+@visualize_gen Vector{Point3{Float32}} texture_buffer Style
 
-@visualize_gen Array{Point3{Float32},2} Texture Style
-
-function visualize(locations::Signal{Vector{Point3{Float32}}}, s::Style, customizations=visualize_default(locations, s))
-    v2d = lift(to2d, locations)
-    tex = Texture(v2d.value)
-    lift(update!, tex, v2d)
-    visualize(tex, s, customizations)
-end
-visualize{T}(locations::Vector{Point3{T}}, s::Style, customizations=visualize_default(locations, s)) = 
-    visualize(Texture2D(locations), s, customizations)
-
-function visualize{T}(positions::Texture{Point3{T}, 1}, s::Style, customizations=visualize_default(positions, s))
+function visualize{T}(
+        positions::Texture{Point3{T}, 1}, 
+        s::Style, customizations=visualize_default(positions, s)
+    )
     @materialize! screen, primitive, model = customizations
     camera = screen.perspectivecam
     data = merge(Dict(
@@ -33,9 +34,10 @@ function visualize{T}(positions::Texture{Point3{T}, 1}, s::Style, customizations
     program = TemplateProgram(
         File(shaderdir, "util.vert"), 
         File(shaderdir, "particles.vert"), 
-        File(shaderdir, "standard.frag"), attributes=data)
-    bb = Input(AABB(gpu_data(positions)))
-    instanced_renderobject(data, length(positions), program, bb)
+        File(shaderdir, "standard.frag"), 
+        attributes=data
+    )
+    instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
 end
 
 

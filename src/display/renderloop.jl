@@ -1,6 +1,11 @@
 const SELECTION         = Dict{Symbol, Input{Matrix{Vector2{Int}}}}()
 const SELECTION_QUERIES = Dict{Symbol, Rectangle{Int}}()
-
+immutable SelectionID{T}
+    objectid::T
+    index::T
+end
+typealias GLSelection SelectionID{Uint16}
+typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle)
     SELECTION_QUERIES[name] = value
     SELECTION[name]         = Input(Vector2{Int}[]')
@@ -146,3 +151,70 @@ end
 
 glClearColor(0.09411764705882353,0.24058823529411763,0.2401960784313726, 0)
 
+
+
+
+
+# Transforms a mouse drag into a selection from drag start to drag end
+function drag2selectionrange(v0, selection)
+    mousediff, id_start, current_id = selection
+    if mousediff != Vec2(0) # Mouse Moved
+        if current_id[1] == id_start[1]
+            return min(id_start[2],current_id[2]):max(id_start[2],current_id[2])
+        end
+    else # if mouse did not move while dragging, make a single point selection
+        if current_id[1] == id_start[1]
+            return current_id[2]:0 # this is the type stable way of indicating, that the selection is between currend_index
+        end
+    end
+    v0
+end
+
+#Calculates mouse drag and supplies ID
+function to_mousedragg_id(t0, mouse_down1, mouseposition1, objectid)
+    mouse_down0, draggstart, objectidstart, mouseposition0, objectid0 = t0
+    if !mouse_down0 && mouse_down1
+        return (mouse_down1, mouseposition1, objectid, mouseposition1, objectid)
+    elseif mouse_down0 && mouse_down1
+        return (mouse_down1, draggstart, objectidstart, mouseposition1, objectid)
+    end
+    (false, Vec2(0), Vector2(0), Vec2(0), Vector2(0))
+end
+function diff_mouse(mouse_down_draggstart_mouseposition)
+    mouse_down, draggstart, objectid_start, mouseposition, objectid_end = mouse_down_draggstart_mouseposition
+    (draggstart - mouseposition, objectid_start, objectid_end)
+end
+function mousedragdiff_objectid(inputs, mouse_hover)
+    @materialize mousebuttonspressed, mousereleased, mouseposition = inputs
+    mousedown      = lift(isnotempty, mousebuttonspressed)
+    mousedraggdiff = lift(diff_mouse, 
+                        foldl(to_mousedragg_id, (false, Vec2(0), Vector2(0), Vec2(0), Vector2(0)), 
+                            mousedown, mouseposition, mouse_hover
+                        )
+                    )
+    return keepwhen(mousedown, (Vec2(0), Vector2(0), Vector2(0)), mousedraggdiff)
+end
+
+function to_arrow_symbol(button_set)
+    isempty(button_set)         && return :nothing
+    button = first(button_set)
+    button == GLFW.KEY_RIGHT    && return :right
+    button == GLFW.KEY_LEFT     && return :left
+    button == GLFW.KEY_DOWN     && return :down
+    button == GLFW.KEY_UP       && return :up
+    return :nothing
+end
+
+function add_complex_signals(screen, selection)
+    const mouse_hover   = lift(first, selection[:mouse_hover])
+
+    mousedragdiff_id    = mousedragdiff_objectid(screen.inputs, mouse_hover)
+    selection           = foldl(drag2selectionrange, 0:0, mousedragdiff_id)
+    arrow_navigation    = lift(to_arrow_symbol, screen.inputs[:buttonspressed])
+
+    screen.inputs[:mousedragdiff_objectid]  = mousedragdiff_id
+    screen.inputs[:selection]               = selection
+    screen.inputs[:arrow_navigation]        = arrow_navigation
+end
+
+add_complex_signals(ROOT_SCREEN, SELECTION) #add the drag events and such

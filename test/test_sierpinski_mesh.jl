@@ -1,3 +1,5 @@
+using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, MeshIO, Meshes, FileIO
+using GLFW, ModernGL
 typealias Point3f Point3{Float32}
 
 function sierpinski(n, positions=Point3f[])
@@ -21,7 +23,11 @@ function sierpinski(n, positions=Point3f[])
 end
 function sierpinski_data(n)
     positions 	= sierpinski(n)
-    return (positions, :scale => Vec3(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
+    #return (positions, :scale => Vec3(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
+    return visualize(positions, scale=Vec3(0.5^n), primitive=GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
 end
 
-push!(TEST_DATA, sierpinski_data(4))
+#push!(TEST_DATA, sierpinski_data(4))
+
+view(sierpinski_data(4))
+renderloop()

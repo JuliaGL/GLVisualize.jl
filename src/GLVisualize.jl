@@ -58,6 +58,7 @@ include(joinpath(     sourcedir, "color.jl"))
 include_all(joinpath( sourcedir, "share"))
 include_all(joinpath( sourcedir, "edit"))
 include_all(joinpath( sourcedir, "visualize"))
+include(joinpath( sourcedir, "visualize", "text", "utils.jl"))
 
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
