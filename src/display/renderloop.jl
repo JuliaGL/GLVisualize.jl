@@ -113,14 +113,12 @@ end
 
 
 function renderloop(screen)
-    yield() 
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, RENDER_FRAMEBUFFER)
     glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     render(screen)
-    yield() 
     #Read all the selection queries
     if !isempty(SELECTION_QUERIES)
         glReadBuffer(GL_COLOR_ATTACHMENT1)
@@ -136,9 +134,8 @@ function renderloop(screen)
             push!(SELECTION[key], convert(Matrix{Vector2{Int}}, data))
         end
     end
-    yield() 
     glDisable(GL_SCISSOR_TEST)
-    
+    glFlush()
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
     glViewport(screen.area.value)
     glClear(GL_COLOR_BUFFER_BIT)

@@ -1,6 +1,6 @@
-function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::Style, kw_args...)
-    grid_min    = get(kw_args[1], :grid_min, Vec2(-1, -1))
-    grid_max    = get(kw_args[1], :grid_max, Vec2( 1,  1))
+function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::Style, kw_args=Dict())
+    grid_min    = get(kw_args, :grid_min, Vec2(-1, -1))
+    grid_max    = get(kw_args, :grid_max, Vec2( 1,  1))
     grid_length = grid_max - grid_min
     scale = Vec3((1f0 ./[size(grid)...])..., 1f0).* Vec3(grid_length..., 1f0)
     return Dict(

@@ -60,7 +60,7 @@ void main(){
     	alpha = circle(o_uv);
     if(o_technique == SQUARE)
     	alpha = square(o_uv);
-    alpha *= 0.5;
+    alpha *= o_color.a;
     fragment_color = vec4(o_color.rgb, alpha);
     fragment_groupid = o_id;
 }

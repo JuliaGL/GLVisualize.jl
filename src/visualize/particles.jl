@@ -7,9 +7,7 @@ function visualize_default{T <: Point3}(
         s::Style, kw_args=Dict()
     )
     color = delete!(kw_args, :color, RGBA(1f0, 0f0, 0f0, 1f0))
-    println(typeof(color))
     color = texture_or_scalar(color)
-    println(typeof(color))
     Dict(
         :primitive  => GLNormalMesh(Cube(Vec3(0), Vec3(1))),
         :color      => color,

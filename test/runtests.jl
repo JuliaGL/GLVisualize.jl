@@ -16,11 +16,11 @@ const tests = [
 	"vectorfield",
 	"obj",
 	"mesh",
-	#"particles",
+	"particles",
 	"dots",
-	#"sierpinski_mesh",
+	"sierpinski_mesh",
 	"arbitrary_surface",
-    #"text",
+    "text",
     #"particles2D",
     "image"
 ]

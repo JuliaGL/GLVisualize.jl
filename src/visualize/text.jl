@@ -1,10 +1,9 @@
-
-visualize_default(::Union(Texture{Point2{Float32}, 2}, Array{Point2{Float32}, 2}, AbstractString), ::Style, kw_args...) = @compat(Dict(
+visualize_default(::Union(Texture{GLSprite, 1}, AbstractString), ::Style, kw_args=Dict()) = Dict(
     :primitive     => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :styles        => Texture([RGBAU8(0,0,0,1)]),
+    :styles        => Texture([RGBAU8(1.0,1.0,1.0,1.0)]),
     :atlas         => get_texture_atlas(),
     :technique     => :sprite
-))
+)
 
 let TECHNIQUE_MAP = Dict(
         :sprite => Cint(1),
@@ -53,8 +52,8 @@ function GLVisualize.visualize(
         glyphs::Texture{GLSprite, 1}, 
         positions::Texture{Point2{Float16},1},
         style_index::Texture{GLSpriteStyle, 1}, 
-        s::Style, customizations=visualize_default(glyphs, s))#, ::Style{:default}, customization::Dict{Symbol, Any})
-    
+        s::Style, customizations=visualize_default(glyphs, s))
+
     @materialize! screen, atlas, primitive, model, technique = customizations
     camera = screen.orthographiccam
     data = merge(Dict(
