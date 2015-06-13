@@ -32,7 +32,7 @@ windowhints = [
     (GLFW.AUX_BUFFERS,  0)
 ]
 
-const ROOT_SCREEN = createwindow("Romeo", 1920, 1280, windowhints=windowhints, debugging=true)
+const ROOT_SCREEN = createwindow("Romeo", 1920, 1280, windowhints=windowhints, debugging=false)
 const TIMER_SIGNAL = fpswhen(GLVisualize.ROOT_SCREEN.inputs[:open], 30.0)
 
 function fold_loop(v0, timediff_range)

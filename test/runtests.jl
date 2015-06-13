@@ -34,7 +34,9 @@ end
 
 grid    = reshape(TEST_DATA, close_to_square(length(TEST_DATA)) )
 grid2D  = reshape(TEST_DATA2D, close_to_square(length(TEST_DATA2D)))
+
 println("reshape done")
+
 const rs    = GLVisualize.ROOT_SCREEN
 xhalf(r)    = Rectangle{Int}(r.x,r.y, r.w/2, r.h)
 xhalf2(r)   = Rectangle{Int}(r.w/2, r.y, r.w/2, r.h)
