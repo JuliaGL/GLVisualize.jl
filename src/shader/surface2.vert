@@ -16,7 +16,7 @@ uniform vec2 grid_max;
 
 uniform vec3 scale;
 
-uniform mat4 viewmodel, projection;
+uniform mat4 view, model, projection;
 
 void render(vec3 vertices, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 ivec2 ind2sub(ivec2 dim, int linearindex);
@@ -82,7 +82,7 @@ void main()
 	//pos 			+= vec3(vertices*scale.xy, 0.0);
 	vec4 instance_color = color_lookup(pos.z, color, color_norm);
 	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
-	render(pos, normalvec, instance_color, viewmodel, projection, light);
+	render(pos, normalvec, instance_color, view * model, projection, light);
 	o_id                = uvec2(objectid, gl_InstanceID);
 }
 

@@ -49,22 +49,19 @@ function GLVisualize.visualize(text::AbstractString, s::Style, customizations=vi
 end 
 
 function GLVisualize.visualize(
-        glyphs::Texture{GLSprite, 1}, 
-        positions::Texture{Point2{Float16},1},
-        style_index::Texture{GLSpriteStyle, 1}, 
+        glyphs      ::Texture{GLSprite, 1}, 
+        positions   ::Texture{Point2{Float16},1},
+        style_index ::Texture{GLSpriteStyle, 1}, 
         s::Style, customizations=visualize_default(glyphs, s))
 
-    @materialize! screen, atlas, primitive, model, technique = customizations
-    camera = screen.orthographiccam
+    @materialize! atlas, primitive, technique = customizations
     data = merge(Dict(
         :positions           => positions,
         :glyphs              => glyphs,
-        :uvs                 => atlas.attributes,
+        :uvs                 => atlas.attributes.buffer,
         :images              => atlas.images,
         :style_index         => style_index,
-        :projectionviewmodel => lift(*, camera.projectionview, model),
         :technique           => lift(to_gl_technique, technique)
-
     ), collect_for_gl(primitive), customizations)
 
     shader = TemplateProgram(
@@ -72,14 +69,13 @@ function GLVisualize.visualize(
         File(GLVisualize.shaderdir, "text.vert"), 
         File(GLVisualize.shaderdir, "distance_shape.frag")
     )
-    instanced_renderobject(data, length(glyphs), shader)
+    instanced_renderobject(data, length(glyphs), shader, Input(AABB{Float32}(AABB(gpu_data(positions)))))
 end
 
 
 cursor_visible(range) = isempty(range) && first(range) > 0
 cool_color(i)         = RGBA(sin(i), 1f0, 1f0, 1f0)
-function cursor(positions, screen, range)
-    camera = screen.orthographiccam
+function cursor(positions, range)
     atlas = GLVisualize.get_texture_atlas()
     data = merge(Dict(
         :visible             => lift(cursor_visible, range),
@@ -89,8 +85,6 @@ function cursor(positions, screen, range)
         :glyph               => Sprite{GLuint}(GLVisualize.get_font!('|')),
         :uvs                 => atlas.attributes,
         :images              => atlas.images,
-        :projectionviewmodel => camera.projectionview,
-
     ), collect_for_gl(GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0))))
 
     shader = TemplateProgram(

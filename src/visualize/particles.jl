@@ -21,12 +21,9 @@ function visualize{T}(
         positions::Texture{Point3{T}, 1}, 
         s::Style, customizations=visualize_default(positions, s)
     )
-    @materialize! screen, primitive, model = customizations
-    camera = screen.perspectivecam
+    @materialize! primitive = customizations
     data = merge(Dict(
         :positions       => positions,
-        :projection      => camera.projection,
-        :viewmodel       => lift(*, camera.view, model),
     ), collect_for_gl(primitive), customizations)
 
     program = TemplateProgram(

@@ -18,20 +18,20 @@ end
 
 
 function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations=visualize_defaults(grid, s))
-    @materialize! screen, color, primitive, model = customizations
+    @materialize! color, primitive = customizations
     @materialize grid_min, grid_max, color_norm = customizations
-    camera       = screen.perspectivecam
     data = merge(Dict(
         :z              => grid,
         :color          => Texture(color),
-
-        :projection     => camera.projection,
-        :viewmodel      => lift(*, camera.view, model),
     ), collect_for_gl(primitive), customizations)
 
     bb = lift(particle_grid_bb, grid_min, grid_max, color_norm) # This is not accurate. color_norm doesn't need to reflect the real height. also it doesn't get recalculated when the texture changes.
 
-    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "surface.vert"), File(shaderdir, "standard.frag"))
+    program = TemplateProgram(
+        File(shaderdir, "util.vert"), 
+        File(shaderdir, "surface.vert"), 
+        File(shaderdir, "standard.frag")
+    )
     instanced_renderobject(data, length(grid), program, bb)
 end
 
@@ -52,16 +52,12 @@ visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, s::Style{:surface}, customizat
     visualize(Texture(x),Texture(y), Texture(z), s, customizations)
 
 function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s))
-    @materialize! screen, color, primitive, model = customizations
-    camera       = screen.perspectivecam
+    @materialize! color, primitive = customizations
     data = merge(@compat(Dict(
         :x              => x,
         :y              => y,
         :z              => z,
-        :color          => Texture(color),
-
-        :projection     => camera.projection,
-        :viewmodel      => lift(*, camera.view, model),
+        :color          => Texture(color)
     )), collect_for_gl(primitive), customizations)
 
     min_x, min_y, min_z = minimum(x), minimum(y), minimum(z)

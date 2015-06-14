@@ -5,10 +5,10 @@ in vec3 texturecoordinates;
 
 out vec3 frag_vertposition;
 
-uniform mat4 projection_view_model;
+uniform mat4 projectionview, model;
 
 void main()
 {
     frag_vertposition = texturecoordinates;
-    gl_Position 	  = projection_view_model * vec4(vertices, 1);
+    gl_Position 	  = projectionview * model * vec4(vertices, 1);
 }

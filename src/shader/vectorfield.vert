@@ -17,7 +17,7 @@ uniform vec2 norm;
 uniform vec3 cube_min;
 uniform vec3 cube_max;
 
-uniform mat4 viewmodel, projection;
+uniform mat4 view, model, projection;
 
 void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
@@ -42,7 +42,7 @@ void main()
     mat4 trans          = getmodelmatrix(pos+(cell_size/2.0), cell_size);
     float intensity     = length(direction);
     vec4 instance_color = color_lookup(intensity, color, norm);
-    render(vertices, normals, instance_color, viewmodel*trans*rot, projection, light);
+    render(vertices, normals, instance_color, view*model*trans*rot, projection, light);
     o_id                = uvec2(objectid, gl_InstanceID);
 }
 

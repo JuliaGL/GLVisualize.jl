@@ -8,13 +8,13 @@ uniform usamplerBuffer  glyphs;
 uniform samplerBuffer   positions;
 uniform usamplerBuffer  style_index;
 
-uniform sampler2D uvs;
+uniform samplerBuffer uvs;
 uniform sampler1D styles;
 
 uniform int technique;
 uniform uint objectid;
 
-uniform mat4 projectionviewmodel;
+uniform mat4 projectionview, model;
 
 out vec2 o_uv;
 out vec4 o_color;
@@ -30,11 +30,11 @@ const int SQUARE = 3;
 void main(){
 	vec2 glyph_scale, bearing;
 	int   index		  = gl_InstanceID;
-    uint  glyph 	  = texelFetch(glyphs, index).x;
-    vec4  attributes2 = texelFetch(uvs, ivec2(glyph, 1), 0);
+    int  glyph 	      = int(texelFetch(glyphs, index).x);
+    vec4  attributes2 = texelFetch(uvs, glyph+1);
     
     if(technique == SPRITE){
-    	vec4  uv_dims = texelFetch(uvs, ivec2(glyph, 0), 0);
+    	vec4  uv_dims = texelFetch(uvs, glyph);
     	bearing 	  = attributes2.xy;
     	glyph_scale   = uv_dims.zw;
     	//flip uv and resize it to the correct size (for lookup in texture atlas)
@@ -50,7 +50,7 @@ void main(){
     o_style 		  = 5;
     o_id 			  = uvec2(objectid, index+1);
     o_technique 	  = technique;
-    gl_Position       = projectionviewmodel * vec4(
+    gl_Position       = projectionview * model * vec4(
     	position + bearing + (vertices*glyph_scale), 
     	0, 1
     ); 

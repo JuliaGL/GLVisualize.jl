@@ -5,17 +5,17 @@ in vec2 vertices;
 in vec2 texturecoordinates;
 
 uniform vec3 light[4];
-uniform vec2 scale;
+
 uniform int technique;
+uniform int style;
 uniform uint objectid;
 
-uniform samplerBuffer positions;
+uniform vec2 position;
+uniform vec2 scale;
 
-{{color_type}} color;
+uniform vec4 color;
 
 uniform mat4 projectionview, model;
-
-vec4 getindex(sampler2D tex, int index);
 
 const int SPRITE = 1;
 const int CIRCLE = 2;
@@ -24,18 +24,16 @@ const int SQUARE = 3;
 out vec2 o_uv;
 out vec4 o_color;
 
-flat out int o_technique;
-flat out int o_style;
-flat out uvec2 o_id;
+flat out int 	o_technique;
+flat out int 	o_style;
+flat out uvec2 	o_id;
 
 void main(){
-	int   index		  = gl_InstanceID;
     o_uv              = texturecoordinates; 
-   	vec2  position	  = texelFetch(positions, index).xy;
-    o_color 		  = {{color_calculation}};
+    o_color 		  = color;
     o_technique 	  = technique;
-    o_style 		  = 5;
-    o_id 			  = uvec2(objectid, index+1);
+    o_style 		  = style;
+    o_id 			  = uvec2(objectid, gl_VertexID+1);
     gl_Position       = projectionview * model * vec4(position + (vertices*scale), 0, 1); 
     
 }

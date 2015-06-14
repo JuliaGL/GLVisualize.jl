@@ -2,13 +2,15 @@
 
 in vec4 o_color;
 in vec2 o_uv;
+
 flat in int o_technique;
 flat in int o_style;
 flat in uvec2 o_id;
 
 
-uniform sampler2D images;
-uniform float thickness;
+uniform vec2        scale;
+uniform sampler2D   images;
+uniform float       thickness = 1.0;
 
 const int SPRITE = 1;
 const int CIRCLE = 2;
@@ -44,9 +46,18 @@ float square(vec2 uv)
 {
     float edge = 0.0;
 	if(o_style==FILLED)
-		return (uv.x*0.0)+1;
+		return (uv.x*0.0)+1; //silly way of using uv, which otherwise would be removed by the unused code elimination
 	if(o_style==OUTLINED)
-		return aastep(0.5, 0.5-thickness, uv.x);
+    {
+        float xmin = aastep(0.0, 0.0+thickness/scale.x, uv.x);
+        float xmax = aastep(1.0-thickness/scale.x, 1.0, uv.x);
+        float ymin = aastep(0.0, 0.0+thickness/scale.y, uv.y);
+        float ymax = aastep(1.0-thickness/scale.y, 1.0, uv.y);
+		return  xmin +
+                xmax +
+                ((1-xmin)*(1-xmax))*ymin +
+                ((1-xmin)*(1-xmax))*ymax;
+    }
 }
 
 out uvec2 fragment_groupid;

@@ -9,7 +9,7 @@ uniform vec3 light_position = vec3(1.0, 1.0, 3.0);
 uniform vec3 light_intensity = vec3(15.0);
 uniform float absorption = 1.0;
 
-uniform vec3 eye_position;
+uniform vec3 eyeposition;
 
 uniform mat4 model;
 
@@ -157,10 +157,10 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 void main()
 {
     if(algorithm == 1.0)
-        frag_color = volume(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+        frag_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else if(algorithm == 2.0)
-        frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+        frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else
-        frag_color = mip(frag_vertposition, normalize(frag_vertposition-eye_position), step_size);
+        frag_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
 }
 

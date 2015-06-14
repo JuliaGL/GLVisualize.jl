@@ -6,16 +6,12 @@ visualize_default(::Union(Array{Vector3{Float32}, 3}, Texture{Vector3{Float32}, 
 )
 
 function visualize(vectorfield::Texture{Vector3{Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
-    @materialize! screen, color, primitive, boundingbox, model = customizations
-    camera       = screen.perspectivecam
+    @materialize! color, primitive, boundingbox = customizations
     data = merge(Dict(
         :vectorfield    => vectorfield,
         :cube_min       => boundingbox.min,
         :cube_max       => boundingbox.max,
         :color          => Texture(color),
-
-        :projection     => camera.projection,
-        :viewmodel      => lift(*, camera.view, model)
     ), customizations, collect_for_gl(primitive))
     # Depending on what the is, additional values have to be calculated
     program = TemplateProgram(
@@ -23,7 +19,6 @@ function visualize(vectorfield::Texture{Vector3{Float32}, 3}, s::Style, customiz
         File(shaderdir, "vectorfield.vert"), 
         File(shaderdir, "standard.frag"), 
     )
-
     instanced_renderobject(data, length(vectorfield), program, Input(boundingbox))
 end
 

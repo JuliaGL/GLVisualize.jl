@@ -15,15 +15,10 @@ end
 visualize(img::Image, s::Style, customizations=visualize_default(img, s)) = 
     visualize(img.data, s, customizations)
 
-function visualize{T <: Color}(img::Texture{T, 2}, s::Style, customizations=visualize_default(img, s))
-    @materialize! screen, model, primitive = customizations
-    camera = screen.orthographiccam
-    pvm = lift(*, camera.projectionview, model)
-    data = merge(@compat(Dict(
-        :image               => img,
-        :projectionviewmodel => pvm,
-    )), collect_for_gl(primitive))
-
+function visualize{T <: Color}(img::Texture{T, 2}, s::Style, data=visualize_default(img, s))
+    @materialize! primitive = data
+    data[:image] = img
+    merge!(data, collect_for_gl(primitive))
     fragdatalocation = [(0, "fragment_color"),(1, "fragment_groupid")]
     textureshader    = TemplateProgram(
         File(shaderdir, "uv_vert.vert"), 
@@ -31,7 +26,5 @@ function visualize{T <: Color}(img::Texture{T, 2}, s::Style, customizations=visu
         attributes=data, 
         fragdatalocation=fragdatalocation
     )
-
     obj = std_renderobject(data, textureshader, Input(AABB(Vec3(0), Vec3(size(img)...,0)))) # really not a good boundingbox.
-
 end

@@ -32,8 +32,8 @@ for test_name in tests
 end
 
 
-grid    = reshape(TEST_DATA, close_to_square(length(TEST_DATA)) )
-grid2D  = reshape(TEST_DATA2D, close_to_square(length(TEST_DATA2D)))
+grid    = reshape(TEST_DATA, 	close_to_square(length(TEST_DATA)) )
+grid2D  = reshape(TEST_DATA2D, 	close_to_square(length(TEST_DATA2D)))
 
 println("reshape done")
 
@@ -43,12 +43,15 @@ xhalf2(r)   = Rectangle{Int}(r.w/2, r.y, r.w/2, r.h)
 const screen3D = Screen(rs, area=lift(xhalf, rs.area))
 const screen2D = Screen(rs, area=lift(xhalf2, rs.area))
 println("screens done")
-view(visualize(grid, screen=screen3D), screen3D)
+
+
+view(visualize(grid), screen3D)
 println("3d done")
-view(visualize(grid2D, screen=screen2D, scale=Vec3(1000,1000,1.0)), screen2D)
+
+
+view(visualize(grid2D, scale=Vec3(1000,1000,1.0)), screen2D, method=:orthographic_pixel)
 println("2d done")
 
 
 println("viewing it now")
-
 renderloop()

@@ -39,15 +39,13 @@ export bounce
 include(joinpath(     sourcedir, "types.jl"))
 include_all(joinpath( sourcedir, "display"))
 
-view(robj::RenderObject, screen=ROOT_SCREEN) = push!(screen.renderlist, robj)
-view(robj::Vector{RenderObject}, screen=ROOT_SCREEN) = append!(screen.renderlist, robj)
 
+include(joinpath(     sourcedir, 	"visualize_interface.jl"))
 export view
+export visualize    # Visualize an object
 
 
-
-include(joinpath(     sourcedir, "visualize_interface.jl"))
-include(joinpath("texture_atlas", "texture_atlas.jl"))
+include(joinpath("texture_atlas", 	"texture_atlas.jl"))
 
 export GLSpriteStyle
 export GLSprite
@@ -63,7 +61,6 @@ include(joinpath( sourcedir, "visualize", "text", "utils.jl"))
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
 export renderloop   # starts the renderloop
-export visualize    # Visualize an object
 export edit         # Edit an object
 
 

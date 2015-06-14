@@ -23,7 +23,7 @@ type TextureAtlas
 	mapping 		::Dict{Any, Int} # styled glyph to index in sprite_attributes
 	index 			::Int
 	images 			::Texture{Ufixed8, 2}
-	attributes 		::Texture{GLSpriteAttribute, 2}
+	attributes 		::GPUVector{GLSpriteAttribute}
 	# sprite_attributes layout
 	# can be compressed quite a bit more
 	# ID Vertex1     Vertex2     Vertex3     Vertex4
@@ -37,7 +37,7 @@ type TextureAtlas
 		Dict{Any, Int}(),
 		1,
 		Texture(fill(Ufixed8(0.0), initial_size...)),
-		Texture(GLSpriteAttribute, (1024, 2))
+		GPUVector(texture_buffer(GLSpriteAttribute[]))
 	)
 end
 const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
@@ -60,8 +60,8 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), extent.advance...), 
 	]
 	i = texture_atlas.index
-	texture_atlas.attributes[i, :] 		 = attributes
-	texture_atlas.index 				 = i+1
+	push!(texture_atlas.attributes, attributes)
+	texture_atlas.index = i+2
 	return i-1 # zero indexed for OpenGL
 end
 

@@ -1,9 +1,10 @@
-generate_particles(N,x,i) = Point3f(
-	sin(i+x/20f0),
-	cos(i+x/20f0), 
-	(2x/N)+i/10f0
-)
-update_particles(i, N) 		 = Point3f[generate_particles(N,x, i) for x=1:N]
+generate_particles(N,x,i) = 
+update_particles(i, N) 		 = Point3{Float32}[Point3{Float32}(
+	sin(x/20f0),
+	cos(x/20f0), 
+	(2x/N)1f0/10f0
+) for x=1:N]
+
 particle_color(i, positions) = RGBAU8[RGBAU8(((cos(pos.x)+1)/2),i/10f0,((sin(pos.y)+1)/2),  1.0f0) for pos in positions]
 
 function particle_data(N)
@@ -13,6 +14,8 @@ function particle_data(N)
 	(locations, :color=>colors)
 	#visualize(locations, color=colors)
 end
+particle_data(1024)
+
 particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 
 push!(TEST_DATA, particle_data(1024))

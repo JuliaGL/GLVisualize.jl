@@ -5,16 +5,16 @@ visualize_default(::Matrix, ::Style, kw_args...) = @compat(Dict(
 ))
 
 function visualize(grid::Matrix, s::Style, customizations=visualize_default(grid, s))
-    @materialize! screen, gap, model, scale = customizations
+    @materialize! gap, model, scale = customizations
     results = map(grid) do viz_args
 		trans = Input(eye(Mat4)) # get a handle to the translation matrix
 		if isa(viz_args, Tuple)
 			length(viz_args) < 1 && error("tried to visualize empty tuple ()")
 			key_args = collect(filter(x->isa(x, Pair), viz_args))
 			viz_data = collect(filter(x->!isa(x, Pair), viz_args))
-			return (trans, visualize(viz_data...; key_args..., model=trans, screen=screen))
+			return (trans, visualize(viz_data...; key_args..., model=trans))
 		end
-		return (trans, visualize(viz_args, model=trans, screen=screen))
+		return (trans, visualize(viz_args, model=trans))
 	end
 
 	for i=1:size(results, 1), j=1:size(results, 2)

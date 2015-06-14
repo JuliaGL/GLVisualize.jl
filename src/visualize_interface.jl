@@ -1,8 +1,6 @@
 const SHARED_DEFAULTS = @compat(Dict(
-    :screen     => ROOT_SCREEN, 
     :model      => Input(eye(Mat4)),
     :light      => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
-    
 ))
 
 visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)), 
@@ -19,3 +17,27 @@ end
 visualize(value::Any, 	  style::Symbol=:default; kw_args...) = visualize(value,  Style{style}(), visualize_default(value, 	      style, kw_args))
 visualize(signal::Signal, style::Symbol=:default; kw_args...) = visualize(signal, Style{style}(), visualize_default(signal.value, style, kw_args))
 visualize(file::File, 	  style::Symbol=:default; kw_args...) = visualize(read(file), style; kw_args...)
+
+
+function view(robj::RenderObject, screen=ROOT_SCREEN; method=:perspective, position=Vec3(2), lookat=Vec3(0))
+	if method == :perspective
+		camera = get!(screen.cameras, :perspective) do 
+			PerspectiveCamera(screen.inputs, position, lookat)
+		end
+	elseif method == :fixed_pixel
+		camera = get!(screen.cameras, :fixed_pixel) do 
+			DummyCamera(window_size=screen.area)
+		end
+	elseif method == :orthographic_pixel
+		camera = get!(screen.cameras, :orthographic_pixel) do 
+			OrthographicPixelCamera(screen.inputs)
+		end
+	else
+		error("Method $method not a known camera type")
+	end
+	merge!(robj.uniforms, collect(camera))
+	push!(screen.renderlist, robj)
+end
+view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; method=:perspective) = for robj in robjs 
+	view(robj, screen, method=method)
+end

@@ -15,16 +15,16 @@ end
 @visualize_gen Matrix{Float32} Texture Style
 
 function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize_defaults(grid, s))
-    @materialize! screen, color, primitive, model = customizations
+    @materialize! color, primitive = customizations
     @materialize grid_min, grid_max, norm = customizations
-    
-    camera       = screen.perspectivecam
     data = merge(Dict(
         :y_scale        => grid,
         :color          => Texture(color),
-        :projection     => camera.projection,
-        :viewmodel      => lift(*, camera.view, model),
     ), collect_for_gl(primitive), customizations)
-    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "meshgrid.vert"), File(shaderdir, "standard.frag"))
+    program = TemplateProgram(
+        File(shaderdir, "util.vert"), 
+        File(shaderdir, "meshgrid.vert"), 
+        File(shaderdir, "standard.frag")
+    )
     instanced_renderobject(data, length(grid), program, lift(particle_grid_bb, grid_min, grid_max, norm))
 end

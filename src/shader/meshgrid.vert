@@ -20,7 +20,7 @@ uniform vec3 scale;
 uniform vec2 grid_min;
 uniform vec2 grid_max;
 
-uniform mat4 viewmodel, projection;
+uniform mat4 view, model, projection;
 
 void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
@@ -37,8 +37,8 @@ void main()
 	float intensity = linear_texture(y_scale, gl_InstanceID).x;
 	pos += vertices*vec3(scale.xy, scale.z*intensity);
 	vec4 instance_color = color_lookup(intensity, color, norm);
-	render(pos, normals, instance_color, viewmodel, projection, light);
-	o_id      		= uvec2(objectid, gl_InstanceID);  
+	render(pos, normals, instance_color, view*model, projection, light);
+	o_id = uvec2(objectid, gl_InstanceID);  
 }
 
 
