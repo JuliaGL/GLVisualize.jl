@@ -45,7 +45,7 @@ Base.IntSet(a...) 	= IntSet(a)
 strg_v 		= lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
 strg_c 		= lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
 strg_x 		= lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
-del    		= lift(==, keys, IntSet(GLFW.KEY_DELETE))
+del    		= lift(==, keys, IntSet(GLFW.KEY_BACKSPACE))
 
 clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v), 	text_edit)
 

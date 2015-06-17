@@ -112,13 +112,15 @@ export deletetext
 deletetext(_, text_selection) = deletetext(text_selection)
 function deletetext(text_selection)
 	selection, text = text_selection.selection, text_selection.text
+	offset = 0
 	if first(selection) > 0
 		if single_selection(selection)
-			splice!(text, first(selection))
+			splice!(text, last(selection))
+			offset = -1
 		else
 			splice!(text, selection)
 		end
-		text_selection.selection = max(1, first(selection)):0 # when text gets removed, selection will turn into single selection
+		text_selection.selection = max(1, first(selection)+offset):0 # when text gets removed, selection will turn into single selection
 	end
 	nothing
 end
