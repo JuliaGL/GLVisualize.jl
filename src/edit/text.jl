@@ -13,7 +13,7 @@ function edit(style::Style{:Default}, text::String, custumization::Dict{Symbol, 
   obj = visualize(text, style; custumization...)
   edit(obj[:text], obj)
 end
-function edit(style::Style{:Default}, textGPU::Texture{GLGlyph{Uint16}, 2}, obj::RenderObject, custumization::Dict{Symbol, Any})
+function edit(style::Style{:Default}, textGPU::Texture{GLGlyph{Uint16}, 2}, obj::RenderObject, custumizatinhhon::Dict{Symbol, Any})
   screen = custumization[:screen]
   specialkeys = filteritems(screen.inputs[:buttonspressed], [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_ENTER, GLFW.KEY_BACKSPACE], IntSet())
 

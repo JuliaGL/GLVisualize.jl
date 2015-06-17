@@ -40,7 +40,7 @@ void main(){
     	//flip uv and resize it to the correct size (for lookup in texture atlas)
     	o_uv 		  = (vec2(texturecoordinates.x, 1-texturecoordinates.y)*uv_dims.zw)+uv_dims.xy;
     }else{ // special casing for particles.
-        bearing     = vec2(0.0);
+        bearing     = vec2(0.0, -6.0);
         glyph_scale = attributes2.zw; //use advance instead of uv dimensions
         o_uv        = texturecoordinates; //texture coordinates need to be unscaled
     }

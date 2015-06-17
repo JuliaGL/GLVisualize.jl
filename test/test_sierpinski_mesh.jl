@@ -24,7 +24,7 @@ function sierpinski_data(n)
     return (positions, :scale => Vec3(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
     #return visualize(positions, scale=Vec3(0.5^n), primitive=GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
 end
-
+sierpinski_data(4)
 push!(TEST_DATA, sierpinski_data(4))
 #=
 using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, MeshIO, Meshes, FileIO

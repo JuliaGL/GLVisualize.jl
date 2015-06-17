@@ -1,14 +1,22 @@
-isnewline(x::Char) = x =='\n'
+const newline_id = get_font!(Char(0x02E5))
+isnewline(x) = x[1] == newline_id
 # i must be a valid character index
-next_newline(text::AbstractString, i::Integer) = findnext(isnewline, text, i)
-previous_newline(text::AbstractString, i::Integer) = findprev(isnewline, text, i)
+function next_newline(text, i::Integer)
+	res = findnext(isnewline, text, i)
+	res == 0 ? length(text) : res
+end
+previous_newline(text, i::Integer) 	= max(1, findprev(isnewline, text, i))
+
+export previous_newline
+export next_newline
+
 #=
 textextetext\n
 texttext<current pos>texttext\n
 texttext<finds this pos>text\n
 =#
 function down_after_newline(text, current_position)
-	i 	= chr2ind(text, current_position)
+	i 	= current_position
 	pnl = previous_newline(text, i)
 	nnl = next_newline(text, i)
 	nl_distance = i-pnl # distance from previous newline
@@ -20,14 +28,16 @@ texttext<current pos>texttext\n
 texttexttext\n
 =#
 function up_before_newline(text, current_position)
-	i 	 = chr2ind(text, current_position)
+	i 	 = current_position
 	pnl  = previous_newline(text, i)
 	ppnl = previous_newline(text, max(1, pnl-1))
 	nl_distance = i-pnl # distance from previous newline
 	min(length(text), ppnl+nl_distance)
 end
-function move_cursor(t0, mouseselection, dir, text)
+function move_cursor(t0, dir, mouseselection, text_selection)
+	text, selection = text_selection.text, text_selection.selection
 	mouseselection0, selection0 = t0
+	selection0 = selection
 	mouseselection0 != mouseselection && return (mouseselection, mouseselection) # if mouse selection has changed, return the new position
 	if selection0 != 0:0
 		first_i = first(selection0) # first is always valid, if its not zero
@@ -43,23 +53,144 @@ function move_cursor(t0, mouseselection, dir, text)
 			return (mouseselection, min(length(text),last_i+1):0)
 		end
 	end
-	t0
+	(mouseselection0, selection0)
 end
 export move_cursor
-
 
 
 function visualize_selection(
 		last_selection::UnitRange{Int}, 
 		selection 	  ::UnitRange{Int},
-		style 		  ::Texture{GLSpriteStyle, 1}
+		style 		  ::GPUVector{GLSpriteStyle}
 	)
 	if first(last_selection) != 0 && last(last_selection) != 0 && !isempty(last_selection)
 		style[last_selection] = fill(GLSpriteStyle(0,0), length(last_selection))
 	end
 	if first(selection) != 0 && last(selection) != 0 && !isempty(selection)
-		style[selection] = fill(GLSpriteStyle(1,0), length(selection))
+		style[selection] 	  = fill(GLSpriteStyle(1,0), length(selection))
 	end
 	selection
 end
+
+
+AND(a,b) 	  = a&&b
+isnotempty(x) = !isempty(x)
+export AND
+export isnotempty
+single_selection(selection::UnitRange) 	= isempty(selection) && first(selection)!=0
+is_textinput_modifiers(buttons::IntSet) = isempty(buttons) || buttons == IntSet(GLFW.KEY_LEFT_SHIFT)
+clipboardpaste(_) 						= clipboard()
+export clipboardpaste
+export copyclipboard
+
+# lift will have a boolean value at first argument position
+copyclipboard(_, text_selection) = copyclipboard(text_selection)
+function copyclipboard(text_selection)
+	selection, text = text_selection.selection, text_selection.text
+	if first(selection) > 0
+		if single_selection(selection) # for single selection we do a sublime style line copy
+			#i 	= chr2ind(text, first(selection))
+			i 	= min(length(text), first(selection)) # can be on position behind last character
+			pnl = previous_newline(text, i)
+			nnl = next_newline(text, i)
+			tocopy = text[pnl:nnl]
+			
+		else # must be range selection
+			tocopy = text[selection]
+		end
+		clipboard(join(map(x->ID_TO_CHAR[x[1]], tocopy)))
+	end
+	nothing
+end
+export cutclipboard
+cutclipboard(_, text_selection) = cutclipboard(text_selection)
+function cutclipboard(text_selection)
+	copyclipboard(text_selection)
+	deletetext(text_selection)
+	nothing
+end
+export deletetext
+deletetext(_, text_selection) = deletetext(text_selection)
+function deletetext(text_selection)
+	selection, text = text_selection.selection, text_selection.text
+	if first(selection) > 0
+		if single_selection(selection)
+			splice!(text, last(selection))
+		else
+			splice!(text, selection)
+		end
+		text_selection.selection = max(1, first(selection)):0 # when text gets removed, selection will turn into single selection
+	end
+	nothing
+end
+export inserttext
+inserttext(_, text_selection) = inserttext(text_selection)
+function inserttext(text_selection, to_insert)
+	selection, text = text_selection.selection, text_selection.text
+	if first(selection) > 0
+		splice!(text, selection, to_insert)
+		chars_added = length(to_insert)
+		text_selection.selection = (first(selection)+chars_added):0 # when text gets removed, selection will turn into single selection
+	end
+	nothing
+end
+
+type TextWithSelection{S } #<: AbstractString}
+	text::S
+	selection::UnitRange{Int}
+end
+export TextWithSelection
+
+
+
+
 export visualize_selection
+
+
+calc_position(glyphs::GPUVector) = calc_position(gpu_data(glyphs))
+function calc_position(glyphs)
+    const PF16 = Point2{Float16}
+    global FONT_EXTENDS, ID_TO_CHAR
+    last_pos  = PF16(0.0)
+    positions = fill(PF16(0.0), length(glyphs))
+    lastglyph = first(glyphs)
+    newline_id = get_font!('\n')
+    for (i,glyph) in enumerate(glyphs)
+        extent = FONT_EXTENDS[glyph[1]]
+        if isnewline(lastglyph)
+            if i<2
+                last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
+            else
+                last_pos = PF16(first(positions).x, positions[i-1].y-extent.advance.y)
+            end
+            positions[i] = last_pos
+        else
+            last_pos += PF16(extent.advance.x, 0)
+            finalpos = last_pos
+            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
+            (i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
+            positions[i] = finalpos
+        end
+        lastglyph = glyph
+    end
+    positions
+end
+
+export process_for_gl
+
+function process_for_gl(text, tabs=4)
+	result = GLSprite[]
+	sizehint!(result, length(text))
+	for elem in text
+		if elem == '\t'
+			push!(result, fill(GLSprite(get_font!(Char(0x02D2))), tabs)...)
+		elseif elem == '\r'
+			#don't add
+		elseif elem == '\n'
+			push!(result, GLSprite(get_font!(Char(0x02E5))))
+		else
+			push!(result, GLSprite(get_font!(elem)))
+		end
+	end
+	return result
+end

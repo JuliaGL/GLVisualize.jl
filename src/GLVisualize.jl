@@ -46,11 +46,10 @@ export visualize    # Visualize an object
 
 
 include(joinpath("texture_atlas", 	"texture_atlas.jl"))
-
-export GLSpriteStyle
+export Sprite
 export GLSprite
 export SpriteStyle
-export Sprite
+export GLSpriteStyle
 
 include(joinpath(     sourcedir, "color.jl"))
 include_all(joinpath( sourcedir, "share"))

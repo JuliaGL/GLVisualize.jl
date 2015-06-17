@@ -10,7 +10,7 @@ flat in uvec2 o_id;
 
 uniform vec2        scale;
 uniform sampler2D   images;
-uniform float       thickness = 1.0;
+uniform float       thickness = 4.0;
 
 const int SPRITE = 1;
 const int CIRCLE = 2;

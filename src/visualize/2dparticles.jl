@@ -1,8 +1,9 @@
 visualize_default{T <: Real}(::Union(Texture{Point2{T}, 1}, Vector{Point2{T}}), ::Style, kw_args=Dict()) = @compat(Dict(
-    :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :color          => RGBA(1f0, 0f0, 0f0, 1f0),
-    :scale          => Vec2(50, 50),
-    :technique      => :circle
+    :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+    :color              => RGBA(1f0, 0f0, 0f0, 1f0),
+    :scale              => Vec2(50, 50),
+    :technique          => :circle,
+    :preferred_camera   => :orthographic_pixel
 ))
 
 visualize(locations::Vector{Point2{Float32}}, s::Style, customizations=visualize_default(locations, s)) = 

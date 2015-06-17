@@ -44,7 +44,8 @@ const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
 @assert isfile(fn)
 
 const DEFAULT_FONT_FACE = newface(fn)
-const FONT_EXTENDS = Dict{Char, FontExtent}()
+const FONT_EXTENDS = Dict{Int, FontExtent}()
+const ID_TO_CHAR = Dict{Int, Char}()
 
 
 begin 
@@ -53,7 +54,7 @@ get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas
 end
 Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do 
 	uv, rect, extent 	= render(glyph, font, texture_atlas)
-	FONT_EXTENDS[glyph] = extent
+	
 	bearing 			= extent.horizontal_bearing
 	attributes 			= GLSpriteAttribute[
 		GLSpriteAttribute(uv.x, uv.y, uv.w, uv.h), # last remaining digits are optional, so we use them to cache this calculation
@@ -62,21 +63,24 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	i = texture_atlas.index
 	push!(texture_atlas.attributes, attributes)
 	texture_atlas.index = i+2
+	FONT_EXTENDS[i-1] 	= extent # extends get saved for the attribute id
+	ID_TO_CHAR[i-1] 	= glyph
 	return i-1 # zero indexed for OpenGL
 end
 
 
-Base.get!(texture_atlas::TextureAtlas, glyphs::AbstractString, font) = 
+Base.get!(texture_atlas::TextureAtlas, glyphs, font) = 
 	map(glyph->get!(texture_atlas, glyph, font), collect(glyphs))
 
 map_fonts(
-		text::AbstractString, 
+		text, 
 		font 			= DEFAULT_FONT_FACE, 
         texture_atlas 	= get_texture_atlas()
         ) = get!(texture_atlas, text, font)
 get_font!(char::Char, 
-		font 			= DEFAULT_FONT_FACE, 
-        texture_atlas 	= get_texture_atlas()) = get!(texture_atlas, char, font)
+			font 			= DEFAULT_FONT_FACE, 
+	        texture_atlas 	= get_texture_atlas()
+        ) = get!(texture_atlas, char, font)
 
 
 function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
