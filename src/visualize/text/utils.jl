@@ -79,7 +79,7 @@ export AND
 export isnotempty
 single_selection(selection::UnitRange) 	= isempty(selection) && first(selection)!=0
 is_textinput_modifiers(buttons::IntSet) = isempty(buttons) || buttons == IntSet(GLFW.KEY_LEFT_SHIFT)
-clipboardpaste(_) 						= clipboard()
+clipboardpaste(_) 						= utf8(clipboard())
 export clipboardpaste
 export copyclipboard
 
@@ -94,7 +94,6 @@ function copyclipboard(text_selection)
 			pnl = previous_newline(text, i)
 			nnl = next_newline(text, i)
 			tocopy = text[pnl:nnl]
-			
 		else # must be range selection
 			tocopy = text[selection]
 		end
@@ -115,7 +114,7 @@ function deletetext(text_selection)
 	selection, text = text_selection.selection, text_selection.text
 	if first(selection) > 0
 		if single_selection(selection)
-			splice!(text, last(selection))
+			splice!(text, first(selection))
 		else
 			splice!(text, selection)
 		end
