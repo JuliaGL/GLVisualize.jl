@@ -65,11 +65,13 @@ function visualize_selection(
 		selection 	  ::UnitRange{Int},
 		style 		  ::GPUVector{GLSpriteStyle}
 	)
-	if first(last_selection) != 0 && last(last_selection) != 0 && !isempty(last_selection)
+	fl, ll =  first(last_selection), last(last_selection)
+	if !isempty(last_selection) && fl > 0 && ll > 0 && (fl <= length(style)) && (ll <= length(style))
 		style[last_selection] = fill(GLSpriteStyle(0,0), length(last_selection))
 	end
-	if first(selection) != 0 && last(selection) != 0 && !isempty(selection)
-		style[selection] 	  = fill(GLSpriteStyle(1,0), length(selection))
+	fs, ls =  first(selection), last(selection)
+	if !isempty(selection) && fs > 0 && ls > 0 && (fs <= length(style)) && (ls <= length(style))
+		style[selection] = fill(GLSpriteStyle(1,0), length(selection))
 	end
 	selection
 end
@@ -156,30 +158,32 @@ export visualize_selection
 
 calc_position(glyphs::GPUVector) = calc_position(gpu_data(glyphs))
 function calc_position(glyphs)
-    const PF16 = Point2{Float16}
-    global FONT_EXTENDS, ID_TO_CHAR
-    last_pos  = PF16(0.0)
+	const PF16 = Point2{Float16}
     positions = fill(PF16(0.0), length(glyphs))
-    lastglyph = first(glyphs)
-    newline_id = get_font!('\n')
-    for (i,glyph) in enumerate(glyphs)
-        extent = FONT_EXTENDS[glyph[1]]
-        if isnewline(lastglyph)
-            if i<2
-                last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
-            else
-                last_pos = PF16(first(positions).x, positions[i-1].y-extent.advance.y)
-            end
-            positions[i] = last_pos
-        else
-            last_pos += PF16(extent.advance.x, 0)
-            finalpos = last_pos
-            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
-            (i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
-            positions[i] = finalpos
-        end
-        lastglyph = glyph
-    end
+	if !isempty(glyphs)
+	    global FONT_EXTENDS, ID_TO_CHAR
+	    last_pos  = PF16(0.0)
+	    lastglyph = first(glyphs)
+	    newline_id = get_font!('\n')
+	    for (i,glyph) in enumerate(glyphs)
+	        extent = FONT_EXTENDS[glyph[1]]
+	        if isnewline(lastglyph)
+	            if i<2
+	                last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
+	            else
+	                last_pos = PF16(first(positions).x, positions[i-1].y-extent.advance.y)
+	            end
+	            positions[i] = last_pos
+	        else
+	            last_pos += PF16(extent.advance.x, 0)
+	            finalpos = last_pos
+	            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
+	            (i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
+	            positions[i] = finalpos
+	        end
+	        lastglyph = glyph
+	    end
+	end
     positions
 end
 

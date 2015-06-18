@@ -13,7 +13,6 @@ function visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style
         :atlas              => get_texture_atlas(),
         :technique          => :square,
         :preferred_camera   => :orthographic_pixel,
-        :model              => eye(Mat4)
     )
 end
 
@@ -42,7 +41,7 @@ function visualize(
         s::Style, customizations=visualize_default(glyphs, s))
 
     @materialize! atlas, primitive, technique = customizations
-    data = merge(Dict(
+    data = merge(customizations, Dict(
         :model               => model,
         :positions           => positions,
         :glyphs              => glyphs,
@@ -50,7 +49,7 @@ function visualize(
         :images              => atlas.images,
         :style_index         => style_index,
         :technique           => lift(to_gl_technique, technique)
-    ), collect_for_gl(primitive), customizations)
+    ), collect_for_gl(primitive))
 
     shader = TemplateProgram(
         File(GLVisualize.shaderdir, "util.vert"), 
@@ -86,7 +85,19 @@ function cursor(positions, range, model)
 end
 export cursor
 
-
+function update_positions(glyphs, text, styles_index)
+    oldpos      = text[:positions]
+    positions   = GLVisualize.calc_position(glyphs)
+    if length(oldpos) != length(positions)
+        oldlength = length(oldpos)
+        newlength = length(positions)
+        resize!(oldpos, newlength)
+        resize!(styles_index, newlength)
+        resize!(text[:style_index], newlength)
+        styles_index[1:newlength] = fill(GLSpriteStyle(0,0), newlength)
+    end
+    update!(oldpos.buffer, positions)
+end
 
 function textedit_signals(inputs, background, text)
     @materialize unicodeinput, selection, buttonspressed, arrow_navigation, mousedragdiff_objectid = inputs
@@ -111,10 +122,10 @@ function textedit_signals(inputs, background, text)
     )
     lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
 
-    strg_v      = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
-    strg_c      = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
-    strg_x      = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
-    del         = lift(==, buttonspressed, IntSet(GLFW.KEY_BACKSPACE))
+    strg_v          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
+    strg_c          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
+    strg_x          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
+    del             = lift(==, buttonspressed, IntSet(GLFW.KEY_BACKSPACE))
 
     clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)
 
@@ -130,6 +141,7 @@ function textedit_signals(inputs, background, text)
     text_to_insert  = lift(process_for_gl, text_to_insert)
     
     text_inserted   = lift(inserttext, text_edit, text_to_insert)
+
     text_updates    = merge(
         lift(return_nothing, text_inserted), 
         lift(return_nothing, clipboard_copy), 
@@ -141,12 +153,8 @@ function textedit_signals(inputs, background, text)
 
     selection   = lift(x->x.selection,  text_selection_signal)
     text_sig    = lift(x->x.text,       text_selection_signal)
-    lift(text_sig) do glyphs
-        oldpos      = text[:positions]
-        positions   = GLVisualize.calc_position(glyphs)
-        length(oldpos) != length(positions) && resize!(oldpos, length(positions))
-        update!(oldpos.buffer, positions)
-    end
+
+    lift(update_positions, text_sig, Input(text), Input(background[:style_index]))
     foldl(visualize_selection, 0:0, selection, Input(background[:style_index]))
     lift(utf8, text_sig), selection
 end
