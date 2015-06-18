@@ -4,33 +4,9 @@ const screen = GLVisualize.ROOT_SCREEN
 
 t = readall(open("wip_test.jl"))
 
-text = visualize(t, styles=Texture([RGBAU8(1,1,1,1), RGBAU8(0,0,1,1)]))
-
-attributes = merge(
-	GLVisualize.visualize_default("", Style{:default}()), 
-	Dict(
-		:screen     => GLVisualize.ROOT_SCREEN, 
-		:model      => Input(eye(Mat4)),
-		:technique 	=> :square,
-		:styles 	=> Texture([RGBAU8(0,0,0,0), RGBAU8(0.7,.5,1.,0.5)])
-))
+text = visualize(t)
 
 
-text_raw 	= TextWithSelection(text[:glyphs], 0:0)
-text_edit 	= Input(text_raw)
-
-background 	= visualize(
-	text[:glyphs], 
-	text[:positions], 
-	GPUVector(texture_buffer(fill(GLSpriteStyle(0,0), length(text[:positions])))), 
-	Style{:default}(),
-	attributes
-)
-
-selection = add_edit(screen.inputs, background, text, text_edit)
-#lift(println, selection)
-
-lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
 
 
 w = GLVisualize.ROOT_SCREEN

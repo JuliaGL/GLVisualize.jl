@@ -10,6 +10,8 @@ previous_newline(text, i::Integer) 	= max(1, findprev(isnewline, text, i))
 export previous_newline
 export next_newline
 
+
+
 #=
 textextetext\n
 texttext<current pos>texttext\n
@@ -75,13 +77,17 @@ end
 
 AND(a,b) 	  = a&&b
 isnotempty(x) = !isempty(x)
+return_nothing(x...) = nothing
 export AND
 export isnotempty
+export return_nothing
+
 single_selection(selection::UnitRange) 	= isempty(selection) && first(selection)!=0
 is_textinput_modifiers(buttons::IntSet) = isempty(buttons) || buttons == IntSet(GLFW.KEY_LEFT_SHIFT)
 clipboardpaste(_) 						= utf8(clipboard())
 export clipboardpaste
 export copyclipboard
+Base.utf8(v::GPUVector{GLSprite}) = utf8(join(map(x->ID_TO_CHAR[x[1]], gpu_data(v))))
 
 # lift will have a boolean value at first argument position
 copyclipboard(_, text_selection) = copyclipboard(text_selection)
@@ -113,7 +119,7 @@ deletetext(_, text_selection) = deletetext(text_selection)
 function deletetext(text_selection)
 	selection, text = text_selection.selection, text_selection.text
 	offset = 0
-	if first(selection) > 0
+	if first(selection) > 0 && last(selection) > 0
 		if single_selection(selection)
 			splice!(text, last(selection))
 			offset = -1
