@@ -1,14 +1,19 @@
-visualize_default{T <: Real}(::Union(Texture{Point2{T}, 1}, Vector{Point2{T}}), ::Style, kw_args=Dict()) = @compat(Dict(
+visualize_default{T <: Real}(::Union(Texture{Point2{T}, 1}, Vector{Point2{T}}), ::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
     :color              => RGBA(1f0, 0f0, 0f0, 1f0),
     :scale              => Vec2(50, 50),
     :technique          => :circle,
     :preferred_camera   => :orthographic_pixel
-))
+)
 
 visualize(locations::Vector{Point2{Float32}}, s::Style, customizations=visualize_default(locations, s)) = 
     visualize(texture_buffer(locations), s, customizations)
 
+function visualize(locations::Signal{Vector{Point2{Float32}}}, s::Style, customizations=visualize_default(locations.value, s))
+    start_val = texture_buffer(locations.value)
+    lift(update!, start_val, locations)
+    visualize(start_val, s, customizations)
+end
 
 function visualize{T <: Real}(
         positions::Texture{Point2{T}, 1}, 
@@ -27,7 +32,7 @@ function visualize{T <: Real}(
         attributes=data,
         fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
-    instanced_renderobject(data, length(positions), program)
+    instanced_renderobject(data, length(positions), program, Input(AABB{Float32}(AABB(gpu_data(positions)))))
 end
 
 #=
