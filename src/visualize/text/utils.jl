@@ -86,7 +86,15 @@ export return_nothing
 
 single_selection(selection::UnitRange) 	= isempty(selection) && first(selection)!=0
 is_textinput_modifiers(buttons::IntSet) = isempty(buttons) || buttons == IntSet(GLFW.KEY_LEFT_SHIFT)
-clipboardpaste(_) 						= utf8(clipboard())
+function clipboardpaste(_)
+	clipboard_data = ""
+	try
+		clipboard_data = clipboard()
+	catch e # clipboard throws error when there is no data (WTF)
+	end
+	return utf8(clipboard_data)
+end
+
 export clipboardpaste
 export copyclipboard
 Base.utf8(v::GPUVector{GLSprite}) = utf8(join(map(x->ID_TO_CHAR[x[1]], gpu_data(v))))

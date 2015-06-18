@@ -18,6 +18,7 @@ using Meshes
 using AbstractGPUArray
 using Packing
 using FreeType.FreeTypeAbstraction
+using VideoIO
 
 FreeTypeAbstraction.init()
 
