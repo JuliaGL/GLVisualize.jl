@@ -17,7 +17,7 @@ using MeshIO
 using Meshes
 using AbstractGPUArray
 using Packing
-using FreeType.FreeTypeAbstraction
+using FreeTypeAbstraction
 using VideoIO
 
 FreeTypeAbstraction.init()
@@ -44,7 +44,7 @@ include_all(joinpath( sourcedir, "display"))
 include(joinpath(     sourcedir, 	"visualize_interface.jl"))
 export view
 export visualize    # Visualize an object
-
+export visualize_default # get the default parameter for a visualization
 
 include(joinpath("texture_atlas", 	"texture_atlas.jl"))
 export Sprite
