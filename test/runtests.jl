@@ -38,8 +38,8 @@ grid2D  = reshape(TEST_DATA2D, 	close_to_square(length(TEST_DATA2D)))
 println("reshape done")
 
 const rs    = GLVisualize.ROOT_SCREEN
-xhalf(r)    = Rectangle{Int}(r.x,r.y, r.w/2, r.h)
-xhalf2(r)   = Rectangle{Int}(r.w/2, r.y, r.w/2, r.h)
+xhalf(r)    = Rectangle{Int}(r.x,r.y, round(Int, r.w/2), r.h)
+xhalf2(r)   = Rectangle{Int}(round(Int, r.w/2), r.y, round(Int, r.w/2), r.h)
 const screen3D = Screen(rs, area=lift(xhalf, rs.area))
 const screen2D = Screen(rs, area=lift(xhalf2, rs.area))
 println("screens done")
