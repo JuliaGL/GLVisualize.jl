@@ -56,7 +56,9 @@ function visualize(
         File(GLVisualize.shaderdir, "text.vert"), 
         File(GLVisualize.shaderdir, "distance_shape.frag")
     )
-    instanced_renderobject(data, glyphs, shader, Input(AABB{Float32}(AABB(gpu_data(positions)))))
+    bb = AABB(gpu_data(positions))
+    extent = FONT_EXTENDS[glyphs[1][1]]
+    instanced_renderobject(data, glyphs, shader, Input(AABB{Float32}(bb.min, Vec3(bb.max)+Vec3(extent.advance..., 0f0))))
 end
 
 
