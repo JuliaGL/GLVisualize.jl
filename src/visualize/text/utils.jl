@@ -52,7 +52,7 @@ function move_cursor(t0, dir, mouseselection, text_selection)
 		elseif dir == :left
 			return (mouseselection, max(1, first_i-1):0)
 		elseif dir == :right
-			return (mouseselection, min(length(text),last_i+1):0)
+			return (mouseselection, min(length(text)+1,last_i+1):0)
 		end
 	end
 	(mouseselection0, selection0)

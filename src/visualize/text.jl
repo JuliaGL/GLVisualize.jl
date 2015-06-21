@@ -98,7 +98,7 @@ function update_positions(glyphs, text, styles_index)
         resize!(text[:style_index], newlength)
         styles_index[1:newlength] = fill(GLSpriteStyle(0,0), newlength)
     end
-    update!(oldpos.buffer, positions)
+    update!(oldpos, positions)
 end
 
 function textedit_signals(inputs, background, text)
