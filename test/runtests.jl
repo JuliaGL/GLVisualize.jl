@@ -20,7 +20,7 @@ const tests = [
 	"dots",
 	"sierpinski_mesh",
 	"arbitrary_surface",
-    "text",
+   # "text",
     "particles2D"
 ]
 
