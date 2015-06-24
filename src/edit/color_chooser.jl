@@ -1,86 +1,33 @@
-const ColorDefaults = @compat(Dict(
-    :quad   => GLUVMesh2D(Rectangle(-1f0,-1f0, 1f0,1f0)),
-    :model  => Input(eye(Mat4)),
-    :screen  => ROOT_SCREEN
-
-))
-
-function visualize{T}(rgba_color::RGBA{T}, ::Style{:Default}, customizations=ColorDefaults)
-    @materialize! screen, quad, model = customizations
-
-    camera = screen.perspectivecam
-
-    rdata = merge(@compat(Dict(
-        :projectionviewmodel => lift(*, camera.projectionview, model),
-        :color               => rgba_color,
-    )), collect_for_gl(quad))
-
-    shader = TemplateProgram(File(shaderdir, "colorchooser.vert"), File(shaderdir, "colorchooser.frag"), 
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")])
-
-    obj = RenderObject(rdata, shader, color_chooser_boundingbox)
-
-    prerender!(obj, 
-        glEnable,       GL_DEPTH_TEST, 
-        glDepthFunc,    GL_LESS, 
-        glDisable,      GL_CULL_FACE, 
-        enabletransparency)
-    postrender!(obj, render, obj.vertexarray) # Render the vertexarray
-    obj
-end
-
-function edit{T}(rgba::RGBA{T}, ::Style{:Default}, customizations)
-
-  color = colorinput.value
-
-  # hover is true, if mouse 
-  hover = lift(SELECTION[:mouse_hover]) do selection
-    selection[1][1] == obj.id
-  end
+# very bad, but simple implementation
 
 
-  all_signals = foldl((tohsv(color), false, false, Vec2(0)), selectiondata) do v0, selection
+drag_xy(drag_id) = drag_id[1]
+cuttoff(x) = max(min(1f0, x), 0f0)
+isclicked(x) = !isempty(x)
+function vizzedit(x::RGBA, inputs)
+  drag      = inputs[:mousedragdiff_objectid]
+  mbutton_clicked = inputs[:mousebuttonspressed]
 
-    hsv, hue_sat0, bright_trans0, mouse0 = v0
-    mouse           = window.inputs[:mouseposition].value
-    mouse_clicked   = window.inputs[:mousebuttonspressed].value
+  vizz  = visualize(Rectangle(0,0,50,50), style=Cint(5))
+  is_num(drag_id) = drag_id[2][1] == vizz.id
+  slide_addition  = lift(drag_xy, filter(is_num, (Vec2(0), Vector2(0), Vector2(0)), drag))
+  haschanged    = foldl((t0, t1) -> (t0[2]!=t1, t1), (false, slide_addition.value), slide_addition)
+  haschanged    = lift(first, haschanged)
+  slide_addition  = keepwhen(haschanged, Vec2(0), slide_addition)
 
-    hue_sat = in(0, mouse_clicked) && selection[1][1] == obj.id
-    bright_trans = in(1, mouse_clicked) && selection[1][1] == obj.id
-    
+  slide_addition  = lift(last, foldl(GLAbstraction.mousediff, (false, Vector2(0.0f0), Vector2(0.0f0)), ## (Note 2) 
+                  lift(isclicked, mbutton_clicked), slide_addition))
 
-    if hue_sat && hue_sat0
-      diff = mouse - mouse0
-      hue = mod(hsv.c.h + diff[1], 360)
-      sat = max(min(hsv.c.s + (diff[2] / 30.0), 1.0), 0.0)
-
-      return (tohsv(hue, sat, hsv.c.v, hsv.alpha), hue_sat, bright_trans, mouse)
-    elseif hue_sat && !hue_sat0
-      return (hsv, hue_sat, bright_trans, mouse)
+  color = foldl(x, lift(/,slide_addition, 1000.0f0), mbutton_clicked) do v0, addition, mpress
+    if length(mpress) == 1
+      if mpress == IntSet(1) # leftclick changes blue+trans
+        return RGBA{Float32}(v0.r, v0.g, cuttoff(v0.b-addition.x), cuttoff(v0.a-addition.y))
+      elseif mpress == IntSet(0)
+        return RGBA{Float32}(cuttoff(v0.r-addition.x), cuttoff(v0.g-addition.y), v0.b, v0.a)
+      end
     end
-
-    if bright_trans && bright_trans0
-      diff    = mouse - mouse0
-      brightness  = max(min(hsv.c.v - (diff[2]/100.0), 1.0), 0.0)
-      alpha     = max(min(hsv.alpha + (diff[1]/100.0), 1.0), 0.0)
-
-      return (tohsv(hsv.c.h, hsv.c.s, brightness, alpha), hue_sat0, bright_trans, mouse)
-    elseif bright_trans && !bright_trans0
-      return (hsv, hue_sat0, bright_trans, mouse)
-    end
-
-    return (hsv, hue_sat, bright_trans, mouse)
+    v0
   end
-  color1 = lift(x -> torgb(x[1]), all_signals)
-  color1 = lift(x -> Vec4(x.c.r, x.c.g, x.c.b, x.alpha), Vec4, color1)
-  hue_saturation = lift(x -> x[2], all_signals)
-  brightness_transparency = lift(x -> x[3], all_signals)
-
-
-  obj.uniforms[:color]                    = color1
-  obj.uniforms[:hover]                    = hover
-  obj.uniforms[:hue_saturation]           = hue_saturation
-  obj.uniforms[:brightness_transparency]  = brightness_transparency
-
-  return obj
+  vizz[:color] = color
+  return color, vizz
 end

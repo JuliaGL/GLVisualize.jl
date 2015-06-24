@@ -61,7 +61,7 @@ include(joinpath( sourcedir, "visualize", "text", "utils.jl"))
 include(joinpath(     sourcedir, "edit_interface.jl"))
 
 export renderloop   # starts the renderloop
-export edit         # Edit an object
+export vizzedit         # Edit an object
 
 
 end # module

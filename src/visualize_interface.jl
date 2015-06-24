@@ -43,6 +43,6 @@ function view(
 	merge!(robj.uniforms, collect(camera))
 	push!(screen.renderlist, robj)
 end
-view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; method=:perspective) = for robj in robjs 
-	view(robj, screen, method=method)
+view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN) = for robj in robjs 
+	view(robj, screen)
 end

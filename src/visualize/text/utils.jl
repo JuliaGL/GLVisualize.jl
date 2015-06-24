@@ -97,8 +97,15 @@ end
 
 export clipboardpaste
 export copyclipboard
-Base.utf8(v::GPUVector{GLSprite}) = utf8(join(map(x->ID_TO_CHAR[x[1]], gpu_data(v))))
 
+function back2julia(x::GLSprite)
+	isnewline(x[1]) && return '\n'
+	ID_TO_CHAR[x[1]]
+end
+function Base.utf8(v::GPUVector{GLSprite})
+	data = gpu_data(v)
+	utf8(join(map(back2julia, data)))
+end
 # lift will have a boolean value at first argument position
 copyclipboard(_, text_selection) = copyclipboard(text_selection)
 function copyclipboard(text_selection)
@@ -202,7 +209,7 @@ function process_for_gl(text, tabs=4)
 	sizehint!(result, length(text))
 	for elem in text
 		if elem == '\t'
-			push!(result, fill(GLSprite(get_font!(Char(0x02D2))), tabs)...)
+			push!(result, fill(GLSprite(get_font!(' ')), tabs)...)
 		elseif elem == '\r'
 			#don't add
 		elseif elem == '\n'

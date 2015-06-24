@@ -114,6 +114,8 @@ ivec3 ind2sub(ivec3 dim, int linearindex)
 {
     return ivec3(linearindex / (dim.y * dim.z), (linearindex / dim.z) % dim.y, linearindex % dim.z);
 }
+
+
 vec2 linear_index(ivec2 dims, int index)
 {
     ivec2 index2D    = ind2sub(dims, index);

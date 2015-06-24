@@ -50,11 +50,13 @@ visualize_default{T <: Real}(::Rectangle{T}, ::Style, kw_args=Dict()) = Dict(
     :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
     :color          => RGBA(1f0, 0f0, 0f0, 1f0),
     :style          => Cint(4),
+    :preferred_camera => :orthographic_pixel,
     :technique      => to_gl_technique(:square)
 )
 rectangle_position(r::Rectangle) = Point2{Float32}(r.x, r.y)
 rectangle_scale(r::Rectangle)    = Vector2{Float32}(r.w, r.h)
 
+visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Input(r), s, customizations)
 function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualize_default(r.value, s))
     @materialize! primitive = customizations
 
@@ -68,7 +70,7 @@ function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualiz
         attributes=data,
         fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
-    robj = RenderObject(data, program)
+    robj = RenderObject(data, program, Input(AABB{Float32}(AABB(r.value))))
     prerender!(robj, 
         glDisable, GL_DEPTH_TEST, 
         glDepthMask, GL_FALSE,

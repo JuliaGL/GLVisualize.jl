@@ -7,6 +7,7 @@ uniform sampler3D intensities;
 
 uniform vec3 light_position = vec3(1.0, 1.0, 3.0);
 uniform vec3 light_intensity = vec3(15.0);
+uniform vec4 color;
 uniform float absorption = 1.0;
 
 uniform vec3 eyeposition;
@@ -15,13 +16,13 @@ uniform mat4 model;
 
 uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
-uniform float algorithm;
+uniform int algorithm;
 uniform float isovalue;
 
-const int view_samples = 128;
+const int view_samples = 512;
 const float max_distance = sqrt(1.0);
 
-const int num_samples = 128;
+const int num_samples = 256;
 const float step_size = max_distance/float(num_samples);
 const int num_ligth_samples = 16;
 const float lscale = max_distance / float(num_ligth_samples);
@@ -114,25 +115,25 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     vec3  pos           = front;
     vec3  Lo            = vec3(0.0);
     int   i             = 0;
-    vec4 color          = vec4(0.0);
+    vec4 _color          = vec4(0.0);
     pos += stepsize_dir;//apply first, to padd
     for (i; i < num_samples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
     {
         float density = texture(intensities, pos).x;
         if (density <= 0.0)
             continue;
-        if(abs(density - isovalue) < 0.01)
+        if(abs(density - isovalue) < 0.03)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
             vec3 L2 = -L;
-            Lo     = blinn_phong(N, pos, L, vec3(1,0,0));
-            Lo     += blinn_phong(N, pos, L2, vec3(1,0,0));
-            color = vec4(Lo, 1);
+            Lo     = blinn_phong(N, pos, L, color.rgb);
+            Lo     += blinn_phong(N, pos, L2, color.rgb);
+            _color = vec4(Lo, 1);
             break;
         }
     }
-    return color;
+    return _color;
 }
 vec4 mip(vec3 front, vec3 dir, float stepsize)
 {
@@ -156,9 +157,9 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 }
 void main()
 {
-    if(algorithm == 1.0)
+    if(algorithm == 1)
         frag_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
-    else if(algorithm == 2.0)
+    else if(algorithm == 2)
         frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else
         frag_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);

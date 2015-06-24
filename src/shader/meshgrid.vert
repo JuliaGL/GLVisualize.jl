@@ -35,7 +35,7 @@ void main()
 {
 	vec3 pos 		= position(Rectangle(grid_min, grid_max), textureSize(y_scale, 0), gl_InstanceID);
 	float intensity = linear_texture(y_scale, gl_InstanceID).x;
-	pos += vertices*vec3(scale.xy, scale.z*intensity);
+	pos 				+= vertices*vec3(scale.xy, scale.z*intensity);
 	vec4 instance_color = color_lookup(intensity, color, norm);
 	render(pos, normals, instance_color, view*model, projection, light);
 	o_id = uvec2(objectid, gl_InstanceID);  

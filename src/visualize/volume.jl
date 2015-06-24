@@ -1,29 +1,32 @@
 visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style, kw_args...) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
     :light_position         => Vec3(0.25, 1.0, 3.0),
+    :color                  => RGBA(0.9f0, 0.0f0, 0.2f0, 1f0),
     :light_intensity        => Vec3(15.0),
-    :algorithm              => 3f0,
+    :isovalue               => 0.5f0,
+    :absorption             => 1f0,
+    :algorithm              => Cint(3),
 )
 
 visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:mip}, kw_args...) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
     :light_position         => Vec3(0.25, 1.0, 3.0),
     :light_intensity        => Vec3(15.0),
-    :algorithm              => 3f0,
+    :algorithm              => Cint(3),
 )
 visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:iso}, kw_args...) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
     :light_position         => Vec3(0.25, 1.0, 3.0),
     :light_intensity        => Vec3(15.0),
     :isovalue               => 0.5f0,
-    :algorithm              => 2f0,
+    :algorithm              => Cint(2),
 )
 visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:absorption}, kw_args...) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
     :light_position         => Vec3(0.25, 1.0, 3.0),
     :light_intensity        => Vec3(15.0),
     :absorption             => 1f0,
-    :algorithm              => 1f0,
+    :algorithm              => Cint(1),
 )
 
 @visualize_gen Array{Float32, 3} Texture Style
