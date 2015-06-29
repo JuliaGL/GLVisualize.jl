@@ -49,7 +49,7 @@ view(visualize(grid), screen3D)
 println("3d done")
 
 
-view(visualize(grid2D, scale=Vec3(1000,1000,1.0)), screen2D, method=:orthographic_pixel)
+view(visualize(grid2D, scale=Vec3(1000,1000,1.0)), screen2D)
 println("2d done")
 
 

@@ -20,7 +20,7 @@ uniform mat4 projectionview, model;
 void main()
 {
 	int index   = gl_VertexID;
-	vec3 c 		= {{color_calculation}}
-	o_color 	= vec4(c, 1.0);
+	vec4 c 		= {{color_calculation}}
+	o_color 	= vec4(c.rgb, 1.0);
 	gl_Position = projectionview*model * vec4(vertex, 1);
 }
