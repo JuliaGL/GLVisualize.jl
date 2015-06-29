@@ -106,7 +106,7 @@ function setpixelsize(face, size)
     end
 end
 
-function loadfont(faceName::String; sizeXY::(Real, Real) = (32, 32), faceIndex::Real = 0, chars = '\u0000':'\u00ff')
+function loadfont(faceName::String; sizeXY::(Real, Real) = (25, 25), faceIndex::Real = 0, chars = '\u0000':'\u00ff')
     face = (FT_Face)[C_NULL]
     err = FT_New_Face(ftLib[1], faceName, int32(faceIndex), face)
     if err != 0

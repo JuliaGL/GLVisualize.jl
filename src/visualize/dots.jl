@@ -10,7 +10,11 @@ end
 
 @visualize_gen Vector{Point3{Float32}} GLBuffer Style{:dots}
 
-function visualize(positions::GLBuffer{Point3{Float32}}, s::Style{:dots}, data=visualize_default(positions, s))
+function visualize(
+        positions::GLBuffer{Point3{Float32}}, 
+        s::Style{:dots}, 
+        data=visualize_default(positions, s)
+    )
     @materialize! point_size = data
     data[:vertex] = positions
     program = TemplateProgram(

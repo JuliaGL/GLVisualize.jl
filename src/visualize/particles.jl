@@ -15,8 +15,14 @@ function visualize_default{T <: Point3}(
     )
 end
 
-@visualize_gen Vector{Point3{Float32}} texture_buffer Style
+visualize{T}(value::Vector{Point3{T}}, s::Style, customizations=visualize_default(value, s)) = 
+    visualize(texture_buffer(value), s, customizations)
 
+function visualize{T}(signal::Signal{Vector{Point3{T}}}, s::Style, customizations=visualize_default(signal.value, s))
+    tex = texture_buffer(signal.value)
+    lift(update!, tex, signal)
+    visualize(tex, s, customizations)
+end
 function visualize{T}(
         positions::Texture{Point3{T}, 1}, 
         s::Style, customizations=visualize_default(positions, s)

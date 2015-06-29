@@ -32,6 +32,7 @@ mat4 rotationmatrix_y(float angle);
 uniform uint objectid;
 flat out uvec2 o_id;
 
+
 void main()
 {
 	ivec3 dims 			= textureSize(vectorfield, 0);
