@@ -13,6 +13,7 @@ visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:mip}
     :light_position         => Vec3(0.25, 1.0, 3.0),
     :light_intensity        => Vec3(15.0),
     :algorithm              => Cint(3),
+    :color                  => RGBA(0.9f0, 0.0f0, 0.2f0, 1f0),
 )
 visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:iso}, kw_args...) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
@@ -20,6 +21,7 @@ visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:iso}
     :light_intensity        => Vec3(15.0),
     :isovalue               => 0.5f0,
     :algorithm              => Cint(2),
+    :color                  => RGBA(0.9f0, 0.0f0, 0.2f0, 1f0),
 )
 visualize_default(::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:absorption}, kw_args...) = Dict(
     :hull                   => GLUVWMesh(Cube(Vec3(0), Vec3(1))),
