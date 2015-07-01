@@ -14,11 +14,42 @@ This is basically the successor of GLPlot, and will soon be its new rendering co
 Right now it relies on a mixture of packages not in METADATA and different branches in these packages, so installation is a little tricky. 
 But here is a script adding the packages and checking out the correct branches.
 Run it two times, because packages fail as they have unregistered packages in their require file.
+
 ```Julia
+Pkg.clone("https://github.com/JuliaIO/FileIO.jl.git")
+Pkg.checkout("FileIO", "master")
+
+Pkg.clone("https://github.com/jhasse/FreeType.jl")
+Pkg.checkout("FreeType", "master")
+
+
+Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.jl.git")
+Pkg.checkout("AbstractGPUArray", "master")
+
+
+Pkg.clone("https://github.com/SimonDanisch/FreeTypeAbstraction.jl")
+Pkg.checkout("FreeTypeAbstraction", "master")
+
+Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
+Pkg.checkout("Packing", "master")
+
+
 Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
+
+Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
+Pkg.checkout("ImageIO", "master")
+
+Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
+Pkg.checkout("ImageMagick", "master")
+Pkg.build("ImageMagick")
+
+Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
+Pkg.checkout("WavefrontObj", "master")
+
 
 Pkg.add("GLWindow")
 Pkg.checkout("GLWindow", "screen_rebuild")
+
 
 Pkg.add("GLAbstraction")
 Pkg.checkout("GLAbstraction", "julia04")
@@ -43,19 +74,6 @@ Pkg.checkout("GLFW", "julia04")
 Pkg.add("Compat")
 Pkg.checkout("Compat", "master")
 
-Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
-Pkg.checkout("ImageIO", "master")
-
-Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
-Pkg.checkout("ImageMagick", "master")
-Pkg.build("ImageMagick")
-
-Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
-Pkg.checkout("WavefrontObj", "master")
-
-
-Pkg.clone("https://github.com/JuliaIO/FileIO.jl.git")
-Pkg.checkout("FileIO", "master")
 
 Pkg.clone("https://github.com/JuliaIO/MeshIO.jl.git")
 Pkg.checkout("MeshIO", "master")
@@ -63,21 +81,7 @@ Pkg.checkout("MeshIO", "master")
 Pkg.add("Meshes")
 Pkg.checkout("Meshes", "meshes2.0")
 
-Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.jl.git")
-Pkg.checkout("AbstractGPUArray", "master")
 
-Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
-Pkg.checkout("Packing", "master")
-
-Pkg.clone("https://github.com/jhasse/FreeType.jl")
-Pkg.checkout("FreeType", "master")
-
-
-Pkg.clone("https://github.com/SimonDanisch/FreeTypeAbstraction.jl")
-Pkg.checkout("FreeTypeAbstraction", "master")
-
-Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
-Pkg.checkout("Packing", "master")
 
 Pkg.add("VideoIO")
 Pkg.checkout("VideoIO")
