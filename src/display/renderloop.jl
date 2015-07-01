@@ -209,6 +209,7 @@ function add_complex_signals(screen, selection)
     selection           = foldl(drag2selectionrange, 0:0, mousedragdiff_id)
     arrow_navigation    = lift(to_arrow_symbol, screen.inputs[:buttonspressed])
 
+    screen.inputs[:mouse_hover]             = mouse_hover
     screen.inputs[:mousedragdiff_objectid]  = mousedragdiff_id
     screen.inputs[:selection]               = selection
     screen.inputs[:arrow_navigation]        = arrow_navigation

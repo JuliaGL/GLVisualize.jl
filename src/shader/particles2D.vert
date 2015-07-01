@@ -32,7 +32,7 @@ void main(){
 	int   index		  = gl_InstanceID;
     o_uv              = texturecoordinates; 
    	vec2  position	  = texelFetch(positions, index).xy;
-    o_color 		  = {{color_calculation}};
+    o_color 		  = {{color_calculation}}
     o_technique 	  = technique;
     o_style 		  = 5;
     o_id 			  = uvec2(objectid, index+1);
