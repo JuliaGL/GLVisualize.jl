@@ -14,7 +14,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
 end
 @visualize_gen Matrix{Float32} Texture Style
 
-function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize_defaults(grid, s))
+function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize_default(grid, s))
     @materialize! color, primitive = customizations
     @materialize grid_min, grid_max, norm = customizations
     data = merge(Dict(
