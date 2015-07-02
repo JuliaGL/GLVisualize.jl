@@ -23,7 +23,7 @@ flat out uvec2 o_id;
 void main(){
 	int index = gl_InstanceID;
     vec3 vert = texelFetch(positions, index).xyz + (scale*vertices);
-    vec4 c 	  = {{color_calculation}};
+    vec4 c 	  = {{color_calculation}}
     render(vert, normals, c, view*model, projection, light);
     o_id      = uvec2(objectid, index);
 }
