@@ -36,7 +36,8 @@ function visualize{T}(
         File(shaderdir, "util.vert"), 
         File(shaderdir, "particles.vert"), 
         File(shaderdir, "standard.frag"), 
-        attributes=data
+        attributes=data,
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
 end
