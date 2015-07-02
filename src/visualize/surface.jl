@@ -66,6 +66,11 @@ function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface
 
     bb = lift(AABB, min_x, min_y, min_z, max_x, max_y, max_z) # This is not accurate as I'm not recalcuting the data when something updates
 
-    program = TemplateProgram(File(shaderdir, "util.vert"), File(shaderdir, "surface2.vert"), File(shaderdir, "standard.frag"))
+    program = TemplateProgram(
+        File(shaderdir, "util.vert"), 
+        File(shaderdir, "surface2.vert"), 
+        File(shaderdir, "standard.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    )
     instanced_renderobject(data, length(x), program, bb)
 end
