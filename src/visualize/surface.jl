@@ -54,12 +54,12 @@ visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, s::Style{:surface}, customizat
 
 function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s))
     @materialize! color, primitive = customizations
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :x              => x,
         :y              => y,
         :z              => z,
         :color          => Texture(color)
-    )), collect_for_gl(primitive), customizations)
+    ), collect_for_gl(primitive), customizations)
 
     min_x, min_y, min_z = minimum(x), minimum(y), minimum(z)
     max_x, max_y, max_z = maximum(x), maximum(y), maximum(z)
