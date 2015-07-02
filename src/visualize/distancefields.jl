@@ -13,7 +13,8 @@ function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield},
 
     program = TemplateProgram(
         File(shaderdir, "uv_vert.vert"), 
-        File(shaderdir, "distancefield.frag")
+        File(shaderdir, "distancefield.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     std_renderobject(data, program)
 end

@@ -30,7 +30,8 @@ function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations
     program = TemplateProgram(
         File(shaderdir, "util.vert"), 
         File(shaderdir, "surface.vert"), 
-        File(shaderdir, "standard.frag")
+        File(shaderdir, "standard.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     instanced_renderobject(data, length(grid), program, bb)
 end

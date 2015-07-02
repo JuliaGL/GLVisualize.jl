@@ -17,7 +17,8 @@ function visualize(vectorfield::Texture{Vector3{Float32}, 3}, s::Style, customiz
     program = TemplateProgram(
         File(shaderdir, "util.vert"), 
         File(shaderdir, "vectorfield.vert"), 
-        File(shaderdir, "standard.frag"), 
+        File(shaderdir, "standard.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     instanced_renderobject(data, length(vectorfield), program, Input(boundingbox))
 end

@@ -24,7 +24,8 @@ function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize
     program = TemplateProgram(
         File(shaderdir, "util.vert"), 
         File(shaderdir, "meshgrid.vert"), 
-        File(shaderdir, "standard.frag")
+        File(shaderdir, "standard.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     instanced_renderobject(data, length(grid), program, lift(particle_grid_bb, grid_min, grid_max, norm))
 end

@@ -54,7 +54,8 @@ function visualize(
     shader = TemplateProgram(
         File(GLVisualize.shaderdir, "util.vert"), 
         File(GLVisualize.shaderdir, "text.vert"), 
-        File(GLVisualize.shaderdir, "distance_shape.frag")
+        File(GLVisualize.shaderdir, "distance_shape.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     bb = AABB(gpu_data(positions))
     extent = FONT_EXTENDS[glyphs[1][1]]
@@ -81,7 +82,8 @@ function cursor(positions, range, model)
     shader = TemplateProgram(
         File(GLVisualize.shaderdir, "util.vert"), 
         File(GLVisualize.shaderdir, "text_single.vert"), 
-        File(GLVisualize.shaderdir, "text.frag")
+        File(GLVisualize.shaderdir, "text.frag"),
+        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     std_renderobject(data, shader)
 end
