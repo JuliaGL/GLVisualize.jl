@@ -8,3 +8,5 @@ docs/Thumbs.db
 *.db
 *.db
 docs/Thumbs.db
+*.db
+test/Thumbs.db
