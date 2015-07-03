@@ -16,8 +16,25 @@ But here is a script adding the packages and checking out the correct branches.
 Run it two times, because packages fail as they have unregistered packages in their require file.
 
 ```Julia
+Pkg.clone("https://github.com/SimonDanisch/FixedSizeArrays.jl.git")
+Pkg.checkout("FixedSizeArrays", "master")
+
+Pkg.clone("https://github.com/JuliaGeometry/GeometryTypes.jl.git")
+Pkg.checkout("GeometryTypes", "master")
+
+Pkg.clone("https://github.com/SimonDanisch/ColorTypes.jl.git")
+Pkg.checkout("ColorTypes", "master")
+
+
 Pkg.clone("https://github.com/JuliaIO/FileIO.jl.git")
 Pkg.checkout("FileIO", "master")
+
+
+Pkg.clone("https://github.com/JuliaIO/MeshIO.jl.git")
+Pkg.checkout("MeshIO", "master")
+
+Pkg.add("Meshes")
+Pkg.checkout("Meshes", "meshes2.0")
 
 Pkg.clone("https://github.com/jhasse/FreeType.jl")
 Pkg.checkout("FreeType", "master")
@@ -34,7 +51,7 @@ Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
 Pkg.checkout("Packing", "master")
 
 
-Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
+
 
 Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
 Pkg.checkout("ImageIO", "master")
@@ -47,6 +64,21 @@ Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
 Pkg.checkout("WavefrontObj", "master")
 
 
+
+
+
+Pkg.add("Reactive")
+Pkg.checkout("Reactive", "master")
+Pkg.add("GLFW")
+Pkg.checkout("GLFW", "julia04")
+
+Pkg.add("Compat")
+Pkg.checkout("Compat", "master")
+
+Pkg.add("VideoIO")
+Pkg.checkout("VideoIO")
+Pkg.build("VideoIO")
+
 Pkg.add("GLWindow")
 Pkg.checkout("GLWindow", "screen_rebuild")
 
@@ -57,34 +89,6 @@ Pkg.checkout("GLAbstraction", "julia04")
 Pkg.add("ModernGL")
 Pkg.checkout("ModernGL", "master")
 
-Pkg.clone("https://github.com/SimonDanisch/FixedSizeArrays.jl.git")
-Pkg.checkout("FixedSizeArrays", "master")
-
-Pkg.clone("https://github.com/JuliaGeometry/GeometryTypes.jl.git")
-Pkg.checkout("GeometryTypes", "master")
-
-Pkg.clone("https://github.com/SimonDanisch/ColorTypes.jl.git")
-Pkg.checkout("ColorTypes", "master")
-
-Pkg.add("Reactive")
-Pkg.checkout("Reactive", "master")
-Pkg.add("GLFW")
-Pkg.checkout("GLFW", "julia04")
-
-Pkg.add("Compat")
-Pkg.checkout("Compat", "master")
-
-
-Pkg.clone("https://github.com/JuliaIO/MeshIO.jl.git")
-Pkg.checkout("MeshIO", "master")
-
-Pkg.add("Meshes")
-Pkg.checkout("Meshes", "meshes2.0")
-
-
-
-Pkg.add("VideoIO")
-Pkg.checkout("VideoIO")
-Pkg.build("VideoIO")
+Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
 
 ```
