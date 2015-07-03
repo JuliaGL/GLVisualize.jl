@@ -1,6 +1,7 @@
 visualize_default(distancefield::Union(Texture{Float32, 2}, Array{Float32, 2}), ::Style{:distancefield}, kw_args...) = @compat(Dict(
     :color          => RGBA(1f0, 1f0, 1f0, 1f0),
-    :primitive      => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(distancefield)...))
+    :primitive      => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(distancefield)...)),
+    :preferred_camera   => :orthographic_pixel
 ))
 
 @visualize_gen Array{Float32, 2} Texture Style
@@ -16,7 +17,7 @@ function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield},
         File(shaderdir, "distancefield.frag"),
         fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
-    std_renderobject(data, program)
+    std_renderobject(data, program, Input(AABB(Vec3(0), Vec3(size(distancefield)...,0))))
 end
 
 
