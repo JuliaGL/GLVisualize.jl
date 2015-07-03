@@ -50,21 +50,16 @@ Pkg.checkout("FreeTypeAbstraction", "master")
 Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
 Pkg.checkout("Packing", "master")
 
-
-
-
-Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
-Pkg.checkout("ImageIO", "master")
-
 Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
 Pkg.checkout("ImageMagick", "master")
 Pkg.build("ImageMagick")
 
+Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
+Pkg.checkout("ImageIO", "master")
+
+
 Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
 Pkg.checkout("WavefrontObj", "master")
-
-
-
 
 
 Pkg.add("Reactive")
