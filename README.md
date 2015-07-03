@@ -75,6 +75,7 @@ Pkg.checkout("VideoIO")
 Pkg.build("VideoIO")
 
 Pkg.add("GLWindow")
+Pkg.checkout("GLWindow")
 Pkg.checkout("GLWindow", "screen_rebuild")
 
 
