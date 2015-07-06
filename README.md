@@ -91,3 +91,4 @@ It should run without errors by now.
 Known problems:
 GLFW needs cmake and xorg-dev libglu1-mesa-dev on linux (can be installed via `sudo apt-get install xorg-dev libglu1-mesa-dev`).
 VideIO and FreeType seem to be also problematic on some platforms. Don't really know why yet.
+Try `Pkg.test("GLVisualize")` to see if things work!
