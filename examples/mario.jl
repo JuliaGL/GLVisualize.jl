@@ -42,8 +42,21 @@ end
 mario2model(mario) = translationmatrix(Vec3(mario.x, mario.y, 0f0))*scalematrix(Vec3(5f0))
 
 const mario_images = Dict()
+
+
+play{T}(array::Array{T, 3}, slice) = array[:, :, slice]
+	
+
+signify{T}(x::Array{T, 2}) = Input(x)
+function signify{T}(x::Array{T, 3})
+	lift(play, x, loop(1:size(x, 3)))
+end
+bgra{T}(rgb::RGB{T}) = BGRA(rgb.b, rgb.g, rgb.r, one(T))
+bgra{T}(rgb::Array{RGB{T}}) = map(bgra, rgb)
+bgra(rgb) = rgb
 for verb in ["jump", "walk", "stand"], dir in ["left", "right"]
-	mario_images[verb*dir] = read(File("imgs", "mario", verb, dir*".gif"))
+	gif = bgra(read(File("imgs", "mario", verb, dir*".gif")).data)
+	mario_images[verb*dir] = signify(gif)
 end
 function mario2image(mario, images=mario_images) 
 	verb = mario.y > 0.0 ? "jump" : mario.vx != 0.0 ? "walk" : "stand"

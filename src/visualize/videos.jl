@@ -14,7 +14,7 @@ function play{T}(buffer::Array{T, 2}, video_stream, t)
 end
 
 
-Base.read(gif::File{:gif}) = vread(VideoIO.openvideo(abspath(gif)))
+#Base.read(gif::File{:gif}) = vread(VideoIO.openvideo(abspath(gif)))
 Base.read(gif::File{:mp4}) = vread(VideoIO.openvideo(abspath(gif)))
 function vread(video_stream::VideoIO.VideoReader)
 	t0 			 = read(video_stream)
