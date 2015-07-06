@@ -47,3 +47,20 @@ end
 isnotempty(x) = !isempty(x)
 AND(a,b) = a&&b
 
+
+function GLVisualizeShader(shaders...; attributes...)
+    shaders = map(shader -> File(shaderdir, shader), shaders)
+    TemplateProgram(shaders...;
+        attributes...,  fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    )
+end
+
+function assemble_instanced(main, dict, shaders...)
+    program = GLVisualizeShader(shaders..., attributes=dict)
+    instanced_renderobject(dict, length(main), program, Input(AABB(main)))
+end
+
+function assemble_std(main, dict, shaders...)
+    program = GLVisualizeShader(shaders..., attributes=dict)
+    std_renderobject(dict, program, Input(AABB(main)))
+end

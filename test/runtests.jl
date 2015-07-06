@@ -9,7 +9,7 @@ const TEST_DATA2D = Any[]
 typealias Point3f Point3{Float32}
 
 
-include(string("test_arbitrary_surface.jl"))
+include(string("all_tests.jl"))
 
 
 grid    = reshape(TEST_DATA, 	close_to_square(length(TEST_DATA)) )
@@ -23,7 +23,6 @@ xhalf2(r)   = Rectangle{Int}(round(Int, r.w/2), r.y, round(Int, r.w/2), r.h)
 const screen3D = Screen(rs, area=lift(xhalf, rs.area))
 const screen2D = Screen(rs, area=lift(xhalf2, rs.area))
 println("screens done")
-
 
 view(visualize(grid), screen3D)
 println("3d done")

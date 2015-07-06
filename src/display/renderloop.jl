@@ -143,13 +143,10 @@ function renderloop(screen)
     GLFW.SwapBuffers(screen.nativewindow)
     GLFW.PollEvents()
     yield() 
-    sleep(0.001)
+    sleep(0.0001)
 end
 
 glClearColor(0.09411764705882353,0.24058823529411763,0.2401960784313726, 0)
-
-
-
 
 
 # Transforms a mouse drag into a selection from drag start to drag end
@@ -193,12 +190,10 @@ function mousedragdiff_objectid(inputs, mouse_hover)
 end
 
 function to_arrow_symbol(button_set)
-    isempty(button_set)         && return :nothing
-    button = first(button_set)
-    button == GLFW.KEY_RIGHT    && return :right
-    button == GLFW.KEY_LEFT     && return :left
-    button == GLFW.KEY_DOWN     && return :down
-    button == GLFW.KEY_UP       && return :up
+    GLFW.KEY_RIGHT in button_set && return :right
+    GLFW.KEY_LEFT  in button_set && return :left
+    GLFW.KEY_DOWN  in button_set && return :down
+    GLFW.KEY_UP    in button_set && return :up
     return :nothing
 end
 
