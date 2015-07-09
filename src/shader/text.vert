@@ -27,10 +27,16 @@ const int SPRITE = 1;
 const int CIRCLE = 2;
 const int SQUARE = 3;
 
+const int NEWLINE = 10;
+const int SPACE   = 32;
+
 void main(){
-	vec2 glyph_scale, bearing;
+	vec2  glyph_scale, bearing;
 	int   index		  = gl_InstanceID;
-    int  glyph 	      = int(texelFetch(glyphs, index).x);
+    int   glyph 	  = int(texelFetch(glyphs, index).x);
+    if(glyph == NEWLINE)
+        glyph = SPACE; // This should probably be not done in the shader...
+    glyph *= 2; // for lookups, there are two attributs in uvs for every glyph index
     vec4  attributes2 = texelFetch(uvs, glyph+1);
     
     if(technique == SPRITE){
