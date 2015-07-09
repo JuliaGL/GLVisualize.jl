@@ -40,12 +40,7 @@ type TextureAtlas
 		GPUVector(texture_buffer(GLSpriteAttribute[]))
 	)
 end
-const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
-@assert isfile(fn)
 
-const DEFAULT_FONT_FACE = newface(fn)
-const FONT_EXTENDS = Dict{Int, FontExtent}()
-const ID_TO_CHAR = Dict{Int, Char}()
 
 
 begin 
@@ -62,10 +57,11 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	]
 	i = texture_atlas.index
 	push!(texture_atlas.attributes, attributes)
-	texture_atlas.index = i+2
-	FONT_EXTENDS[i-1] 	= extent # extends get saved for the attribute id
-	ID_TO_CHAR[i-1] 	= glyph
-	return i-1 # zero indexed for OpenGL
+	texture_atlas.index = i+1
+	i0 					= i-1# zero indexed for OpenGL
+	FONT_EXTENDS[i0] 	= extent # extends get saved for the attribute id
+	ID_TO_CHAR[i0] 		= glyph
+	return i0 
 end
 
 
@@ -85,10 +81,19 @@ get_font!(char::Char,
 
 function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
 	#select_font_face(cc, font)
-	bitmap, extent = renderface(face, glyph)
-	rect 	= Rectangle(0,0,size(bitmap)...)
+	bitmap, extent = renderface(face, glyph, (42, 42))
+	rect 	= Rectangle(0, 0, size(bitmap)...)
     uv 		= push!(ta.rectangle_packer, rect).area #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small.") #TODO resize surface
     ta.images[uv] = reinterpret(Ufixed8, bitmap)
     uv, rect, extent
 end
+
+const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
+@assert isfile(fn)
+
+const DEFAULT_FONT_FACE = newface(fn)
+const FONT_EXTENDS 		= Dict{Int, FontExtent}()
+const ID_TO_CHAR 		= Dict{Int, Char}()
+
+map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
