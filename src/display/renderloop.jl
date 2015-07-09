@@ -13,7 +13,7 @@ function insert_selectionquery!(name::Symbol, value::Rectangle)
 end
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}})
     lift(value) do v
-    SELECTION_QUERIES[name] = v
+        SELECTION_QUERIES[name] = v
     end
     SELECTION[name]         = Input(Array(Vector2{Int}, value.value.w, value.value.h))
     SELECTION[name]
@@ -32,8 +32,8 @@ windowhints = [
     (GLFW.AUX_BUFFERS,  0)
 ]
 
-const ROOT_SCREEN = createwindow("Romeo", 1920, 1280, windowhints=windowhints, debugging=false)
-const TIMER_SIGNAL = fpswhen(GLVisualize.ROOT_SCREEN.inputs[:open], 30.0)
+const ROOT_SCREEN   = createwindow("Romeo", 1920, 1280, windowhints=windowhints, debugging=false)
+const TIMER_SIGNAL  = fpswhen(GLVisualize.ROOT_SCREEN.inputs[:open], 30.0)
 
 function fold_loop(v0, timediff_range)
     _, range = timediff_range
@@ -58,10 +58,11 @@ end
 
 bounce{T}(range::Range{T}; t=TIMER_SIGNAL) = 
     lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, t, range)))
-    
-insert_selectionquery!(:mouse_hover, lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
-    Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
-end)
+
+
+mouse_selection(mpos) = Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1, 1)
+
+insert_selectionquery!(:mouse_hover, lift(mouse_selection, ROOT_SCREEN.inputs[:mouseposition]))
 
 
 const FRAME_BUFFER_PARAMETERS = [
@@ -92,10 +93,10 @@ glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, 
 
 lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
     if all(x->x>0, window_size)
-        resize_nocopy!(COLOR_BUFFER, tuple(window_size...))
-        resize_nocopy!(STENCIL_BUFFER, tuple(window_size...))
+        resize_nocopy!(COLOR_BUFFER,    tuple(window_size...))
+        resize_nocopy!(STENCIL_BUFFER,  tuple(window_size...))
         glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil[1])
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, (window_size)...)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, window_size...)
     end 
 end
 
