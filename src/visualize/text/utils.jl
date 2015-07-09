@@ -1,5 +1,4 @@
-const newline_id = get_font!(Char(0x02E5))
-isnewline(x) = x[1] == newline_id
+isnewline(x) = x[1] == Uint16('\n')
 # i must be a valid character index
 function next_newline(text, i::Integer)
 	res = findnext(isnewline, text, i)
@@ -209,11 +208,16 @@ function process_for_gl(text, tabs=4)
 	sizehint!(result, length(text))
 	for elem in text
 		if elem == '\t'
-			push!(result, fill(GLSprite(get_font!(' ')), tabs)...)
+			space = get_font!(' ')
+			@assert space == 32 "space is not 32 but $nl"
+			append!(result, fill(GLSprite(space), tabs))
 		elseif elem == '\r'
 			#don't add
 		elseif elem == '\n'
-			push!(result, GLSprite(get_font!(Char(0x02E5))))
+
+			nl = get_font!('\n')
+			@assert nl == 10 "newline is not 10 but $nl"
+			push!(result, GLSprite(nl))
 		else
 			push!(result, GLSprite(get_font!(elem)))
 		end
