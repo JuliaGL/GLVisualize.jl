@@ -19,8 +19,9 @@ out vec4 o_color;
 
 void main(){
 	int   index		  = offset-1; //convert from julia indexes
-    vec4  uv_dims  	  = texelFetch(uvs, int(glyph));
-    vec4  attributes2 = texelFetch(uvs, int(glyph) + 1);
+	int   glyph2 	  = int(glyph)*2;
+    vec4  uv_dims  	  = texelFetch(uvs, glyph2);
+    vec4  attributes2 = texelFetch(uvs, glyph2 + 1);
     
     vec2  bearing 	  = attributes2.xy;
     vec2  glyph_scale = uv_dims.zw;
