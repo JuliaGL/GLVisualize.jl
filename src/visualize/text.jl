@@ -109,7 +109,7 @@ function textedit_signals(inputs, background, text)
     text_raw    = TextWithSelection(text[:glyphs], 0:0)
     text_edit   = Input(text_raw)
 
-    selection = lift(
+    selection   = lift(
         last, 
         foldl(
             move_cursor, 
@@ -147,10 +147,10 @@ function textedit_signals(inputs, background, text)
     text_inserted   = lift(inserttext, text_edit, text_to_insert)
 
     text_updates    = merge(
-        lift(return_nothing, text_inserted), 
-        lift(return_nothing, clipboard_copy), 
-        lift(return_nothing, delete_text), 
-        lift(return_nothing, cut_text), 
+        lift(return_nothing, text_inserted),
+        lift(return_nothing, clipboard_copy),
+        lift(return_nothing, delete_text),
+        lift(return_nothing, cut_text),
         lift(return_nothing, selection)
     )
     text_selection_signal = sampleon(text_updates, text_edit)
