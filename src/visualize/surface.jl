@@ -27,13 +27,11 @@ function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations
 
     bb = lift(particle_grid_bb, grid_min, grid_max, color_norm) # This is not accurate. color_norm doesn't need to reflect the real height. also it doesn't get recalculated when the texture changes.
 
-    program = TemplateProgram(
-        File(shaderdir, "util.vert"), 
-        File(shaderdir, "surface.vert"), 
-        File(shaderdir, "standard.frag"),
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    assemble_instanced(
+        grid, data,
+        "util.vert", "surface.vert", "standard.frag",
+        boundingbox=bb
     )
-    instanced_renderobject(data, length(grid), program, bb)
 end
 
 

@@ -25,14 +25,11 @@ function visualize{T <: Real}(
         :technique           => lift(to_gl_technique, technique)
     )), collect_for_gl(primitive), customizations)
 
-    program = TemplateProgram(
-        File(shaderdir, "util.vert"), 
-        File(shaderdir, "particles2D.vert"), 
-        File(shaderdir, "distance_shape.frag"),
-        attributes=data,
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    assemble_instanced(
+        positions,
+        data,
+        "util.vert", "particles2D.vert", "distance_shape.frag",
     )
-    instanced_renderobject(data, length(positions), program, Input(AABB{Float32}(AABB(gpu_data(positions)))))
 end
 
 #=

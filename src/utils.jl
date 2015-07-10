@@ -47,6 +47,7 @@ end
 isnotempty(x) = !isempty(x)
 AND(a,b) = a&&b
 
+GeometryTypes.AABB(a::GPUArray) = AABB(gpu_data(a))
 
 function GLVisualizeShader(shaders...; attributes...)
     shaders = map(shader -> File(shaderdir, shader), shaders)
@@ -55,12 +56,17 @@ function GLVisualizeShader(shaders...; attributes...)
     )
 end
 
-function assemble_instanced(main, dict, shaders...)
+function assemble_std(main, dict, shaders...; boundingbox=Input(AABB{Float32}(AABB(main))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
-    instanced_renderobject(dict, length(main), program, Input(AABB(main)))
+    std_renderobject(dict, program, boundingbox, primitive)
 end
 
-function assemble_std(main, dict, shaders...)
+function assemble_instanced(main, dict, shaders...; boundingbox=Input(AABB{Float32}(AABB(main))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
-    std_renderobject(dict, program, Input(AABB(main)))
+    instanced_renderobject(dict, length(main), program, boundingbox, primitive)
+end
+
+function assemble_instanced(main::GPUVector, dict, shaders...; boundingbox=Input(AABB{Float32}(AABB(main))), primitive=GL_TRIANGLES)
+    program = GLVisualizeShader(shaders..., attributes=dict)
+    instanced_renderobject(dict, main, program, boundingbox, primitive)
 end

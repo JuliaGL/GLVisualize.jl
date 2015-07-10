@@ -31,8 +31,10 @@ function visualize{T}(
     data = merge(Dict(
         :positions       => positions,
     ), collect_for_gl(primitive), customizations)
-    program = GLVisualizeShader("util.vert", "particles.vert" , "standard.frag", attributes=data)
-    instanced_renderobject(data, length(positions), program, Input(AABB(gpu_data(positions))))
+    assemble_instanced(
+        positions, data,
+        "util.vert", "particles.vert", "standard.frag"
+    )
 end
 
 

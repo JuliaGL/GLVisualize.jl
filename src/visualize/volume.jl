@@ -39,6 +39,8 @@ function visualize(intensities::Texture{Float32, 3}, s::Style, customizations=vi
     @materialize! hull = customizations # pull out variables to avoid duplications
     customizations[:intensities] = intensities
     data   = merge(customizations, collect_for_gl(hull))
-    shader = TemplateProgram(File(shaderdir, "volume.vert"), File(shaderdir, "volume.frag"))
-    std_renderobject(data, shader, Input(AABB(hull.vertices)))
+    shader = assemble_std(
+        hull.vertices, data,
+        "volume.vert", "volume.frag",
+    )
 end

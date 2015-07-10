@@ -18,14 +18,12 @@ function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize
     @materialize! color, primitive = customizations
     @materialize grid_min, grid_max, norm = customizations
     data = merge(Dict(
-        :y_scale        => grid,
-        :color          => Texture(color),
+        :y_scale => grid,
+        :color   => Texture(color),
     ), collect_for_gl(primitive), customizations)
-    program = TemplateProgram(
-        File(shaderdir, "util.vert"), 
-        File(shaderdir, "meshgrid.vert"), 
-        File(shaderdir, "standard.frag"),
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    assemble_instanced(
+        grid, data,
+        "util.vert", "meshgrid.vert", "standard.frag",
+        boundingbox=lift(particle_grid_bb, grid_min, grid_max, norm)
     )
-    instanced_renderobject(data, length(grid), program, lift(particle_grid_bb, grid_min, grid_max, norm))
 end

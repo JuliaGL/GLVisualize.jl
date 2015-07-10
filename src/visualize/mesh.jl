@@ -16,11 +16,9 @@ function visualize(mesh::GLNormalMesh, s::Style, customizations=visualize_defaul
 end
 
 function visualize(mesh::GLNormalAttributeMesh, s::Style, customizations=visualize_default(mesh, s))
-    data    = merge(collect_for_gl(mesh), customizations)
-    shader  = TemplateProgram(
-        File(shaderdir, "util.vert"), 
-        File(shaderdir, "attribute_mesh.vert"), 
-        File(shaderdir, "standard.frag"),
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")])
-    std_renderobject(data, shader, Input(AABB(mesh.vertices)))
+    data = merge(collect_for_gl(mesh), customizations)
+    assemble_std(
+        mesh.vertices, data, 
+        "util.vert", "attribute_mesh.vert", "standard.frag",
+    )
 end

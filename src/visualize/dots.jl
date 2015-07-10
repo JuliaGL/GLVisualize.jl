@@ -17,12 +17,11 @@ function visualize(
     )
     @materialize! point_size = data
     data[:vertex] = positions
-    program = TemplateProgram(
-        File(shaderdir, "dots.vert"), 
-        File(shaderdir, "dots.frag"), 
-        attributes=data
+    robj = assemble_std(
+        positions, data,
+        "dots.vert", "dots.frag",
+        primitive=GL_POINTS
     )
-    robj = std_renderobject(data, program, Input(AABB(gpu_data(positions))), GL_POINTS)
     prerender!(robj, glPointSize, point_size)
     robj
 end

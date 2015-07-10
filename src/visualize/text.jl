@@ -50,16 +50,13 @@ function visualize(
         :style_index         => style_index,
         :technique           => lift(to_gl_technique, technique)
     ), collect_for_gl(primitive))
-
-    shader = TemplateProgram(
-        File(GLVisualize.shaderdir, "util.vert"), 
-        File(GLVisualize.shaderdir, "text.vert"), 
-        File(GLVisualize.shaderdir, "distance_shape.frag"),
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    bb      = AABB(gpu_data(positions))
+    extent  = FONT_EXTENDS[glyphs[1][1]]
+    assemble_instanced(
+        glyphs, data,
+        "util.vert", "text.vert", "distance_shape.frag",
+        boundingbox=Input(AABB{Float32}(bb.min, Vec3(bb.max)+Vec3(extent.advance..., 0f0)))
     )
-    bb = AABB(gpu_data(positions))
-    extent = FONT_EXTENDS[glyphs[1][1]]
-    instanced_renderobject(data, glyphs, shader, Input(AABB{Float32}(bb.min, Vec3(bb.max)+Vec3(extent.advance..., 0f0))))
 end
 
 
@@ -79,19 +76,16 @@ function cursor(positions, range, model)
         :preferred_camera    => :orthographic_pixel
     ), collect_for_gl(GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0))))
 
-    shader = TemplateProgram(
-        File(GLVisualize.shaderdir, "util.vert"), 
-        File(GLVisualize.shaderdir, "text_single.vert"), 
-        File(GLVisualize.shaderdir, "text.frag"),
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    shader = assemble_std(
+        Rectangle(0f0, 0f0, 1f0, 1f0), data, 
+        "util.vert", "text_single.vert", "text.frag"
     )
-    std_renderobject(data, shader)
 end
 export cursor
 
 function update_positions(glyphs, text, styles_index)
     oldpos      = text[:positions]
-    positions   = GLVisualize.calc_position(glyphs)
+    positions   = calc_position(glyphs)
     if length(oldpos) != length(positions)
         oldlength = length(oldpos)
         newlength = length(positions)
@@ -159,7 +153,7 @@ function textedit_signals(inputs, background, text)
     text_sig    = lift(x->x.text,       text_selection_signal)
 
     lift(update_positions, text_sig, Input(text), Input(background[:style_index]))
-    foldl(visualize_selection, 0:0, selection, Input(background[:style_index]))
+    foldl(visualize_selection, 0:0, selection,    Input(background[:style_index]))
     lift(utf8, text_sig), selection
 end
 
