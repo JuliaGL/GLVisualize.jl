@@ -97,19 +97,22 @@ function update_positions(glyphs, text, styles_index)
     update!(oldpos, positions)
 end
 
+insert_enter(x) = utf8("\n")
+
 function textedit_signals(inputs, background, text)
     @materialize unicodeinput, selection, buttonspressed, arrow_navigation, mousedragdiff_objectid = inputs
     # create object which can globally hold the text and selection 
     text_raw    = TextWithSelection(text[:glyphs], 0:0)
     text_edit   = Input(text_raw)
-
+    shift       = lift(in, GLFW.KEY_LEFT_SHIFT, buttonspressed)
     selection   = lift(
         last, 
         foldl(
             move_cursor, 
             (selection.value, selection.value), 
             arrow_navigation, selection,
-            text_edit
+            text_edit,
+            shift
         )
     )
 
@@ -123,19 +126,21 @@ function textedit_signals(inputs, background, text)
     strg_v          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
     strg_c          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
     strg_x          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
+    enter_key       = lift(==, buttonspressed, IntSet(GLFW.KEY_ENTER))
     del             = lift(==, buttonspressed, IntSet(GLFW.KEY_BACKSPACE))
 
+    enter_insert    = lift(insert_enter,   keepwhen(enter_key, true, enter_key))
     clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)
 
     delete_text     = lift(deletetext,     keepwhen(del,    true, del),     text_edit)
-    cut_text        = lift(deletetext,     keepwhen(strg_x, true, strg_x),  text_edit)
+    cut_text        = lift(cutclipboard,   keepwhen(strg_x, true, strg_x),  text_edit)
 
 
     clipboard_paste = lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
 
     text_gate       = lift(isnotempty, unicodeinput)
     unicode_input   = keepwhen(text_gate, Char['0'], unicodeinput)
-    text_to_insert  = merge(clipboard_paste, unicode_input)
+    text_to_insert  = merge(clipboard_paste, unicode_input, enter_insert)
     text_to_insert  = lift(process_for_gl, text_to_insert)
     
     text_inserted   = lift(inserttext, text_edit, text_to_insert)
