@@ -4,7 +4,7 @@ function next_newline(text, i::Integer)
 	res = findnext(isnewline, text, i)
 	res == 0 ? length(text) : res
 end
-previous_newline(text, i::Integer) 	= max(1, findprev(isnewline, text, i))
+previous_newline(text, i::Integer) = max(1, findprev(isnewline, text, i))
 
 export previous_newline
 export next_newline
@@ -35,24 +35,32 @@ function up_before_newline(text, current_position)
 	nl_distance = i-pnl # distance from previous newline
 	min(length(text), ppnl+nl_distance)
 end
-function move_cursor(t0, dir, mouseselection, text_selection)
+
+function next_arrow_selection(dir, text, first_index, last_index)
+	(dir == :up)    && return up_before_newline(text, first_index)
+	(dir == :down)  && return down_after_newline(text, last_index)
+	(dir == :left)  && return max(1, first_index-1)
+	(dir == :right) && return min(length(text)+1, last_index+1)
+    -1
+end
+
+function move_cursor(t0, dir, mouseselection, text_selection, is_movingselection)
 	text, selection = text_selection.text, text_selection.selection
 	mouseselection0, selection0 = t0
 	selection0 = selection
 	mouseselection0 != mouseselection && return (mouseselection, mouseselection) # if mouse selection has changed, return the new position
 	if selection0 != 0:0
-		first_i = first(selection0) # first is always valid, if its not zero
+		first_i   = first(selection0) # first is always valid, if its not zero
 		# last is not valid, if selection is in between characters
-		last_i = isempty(selection0) ? first(selection0) : last(selection0) # if only single char selected use first, otherwise last position of selection
-		if dir == :up
-			return (mouseselection, up_before_newline(text, first_i):0)  #:0 -> movement changes selection into single point selection
-		elseif dir == :down
-			return (mouseselection, down_after_newline(text, last_i):0)
-		elseif dir == :left
-			return (mouseselection, max(1, first_i-1):0)
-		elseif dir == :right
-			return (mouseselection, min(length(text)+1,last_i+1):0)
-		end
+		last_i    = isempty(selection0) ? first(selection0) : last(selection0) # if only single char selected use first, otherwise last position of selection
+		nas       = next_arrow_selection(dir, text, first_i, last_i) # -1 for no new arrow selection
+        if nas != -1
+            if is_movingselection
+                return (mouseselection, nas:last_i)
+            else
+                return (mouseselection, nas:0)
+            end
+        end
 	end
 	(mouseselection0, selection0)
 end
@@ -209,14 +217,11 @@ function process_for_gl(text, tabs=4)
 	for elem in text
 		if elem == '\t'
 			space = get_font!(' ')
-			@assert space == 32 "space is not 32 but $nl"
 			append!(result, fill(GLSprite(space), tabs))
 		elseif elem == '\r'
 			#don't add
 		elseif elem == '\n'
-
 			nl = get_font!('\n')
-			@assert nl == 10 "newline is not 10 but $nl"
 			push!(result, GLSprite(nl))
 		else
 			push!(result, GLSprite(get_font!(elem)))
