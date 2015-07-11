@@ -44,6 +44,6 @@ function view(
 	push!(screen.renderlist, robj)
 end
 
-view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN) = for robj in robjs 
-	view(robj, screen)
+view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; kw_args...) = for robj in robjs
+	view(robj, screen; kw_args...)
 end
