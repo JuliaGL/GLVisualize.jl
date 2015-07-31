@@ -55,7 +55,7 @@ function visualize(
     assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
-        boundingbox=Input(AABB{Float32}(bb.min, Vec3(bb.max)+Vec3(extent.advance..., 0f0)))
+        boundingbox=Input(AABB{Float32}(bb.min, Vec3f0(bb.max)+Vec3f0(extent.advance..., 0f0)))
     )
 end
 

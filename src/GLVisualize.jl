@@ -20,9 +20,10 @@ using Packing
 using FreeTypeAbstraction
 using VideoIO
 
-FreeTypeAbstraction.init()
+
 
 import Base: merge, convert, show
+
 
 
 
@@ -63,5 +64,9 @@ include(joinpath(     sourcedir, "edit_interface.jl"))
 export renderloop   # starts the renderloop
 export vizzedit         # Edit an object
 
+
+function init(window_name="GLVisualize", resolution=(1000,1000))
+	
+end
 
 end # module

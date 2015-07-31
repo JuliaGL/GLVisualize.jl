@@ -15,10 +15,10 @@ end
 
 
 #Base.read(gif::File{:gif}) = vread(VideoIO.openvideo(abspath(gif)))
+
 Base.read(gif::File{:mp4}) = vread(VideoIO.openvideo(abspath(gif)))
 function vread(video_stream::VideoIO.VideoReader)
 	t0 			 = read(video_stream)
 	cd, w, h 	 = size(t0)
 	giff 		 = foldl(play, reinterpret(RGB{Ufixed8}, t0, (w, h)), Input(video_stream), TIMER_SIGNAL)
 end
-

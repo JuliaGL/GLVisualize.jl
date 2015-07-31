@@ -1,6 +1,6 @@
 const SHARED_DEFAULTS = @compat(Dict(
-    :model      	  => Input(eye(Mat4)),
-    :light      	  => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
+    :model      	  => Input(eye(Mat4f0)),
+    :light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20,1)]),
     :preferred_camera => :perspective
 ))
 
@@ -23,7 +23,7 @@ visualize(file::File, 	  style::Symbol=:default; kw_args...) = visualize(read(fi
 function view(
 		robj::RenderObject, screen=ROOT_SCREEN; 
 		method 	 = robj.uniforms[:preferred_camera], 
-		position = Vec3(2), lookat=Vec3(0)
+		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
 	if method == :perspective
 		camera = get!(screen.cameras, :perspective) do 
@@ -37,6 +37,8 @@ function view(
 		camera = get!(screen.cameras, :orthographic_pixel) do 
 			OrthographicPixelCamera(screen.inputs)
 		end
+	elseif method == :nothing
+		return push!(screen.renderlist, robj)
 	else
 		error("Method $method not a known camera type")
 	end

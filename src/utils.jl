@@ -47,12 +47,13 @@ end
 isnotempty(x) = !isempty(x)
 AND(a,b) = a&&b
 
-GeometryTypes.AABB(a::GPUArray) = AABB(gpu_data(a))
+call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 
 function GLVisualizeShader(shaders...; attributes...)
     shaders = map(shader -> File(shaderdir, shader), shaders)
     TemplateProgram(shaders...;
-        attributes...,  fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+        attributes...,  fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")],
+        updatewhile=ROOT_SCREEN.inputs[:open], update_interval=1.0
     )
 end
 

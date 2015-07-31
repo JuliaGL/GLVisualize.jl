@@ -14,6 +14,7 @@ function visualize{T <: Color}(img::Signal{Array{T, 2}}, s::Style, customization
     lift(update!, tex, img)
     visualize(tex, s, customizations)
 end
+
 visualize(img::Image, s::Style, customizations=visualize_default(img, s)) = 
     visualize(img.data, s, customizations)
 
@@ -24,6 +25,6 @@ function visualize{T <: Color}(img::Texture{T, 2}, s::Style, data=visualize_defa
     assemble_std(
         img, data, 
         "uv_vert.vert", "texture.frag", 
-        boundingbox=Input(AABB(Vec3(0), Vec3(size(img)...,0)))
-    ) # really not a good boundingbox.
+        boundingbox=Input(AABB(Vec3f0(0), Vec3f0(size(img)...,0)))
+    )
 end

@@ -89,11 +89,3 @@ function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_
     uv, rect, extent
 end
 
-const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
-@assert isfile(fn)
-
-const DEFAULT_FONT_FACE = newface(fn)
-const FONT_EXTENDS      = Dict{Int, FontExtent}()
-const ID_TO_CHAR        = Dict{Int, Char}()
-
-map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct

@@ -11,3 +11,5 @@ docs/Thumbs.db
 *.db
 test/Thumbs.db
 *.lol
+*.db
+test/Thumbs.db

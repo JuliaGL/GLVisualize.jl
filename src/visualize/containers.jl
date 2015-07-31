@@ -1,13 +1,13 @@
 
-visualize_default(::Matrix, ::Style, kw_args...) = @compat(Dict(
-    :gap 	=> Input(Vec3(0.1, 0.1, 0.0)),
-   	:scale 	=> Vec3(1.0, 1.0, 1.0)
-))
+visualize_default(::Matrix, ::Style, kw_args...) = Dict(
+    :gap 	=> Input(Vec3f0(0.1, 0.1, 0.0)),
+   	:scale 	=> Vec3f0(1.0, 1.0, 1.0)
+)
 
 function visualize(grid::Matrix, s::Style, customizations=visualize_default(grid, s))
     @materialize! gap, model, scale = customizations
     results = map(grid) do viz_args
-		trans = Input(eye(Mat4)) # get a handle to the translation matrix
+		trans = Input(eye(Mat4f0)) # get a handle to the translation matrix
 		if isa(viz_args, Tuple)
 			length(viz_args) < 1 && error("tried to visualize empty tuple ()")
 			key_args = collect(filter(x->isa(x, Pair), viz_args))
@@ -22,7 +22,7 @@ function visualize(grid::Matrix, s::Style, customizations=visualize_default(grid
 		bb = robj.boundingbox.value
 		width = bb.max-bb.min
 		model_scale = 1f0/max(width.x, width.y)
-		push!(model, translationmatrix(Vec3(i-1, j-1, 0).*scale)*scalematrix(model_scale*scale)*translationmatrix(-bb.min)) # update transformation matrix
+		push!(model, translationmatrix(Vec3f0(i-1, j-1, 0).*scale)*scalematrix(model_scale*scale)*translationmatrix(-bb.min)) # update transformation matrix
 	end
 	vec(map(last, results))
 end

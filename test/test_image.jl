@@ -1,12 +1,9 @@
-function image_test_data(N)
-	return (
-		file"test.mp4", 
-		RGBA{Float32}[rgba(sin(i), sin(j), cos(i), sin(j)*cos(i)) for i=1:0.1:N, j=1:0.1:N], 
-		file"drawing.jpg",
-		file"dealwithit.jpg",
-		file"feelsgood.png",
-		file"success.gif"
-	)
-end
+using FileIO, ImageIO, GLVisualize, ColorTypes, FixedPointNumbers, GLAbstraction
+const img = read(file"feelsgood.png").data
+#img2 = convert(GrayAlpha{Ufixed8}, img)
+robj = visualize(Texture(img, minfilter=:nearest))
+println(robj[:image])
+view(robj)
 
-push!(TEST_DATA2D, image_test_data(20)...)
+renderloop()
+

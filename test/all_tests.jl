@@ -17,9 +17,9 @@ push!(TEST_DATA, Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:50, j=1:50
 
 # 3d dot particles
 function dots_data(N)
-	start_point = Point3f(0f0)
+	start_point = Point3f0(0f0)
 	randrange = -0.1f0:eps(Float32):0.1f0
-	return (Point3f[(start_point += rand(Point3f, randrange)) for i=1:N], :dots)
+	return (Point3f0[(start_point += rand(Point3f0, randrange)) for i=1:N], :dots)
 end
 push!(TEST_DATA, dots_data(25_000))
 
@@ -32,7 +32,7 @@ function create_isosurf(N)
 	volume  = (volume .- min) ./ (max .- min)
 	return GLNormalMesh(volume, 0.5f0)
 end
-push!(TEST_DATA, create_isosurf(64))
+#push!(TEST_DATA, create_isosurf(64))
 
 # some more funcitonality from Meshes
 function mesh_data()
@@ -41,7 +41,6 @@ function mesh_data()
     y_min, y_max = -1, 5
     z_min, z_max = -1, 5
     scale = 8
- 
     b1(x,y,z) = box(   x,y,z, 0,0,0,3,3,3)
     s1(x,y,z) = sphere(x,y,z, 3,3,3,sqrt(3))
     f1(x,y,z) = min(b1(x,y,z), s1(x,y,z))  # UNION
@@ -55,19 +54,19 @@ function mesh_data()
  
     vol  = volume(f, x_min,y_min,z_min,x_max,y_max,z_max, scale)
     msh  = GLNormalMesh(vol, 0.0f0)
-
+    
     baselen = 0.4f0
     dirlen  = 2f0
     axis    = [
-        (Cube(Vec3(baselen), Vec3(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
-        (Cube(Vec3(baselen), Vec3(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
-        (Cube(Vec3(baselen), Vec3(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+        (Cube(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
+        (Cube(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+        (Cube(Vec3f0(baselen), Vec3f0(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
     ]
     
     axis = map(GLNormalMesh, axis)
     axis = merge(axis)
 
-    return msh, axis
+    return axis, msh
 end
 push!(TEST_DATA, mesh_data()...)
 
@@ -75,12 +74,12 @@ push!(TEST_DATA, mesh_data()...)
 push!(TEST_DATA, GLNormalMesh(file"cat.obj"))
 
 # particles
-generate_particles(N,x,i) = Point3f(
+generate_particles(N,x,i) = Point3f0(
 	sin(i+x/20f0),
 	cos(i+x/20f0), 
 	(2x/N)+i/10f0
 )
-update_particles(i, N) 		= Point3f[generate_particles(N,x, i) for x=1:N]
+update_particles(i, N) 		= Point3f0[generate_particles(N,x, i) for x=1:N]
 particle_color(positions) 	= RGBAU8[RGBAU8(((cos(pos.x)+1)/2),0.0,((sin(pos.y)+1)/2),  1.0f0) for pos in positions]
 function particle_data(N)
 	locations 	= lift(update_particles, bounce(1f0:0.1f0:10f0), N)
@@ -90,16 +89,16 @@ end
 push!(TEST_DATA, particle_data(1024))
 particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 push!(TEST_DATA,  (
-	Point3f[rand(Point3f, 0f0:0.001f0:2f0) for i=1:1024], 
+	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024], 
 	:primitive 	=> GLNormalMesh(file"cat.obj"), 
 	:color 		=> lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)), 
-	:scale 		=> Vec3(0.2)
+	:scale 		=> Vec3f0(0.2)
 ))
 
 # sierpinski particles
-function sierpinski(n, positions=Point3f[])
+function sierpinski(n, positions=Point3f0[])
     if n == 0
-        push!(positions, Point3f(0))
+        push!(positions, Point3f0(0))
         positions
     else
         t = sierpinski(n - 1, positions)
@@ -109,17 +108,17 @@ function sierpinski(n, positions=Point3f[])
         t_copy = copy(t)
         mv = (0.5^n * 2^n)/2f0
         mw = (0.5^n * 2^n)/4f0
-        append!(t, [p + Point3f(mw, mw, -mv) 	for p in t_copy])
-        append!(t, [p + Point3f(mw, -mw, -mv) 	for p in t_copy])
-        append!(t, [p + Point3f(-mw, -mw, -mv) 	for p in t_copy])
-        append!(t, [p + Point3f(-mw, mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f0(mw, mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f0(mw, -mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f0(-mw, -mw, -mv) 	for p in t_copy])
+        append!(t, [p + Point3f0(-mw, mw, -mv) 	for p in t_copy])
         t
     end
 end
 function sierpinski_data(n)
     positions 	= sierpinski(n)
-    return (positions, :scale => Vec3(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
-    #return visualize(positions, scale=Vec3(0.5^n), primitive=GLNormalMesh(Pyramid(Point3f(0), 1f0,1f0)))
+    return (positions, :scale => Vec3f0(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f0(0), 1f0,1f0)))
+    #return visualize(positions, scale=Vec3f0(0.5^n), primitive=GLNormalMesh(Pyramid(Point3f0(0), 1f0,1f0)))
 end
 sierpinski_data(4)
 push!(TEST_DATA, sierpinski_data(4))
@@ -142,7 +141,7 @@ push!(TEST_DATA, surface_data(128))
 
 
 # vectorfield
-vectorfielddata(N, i) = Vec3[Vec3(cos(x/N*3)*i, cos(y/7i), cos(i/5)) for x=1:N, y=1:N, z=1:N]
+vectorfielddata(N, i) = Vec3f0[Vec3f0(cos(x/N*3)*i, cos(y/7i), cos(i/5)) for x=1:N, y=1:N, z=1:N]
 
 const t = bounce(1f0:0.1f0:5f0)
 
@@ -193,9 +192,9 @@ push!(TEST_DATA2D, image_test_data(20)...)
 
 
 # 2D particles
-particle_data2D(i, N) = Point2{Float32}[rand(Point2{Float32}, -10f0:eps(Float32):10f0) for x=1:N]
+particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
 
-push!(TEST_DATA2D, (foldl(+, Point2{Float32}[rand(Point2{Float32}, 0f0:eps(Float32):1000f0) for x=1:512], 
+push!(TEST_DATA2D, (foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512], 
 	lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), :scale=>Vec2(10, 10)))
 
 
