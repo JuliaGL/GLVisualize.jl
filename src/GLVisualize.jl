@@ -53,7 +53,6 @@ export GLSprite
 export SpriteStyle
 export GLSpriteStyle
 
-include(joinpath(     sourcedir, "color.jl"))
 include_all(joinpath( sourcedir, "share"))
 include_all(joinpath( sourcedir, "edit"))
 include_all(joinpath( sourcedir, "visualize"))

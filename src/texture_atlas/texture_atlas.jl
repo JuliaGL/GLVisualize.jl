@@ -1,20 +1,24 @@
-immutable Sprite{T} <: FixedVector{T, 1}
-	attribute_id::T # lookup attribute_id for attribute texture
+immutable Sprite{T} <: FixedVector{1, T}
+	#attribute_id::T # lookup attribute_id for attribute texture
+	_::NTuple{1, T}
 end
-immutable SpriteStyle{T} <: FixedVector{T, 2}
-	color_id::T # lookup attribute_id for attribute texture
-	technique::T
+immutable SpriteStyle{T} <: FixedVector{2, T}
+	#color_id::T # lookup attribute_id for attribute texture
+	#technique::T
+	_::NTuple{2, T}
 end
 
 typealias GLSprite Sprite{Uint32}
 typealias GLSpriteStyle SpriteStyle{Uint16}
 
-immutable SpriteAttribute{T} <: FixedVector{T, 4}
-	u::T
-	v::T
-	x_scale::T
-	y_scale::T
+immutable SpriteAttribute{T} <: FixedVector{4, T}
+	_::NTuple{4, T}
+	#u::T
+	#v::T
+	#x_scale::T
+	#y_scale::T
 end
+
 
 typealias GLSpriteAttribute SpriteAttribute{Float16}
 
@@ -53,7 +57,7 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	bearing 			= extent.horizontal_bearing
 	attributes 			= GLSpriteAttribute[
 		GLSpriteAttribute(uv.x, uv.y, uv.w, uv.h), # last remaining digits are optional, so we use them to cache this calculation
-		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), extent.advance...), 
+		GLSpriteAttribute(bearing[1], -(uv.h-bearing[2]), extent.advance...), 
 	]
 	i = texture_atlas.index
 	push!(texture_atlas.attributes, attributes)

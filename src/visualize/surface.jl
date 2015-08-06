@@ -62,7 +62,7 @@ function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface
     min_x, min_y, min_z = minimum(x), minimum(y), minimum(z)
     max_x, max_y, max_z = maximum(x), maximum(y), maximum(z)
 
-    bb = lift(AABB, min_x, min_y, min_z, max_x, max_y, max_z) # This is not accurate as I'm not recalcuting the data when something updates
+    bb = lift(AABB{Float32}, min_x, min_y, min_z, max_x, max_y, max_z) # This is not accurate as I'm not recalcuting the data when something updates
 
     program = assemble_instanced(
         x, data, 

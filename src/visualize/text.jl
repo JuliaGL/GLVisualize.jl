@@ -1,6 +1,6 @@
 visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :styles             => Texture([RGBAU8(1.0,1.0,1.0,1.0)]),
+    :styles             => Texture([RGBAU8(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
     :technique          => :sprite,
     :preferred_camera   => :orthographic_pixel
@@ -35,7 +35,7 @@ end
 
 function visualize(
         glyphs      ::GPUVector{GLSprite}, 
-        positions   ::GPUVector{Point2{Float16}},
+        positions   ::GPUVector{Point{2, Float16}},
         style_index ::GPUVector{GLSpriteStyle},
         model,
         s::Style, customizations=visualize_default(glyphs, s))
@@ -50,12 +50,12 @@ function visualize(
         :style_index         => style_index,
         :technique           => lift(to_gl_technique, technique)
     ), collect_for_gl(primitive))
-    bb      = AABB(gpu_data(positions))
+    bb      = AABB{Float32}(gpu_data(positions))
     extent  = FONT_EXTENDS[glyphs[1][1]]
     assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
-        boundingbox=Input(AABB{Float32}(bb.min, Vec3f0(bb.max)+Vec3f0(extent.advance..., 0f0)))
+        boundingbox=Input(AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
     )
 end
 

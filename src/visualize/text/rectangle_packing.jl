@@ -8,10 +8,6 @@ Node(area::Rectangle) = Node(Node[], area)
 
 isleaf(a::Node) = isempty(a.children)
 
-xwidth(a::Rectangle)  = a.w + a.x
-yheight(a::Rectangle) = a.h + a.y
-area(a::Rectangle) = a.w*a.h
-Base.isless(a::Rectangle, b::Rectangle) = isless(area(a), area(b))
 
 function Base.push!(node::Node, area::Rectangle)
     if !isleaf(node)

@@ -47,6 +47,13 @@ end
 isnotempty(x) = !isempty(x)
 AND(a,b) = a&&b
 
+
+call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
+call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
+
+
+
+call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 
 function GLVisualizeShader(shaders...; attributes...)
@@ -57,17 +64,17 @@ function GLVisualizeShader(shaders...; attributes...)
     )
 end
 
-function assemble_std(main, dict, shaders...; boundingbox=Input(AABB{Float32}(AABB(main))), primitive=GL_TRIANGLES)
+function assemble_std(main, dict, shaders...; boundingbox=Input(AABB{Float32}(main)), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     std_renderobject(dict, program, boundingbox, primitive)
 end
 
-function assemble_instanced(main, dict, shaders...; boundingbox=Input(AABB{Float32}(AABB(main))), primitive=GL_TRIANGLES)
+function assemble_instanced(main, dict, shaders...; boundingbox=Input(AABB{Float32}(main)), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     instanced_renderobject(dict, length(main), program, boundingbox, primitive)
 end
 
-function assemble_instanced(main::GPUVector, dict, shaders...; boundingbox=Input(AABB{Float32}(AABB(main))), primitive=GL_TRIANGLES)
+function assemble_instanced(main::GPUVector, dict, shaders...; boundingbox=Input(AABB{Float32}(main)), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     instanced_renderobject(dict, main, program, boundingbox, primitive)
 end

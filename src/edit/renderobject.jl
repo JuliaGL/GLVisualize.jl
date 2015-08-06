@@ -9,7 +9,7 @@ function edit(style::Style, dict::Dict, customization::Dict{Symbol,Any})
   ygap = 20f0
   lineheight = 24f0
   currentline = 0
-  aabb = AABB(Vec3(0), Vec3(0))
+  aabb = AABB{Float32}(Vec3f0(0), Vec3f0(0))
   i = 0
   for (name,value) in dict
     if method_exists(edit, (typeof(value),))

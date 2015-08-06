@@ -1,6 +1,6 @@
 const SHARED_DEFAULTS = @compat(Dict(
     :model      	  => Input(eye(Mat4f0)),
-    :light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20,1)]),
+    :light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
     :preferred_camera => :perspective
 ))
 

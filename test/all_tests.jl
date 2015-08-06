@@ -11,9 +11,10 @@ function arbitrary_surface_data(N)
 end
 push!(TEST_DATA, arbitrary_surface_data(100))
 
-
+println("Barplot")
 # Barplot
 push!(TEST_DATA, Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:50, j=1:50])
+println("3d dot particles")
 
 # 3d dot particles
 function dots_data(N)
@@ -23,6 +24,7 @@ function dots_data(N)
 end
 push!(TEST_DATA, dots_data(25_000))
 
+println("Iso surface algorithm which generates a mesh")
 
 # Iso surface algorithm which generates a mesh
 function create_isosurf(N)
@@ -33,6 +35,7 @@ function create_isosurf(N)
 	return GLNormalMesh(volume, 0.5f0)
 end
 #push!(TEST_DATA, create_isosurf(64))
+println("some more funcitonality from Meshes")
 
 # some more funcitonality from Meshes
 function mesh_data()
@@ -57,30 +60,31 @@ function mesh_data()
     
     baselen = 0.4f0
     dirlen  = 2f0
-    axis    = [
-        (Cube(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
-        (Cube(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
-        (Cube(Vec3f0(baselen), Vec3f0(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
-    ]
+    #axis    = [
+    #    (Cube(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
+    #    (Cube(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+    #    (Cube(Vec3f0(baselen), Vec3f0(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+    #]
     
-    axis = map(GLNormalMesh, axis)
-    axis = merge(axis)
+    #axis = map(GLNormalMesh, axis)
+    #axis = merge(axis)
 
-    return axis, msh
+    return msh
 end
-push!(TEST_DATA, mesh_data()...)
+push!(TEST_DATA, mesh_data())
 
 # obj import
-push!(TEST_DATA, GLNormalMesh(file"cat.obj"))
+#push!(TEST_DATA, GLNormalMesh(file"cat.obj"))
+println("particles")
 
 # particles
 generate_particles(N,x,i) = Point3f0(
 	sin(i+x/20f0),
 	cos(i+x/20f0), 
-	(2x/N)+i/10f0
+	Float32((2x/N)+i/10f0)
 )
 update_particles(i, N) 		= Point3f0[generate_particles(N,x, i) for x=1:N]
-particle_color(positions) 	= RGBAU8[RGBAU8(((cos(pos.x)+1)/2),0.0,((sin(pos.y)+1)/2),  1.0f0) for pos in positions]
+particle_color(positions) 	= RGBAU8[RGBAU8(((cos(pos[1])+1)/2),0.0,((sin(pos[2])+1)/2),  1.0f0) for pos in positions]
 function particle_data(N)
 	locations 	= lift(update_particles, bounce(1f0:0.1f0:10f0), N)
 	colors 		= lift(particle_color, locations)
@@ -90,10 +94,12 @@ push!(TEST_DATA, particle_data(1024))
 particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 push!(TEST_DATA,  (
 	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024], 
-	:primitive 	=> GLNormalMesh(file"cat.obj"), 
+	#:primitive 	=> GLNormalMesh(file"cat.obj"), 
 	:color 		=> lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)), 
 	:scale 		=> Vec3f0(0.2)
 ))
+
+println("sierpinski")
 
 # sierpinski particles
 function sierpinski(n, positions=Point3f0[])
@@ -123,7 +129,7 @@ end
 sierpinski_data(4)
 push!(TEST_DATA, sierpinski_data(4))
 
-
+println("surface")
 # surface plot
 function xy_data(x,y,i, N)
 	x = ((x/N)-0.5f0)*i
@@ -139,14 +145,16 @@ end
 
 push!(TEST_DATA, surface_data(128))
 
+println("vectorfielddata")
 
 # vectorfield
-vectorfielddata(N, i) = Vec3f0[Vec3f0(cos(x/N*3)*i, cos(y/7i), cos(i/5)) for x=1:N, y=1:N, z=1:N]
+vectorfielddata(N, i) = Vec3f0[Vec3f0(Float32(cos(x/N*3f0)*i), cos(y/7i), cos(i/5f0)) for x=1:N, y=1:N, z=1:N]
 
 const t = bounce(1f0:0.1f0:5f0)
 
 push!(TEST_DATA, vectorfielddata(14, 1f0))
-push!(TEST_DATA, (lift(vectorfielddata, 7, t), :norm=>Vec2(1, 5)))
+push!(TEST_DATA, (lift(vectorfielddata, 7, t), :norm=>Vec2f0(1, 5)))
+println("volume_data")
 
 # volume rendering
 function volume_data(N)
@@ -180,13 +188,14 @@ push!(TEST_DATA2D, (lift(generate_distfield, bounce(50f0:500f0)), :distancefield
 function image_test_data(N)
 	return (
 		file"test.mp4", 
-		RGBA{Float32}[rgba(sin(i), sin(j), cos(i), sin(j)*cos(i)) for i=1:0.1:N, j=1:0.1:N], 
+		#RGBAU8[RGBAU8(sin(i), sin(j), cos(i), sin(j)*cos(i)) for i=1:0.1:N, j=1:0.1:N], 
 		file"drawing.jpg",
 		file"dealwithit.jpg",
 		file"feelsgood.png",
 		#file"success.gif"
 	)
 end
+
 
 push!(TEST_DATA2D, image_test_data(20)...)
 
@@ -195,7 +204,7 @@ push!(TEST_DATA2D, image_test_data(20)...)
 particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
 
 push!(TEST_DATA2D, (foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512], 
-	lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), :scale=>Vec2(10, 10)))
+	lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), :scale=>Vec2f0(10, 10)))
 
 
 # text

@@ -180,7 +180,7 @@ export visualize_selection
 
 calc_position(glyphs::GPUVector) = calc_position(gpu_data(glyphs))
 function calc_position(glyphs)
-	const PF16 = Point2{Float16}
+	const PF16 = Point{2, Float16}
     positions = fill(PF16(0.0), length(glyphs))
 	if !isempty(glyphs)
 	    global FONT_EXTENDS, ID_TO_CHAR
@@ -191,13 +191,13 @@ function calc_position(glyphs)
 	        extent = FONT_EXTENDS[glyph[1]]
 	        if isnewline(lastglyph)
 	            if i<2
-	                last_pos = PF16(last_pos.x, last_pos.y-extent.advance.y)
+	                last_pos = PF16(last_pos[1], last_pos[2]-extent.advance[2])
 	            else
-	                last_pos = PF16(first(positions).x, positions[i-1].y-extent.advance.y)
+	                last_pos = PF16(first(positions)[1], positions[i-1][2]-extent.advance[2])
 	            end
 	            positions[i] = last_pos
 	        else
-	            last_pos += PF16(extent.advance.x, 0)
+	            last_pos += PF16(extent.advance[1], 0)
 	            finalpos = last_pos
 	            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
 	            (i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))

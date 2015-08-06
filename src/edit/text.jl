@@ -7,7 +7,7 @@ function filtereselection(v0, selection, buttons)
 end
 
 function haschanged(v0, selection)
-  (v0[2] != selection, selection)
+    (v0[2] != selection, selection)
 end
 function edit(style::Style{:Default}, text::String, custumization::Dict{Symbol, Any})
   obj = visualize(text, style; custumization...)
@@ -97,25 +97,25 @@ end
 
 # Filters a signal. If any of the items is in the signal, the signal is returned.
 # Otherwise default is returned
-function filteritems{T}(a::Signal{T}, items, default::T)
-  lift(a) do signal
-    if any(item-> in(item, signal), items)
-      signal
-    else
-      default 
+function filteritems{T}(signal::T, items, default::T)
+    for item in items
+        in(item, signal) && return signal
     end
-  end
+    return  default 
 end
+filteritems{T}(signal::Signal{T}, items, default::T) =
+    lift(filteritems, signal, items, default) 
+
 
 
 
 function Base.delete!(s::Array{GLGlyph{Uint16}, 1}, Index::Integer)
-  if Index == 0
-    return s
-  elseif Index == length(s)
-    return s[1:end-1]
-  end
-  return [s[1:max(Index-1, 0)], s[min(Index+1,length(s)):end]]
+    if Index == 0
+        return s
+    elseif Index == length(s)
+        return s[1:end-1]
+    end
+    return [s[1:max(Index-1, 0)], s[min(Index+1,length(s)):end]]
 end
 
 addchar(s::Array{GLGlyph{Uint16}, 1}, glyph::Char, Index::Integer) = addchar(s, GLGlyph(glyph, 0, 0, 0), int(Index))

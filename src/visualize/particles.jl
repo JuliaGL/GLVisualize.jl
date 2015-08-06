@@ -9,7 +9,7 @@ function visualize_default{T <: Point{3}}(
     color = delete!(kw_args, :color, RGBA(1f0, 0f0, 0f0, 1f0))
     color = texture_or_scalar(color)
     Dict(
-        :primitive  => GLNormalMesh(Cube(Vec3f0(0), Vec3f0(1))),
+        :primitive  => GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1))),
         :color      => color,
         :scale      => Vec3f0(0.03)
     )

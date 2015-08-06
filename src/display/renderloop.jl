@@ -173,7 +173,7 @@ glClearColor(0.09411764705882353,0.24058823529411763,0.2401960784313726, 0)
 # Transforms a mouse drag into a selection from drag start to drag end
 function drag2selectionrange(v0, selection)
     mousediff, id_start, current_id = selection
-    if mousediff != Vec2(0) # Mouse Moved
+    if mousediff != Vec2f0(0) # Mouse Moved
         if current_id[1] == id_start[1]
             return min(id_start[2],current_id[2]):max(id_start[2],current_id[2])
         end
@@ -193,7 +193,7 @@ function to_mousedragg_id(t0, mouse_down1, mouseposition1, objectid)
     elseif mouse_down0 && mouse_down1
         return (mouse_down1, draggstart, objectidstart, mouseposition1, objectid)
     end
-    (false, Vec2(0), Vector2(0), Vec2(0), Vector2(0))
+    (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0))
 end
 function diff_mouse(mouse_down_draggstart_mouseposition)
     mouse_down, draggstart, objectid_start, mouseposition, objectid_end = mouse_down_draggstart_mouseposition
@@ -203,11 +203,11 @@ function mousedragdiff_objectid(inputs, mouse_hover)
     @materialize mousebuttonspressed, mousereleased, mouseposition = inputs
     mousedown      = lift(isnotempty, mousebuttonspressed)
     mousedraggdiff = lift(diff_mouse, 
-                        foldl(to_mousedragg_id, (false, Vec2(0), Vector2(0), Vec2(0), Vector2(0)), 
+                        foldl(to_mousedragg_id, (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0)), 
                             mousedown, mouseposition, mouse_hover
                         )
                     )
-    return keepwhen(mousedown, (Vec2(0), Vector2(0), Vector2(0)), mousedraggdiff)
+    return keepwhen(mousedown, (Vec2f0(0), Vec(0,0), Vec(0,0)), mousedraggdiff)
 end
 
 function to_arrow_symbol(button_set)
