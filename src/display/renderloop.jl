@@ -54,6 +54,8 @@ function setup_framebuffers(framebuffsize::Signal{Vec{2, Int}})
     render_framebuffer, color_buffer, objectid_buffer, depth_buffer
 end
 
+
+
 function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=false)
 
     windowhints = [
@@ -88,14 +90,12 @@ function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=fals
      
     FreeTypeAbstraction.init()
     fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
-    @assert isfile(fn)
+    isfile(fn) || error("Could not locate font at $fn")
     global const DEFAULT_FONT_FACE = newface(fn)
     global const FONT_EXTENDS      = Dict{Int, FontExtent}()
     global const ID_TO_CHAR        = Dict{Int, Char}()
 
     map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
-
-   
 
     screen, () -> renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
 end
@@ -167,7 +167,6 @@ end
 mouse_selection(mpos) = Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1, 1)
 
 
-glClearColor(0.09411764705882353,0.24058823529411763,0.2401960784313726, 0)
 
 
 # Transforms a mouse drag into a selection from drag start to drag end
