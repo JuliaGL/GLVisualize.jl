@@ -64,8 +64,6 @@ export renderloop   # starts the renderloop
 export vizzedit         # Edit an object
 
 
-function init(window_name="GLVisualize", resolution=(1000,1000))
-	
-end
+
 
 end # module
