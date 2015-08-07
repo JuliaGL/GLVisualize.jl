@@ -1,9 +1,21 @@
-using GLAbstraction, ModernGL, GLWindow, MeshIO, Meshes, GeometryTypes, ColorTypes, Reactive
+using GLAbstraction, ModernGL, GLWindow, MeshIO, Meshes, GeometryTypes, ColorTypes, Reactive, GLFW, FixedPointNumbers, FileIO
 function checkerror()
 	err = glGetError()
 	(err != GL_NO_ERROR) && error("shit... $(GLENUM(err).name)")
 end
-checkerror()
+GLFW.Init()
+    windowhints = [
+        (GLFW.SAMPLES,      0), 
+        (GLFW.DEPTH_BITS,   0), 
+        
+        (GLFW.ALPHA_BITS,   8),
+        (GLFW.RED_BITS,     8),
+        (GLFW.GREEN_BITS,   8),
+        (GLFW.BLUE_BITS,    8),
+
+        (GLFW.STENCIL_BITS, 0),
+        (GLFW.AUX_BUFFERS,  0)
+    ]
 const ROOT_SCREEN = createwindow("Romeo", 1024, 1024, windowhints=windowhints, debugging=false)
 
 frag_shader = frag"""
@@ -164,19 +176,19 @@ end
 
 
 function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}))
-    grid_min    = Vec2(-1, -1)
-    grid_max    = Vec2( 1,  1)
+    grid_min    = Vec2f0(-1, -1)
+    grid_max    = Vec2f0( 1,  1)
     grid_length = grid_max - grid_min
-    scale = Vec3((1f0 ./[size(grid)...])..., 1f0).* Vec3(grid_length..., 1f0)
+    scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0).* Vec3f0(grid_length..., 1f0)
     return Dict(
-        :primitive  => GLNormalMesh(Cube(Vec3(0), Vec3(1.0))),
+        :primitive  => GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1.0))),
         :color      => RGBAU8[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1), rgbaU8(0,1,1,1), rgbaU8(0,0,1,1)],
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :scale      => scale,
-        :norm       => Vec2(0, 5),
-        :model      	  => Input(eye(Mat4)),
-    	:light      	  => Input(Vec3[Vec3(1.0,1.0,1.0), Vec3(0.1,0.1,0.1), Vec3(0.9,0.9,0.9), Vec4(20,20,20,1)]),
+        :norm       => Vec2f0(0, 5),
+        :model      	  => Input(eye(Mat4f0)),
+    	:light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
     	:preferred_camera => :perspective
     )
 end
@@ -194,15 +206,18 @@ function visualize(grid::Texture{Float32, 2}, customizations=visualize_default(g
         frag_shader
     )
     checkerror()
-    robj = instanced_renderobject(data, length(grid), Input(program), Input(AABB(Vec3(0), Vec3(1))))
+    robj = instanced_renderobject(data, length(grid), Input(program), Input(AABB(Vec3f0(0), Vec3f0(1))))
     checkerror()
     robj
 end
 
 robj = visualize(Texture(rand(Float32, 81,81)))
 
-merge!(robj.uniforms, collect(PerspectiveCamera(window.inputs, Vec3(2), Vec3(0))))
-const SELECTION         = Dict{Symbol, Input{Matrix{Vector2{Int}}}}()
+merge!(robj.uniforms, collect(PerspectiveCamera(ROOT_SCREEN.inputs, Vec3f0(2), Vec3f0(0))))
+
+push!(ROOT_SCREEN.renderlist, robj)
+
+const SELECTION         = Dict{Symbol, Input{Matrix{Vec{2, Int}}}}()
 const SELECTION_QUERIES = Dict{Symbol, Rectangle{Int}}()
 immutable SelectionID{T}
     objectid::T
@@ -212,14 +227,14 @@ typealias GLSelection SelectionID{Uint16}
 typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle)
     SELECTION_QUERIES[name] = value
-    SELECTION[name]         = Input(Vector2{Int}[]')
+    SELECTION[name]         = Input(Vec{2, Int}[]')
     SELECTION[name]
 end
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}})
     lift(value) do v
     SELECTION_QUERIES[name] = v
     end
-    SELECTION[name]         = Input(Array(Vector2{Int}, value.value.w, value.value.h))
+    SELECTION[name]         = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
     SELECTION[name]
 end
 function delete_selectionquery!(name::Symbol)
@@ -228,15 +243,7 @@ function delete_selectionquery!(name::Symbol)
 end
 
 
-windowhints = [
-    (GLFW.SAMPLES,      0), 
-    (GLFW.DEPTH_BITS,   0), 
-    (GLFW.ALPHA_BITS,   0), 
-    (GLFW.STENCIL_BITS, 0),
-    (GLFW.AUX_BUFFERS,  0)
-]
-
-const TIMER_SIGNAL = fpswhen(GLVisualize.ROOT_SCREEN.inputs[:open], 30.0)
+const TIMER_SIGNAL = fpswhen(ROOT_SCREEN.inputs[:open], 30.0)
 
 function fold_loop(v0, timediff_range)
     _, range = timediff_range
@@ -267,22 +274,16 @@ insert_selectionquery!(:mouse_hover, lift(ROOT_SCREEN.inputs[:mouseposition]) do
 end)
 
 
-const FRAME_BUFFER_PARAMETERS = [
-    (GL_TEXTURE_WRAP_S,  GL_CLAMP_TO_EDGE),
-    (GL_TEXTURE_WRAP_T,  GL_CLAMP_TO_EDGE ),
 
-    (GL_TEXTURE_MIN_FILTER, GL_NEAREST),
-    (GL_TEXTURE_MAG_FILTER, GL_NEAREST) 
-]
 
 global const RENDER_FRAMEBUFFER = glGenFramebuffers()
 glBindFramebuffer(GL_FRAMEBUFFER, RENDER_FRAMEBUFFER)
 
 
-framebuffsize = [ROOT_SCREEN.inputs[:framebuffer_size].value...]
-const COLOR_BUFFER   = Texture(RGBA{Ufixed8},     framebuffsize, parameters=FRAME_BUFFER_PARAMETERS)
-const STENCIL_BUFFER = Texture(Vector2{GLushort}, framebuffsize, parameters=FRAME_BUFFER_PARAMETERS)
-
+framebuffsize = ROOT_SCREEN.inputs[:framebuffer_size].value
+buffersize      = tuple(framebuffsize...)
+COLOR_BUFFER    = Texture(RGBA{Ufixed8},     buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
+STENCIL_BUFFER = Texture(Vec{2, GLushort}, buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, COLOR_BUFFER.id, 0)
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, STENCIL_BUFFER.id, 0)
 
@@ -301,6 +302,19 @@ lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, (window_size)...)
     end 
 end
+function postprocess(screen_texture, screen)
+    data = merge(Dict(
+        :resolution => lift(Vec2f0, screen.inputs[:framebuffer_size]),
+        :u_texture0 => screen_texture
+    ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
+    program = TemplateProgram(
+        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa.vert"),
+        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa.frag"),
+        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa_combine.frag")
+    )
+    std_renderobject(data, program)
+end
+
 
 
 postprocess_robj = postprocess(COLOR_BUFFER, ROOT_SCREEN)
@@ -311,7 +325,6 @@ function renderloop()
         renderloop(ROOT_SCREEN)
     end
     GLFW.Terminate()
-    FreeTypeAbstraction.done()
 end
 
 
@@ -332,9 +345,9 @@ function renderloop(screen)
             if value.h < 1 || value.h > 5000
             println(value.h) # debug output
             end
-            const data = Array(Vector2{Uint16}, value.w, value.h)
+            const data = Array(Vec{2, Uint16}, value.w, value.h)
             glReadPixels(value.x, value.y, value.w, value.h, STENCIL_BUFFER.format, STENCIL_BUFFER.pixeltype, data)
-            push!(SELECTION[key], convert(Matrix{Vector2{Int}}, data))
+            push!(SELECTION[key], convert(Matrix{Vec{2, Int}}, data))
         end
     end
     glDisable(GL_SCISSOR_TEST)
@@ -351,4 +364,4 @@ end
 
 glClearColor(0.09411764705882353,0.24058823529411763,0.2401960784313726, 0)
 
-
+renderloop()
