@@ -123,11 +123,11 @@ function textedit_signals(inputs, background, text)
     )
     lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
 
-    strg_v          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
-    strg_c          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
-    strg_x          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
-    enter_key       = lift(==, buttonspressed, IntSet(GLFW.KEY_ENTER))
-    del             = lift(==, buttonspressed, IntSet(GLFW.KEY_BACKSPACE))
+    strg_v          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V])
+    strg_c          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C])
+    strg_x          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X])
+    enter_key       = lift(==, buttonspressed, [GLFW.KEY_ENTER])
+    del             = lift(==, buttonspressed, [GLFW.KEY_BACKSPACE])
 
     enter_insert    = lift(insert_enter,   keepwhen(enter_key, true, enter_key))
     clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)

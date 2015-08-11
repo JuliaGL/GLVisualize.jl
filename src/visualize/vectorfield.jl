@@ -1,5 +1,5 @@
 visualize_default(::Union(Array{Vec{3, Float32}, 3}, Texture{Vec{3, Float32}, 3}), ::Style, kw_args) = @compat Dict(
-    :primitive      => GLNormalMesh(Pyramid(Point{3, Float32}(0,0,-0.5), 1f0, 0.2f0)),
+    :primitive      => GLNormalMesh(Pyramid(Point{3, Float32}(0, 0,-0.5), 1f0, 0.2f0)),
     :boundingbox    => AABB{Float32}(Vec3f0(-1), Vec3f0(1)),
     :norm           => Vec2f0(-1,1),
     :color          => RGBA{Ufixed8}[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1)]

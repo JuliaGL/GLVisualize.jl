@@ -92,7 +92,8 @@ export isnotempty
 export return_nothing
 
 single_selection(selection::UnitRange) 	= isempty(selection) && first(selection)!=0
-is_textinput_modifiers(buttons::IntSet) = isempty(buttons) || buttons == IntSet(GLFW.KEY_LEFT_SHIFT)
+is_textinput_modifiers(buttons::Vector{Int}) = isempty(buttons) || buttons == [GLFW.KEY_LEFT_SHIFT]
+
 function clipboardpaste(_)
 	clipboard_data = ""
 	try

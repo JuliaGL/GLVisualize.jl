@@ -6,14 +6,15 @@ typealias GLSelection SelectionID{Uint16}
 typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle, selection, selectionquery)
     selectionquery[name] = value
-    selection[name]         = Input(Vec{2, Int}[]')
+    selection[name]      = Input(Vec{2, Int}[]')
     selection[name]
 end
+
+insert_selectionquery(value, selectionquery, name) = selectionquery[name] = value
+
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}}, selection, selectionquery)
-    lift(value) do v
-        selectionquery[name] = v
-    end
-    selection[name]         = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
+    lift(insert_selectionquery, value, selectionquery, name)
+    selection[name]  = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
     selection[name]
 end
 function delete_selectionquery!(name::Symbol, selection, selectionquery)
@@ -21,6 +22,7 @@ function delete_selectionquery!(name::Symbol, selection, selectionquery)
     delete!(selection, name)
     nothing
 end
+
 
 function resizebuffers(window_size, color_buffer, objectid_buffer, depth_buffer)
     if all(x->x>0, window_size)
@@ -49,7 +51,7 @@ function setup_framebuffers(framebuffsize::Signal{Vec{2, Int}})
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, buffersize...)
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buffer[1])
 
-    lift(resizebuffers, framebuffsize, color_buffer, objectid_buffer, depth_buffer) 
+    lift(resizebuffers, framebuffsize, color_buffer, objectid_buffer, depth_buffer)
 
     render_framebuffer, color_buffer, objectid_buffer, depth_buffer
 end
@@ -59,9 +61,9 @@ end
 function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=false)
 
     windowhints = [
-        (GLFW.SAMPLES,      0), 
-        (GLFW.DEPTH_BITS,   0), 
-        
+        (GLFW.SAMPLES,      0),
+        (GLFW.DEPTH_BITS,   0),
+
         (GLFW.ALPHA_BITS,   8),
         (GLFW.RED_BITS,     8),
         (GLFW.GREEN_BITS,   8),
@@ -71,14 +73,15 @@ function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=fals
         (GLFW.AUX_BUFFERS,  0)
     ]
     GLFW.Init()
-    if resolution == nothing 
+    if resolution == nothing
         w, h = primarymonitorresolution()
         resolution = (div(w,2), div(h,2))
     end
-    global const ROOT_SCREEN = createwindow(name, resolution..., windowhints=windowhints, debugging=debugging)
+    global ROOT_SCREEN = createwindow(name, resolution..., windowhints=windowhints, debugging=debugging)
     screen = ROOT_SCREEN
-    
-    global const TIMER_SIGNAL = fpswhen(screen.inputs[:open], 60.0)
+    global TIMER_SIGNAL = fpswhen(screen.inputs[:open], 60.0)
+
+
 
     render_framebuffer, color_buffer, objectid_buffer, depth_buffer = setup_framebuffers(screen.inputs[:framebuffer_size])
     postprocess_robj = postprocess(color_buffer, screen)
@@ -87,58 +90,62 @@ function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=fals
     selectionquery = Dict{Symbol, Rectangle{Int}}()
     insert_selectionquery!(:mouse_hover, lift(mouse_selection, screen.inputs[:mouseposition]), selection, selectionquery)
     add_complex_signals(screen, selection) #add the drag events and such
-     
+
     FreeTypeAbstraction.init()
     fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
     isfile(fn) || error("Could not locate font at $fn")
-    global const DEFAULT_FONT_FACE = newface(fn)
-    global const FONT_EXTENDS      = Dict{Int, FontExtent}()
-    global const ID_TO_CHAR        = Dict{Int, Char}()
+    global DEFAULT_FONT_FACE = newface(fn)
+    global FONT_EXTENDS      = Dict{Int, FontExtent}()
+    global ID_TO_CHAR        = Dict{Int, Char}()
 
     map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
-
-    screen, () -> renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
+    renderloop_fun(renderloop_callback=()->nothing) = renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
+    screen, renderloop_fun
 end
 
 
-fps_max  = 0.0
-fps_min  = typemax(Float64)
-fps_mean = 0.0
-frames_total = 0
-function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
+fps_max         = 0.0
+fps_min         = typemax(Float64)
+fps_mean        = 0.0
+frames_total    = 0
+
+function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
     while screen.inputs[:open].value
         renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
+        renderloop_callback()
     end
     GLFW.Terminate()
     FreeTypeAbstraction.done()
-    global fps_max, fps_min, fps_mean, frames_total
-    println("fps_max: ", fps_max)
-    println("fps_min: ", fps_min)
-    println("fps_mean: ", fps_mean/frames_total)
+    #global fps_max, fps_min, fps_mean, frames_total
+    #println("fps_max: ", fps_max)
+    #println("fps_min: ", fps_min)
+    #println("fps_mean: ", fps_mean/frames_total)
 end
 
+
+function update_selectionqueries(selectionquery, objectid_buffer, selection, area)
+    if !isempty(selectionquery)
+        glReadBuffer(GL_COLOR_ATTACHMENT1)
+        for (key, value) in selectionquery
+            if value.x > 0 && value.y > 0 && value.w <= area.w && value.h <= area.h
+                data = Array(Vec{2, Uint16}, value.w, value.h)
+                glReadPixels(value.x, value.y, value.w, value.h, objectid_buffer.format, objectid_buffer.pixeltype, data)
+                push!(selection[key], convert(Matrix{Vec{2, Int}}, data))
+            end
+        end
+    end
+end
 function renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
-    tic()
+    #tic()
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
     glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     render(screen)
-
-    #Read all the selection queries
-    if !isempty(selectionquery)
-        glReadBuffer(GL_COLOR_ATTACHMENT1)
-        for (key, value) in selectionquery
-            if value.w < 1 || value.w > 5000 || value.h < 1 || value.h > 5000
-                println(value.w, " ", value.h) # debug output
-            end
-            const data = Array(Vec{2, Uint16}, value.w, value.h)
-            glReadPixels(value.x, value.y, value.w, value.h, objectid_buffer.format, objectid_buffer.pixeltype, data)
-            push!(selection[key], convert(Matrix{Vec{2, Int}}, data))
-        end
-    end
     yield()
+    #Read all the selection queries
+    update_selectionqueries(selectionquery, objectid_buffer, selection, screen.area.value)
 
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -149,6 +156,7 @@ function renderloop_inner(screen, render_framebuffer, selectionquery, objectid_b
     GLFW.PollEvents()
 
     yield()
+    #=
     t        = toq()
     target   = 1.0/60.0
     tosleep  = target - t
@@ -160,12 +168,12 @@ function renderloop_inner(screen, render_framebuffer, selectionquery, objectid_b
     fps_mean += fps
     frames_total += 1
     tosleep > 0.0 && sleep(tosleep) # top up to reach 60 frames per second
+    =#
 end
 
 
 
 mouse_selection(mpos) = Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1, 1)
-
 
 
 
@@ -201,8 +209,8 @@ end
 function mousedragdiff_objectid(inputs, mouse_hover)
     @materialize mousebuttonspressed, mousereleased, mouseposition = inputs
     mousedown      = lift(isnotempty, mousebuttonspressed)
-    mousedraggdiff = lift(diff_mouse, 
-                        foldl(to_mousedragg_id, (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0)), 
+    mousedraggdiff = lift(diff_mouse,
+                        foldl(to_mousedragg_id, (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0)),
                             mousedown, mouseposition, mouse_hover
                         )
                     )
@@ -234,7 +242,7 @@ end
 
 function fold_loop(v0, timediff_range)
     _, range = timediff_range
-    v0 == last(range) && return first(range) 
+    v0 == last(range) && return first(range)
     v0+step(range)
 end
 
@@ -246,12 +254,12 @@ function fold_bounce(v0, v1)
     _, range = v1
     val, direction = v0
     val += step(range)*direction
-    if val > last(range) || val < first(range) 
+    if val > last(range) || val < first(range)
     direction = -direction
     val += step(range)*direction
     end
     (val, direction)
 end
 
-bounce{T}(range::Range{T}; t=TIMER_SIGNAL) = 
+bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
     lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, t, range)))

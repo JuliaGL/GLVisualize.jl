@@ -10,7 +10,6 @@ const TEST_DATA2D = Any[]
 include(string("all_tests.jl"))
 
 
-
 grid    = reshape(TEST_DATA,   close_to_square(length(TEST_DATA)))
 grid2D  = reshape(TEST_DATA2D, close_to_square(length(TEST_DATA2D)))
 

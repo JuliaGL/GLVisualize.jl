@@ -54,18 +54,18 @@ function mesh_data()
     s3(x,y,z) = sphere(x,y,z, 13,3,3,sqrt(3))
     f3(x,y,z) = max(b3(x,y,z), s3(x,y,z))  # INTERSECTION
     f(x,y,z) = min(f1(x,y,z), f2(x,y,z), f3(x,y,z))
- 
+
     vol  = volume(f, x_min,y_min,z_min,x_max,y_max,z_max, scale)
     msh  = GLNormalMesh(vol, 0.0f0)
-    
+
     baselen = 0.4f0
     dirlen  = 2f0
     #axis    = [
-    #    (Cube(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)), 
-    #    (Cube(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)), 
+    #    (Cube(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)),
+    #    (Cube(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)),
     #    (Cube(Vec3f0(baselen), Vec3f0(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
     #]
-    
+
     #axis = map(GLNormalMesh, axis)
     #axis = merge(axis)
 
@@ -80,7 +80,7 @@ println("particles")
 # particles
 generate_particles(N,x,i) = Point3f0(
 	sin(i+x/20f0),
-	cos(i+x/20f0), 
+	cos(i+x/20f0),
 	Float32((2x/N)+i/10f0)
 )
 update_particles(i, N) 		= Point3f0[generate_particles(N,x, i) for x=1:N]
@@ -93,9 +93,9 @@ end
 push!(TEST_DATA, particle_data(1024))
 particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 push!(TEST_DATA,  (
-	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024], 
-	#:primitive 	=> GLNormalMesh(file"cat.obj"), 
-	:color 		=> lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)), 
+	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024],
+	#:primitive 	=> GLNormalMesh(file"cat.obj"),
+	:color 		=> lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)),
 	:scale 		=> Vec3f0(0.2)
 ))
 
@@ -187,12 +187,11 @@ push!(TEST_DATA2D, (lift(generate_distfield, bounce(50f0:500f0)), :distancefield
 
 function image_test_data(N)
 	return (
-		file"test.mp4", 
-		#RGBAU8[RGBAU8(sin(i), sin(j), cos(i), sin(j)*cos(i)) for i=1:0.1:N, j=1:0.1:N], 
-		file"drawing.jpg",
-		file"dealwithit.jpg",
-		file"feelsgood.png",
-		#file"success.gif"
+		RGBAU8[RGBAU8(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
+		File(Pkg.dir("GLVisualize", "test", "test.mp4")),
+		File(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
+		File(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),
+		File(Pkg.dir("GLVisualize", "test", "feelsgood.png")),
 	)
 end
 
@@ -203,7 +202,7 @@ push!(TEST_DATA2D, image_test_data(20)...)
 # 2D particles
 particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
 
-push!(TEST_DATA2D, (foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512], 
+push!(TEST_DATA2D, (foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
 	lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), :scale=>Vec2f0(10, 10)))
 
 
