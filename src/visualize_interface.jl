@@ -25,23 +25,18 @@ function view(
 		method 	 = robj.uniforms[:preferred_camera],
 		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
-	if method == :perspective
-		camera = get!(screen.cameras, :perspective) do
-			PerspectiveCamera(screen.inputs, position, lookat)
-		end
+    if haskey(screen.cameras, method)
+        camera = screen.cameras[method]
+    elseif method == :perspective
+		camera = PerspectiveCamera(screen.inputs, position, lookat)
 	elseif method == :fixed_pixel
-		camera = get!(screen.cameras, :fixed_pixel) do
-			DummyCamera(window_size=screen.area)
-		end
+		camera = DummyCamera(window_size=screen.area)
 	elseif method == :orthographic_pixel
-		camera = get!(screen.cameras, :orthographic_pixel) do
-			OrthographicPixelCamera(screen.inputs)
-		end
+		camera = OrthographicPixelCamera(screen.inputs)
 	elseif method == :nothing
 		return push!(screen.renderlist, robj)
 	else
-        haskey(screen.cameras, method) || error("Method $method not a known camera type")
-        camera = screen.cameras[method]
+         error("Method $method not a known camera type")
 	end
 	merge!(robj.uniforms, collect(camera))
 	push!(screen.renderlist, robj)
