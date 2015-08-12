@@ -8,8 +8,6 @@ immutable SpriteStyle{T} <: FixedVector{2, T}
 	_::NTuple{2, T}
 end
 
-typealias GLSprite Sprite{Uint32}
-typealias GLSpriteStyle SpriteStyle{Uint16}
 
 immutable SpriteAttribute{T} <: FixedVector{4, T}
 	_::NTuple{4, T}
@@ -21,6 +19,8 @@ end
 
 
 typealias GLSpriteAttribute SpriteAttribute{Float16}
+typealias GLSprite Sprite{Uint32}
+typealias GLSpriteStyle SpriteStyle{Uint16}
 
 type TextureAtlas
 	rectangle_packer::RectanglePacker
