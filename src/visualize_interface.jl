@@ -4,9 +4,9 @@ const SHARED_DEFAULTS = @compat(Dict(
     :preferred_camera => :perspective
 ))
 
-visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)), 
+visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)),
 	which either means the implementation is incomplete or not implemented yet.
-	Consider defining visualize_default(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => Dict{Symbol, Any} and 
+	Consider defining visualize_default(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => Dict{Symbol, Any} and
 	visualize(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => RenderObject""")
 
 function visualize_default(value::Any, style::Symbol, kw_args::Vector{Any}, defaults=SHARED_DEFAULTS)
@@ -21,26 +21,27 @@ visualize(file::File, 	  style::Symbol=:default; kw_args...) = visualize(read(fi
 
 
 function view(
-		robj::RenderObject, screen=ROOT_SCREEN; 
-		method 	 = robj.uniforms[:preferred_camera], 
+		robj::RenderObject, screen=ROOT_SCREEN;
+		method 	 = robj.uniforms[:preferred_camera],
 		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
 	if method == :perspective
-		camera = get!(screen.cameras, :perspective) do 
+		camera = get!(screen.cameras, :perspective) do
 			PerspectiveCamera(screen.inputs, position, lookat)
 		end
 	elseif method == :fixed_pixel
-		camera = get!(screen.cameras, :fixed_pixel) do 
+		camera = get!(screen.cameras, :fixed_pixel) do
 			DummyCamera(window_size=screen.area)
 		end
 	elseif method == :orthographic_pixel
-		camera = get!(screen.cameras, :orthographic_pixel) do 
+		camera = get!(screen.cameras, :orthographic_pixel) do
 			OrthographicPixelCamera(screen.inputs)
 		end
 	elseif method == :nothing
 		return push!(screen.renderlist, robj)
 	else
-		error("Method $method not a known camera type")
+        haskey(screen.cameras, method) || error("Method $method not a known camera type")
+        camera = screen.cameras[method]
 	end
 	merge!(robj.uniforms, collect(camera))
 	push!(screen.renderlist, robj)
