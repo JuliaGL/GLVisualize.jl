@@ -21,6 +21,7 @@ using Packing
 using FreeTypeAbstraction
 #using VideoIO
 
+typealias RGBAU8 RGBA{U8}
 
 
 import Base: merge, convert, show
