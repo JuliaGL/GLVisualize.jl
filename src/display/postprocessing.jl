@@ -10,4 +10,3 @@ function postprocess(screen_texture, screen)
 	)
 	std_renderobject(data, program)
 end
-
