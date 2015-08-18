@@ -15,8 +15,6 @@ Right now it relies on a mixture of packages not in METADATA and different branc
 You should use a relatively new version of Julia 0.4.
 Here is a script adding the packages and checking out the correct branches:
 ```Julia
-
-
 Pkg.clone("https://github.com/JuliaGraphics/ColorTypes.jl.git")
 Pkg.checkout("ColorTypes", "master")
 
@@ -37,12 +35,11 @@ Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
 
 Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
 
-for elem in ["GLWindow", "GLAbstraction", "WavefrontObj", "FreeTypeAbstraction", "Meshes", , "GeometryTypes"]
+for elem in ["GLWindow", "GLAbstraction", "WavefrontObj", "FreeTypeAbstraction", "Meshes", "GLVisualize" , "GeometryTypes"]
     Pkg.checkout(elem, "ntuples")
 end
 Pkg.checkout("FixedSizeArrays", "mtuples")
 Pkg.checkout("ModernGL", "stagedfunction")
-
 
 ```
 It should run without errors by now.
