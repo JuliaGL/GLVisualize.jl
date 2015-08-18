@@ -26,7 +26,6 @@ println("3d done")
 
 
 view(visualize(grid2D, scale=Vec3f0(1000,1000,1.0)), screen2D, method=:orthographic_pixel)
-sleep(1)
 
 println("2d done")
 
@@ -34,5 +33,4 @@ println("viewing it now")
 glClearColor(1,1,1,1)
 
 
-sleep(1)
 renderloop()
