@@ -32,15 +32,19 @@ Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
 Pkg.checkout("Packing", "master")
 
 Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
+Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
+Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
 
 Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
 
 for elem in ["GLWindow", "GLAbstraction", "WavefrontObj", "FreeTypeAbstraction", "Meshes", "GLVisualize" , "GeometryTypes"]
+    Pkg.checkout(elem)
     Pkg.checkout(elem, "ntuples")
 end
-Pkg.checkout("FixedSizeArrays", "mtuples")
+Pkg.checkout("FixedSizeArrays")
+Pkg.checkout("FixedSizeArrays", "mattuple")
+Pkg.checkout("ModernGL")
 Pkg.checkout("ModernGL", "stagedfunction")
-
 ```
 It should run without errors by now.
 Known problems:
