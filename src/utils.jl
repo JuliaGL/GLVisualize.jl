@@ -22,8 +22,8 @@ end
 
 #creates methods to accept signals, which then gets transfert to an OpenGL target type
 macro visualize_gen(input, target, S)
-    esc(quote 
-        visualize(value::$input, s::$S, customizations=visualize_default(value, s)) = 
+    esc(quote
+        visualize(value::$input, s::$S, customizations=visualize_default(value, s)) =
             visualize($target(value), s, customizations)
 
         function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
@@ -77,4 +77,22 @@ end
 function assemble_instanced(main::GPUVector, dict, shaders...; boundingbox=Input(AABB{Float32}(main)), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     instanced_renderobject(dict, main, program, boundingbox, primitive)
+end
+
+
+function y_partition(area, percent)
+    amount = percent / 100.0
+    p = lift(area) do r
+        (Rectangle{Int}(r.x, r.y, r.w, round(Int, r.h*amount)),
+            Rectangle{Int}(r.x, round(Int, r.h*amount), r.w, round(Int, r.h*(1-amount))))
+    end
+    return lift(first, p), lift(last, p)
+end
+function x_partition(area, percent)
+    amount = percent / 100.0
+    p = lift(area) do r
+        (Rectangle{Int}(r.x, r.y, round(Int, r.w*amount), r.h ),
+            Rectangle{Int}(round(Int, r.w*amount), r.y, round(Int, r.w*(1-amount)), r.h))
+    end
+    return lift(first, p), lift(last, p)
 end
