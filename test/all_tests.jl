@@ -60,18 +60,18 @@ function mesh_data()
 
     baselen = 0.4f0
     dirlen  = 2f0
-    #axis    = [
-    #    (Cube(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)),
-    #    (Cube(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)),
-    #    (Cube(Vec3f0(baselen), Vec3f0(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
-    #]
+    axis    = [
+        (Cube{Float32}(Vec3f0(baselen), Vec3f0(dirlen, baselen, baselen)), RGBA(1f0,0f0,0f0,1f0)),
+        (Cube{Float32}(Vec3f0(baselen), Vec3f0(baselen, dirlen, baselen)), RGBA(0f0,1f0,0f0,1f0)),
+        (Cube{Float32}(Vec3f0(baselen), Vec3f0(baselen, baselen, dirlen)), RGBA(0f0,0f0,1f0,1f0))
+    ]
 
-    #axis = map(GLNormalMesh, axis)
-    #axis = merge(axis)
+    axis = map(GLNormalMesh, axis)
+    axis = merge(axis)
 
-    return msh
+    return msh, axis
 end
-push!(TEST_DATA, mesh_data())
+push!(TEST_DATA, mesh_data()...)
 
 # obj import
 #push!(TEST_DATA, GLNormalMesh(file"cat.obj"))
@@ -122,12 +122,13 @@ function sierpinski(n, positions=Point3f0[])
     end
 end
 function sierpinski_data(n)
-    positions 	= sierpinski(n)
+    positions = sierpinski(n)
     return (positions, :scale => Vec3f0(0.5^n), :primitive => GLNormalMesh(Pyramid(Point3f0(0), 1f0,1f0)))
     #return visualize(positions, scale=Vec3f0(0.5^n), primitive=GLNormalMesh(Pyramid(Point3f0(0), 1f0,1f0)))
 end
 sierpinski_data(4)
 push!(TEST_DATA, sierpinski_data(4))
+
 
 println("surface")
 # surface plot
@@ -181,22 +182,22 @@ push!(TEST_DATA, (vol_data, :iso, :isovalue=>bounce(0f0:0.01f0:1f0)))
 
 #2D distance field
 xy_data(x,y,i) = Float32(sin(x/i)*sin(y/i))
-generate_distfield(i)             = Float32[xy_data(x,y,i) for x=1:512, y=1:512]
+generate_distfield(i) = Float32[xy_data(x,y,i) for x=1:512, y=1:512]
 push!(TEST_DATA2D, (lift(generate_distfield, bounce(50f0:500f0)), :distancefield))
 
 
 function image_test_data(N)
 	return (
 		RGBAU8[RGBAU8(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
-		File(Pkg.dir("GLVisualize", "test", "test.mp4")),
-		File(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
-		File(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),
-		File(Pkg.dir("GLVisualize", "test", "feelsgood.png")),
+		#File(Pkg.dir("GLVisualize", "test", "test.mp4")),
+		#File(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
+		#File(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),
+		#File(Pkg.dir("GLVisualize", "test", "feelsgood.png")),
 	)
 end
 
 
-push!(TEST_DATA2D, image_test_data(20)...)
+#push!(TEST_DATA2D, image_test_data(20)...)
 
 
 # 2D particles
