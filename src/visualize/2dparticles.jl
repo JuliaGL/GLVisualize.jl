@@ -6,7 +6,7 @@ visualize_default{T <: Real}(::Union(Texture{Point{2, T}, 1}, Vector{Point{2, T}
     :preferred_camera   => :orthographic_pixel
 )
 
-visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visualize_default(locations, s)) = 
+visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visualize_default(locations, s)) =
     visualize(texture_buffer(locations), s, customizations)
 
 function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, customizations=visualize_default(locations.value, s))
@@ -16,7 +16,7 @@ function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, custo
 end
 
 function visualize{T <: Real}(
-        positions::Texture{Point{2, T}, 1}, 
+        positions::Texture{Point{2, T}, 1},
         s::Style, customizations=visualize_default(positions, s)
     )
     @materialize! primitive, technique = customizations
@@ -33,12 +33,12 @@ function visualize{T <: Real}(
 end
 
 #=
-begin 
+begin
 local const POSITIONS = GPUVector{Point{2, Float32}}[]
 local const SCALE     = GPUVector{Vec{2, Float32}}[]
 getposition()   = isempty(POSITIONS) ? push!(POSITIONS, GPUVector(texture_buffer(Point{2, Float32}[])))[] : POSITIONS[]
 getscale()      = isempty(SCALE) ? push!(SCALE, GPUVector(texture_buffer(Point{2, Float32}[])))[] : SCALE[]
-end 
+end
 =#
 
 
@@ -48,7 +48,8 @@ visualize_default{T <: Real}(::Rectangle{T}, ::Style, kw_args=Dict()) = Dict(
     :color          => RGBA(1f0, 0f0, 0f0, 1f0),
     :style          => Cint(4),
     :preferred_camera => :orthographic_pixel,
-    :technique      => to_gl_technique(:square)
+    :technique      => to_gl_technique(:square),
+    :thickness      => 4f0
 )
 rectangle_position(r::Rectangle) = Point{2, Float32}(r.x, r.y)
 rectangle_scale(r::Rectangle)    = Vec{2, Float32}(r.w, r.h)
@@ -62,18 +63,18 @@ function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualiz
         :scale               => lift(rectangle_scale, r),
     ), collect_for_gl(primitive), customizations)
     program = TemplateProgram(
-        File(shaderdir, "particles2D_single.vert"), 
+        File(shaderdir, "particles2D_single.vert"),
         File(shaderdir, "distance_shape.frag"),
         attributes=data,
         fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
     )
     robj = RenderObject(data, program, Input(AABB{Float32}(r.value)))
-    prerender!(robj, 
-        glDisable, GL_DEPTH_TEST, 
+    prerender!(robj,
+        glDisable, GL_DEPTH_TEST,
         glDepthMask, GL_FALSE,
         glDisable, GL_CULL_FACE,
         enabletransparency)
-    postrender!(robj, 
+    postrender!(robj,
         render, robj.vertexarray)
     robj
 end
