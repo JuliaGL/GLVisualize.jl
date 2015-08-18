@@ -1,7 +1,7 @@
 julia 0.4-
 
 GLFW
-GLWindow 
+GLWindow
 GLAbstraction
 ModernGL
 FixedSizeArrays
@@ -11,9 +11,7 @@ Reactive
 Quaternions
 Compat
 FixedPointNumbers
-ImageIO
 FileIO
-MeshIO
 Meshes
 AbstractGPUArray
 FreeType
