@@ -1,11 +1,12 @@
+
 visualize_default{T <: Color}(image::Union(Texture{T, 2}, Matrix{T}), ::Style, kw_args=Dict()) = Dict(
     :primitive        => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(image)...)),
     :preferred_camera => :orthographic_pixel
 )
 
-visualize_default(image::AbstractImage, s::Style, kw_args...) = visualize_default(image.data, s, kw_args...)
+#visualize_default(image::AbstractImage, s::Style, kw_args...) = visualize_default(image.data, s, kw_args...)
 
-visualize{T <: Color}(img::Array{T, 2}, s::Style, customizations=visualize_default(img, s)) = 
+visualize{T <: Color}(img::Array{T, 2}, s::Style, customizations=visualize_default(img, s)) =
     visualize(Texture(img), s, customizations)
 
 
@@ -15,16 +16,16 @@ function visualize{T <: Color}(img::Signal{Array{T, 2}}, s::Style, customization
     visualize(tex, s, customizations)
 end
 
-visualize(img::Image, s::Style, customizations=visualize_default(img, s)) = 
-    visualize(img.data, s, customizations)
+#visualize(img::Image, s::Style, customizations=visualize_default(img, s)) =
+#    visualize(img.data, s, customizations)
 
 function visualize{T <: Color}(img::Texture{T, 2}, s::Style, data=visualize_default(img, s))
     @materialize! primitive = data
     data[:image] = img
     merge!(data, collect_for_gl(primitive))
     assemble_std(
-        img, data, 
-        "uv_vert.vert", "texture.frag", 
+        img, data,
+        "uv_vert.vert", "texture.frag",
         boundingbox=Input(AABB{Float32}(Vec3f0(0), Vec3f0(size(img)...,0)))
     )
 end
