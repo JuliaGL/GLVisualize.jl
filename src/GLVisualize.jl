@@ -1,8 +1,8 @@
-__precompile__()
+__precompile__(true)
 module GLVisualize
 
 using GLFW
-using GLWindow 
+using GLWindow
 using GLAbstraction
 using ModernGL
 using FixedSizeArrays
@@ -19,7 +19,7 @@ using Meshes
 using AbstractGPUArray
 using Packing
 using FreeTypeAbstraction
-using VideoIO
+#using VideoIO
 
 
 
@@ -35,6 +35,10 @@ const shaderdir = joinpath(sourcedir, "shader")
 
 
 include(joinpath(     sourcedir, "utils.jl"))
+export y_partition
+export x_partition
+
+
 include(joinpath(     sourcedir, "boundingbox.jl"))
 export loop
 export bounce
@@ -64,6 +68,8 @@ include(joinpath(     sourcedir, "edit_interface.jl"))
 export renderloop   # starts the renderloop
 export vizzedit         # Edit an object
 
+include(joinpath(sourcedir, "camera.jl"))
+export cubecamera
 
 
 
