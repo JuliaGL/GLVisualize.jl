@@ -5,9 +5,9 @@ function checkerror()
 end
 GLFW.Init()
     windowhints = [
-        (GLFW.SAMPLES,      0), 
-        (GLFW.DEPTH_BITS,   0), 
-        
+        (GLFW.SAMPLES,      0),
+        (GLFW.DEPTH_BITS,   0),
+
         (GLFW.ALPHA_BITS,   8),
         (GLFW.RED_BITS,     8),
         (GLFW.GREEN_BITS,   8),
@@ -37,7 +37,7 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
 
     // specular coefficient
     vec3 H = normalize(L+V);
-    
+
     float spec_coeff = pow(max(dot(H,N), 0.0), 8.0);
     if (diff_coeff <= 0.0)
         spec_coeff = 0.0;
@@ -93,10 +93,10 @@ void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projectio
     o_lightdir              = normalize(light[3] - vertex);
     // direction to camera
     o_vertex                = -position_camspace.xyz;
-    // 
+    //
     o_color                 = color;
     // screen space coordinates of the vertex
-    gl_Position             = projection * position_camspace; 
+    gl_Position             = projection * position_camspace;
 }
 
 struct Rectangle
@@ -155,7 +155,7 @@ void main()
 	pos 				+= vertices*vec3(scale.xy, scale.z*intensity);
 	vec4 instance_color = vec4(1,0,1,1);
 	render(pos, normals, instance_color, view*model, projection, light);
-	o_id = uvec2(objectid, gl_InstanceID); 
+	o_id = uvec2(objectid, gl_InstanceID);
 }
 """
 function collect_for_gl{T <: HomogenousMesh}(m::T)
@@ -182,7 +182,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}))
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0).* Vec3f0(grid_length..., 1f0)
     return Dict(
         :primitive  => GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1.0))),
-        :color      => RGBAU8[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1), rgbaU8(0,1,1,1), rgbaU8(0,0,1,1)],
+        :color      => RGBAU8[RGBAU8(1,0,0,1), RGBAU8(1,1,0,1), RGBAU8(0,1,0,1), RGBAU8(0,1,1,1), RGBAU8(0,0,1,1)],
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :scale      => scale,
@@ -202,7 +202,7 @@ function visualize(grid::Texture{Float32, 2}, customizations=visualize_default(g
     ), collect_for_gl(primitive), customizations)
     program = TemplateProgram(
     	vert_util,
-       	vert_shader, 
+       	vert_shader,
         frag_shader
     )
     checkerror()
@@ -247,7 +247,7 @@ const TIMER_SIGNAL = fpswhen(ROOT_SCREEN.inputs[:open], 30.0)
 
 function fold_loop(v0, timediff_range)
     _, range = timediff_range
-    v0 == last(range) && return first(range) 
+    v0 == last(range) && return first(range)
     v0+step(range)
 end
 
@@ -259,16 +259,16 @@ function fold_bounce(v0, v1)
     _, range = v1
     val, direction = v0
     val += step(range)*direction
-    if val > last(range) || val < first(range) 
+    if val > last(range) || val < first(range)
     direction = -direction
     val += step(range)*direction
     end
     (val, direction)
 end
 
-bounce{T}(range::Range{T}; t=TIMER_SIGNAL) = 
+bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
     lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, t, range)))
-    
+
 insert_selectionquery!(:mouse_hover, lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
     Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
 end)
@@ -300,7 +300,7 @@ lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
         resize_nocopy!(STENCIL_BUFFER, tuple(window_size...))
         glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil[1])
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, (window_size)...)
-    end 
+    end
 end
 function postprocess(screen_texture, screen)
     data = merge(Dict(
@@ -358,7 +358,7 @@ function renderloop(screen)
     render(postprocess_robj)
     GLFW.SwapBuffers(screen.nativewindow)
     GLFW.PollEvents()
-    yield() 
+    yield()
     #sleep(0.001)
 end
 

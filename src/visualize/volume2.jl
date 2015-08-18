@@ -2,7 +2,7 @@ visualize_default(vol::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:v
     :hull                   => GLPlainMesh(Cube(Vec3(0), Vec3(1))),
     :u_shape                => Vec3(size(vol)...),
     :light_position         => Vec3(0.25, 1.0, 3.0),
-    :color                  => RGBAU8[rgbaU8(1,0,0,1), rgbaU8(1,1,0,1), rgbaU8(0,1,0,1), rgbaU8(0,1,1,1), rgbaU8(0,0,1,1)],
+    :color                  => RGBAU8[RGBAU8(1,0,0,1), RGBAU8(1,1,0,1), RGBAU8(0,1,0,1), RGBAU8(0,1,1,1), RGBAU8(0,0,1,1)],
     :light_intensity        => Vec3(15.0),
     :u_threshold            => 0.5f0,
     :u_relative_step_size   => 0.5f0
