@@ -1,15 +1,16 @@
-const SHARED_DEFAULTS = @compat(Dict(
-    :model      	  => Input(eye(Mat4f0)),
-    :light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
-    :preferred_camera => :perspective
-))
-
 visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)),
 	which either means the implementation is incomplete or not implemented yet.
 	Consider defining visualize_default(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => Dict{Symbol, Any} and
 	visualize(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => RenderObject""")
 
-function visualize_default(value::Any, style::Symbol, kw_args::Vector{Any}, defaults=SHARED_DEFAULTS)
+function visualize_default(
+		value::Any, style::Symbol, kw_args::Vector{Any}, 
+		defaults=Dict(
+		    :model      	  => Input(eye(Mat4f0)),
+		    :light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
+		    :preferred_camera => :perspective
+		)
+	)
 	parameters_dict 		= Dict{Symbol, Any}(kw_args)
 	parameters_calculated 	= visualize_default(value, Style{style}(), parameters_dict)
 	merge(defaults, parameters_calculated, parameters_dict)

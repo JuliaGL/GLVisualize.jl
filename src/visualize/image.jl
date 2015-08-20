@@ -1,4 +1,3 @@
-
 visualize_default{T <: Color}(image::Union(Texture{T, 2}, Matrix{T}), ::Style, kw_args=Dict()) = Dict(
     :primitive        => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(image)...)),
     :preferred_camera => :orthographic_pixel

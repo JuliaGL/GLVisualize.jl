@@ -51,6 +51,7 @@ begin #basically a singleton for the textureatlas
 const local TEXTURE_ATLAS = TextureAtlas[]
 get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
 end
+
 Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do 
 	uv, rect, extent 	= render(glyph, font, texture_atlas)
 	

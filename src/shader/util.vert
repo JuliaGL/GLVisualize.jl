@@ -118,12 +118,12 @@ ivec3 ind2sub(ivec3 dim, int linearindex)
 
 vec2 linear_index(ivec2 dims, int index)
 {
-    ivec2 index2D    = ind2sub(dims, index);
+    ivec2 index2D = ind2sub(dims, index);
     return vec2(index2D) / vec2(dims);
 }
 vec2 linear_index(ivec2 dims, int index, vec2 offset)
 {
-    vec2 index2D    = vec2(ind2sub(dims, index))+offset;
+    vec2 index2D = vec2(ind2sub(dims, index))+offset;
     return index2D / vec2(dims);
 }
 vec3 linear_index(ivec3 dims, int index)

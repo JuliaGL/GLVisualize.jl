@@ -21,12 +21,12 @@ function visualize(vectorfield::Texture{Vec{3, Float32}, 3}, s::Style, customiza
     )
 end
 
-
 function visualize(vectorfield::Signal{Array{Vec{3, Float32}, 3}}, s::Style, customizations=visualize_default(vectorfield, s))
     tex = Texture(vectorfield.value, minfilter=:nearest, x_repeat=:clamp_to_edge)
     lift(update!, tex, vectorfield)
     visualize(tex, s, customizations)
 end
+
 function visualize(vectorfield::Array{Vec{3, Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
     _norm = map(norm, vectorfield)
     customizations[:norm] = Vec2f0(minimum(_norm), maximum(_norm))

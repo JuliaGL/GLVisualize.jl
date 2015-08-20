@@ -59,12 +59,11 @@ function cubecamera(
     anymousedown 		= lift(isnotempty, mousebuttonspressed);
     mousedraggdiffL 	= lift(last, foldl(GLAbstraction.mousediff, (false, Vec2f0(0.0f0), Vec2f0(0.0f0)), clickedwithoutkeyL, mouseposition));
     mousedraggdiffM 	= lift(last, foldl(GLAbstraction.mousediff, (false, Vec2f0(0.0f0), Vec2f0(0.0f0)), clickedwithoutkeyM, mouseposition));
-    speed = Input(50f0);
-    theta = lift(GLAbstraction.thetalift, mousedraggdiffL, speed);
-    speed_trans = Input(100f0)
-    xtrans      = lift(*, scroll_y, speed_trans)
-    ytrans      = lift(/, lift(-, lift(first, mousedraggdiffM)), speed_trans)
-    ztrans      = lift(/, lift(last, mousedraggdiffM), speed_trans)
+
+    theta       = lift(GLAbstraction.thetalift, mousedraggdiffL, 50f0)
+    xtrans      = lift(/, scroll_y, 5f0)
+    ytrans      = lift(/, lift(first, mousedraggdiffM), 200f0)
+    ztrans      = lift(/, lift(last, mousedraggdiffM), -200f0)
     trans       = lift(Vec{3, T}, xtrans, ytrans, ztrans)
 
     far, near, fov = Input(100f0), Input(1f0), Input(43f0);

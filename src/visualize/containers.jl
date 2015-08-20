@@ -1,4 +1,3 @@
-
 visualize_default(::Matrix, ::Style, kw_args...) = Dict(
     :gap 	=> Input(Vec3f0(0.1, 0.1, 0.0)),
    	:scale 	=> Vec3f0(1.0, 1.0, 1.0)
@@ -7,7 +6,6 @@ visualize_default(::Matrix, ::Style, kw_args...) = Dict(
 function visualize(grid::Matrix, s::Style, customizations=visualize_default(grid, s))
     @materialize! gap, model, scale = customizations
     results = map(grid) do viz_args
-    	sleep(0.1)
 		trans = Input(eye(Mat4f0)) # get a handle to the translation matrix
 		if isa(viz_args, Tuple)
 			length(viz_args) < 1 && error("tried to visualize empty tuple ()")

@@ -8,9 +8,9 @@ visualize_default(distancefield::Union(Texture{Float32, 2}, Array{Float32, 2}), 
 
 function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield}, customizations=visualize_default(positions, s))
     @materialize! primitive = customizations
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :distancefield => distancefield,
-    )), collect_for_gl(primitive), customizations)
+    ), collect_for_gl(primitive), customizations)
 
     program = assemble_std(
         distancefield, data,

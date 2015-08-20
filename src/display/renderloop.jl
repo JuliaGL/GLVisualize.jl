@@ -12,6 +12,7 @@ end
 
 insert_selectionquery(value, selectionquery, name) = selectionquery[name] = value
 
+
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}}, selection, selectionquery)
     lift(insert_selectionquery, value, selectionquery, name)
     selection[name]  = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
@@ -33,6 +34,18 @@ function resizebuffers(window_size, color_buffer, objectid_buffer, depth_buffer)
     end
     nothing
 end
+
+function postprocess(screen_texture, screen)
+    data = merge(Dict(
+        :resolution => lift(Vec2f0, screen.inputs[:framebuffer_size]),
+        :u_texture0 => screen_texture
+    ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
+    assemble_std(
+        nothing, data,
+        "fxaa.vert", "fxaa.frag", "fxaa_combine.frag"
+    )
+end
+
 
 function setup_framebuffers(framebuffsize::Signal{Vec{2, Int}})
     render_framebuffer = glGenFramebuffers()
@@ -104,11 +117,6 @@ function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=fals
 end
 
 
-fps_max         = 0.0
-fps_min         = typemax(Float64)
-fps_mean        = 0.0
-frames_total    = 0
-
 function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
     while screen.inputs[:open].value
         renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
@@ -116,10 +124,6 @@ function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer,
     end
     GLFW.Terminate()
     FreeTypeAbstraction.done()
-    #global fps_max, fps_min, fps_mean, frames_total
-    #println("fps_max: ", fps_max)
-    #println("fps_min: ", fps_min)
-    #println("fps_mean: ", fps_mean/frames_total)
 end
 
 
@@ -156,19 +160,6 @@ function renderloop_inner(screen, render_framebuffer, selectionquery, objectid_b
     GLFW.PollEvents()
 
     yield()
-    #=
-    t        = toq()
-    target   = 1.0/60.0
-    tosleep  = target - t
-
-    global fps_max, fps_min, fps_mean, frames_total
-    fps      = 1.0/t
-    fps_max  = max(fps_max, fps)
-    fps_min  = min(fps_max, fps)
-    fps_mean += fps
-    frames_total += 1
-    tosleep > 0.0 && sleep(tosleep) # top up to reach 60 frames per second
-    =#
 end
 
 
@@ -202,6 +193,7 @@ function to_mousedragg_id(t0, mouse_down1, mouseposition1, objectid)
     end
     (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0))
 end
+
 function diff_mouse(mouse_down_draggstart_mouseposition)
     mouse_down, draggstart, objectid_start, mouseposition, objectid_end = mouse_down_draggstart_mouseposition
     (draggstart - mouseposition, objectid_start, objectid_end)

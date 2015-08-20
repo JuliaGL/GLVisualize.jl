@@ -62,19 +62,21 @@ function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualiz
         :position            => lift(rectangle_position, r),
         :scale               => lift(rectangle_scale, r),
     ), collect_for_gl(primitive), customizations)
-    program = TemplateProgram(
-        File(shaderdir, "particles2D_single.vert"),
-        File(shaderdir, "distance_shape.frag"),
-        attributes=data,
-        fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")]
+    robj = assemble_std(
+        r, data,
+        "particles2D_single.vert", "distance_shape.frag",
+        boundingbox=lift(AABB{Float32}, r)
     )
-    robj = RenderObject(data, program, Input(AABB{Float32}(r.value)))
+    empty!(robj.prerenderfunctions)
+    empty!(robj.postrenderfunctions)
     prerender!(robj,
         glDisable, GL_DEPTH_TEST,
         glDepthMask, GL_FALSE,
         glDisable, GL_CULL_FACE,
-        enabletransparency)
+        enabletransparency
+    )
     postrender!(robj,
-        render, robj.vertexarray)
+        render, robj.vertexarray
+    )
     robj
 end
