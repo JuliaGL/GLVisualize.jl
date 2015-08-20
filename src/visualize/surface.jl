@@ -8,7 +8,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0)
     Dict(
         :primitive  => GLMesh2D(Rectangle(0f0,0f0,1f0,1f0)),
-        :color      => RGBAU8[RGBAU8(1,0,0,1), RGBAU8(1,1,0,1), RGBAU8(0,1,0,1), RGBAU8(0,1,1,1), RGBAU8(0,0,1,1)],
+        :color      => RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)],
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :color_norm => Vec2f0(minimum(grid), maximum(grid)),

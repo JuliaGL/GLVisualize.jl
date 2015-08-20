@@ -84,7 +84,7 @@ generate_particles(N,x,i) = Point3f0(
 	Float32((2x/N)+i/10f0)
 )
 update_particles(i, N) 		= Point3f0[generate_particles(N,x, i) for x=1:N]
-particle_color(positions) 	= RGBAU8[RGBAU8(((cos(pos[1])+1)/2),0.0,((sin(pos[2])+1)/2),  1.0f0) for pos in positions]
+particle_color(positions) 	= RGBA{U8}[RGBA{U8}(((cos(pos[1])+1)/2),0.0,((sin(pos[2])+1)/2),  1.0f0) for pos in positions]
 function particle_data(N)
 	locations 	= lift(update_particles, bounce(1f0:0.1f0:10f0), N)
 	colors 		= lift(particle_color, locations)
@@ -188,7 +188,7 @@ push!(TEST_DATA2D, (lift(generate_distfield, bounce(50f0:500f0)), :distancefield
 
 function image_test_data(N)
 	return (
-		RGBAU8[RGBAU8(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
+		RGBA{U8}[RGBA{U8}(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
 		#File(Pkg.dir("GLVisualize", "test", "test.mp4")),
 		#File(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
 		#File(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),

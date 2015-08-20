@@ -1,6 +1,6 @@
 visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :styles             => Texture([RGBAU8(0.0,0.0,0.0,1.0)]),
+    :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
     :technique          => :sprite,
     :preferred_camera   => :orthographic_pixel
@@ -9,7 +9,7 @@ visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style, kw_args
 function visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style{:square}, kw_args=Dict())
     return Dict(
         :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-        :styles             => Texture([RGBAU8(0,0,0,0), RGBAU8(0.7,.5,1.,0.5)]),
+        :styles             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
         :technique          => :square,
         :preferred_camera   => :orthographic_pixel,

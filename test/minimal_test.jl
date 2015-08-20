@@ -182,7 +182,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}))
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0).* Vec3f0(grid_length..., 1f0)
     return Dict(
         :primitive  => GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1.0))),
-        :color      => RGBAU8[RGBAU8(1,0,0,1), RGBAU8(1,1,0,1), RGBAU8(0,1,0,1), RGBAU8(0,1,1,1), RGBAU8(0,0,1,1)],
+        :color      => RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)],
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :scale      => scale,

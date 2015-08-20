@@ -4,7 +4,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
     grid_length = grid_max - grid_min
     scale = Vec3f0((1f0 / Vec2f0(size(grid))), 1f0) .* Vec3f0(grid_length, 1f0)
     p = GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1.0)))
-    c = RGBAU8[RGBAU8(1,0,0,1), RGBAU8(1,1,0,1), RGBAU8(0,1,0,1), RGBAU8(0,1,1,1), RGBAU8(0,0,1,1)]
+    c = RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)]
     n = Vec2f0(minimum(grid), maximum(grid))
     return Dict(
         :primitive  => p,
