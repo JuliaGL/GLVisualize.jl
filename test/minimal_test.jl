@@ -1,4 +1,6 @@
 using GLAbstraction, ModernGL, GLWindow, MeshIO, Meshes, GeometryTypes, ColorTypes, Reactive, GLFW, FixedPointNumbers, FileIO
+
+println(versioninfo())
 function checkerror()
 	err = glGetError()
 	(err != GL_NO_ERROR) && error("shit... $(GLENUM(err).name)")
@@ -182,7 +184,7 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}))
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0).* Vec3f0(grid_length..., 1f0)
     return Dict(
         :primitive  => GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1.0))),
-        :color      => RGBAU8[RGBAU8(1,0,0,1), RGBAU8(1,1,0,1), RGBAU8(0,1,0,1), RGBAU8(0,1,1,1), RGBAU8(0,0,1,1)],
+        :color      => RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)],
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :scale      => scale,
@@ -308,9 +310,9 @@ function postprocess(screen_texture, screen)
         :u_texture0 => screen_texture
     ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
     program = TemplateProgram(
-        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa.vert"),
-        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa.frag"),
-        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa_combine.frag")
+        load(Pkg.dir("GLVisualize", "src", "shader", "fxaa.vert")),
+        load(Pkg.dir("GLVisualize", "src", "shader", "fxaa.frag")),
+        load(Pkg.dir("GLVisualize", "src", "shader", "fxaa_combine.frag"))
     )
     std_renderobject(data, program)
 end
