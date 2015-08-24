@@ -1,4 +1,6 @@
 using GLAbstraction, ModernGL, GLWindow, MeshIO, Meshes, GeometryTypes, ColorTypes, Reactive, GLFW, FixedPointNumbers, FileIO
+
+println(versioninfo())
 function checkerror()
 	err = glGetError()
 	(err != GL_NO_ERROR) && error("shit... $(GLENUM(err).name)")
@@ -308,9 +310,9 @@ function postprocess(screen_texture, screen)
         :u_texture0 => screen_texture
     ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
     program = TemplateProgram(
-        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa.vert"),
-        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa.frag"),
-        File(Pkg.dir("GLVisualize", "src", "shader"), "fxaa_combine.frag")
+        load(Pkg.dir("GLVisualize", "src", "shader", "fxaa.vert")),
+        load(Pkg.dir("GLVisualize", "src", "shader", "fxaa.frag")),
+        load(Pkg.dir("GLVisualize", "src", "shader", "fxaa_combine.frag"))
     )
     std_renderobject(data, program)
 end
