@@ -1,9 +1,8 @@
-using FileIO, ImageIO, ModernGL
-using VideoIO
-using FileIO, WavefrontObj, MeshIO, Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
+using ModernGL
+using FileIO, Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes
 using Base.Test
-w, renderloop = Screen()
+w, renderloop = glscreen()
 const TEST_DATA   = Any[]
 const TEST_DATA2D = Any[]
 
