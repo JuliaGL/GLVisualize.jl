@@ -74,7 +74,7 @@ end
 push!(TEST_DATA, mesh_data()...)
 
 # obj import
-#push!(TEST_DATA, GLNormalMesh(file"cat.obj"))
+push!(TEST_DATA, GLNormalMesh("cat.obj"))
 println("particles")
 
 # particles
@@ -94,7 +94,7 @@ push!(TEST_DATA, particle_data(1024))
 particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 push!(TEST_DATA,  (
 	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024],
-	#:primitive 	=> GLNormalMesh(file"cat.obj"),
+	:primitive 	=> GLNormalMesh("cat.obj"),
 	:color 		=> lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)),
 	:scale 		=> Vec3f0(0.2)
 ))
@@ -189,15 +189,15 @@ push!(TEST_DATA2D, (lift(generate_distfield, bounce(50f0:500f0)), :distancefield
 function image_test_data(N)
 	return (
 		RGBA{U8}[RGBA{U8}(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
-		#File(Pkg.dir("GLVisualize", "test", "test.mp4")),
-		#File(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
-		#File(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),
-		#File(Pkg.dir("GLVisualize", "test", "feelsgood.png")),
+		#load(Pkg.dir("GLVisualize", "test", "test.mp4")),
+		load(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
+		load(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),
+		load(Pkg.dir("GLVisualize", "test", "feelsgood.png")),
 	)
 end
 
 
-#push!(TEST_DATA2D, image_test_data(20)...)
+push!(TEST_DATA2D, image_test_data(20)...)
 
 
 # 2D particles
