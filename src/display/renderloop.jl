@@ -69,9 +69,9 @@ function setup_framebuffers(framebuffsize::Signal{Vec{2, Int}})
     render_framebuffer, color_buffer, objectid_buffer, depth_buffer
 end
 
+export glscreen
 
-
-function GLWindow.Screen(;name="GLVisualize", resolution=nothing, debugging=false)
+function glscreen(;name="GLVisualize", resolution=nothing, debugging=false)
 
     windowhints = [
         (GLFW.SAMPLES,      0),
@@ -202,10 +202,10 @@ function mousedragdiff_objectid(inputs, mouse_hover)
     @materialize mousebuttonspressed, mousereleased, mouseposition = inputs
     mousedown      = lift(isnotempty, mousebuttonspressed)
     mousedraggdiff = lift(diff_mouse,
-                        foldl(to_mousedragg_id, (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0)),
-                            mousedown, mouseposition, mouse_hover
-                        )
-                    )
+        foldl(to_mousedragg_id, (false, Vec2f0(0), Vec(0,0), Vec2f0(0), Vec(0,0)),
+            mousedown, mouseposition, mouse_hover
+        )
+    )
     return keepwhen(mousedown, (Vec2f0(0), Vec(0,0), Vec(0,0)), mousedraggdiff)
 end
 
