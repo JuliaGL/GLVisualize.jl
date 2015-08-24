@@ -8,7 +8,7 @@ visualize_default(::GLNormalMesh, ::Style, kw_args=Dict()) = Dict{Symbol, Any}(
 function visualize(mesh::GLNormalMesh, s::Style, customizations=visualize_default(mesh, s))
     data    = merge(collect_for_gl(mesh), customizations)
     shader  = assemble_std(
-        mesh.vertices, data, 
+        mesh.vertices, data,
         "util.vert", "standard.vert", "standard.frag"
     )
 end
@@ -16,7 +16,17 @@ end
 function visualize(mesh::GLNormalAttributeMesh, s::Style, customizations=visualize_default(mesh, s))
     data = merge(collect_for_gl(mesh), customizations)
     assemble_std(
-        mesh.vertices, data, 
+        mesh.vertices, data,
         "util.vert", "attribute_mesh.vert", "standard.frag",
+    )
+end
+
+
+
+function visualize(mesh::GLNormalUVMesh, s::Style, customizations=visualize_default(mesh, s))
+    data = merge(collect_for_gl(mesh), customizations)
+    assemble_std(
+        mesh.vertices, data,
+        "util.vert", "uv_normal.vert", "uv_normal.frag",
     )
 end
