@@ -65,6 +65,7 @@ include(joinpath("visualize", "text.jl"))
 include(joinpath("visualize", "vectorfield.jl"))
 include(joinpath("visualize", "videos.jl"))
 include(joinpath("visualize", "volume.jl"))
+include(joinpath("visualize", "axis.jl"))
 
 include("camera.jl")
 export cubecamera
