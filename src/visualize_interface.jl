@@ -46,3 +46,4 @@ end
 view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; kw_args...) = for robj in robjs
 	view(robj, screen; kw_args...)
 end
+view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c), screen; kw_args...)
