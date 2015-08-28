@@ -14,8 +14,13 @@ function visualize(c::AABB{Float32}, ::Style{:grid}, default)
         boundingbox=Input(c)
     )
     empty!(robj.prerenderfunctions)
-    empty!(robj.postrenderfunctions)
-    prerender!(robj, glDisable, GL_DEPTH_TEST, glEnable, GL_CULL_FACE, glCullFace, GL_BACK, enabletransparency)
-    postrender!(robj, render, robj.vertexarray)
+    prerender!(robj,
+        glEnable, GL_DEPTH_TEST,
+        glDepthMask, GL_TRUE,
+        glDepthFunc, GL_LEQUAL,
+        glEnable, GL_CULL_FACE,
+        glCullFace, GL_BACK,
+        enabletransparency
+    )
     return robj
 end
