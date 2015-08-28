@@ -31,8 +31,8 @@ function get_cube_rotations(eyeposition, lookatv)
     bottom  = x_180 	* top
     front   = to_y 		* toxyplane
     back    = z_180 	* front
-    right 	= to_x 		* toxyplane
-    left  	= z_180 	* right
+    left 	= to_x 		* toxyplane
+    right  	= z_180 	* left
 
 	top, bottom, front, back, right, left
 end
@@ -52,6 +52,7 @@ function cubecamera(
     m = filter(x->h.value[1] == id.value, false, dd);
     @materialize mouseposition, mousebuttonspressed, buttonspressed, scroll_y, window_size = window.inputs
     const T = Float32;
+    
     mouseposition   	= lift(Vec{2, T}, mouseposition);
     clickedwithoutkeyL 	= lift(GLAbstraction.mousepressed_without_keyboard, mousebuttonspressed, Input(0), buttonspressed)
     clickedwithoutkeyM 	= lift(GLAbstraction.mousepressed_without_keyboard, mousebuttonspressed, Input(2), buttonspressed)
