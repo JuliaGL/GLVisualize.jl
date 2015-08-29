@@ -36,13 +36,13 @@ Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
 Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
 
 Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
-
-for elem in ["GLWindow", "GLAbstraction", "WavefrontObj", "FreeTypeAbstraction", "Meshes", "GLVisualize" , "GeometryTypes"]
+Pkg.checkout("GeometryTypes")
+Pkg.checkout("FixedSizeArrays")
+for elem in ["GLWindow", "GLAbstraction", "WavefrontObj", "FreeTypeAbstraction", "Meshes"]
     Pkg.checkout(elem)
     Pkg.checkout(elem, "ntuples")
 end
-Pkg.checkout("FixedSizeArrays")
-Pkg.checkout("FixedSizeArrays", "mattuple")
+
 Pkg.checkout("ModernGL")
 Pkg.checkout("ModernGL", "stagedfunction")
 ```
