@@ -29,11 +29,11 @@ flat out int 	o_style;
 flat out uvec2 	o_id;
 
 void main(){
-    o_uv              = texturecoordinates; 
+    o_uv              = texturecoordinates;
     o_color 		  = color;
     o_technique 	  = technique;
     o_style 		  = style;
     o_id 			  = uvec2(objectid, gl_VertexID+1);
-    gl_Position       = projectionview * model * vec4(position + (vertices*scale), 0, 1); 
-    
+    gl_Position       = projectionview * model * vec4(position + (vertices*scale), -50, 1); 
+
 }

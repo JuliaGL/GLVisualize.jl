@@ -10,12 +10,12 @@ function vizzedit(x::RGBA, inputs)
 
   vizz  = visualize(Rectangle(0,0,50,50), style=Cint(5))
   is_num(drag_id) = drag_id[2][1] == vizz.id
-  slide_addition  = lift(drag_xy, filter(is_num, (Vec2(0), Vector2(0), Vector2(0)), drag))
+  slide_addition  = lift(drag_xy, filter(is_num, (Vec2f0(0), Vec(0,0), Vec(0,0)), drag))
   haschanged    = foldl((t0, t1) -> (t0[2]!=t1, t1), (false, slide_addition.value), slide_addition)
   haschanged    = lift(first, haschanged)
-  slide_addition  = keepwhen(haschanged, Vec2(0), slide_addition)
+  slide_addition  = keepwhen(haschanged, Vec2f0(0), slide_addition)
 
-  slide_addition  = lift(last, foldl(GLAbstraction.mousediff, (false, Vector2(0.0f0), Vector2(0.0f0)), ## (Note 2) 
+  slide_addition  = lift(last, foldl(GLAbstraction.mousediff, (false, Vec2f0(0), Vec2f0(0)), ## (Note 2)
                   lift(isclicked, mbutton_clicked), slide_addition))
 
   color = foldl(x, lift(/,slide_addition, 1000.0f0), mbutton_clicked) do v0, addition, mpress

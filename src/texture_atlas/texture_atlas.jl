@@ -1,22 +1,26 @@
-immutable Sprite{T} <: FixedVector{T, 1}
-	attribute_id::T # lookup attribute_id for attribute texture
+immutable Sprite{T} <: FixedVector{1, T}
+	#attribute_id::T # lookup attribute_id for attribute texture
+	_::NTuple{1, T}
 end
-immutable SpriteStyle{T} <: FixedVector{T, 2}
-	color_id::T # lookup attribute_id for attribute texture
-	technique::T
+immutable SpriteStyle{T} <: FixedVector{2, T}
+	#color_id::T # lookup attribute_id for attribute texture
+	#technique::T
+	_::NTuple{2, T}
 end
 
-typealias GLSprite Sprite{Uint32}
-typealias GLSpriteStyle SpriteStyle{Uint16}
 
-immutable SpriteAttribute{T} <: FixedVector{T, 4}
-	u::T
-	v::T
-	x_scale::T
-	y_scale::T
+immutable SpriteAttribute{T} <: FixedVector{4, T}
+	_::NTuple{4, T}
+	#u::T
+	#v::T
+	#x_scale::T
+	#y_scale::T
 end
+
 
 typealias GLSpriteAttribute SpriteAttribute{Float16}
+typealias GLSprite Sprite{Uint32}
+typealias GLSpriteStyle SpriteStyle{Uint16}
 
 type TextureAtlas
 	rectangle_packer::RectanglePacker
@@ -47,13 +51,14 @@ begin #basically a singleton for the textureatlas
 const local TEXTURE_ATLAS = TextureAtlas[]
 get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
 end
+
 Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do 
 	uv, rect, extent 	= render(glyph, font, texture_atlas)
 	
 	bearing 			= extent.horizontal_bearing
 	attributes 			= GLSpriteAttribute[
 		GLSpriteAttribute(uv.x, uv.y, uv.w, uv.h), # last remaining digits are optional, so we use them to cache this calculation
-		GLSpriteAttribute(bearing.x, -(uv.h-bearing.y), extent.advance...), 
+		GLSpriteAttribute(bearing[1], -(uv.h-bearing[2]), extent.advance...), 
 	]
 	i = texture_atlas.index
 	push!(texture_atlas.attributes, attributes)
@@ -89,11 +94,3 @@ function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_
     uv, rect, extent
 end
 
-const fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
-@assert isfile(fn)
-
-const DEFAULT_FONT_FACE = newface(fn)
-const FONT_EXTENDS      = Dict{Int, FontExtent}()
-const ID_TO_CHAR        = Dict{Int, Char}()
-
-map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct

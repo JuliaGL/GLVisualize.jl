@@ -30,7 +30,7 @@ lines = std_renderobject(Dict(
 			:vertex           => GLBuffer(verts), #NOT WORKING
 			:index            => indexbuffer(indexes), #NOT WORKING
 			:projectionview   => GLVisualize.ROOT_SCREEN.perspectivecam.projectionview
-		), Input(lineshader), Input(AABB(verts)), GL_LINES) #Input(AABB(verts)) -> calculates boundingbox
+		), Input(lineshader), Input(AABB{Float32}(verts)), GL_LINES) #Input(AABB(verts)) -> calculates boundingbox
 
 push!(GLVisualize.ROOT_SCREEN.renderlist, lines)
 

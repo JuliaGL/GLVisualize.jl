@@ -1,4 +1,4 @@
-function visualize_default(::Vector{Point3{Float32}}, ::Style{:dots}, kw_args...)
+function visualize_default{T}(::Vector{Point{3, T}}, ::Style{:dots}, kw_args...)
     color = get(kw_args[1], :color, RGBA(1f0, 0f0, 0f0, 1f0))
     delete!(kw_args[1], :color)
     color = texture_or_scalar(color)
@@ -8,10 +8,10 @@ function visualize_default(::Vector{Point3{Float32}}, ::Style{:dots}, kw_args...
     )
 end
 
-@visualize_gen Vector{Point3{Float32}} GLBuffer Style{:dots}
+@visualize_gen Vector{Point{3, Float32}} GLBuffer Style{:dots}
 
-function visualize(
-        positions::GLBuffer{Point3{Float32}}, 
+function visualize{T}(
+        positions::GLBuffer{Point{3, T}}, 
         s::Style{:dots}, 
         data=visualize_default(positions, s)
     )

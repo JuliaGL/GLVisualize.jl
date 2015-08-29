@@ -7,7 +7,7 @@ generate_particles(N,x,i) = Point3f(
 	(2x/N)+i/10f0
 )
 update_particles(i, N) 		= Point3f[generate_particles(N,x, i) for x=1:N]
-particle_color(positions) 	= RGBAU8[RGBAU8(((cos(pos.x)+1)/2),0.0,((sin(pos.y)+1)/2),  1.0f0) for pos in positions]
+particle_color(positions) 	= RGBA{U8}[RGBA{U8}(((cos(pos.x)+1)/2),0.0,((sin(pos.y)+1)/2),  1.0f0) for pos in positions]
 
 function particle_data(N)
 	locations 	= lift(update_particles, bounce(1f0:0.1f0:10f0), N)

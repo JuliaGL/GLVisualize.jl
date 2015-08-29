@@ -8,14 +8,14 @@ visualize_default(distancefield::Union(Texture{Float32, 2}, Array{Float32, 2}), 
 
 function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield}, customizations=visualize_default(positions, s))
     @materialize! primitive = customizations
-    data = merge(@compat(Dict(
+    data = merge(Dict(
         :distancefield => distancefield,
-    )), collect_for_gl(primitive), customizations)
+    ), collect_for_gl(primitive), customizations)
 
     program = assemble_std(
         distancefield, data,
         "uv_vert.vert", "distancefield.frag",
-        boundingbox=Input(AABB(Vec3(0), Vec3(size(distancefield)...,0)))
+        boundingbox=Input(AABB{Float32}(Vec3f0(0), Vec3f0(size(distancefield)...,0)))
     )
 end
 

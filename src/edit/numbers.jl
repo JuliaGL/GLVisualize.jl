@@ -24,14 +24,14 @@ function add_mouse_drags(t0, mouse_down1, mouseposition1, objectid, id_tolookfor
     if (!mouse_down0 && mouse_down1) && (objectid[1] == id_tolookfor) #drag starts
         return (accum, mouse_down1, mouseposition1, id_tolookfor, accum, objectid[2]) # reset values
     elseif (mouse_down0 && mouse_down1) && (idstart == id_tolookfor)
-        diff = eltype(VT)(Vec2(mouseposition1-draggstart)[1])
+        diff = eltype(VT)(Vec2f0(mouseposition1-draggstart)[1])
         # lets act as if the text glyph array is 2d, with numberwidth as width, and height is the amount of numbers
         zero_indexed        = index0-1 #linear index from glyph array
-        number_glyph_group  = div(zero_indexed, glyph_width) # 
+        number_glyph_group  = div(zero_indexed, glyph_width) #
         i = number_glyph_group+1#to 1 based index
         return (v0 + (unit(VT, i)*diff), mouse_down1, draggstart, id_tolookfor, v0, index0)
     end
-    (accum, mouse_down1, Vec2(0), 0, accum, 0)
+    (accum, mouse_down1, Vec2f0(0), 0, accum, 0)
 end
 
 function vizzedit{T <: Union(FixedVector, Real)}(x::T, inputs, numberwidth=5)
@@ -40,17 +40,17 @@ function vizzedit{T <: Union(FixedVector, Real)}(x::T, inputs, numberwidth=5)
 
     mousedown           = lift(isnotempty, mbutton_clicked)
     mouse_add_drag_id   = foldl(
-        add_mouse_drags, 
-        (zero(T), false, Vec2(0), 0, zero(T), 0), 
+        add_mouse_drags,
+        (zero(T), false, Vec2f0(0), 0, zero(T), 0),
         mousedown, inputs[:mouseposition], inputs[:mouse_hover], Input(Int(vizz.id)), Input(numberwidth+1) #plus space
     )
     addition_vec = lift(first, mouse_add_drag_id)
     ET      = eltype(T)
-    if ET <: FloatingPoint 
+    if ET <: FloatingPoint
         new_num = lift(+, x, lift(/, addition_vec, ET(500)))
-    else 
+    else
         new_num = lift(+, x, lift(div, addition_vec, ET(10)))
-    end 
+    end
 
     new_num_gl = lift(num2glstring, new_num, numberwidth)
     lift(update!, vizz[:glyphs], new_num_gl)

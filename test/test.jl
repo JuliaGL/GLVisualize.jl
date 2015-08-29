@@ -1,9 +1,5 @@
-using GLVisualize, NPZ
+using GLVisualize, GLWindow
+screen, renderloop = Screen()
 
-volume = npzread("mri.npz")["data"]
-
-volume = volume./256f0
-
-view(visualize(volume))
-
+view(visualize(rand(Float32, 71,73)))
 renderloop()

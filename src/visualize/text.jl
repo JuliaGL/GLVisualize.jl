@@ -1,6 +1,6 @@
 visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :styles             => Texture([RGBAU8(1.0,1.0,1.0,1.0)]),
+    :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
     :technique          => :sprite,
     :preferred_camera   => :orthographic_pixel
@@ -9,7 +9,7 @@ visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style, kw_args
 function visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style{:square}, kw_args=Dict())
     return Dict(
         :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-        :styles             => Texture([RGBAU8(0,0,0,0), RGBAU8(0.7,.5,1.,0.5)]),
+        :styles             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
         :technique          => :square,
         :preferred_camera   => :orthographic_pixel,
@@ -29,13 +29,13 @@ end
 function visualize(text::AbstractString, s::Style, customizations=visualize_default(text, s))
     glyphs      = GPUVector(texture_buffer(process_for_gl(text)))
     positions   = GPUVector(texture_buffer(calc_position(glyphs)))
-    style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(0,0), length(text))))
+    style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(Uint16(0), Uint16(0)), length(text))))
     visualize(glyphs, positions, style_index, customizations[:model], s, customizations)  
 end 
 
 function visualize(
         glyphs      ::GPUVector{GLSprite}, 
-        positions   ::GPUVector{Point2{Float16}},
+        positions   ::GPUVector{Point{2, Float16}},
         style_index ::GPUVector{GLSpriteStyle},
         model,
         s::Style, customizations=visualize_default(glyphs, s))
@@ -50,12 +50,12 @@ function visualize(
         :style_index         => style_index,
         :technique           => lift(to_gl_technique, technique)
     ), collect_for_gl(primitive))
-    bb      = AABB(gpu_data(positions))
+    bb      = AABB{Float32}(gpu_data(positions))
     extent  = FONT_EXTENDS[glyphs[1][1]]
     assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
-        boundingbox=Input(AABB{Float32}(bb.min, Vec3(bb.max)+Vec3(extent.advance..., 0f0)))
+        boundingbox=Input(AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
     )
 end
 
@@ -123,11 +123,11 @@ function textedit_signals(inputs, background, text)
     )
     lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
 
-    strg_v          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
-    strg_c          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
-    strg_x          = lift(==, buttonspressed, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
-    enter_key       = lift(==, buttonspressed, IntSet(GLFW.KEY_ENTER))
-    del             = lift(==, buttonspressed, IntSet(GLFW.KEY_BACKSPACE))
+    strg_v          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V])
+    strg_c          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C])
+    strg_x          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X])
+    enter_key       = lift(==, buttonspressed, [GLFW.KEY_ENTER])
+    del             = lift(==, buttonspressed, [GLFW.KEY_BACKSPACE])
 
     enter_insert    = lift(insert_enter,   keepwhen(enter_key, true, enter_key))
     clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)
