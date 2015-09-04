@@ -3,7 +3,7 @@ visualize_default{T <: Colorant}(image::Union(Texture{T, 2}, Matrix{T}), ::Style
     :preferred_camera => :orthographic_pixel
 )
 
-#visualize_default(image::AbstractImage, s::Style, kw_args...) = visualize_default(image.data, s, kw_args...)
+visualize_default(image::Images.AbstractImage, s::Style, kw_args=Dict()) = visualize_default(image.data, s, kw_args...)
 
 visualize{T <: Colorant}(img::Array{T, 2}, s::Style, customizations=visualize_default(img, s)) =
     visualize(Texture(img), s, customizations)
@@ -15,8 +15,8 @@ function visualize{T <: Colorant}(img::Signal{Array{T, 2}}, s::Style, customizat
     visualize(tex, s, customizations)
 end
 
-#visualize(img::Image, s::Style, customizations=visualize_default(img, s)) =
-#    visualize(img.data, s, customizations)
+visualize(img::Images.AbstractImage, s::Style, customizations=visualize_default(img, s)) =
+    visualize(img.data, s, customizations)
 
 function visualize{T <: Colorant}(img::Texture{T, 2}, s::Style, data=visualize_default(img, s))
     @materialize! primitive = data
