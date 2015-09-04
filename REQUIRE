@@ -13,6 +13,4 @@ Compat
 FixedPointNumbers
 FileIO
 Meshes
-AbstractGPUArray
 FreeType
-FreeTypeAbstraction
