@@ -71,7 +71,10 @@ end
 
 export glscreen
 
-function glscreen(;name="GLVisualize", resolution=nothing, debugging=false)
+function glscreen()
+	name="GLVisualize" 
+	resolution=nothing 
+	debugging=false
 
     windowhints = [
         (GLFW.SAMPLES,      0),
@@ -104,8 +107,8 @@ function glscreen(;name="GLVisualize", resolution=nothing, debugging=false)
     insert_selectionquery!(:mouse_hover, lift(mouse_selection, screen.inputs[:mouseposition]), selection, selectionquery)
     add_complex_signals(screen, selection) #add the drag events and such
 
-    FreeTypeAbstraction.init()
-    fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
+    FreeTypeAbstraction_init()
+    fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "hack_regular.ttf")
     isfile(fn) || error("Could not locate font at $fn")
     global DEFAULT_FONT_FACE = newface(fn)
     global FONT_EXTENDS      = Dict{Int, FontExtent}()
@@ -123,7 +126,7 @@ function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer,
         renderloop_callback()
     end
     GLFW.Terminate()
-    FreeTypeAbstraction.done()
+    FreeTypeAbstraction_done()
 end
 
 
@@ -255,3 +258,17 @@ end
 
 bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
     lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, t, range)))
+
+function doubleclick(mouseclick, threshold)
+    ddclick = foldl((time(), mouseclick.value, false), mouseclick) do v0, mclicked
+        t0, lastc, _ = v0
+        t1 = time()
+        if length(mclicked) == 1 && length(lastc) == 1 && lastc[1] == mclicked[1] && t1-t0 < threshold
+            return (t1, mclicked, true)
+        else
+            return (t1, mclicked, false)
+        end
+    end
+    dd = lift(last, ddclick)
+    return dd
+end

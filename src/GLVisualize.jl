@@ -14,16 +14,16 @@ using Compat
 using FixedPointNumbers
 using FileIO
 using Meshes
-using AbstractGPUArray
 using Packing
-using FreeTypeAbstraction
-#using VideoIO
+import Images
 
 
 import Base: merge, convert, show
 
 
 shaderdir() = Pkg.dir("GLVisualize", "src", "shader")
+
+include("FreeTypeAbstraction.jl")
 
 include("utils.jl")
 export collect_for_gl
@@ -70,5 +70,5 @@ include(joinpath("visualize", "axis.jl"))
 include("camera.jl")
 export cubecamera
 
-
+Base.precompile(glscreen, ())
 end # module
