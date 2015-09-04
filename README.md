@@ -15,36 +15,22 @@ Right now it relies on a mixture of packages not in METADATA and different branc
 You should use a relatively new version of Julia 0.4.
 Here is a script adding the packages and checking out the correct branches:
 ```Julia
-Pkg.clone("https://github.com/JuliaGraphics/ColorTypes.jl.git")
-Pkg.checkout("ColorTypes", "master")
 
 Pkg.clone("https://github.com/JuliaIO/FileIO.jl.git")
-Pkg.checkout("FileIO", "master")
+Pkg.checkout("FileIO", "sd/improvements")
 
 Pkg.clone("https://github.com/JuliaIO/MeshIO.jl.git")
-Pkg.checkout("MeshIO", "fileio_api")
-
-Pkg.clone("https://github.com/JuliaGPU/AbstractGPUArray.jl.git")
-Pkg.checkout("AbstractGPUArray", "master")
-Pkg.clone("https://github.com/SimonDanisch/FreeTypeAbstraction.jl")
 
 Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
-Pkg.checkout("Packing", "master")
-
-Pkg.clone("https://github.com/JuliaIO/WavefrontObj.jl.git")
 Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
-Pkg.clone("https://github.com/JuliaIO/ImageIO.jl.git")
-
 Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
+
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("FixedSizeArrays")
-for elem in ["GLWindow", "GLAbstraction", "WavefrontObj", "FreeTypeAbstraction", "Meshes"]
-    Pkg.checkout(elem)
-    Pkg.checkout(elem, "ntuples")
-end
-
+Pkg.checkout("Meshes", "ntuples")
 Pkg.checkout("ModernGL")
-Pkg.checkout("ModernGL", "stagedfunction")
+Pkg.checkout("GLWindow")
+Pkg.checkout("GLAbstraction")
 ```
 It should run without errors by now.
 Known problems:
