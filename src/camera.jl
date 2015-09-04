@@ -1,16 +1,4 @@
-function doubleclick(mouseclick, threshold)
-    ddclick = foldl((time(), mouseclick.value, false), mouseclick) do v0, mclicked
-        t0, lastc, _ = v0
-        t1 = time()
-        if length(mclicked) == 1 && length(lastc) == 1 && lastc[1] == mclicked[1] && t1-t0 < threshold
-            return (t1, mclicked, true)
-        else
-            return (t1, mclicked, false)
-        end
-    end
-    dd = lift(last, ddclick)
-    return dd
-end
+
 
 
 function get_cube_rotations(eyeposition, lookatv)
@@ -38,6 +26,22 @@ function get_cube_rotations(eyeposition, lookatv)
 end
 
 @enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
+
+
+
+function cubeside_lift(_, id, top, bottom, front, back, left, right, h)
+    if h.value[1] == id && h.value[2] >= 0 && h.value[2] <= 5
+        side =  CubeSides(h.value[2])
+        side == TOP     && return top
+        side == BOTTOM  && return bottom
+        side == FRONT   && return front
+        side == BACK    && return back
+        side == LEFT    && return left
+        side == RIGHT   && return right
+    end
+    Quaternions.Quaternion(1f0, 0f0, 0f0, 0f0)
+end
+
 
 function cubecamera(
 		window,
@@ -86,18 +90,7 @@ function cubecamera(
 
 
 
-    resetto = lift(m, id, get_cube_rotations(eyeposition, lookatv)...) do _, id, top, bottom, front, back, left, right
-        if h.value[1] == id && h.value[2] >= 0 && h.value[2] <= 5
-            side =  CubeSides(h.value[2])
-            side == TOP     && return top
-            side == BOTTOM  && return bottom
-            side == FRONT   && return front
-            side == BACK    && return back
-            side == LEFT    && return left
-            side == RIGHT   && return right
-        end
-        Quaternions.Quaternion(1f0, 0f0, 0f0, 0f0)
-    end
+    resetto = lift(cubeside_lift, m, id, get_cube_rotations(eyeposition, lookatv)..., Input(h))
 
     ortho1 = visualize(Rectangle(0f0,0f0, 20f0, 20f0), thickness=1f0)
     ortho2 = visualize(Rectangle(5f0,5f0, 20f0, 20f0), thickness=1f0)

@@ -6,12 +6,12 @@ printforslider(io::IOBuffer, x::Integer, numberwidth::Int=5) = print(io, @sprint
 printforslider(x::Integer, numberwidth::Int=5) = @sprintf("%5d", x)[1:numberwidth]
 printforslider(x::FloatingPoint, numberwidth::Int=5) = @sprintf("%0.5f", x)[1:numberwidth]
 function printforslider(x::FixedVector, numberwidth=5)
-  io = IOBuffer()
-  for elem in x
-    printforslider(io, elem, numberwidth)
-    print(io, " ")
-  end
-  takebuf_string(io)
+    io = IOBuffer()
+    for elem in x
+        printforslider(io, elem, numberwidth)
+        print(io, " ")
+    end
+    takebuf_string(io)
 end
 num2glstring(x, numberwidth) = GLVisualize.process_for_gl(printforslider(x, numberwidth))
 
@@ -34,8 +34,18 @@ function add_mouse_drags(t0, mouse_down1, mouseposition1, objectid, id_tolookfor
     (accum, mouse_down1, Vec2f0(0), 0, accum, 0)
 end
 
-function vizzedit{T <: Union(FixedVector, Real)}(x::T, inputs, numberwidth=5)
-    vizz                = visualize(printforslider(x, numberwidth))
+Base.clamp(x, r::Range) = clamp(x, first(r), last(r))
+
+function slide(startvalue, slide_pos, range::Range)
+    val = startvalue + (slide_pos*step(range))
+    clamp(val, range)
+end
+
+vizzedit{T <: Union(FixedVector, Real)}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
+
+function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
+    T = typeof(startvalue)
+    vizz                = visualize(printforslider(startvalue, numberwidth))
     mbutton_clicked     = inputs[:mousebuttonspressed]
 
     mousedown           = lift(isnotempty, mbutton_clicked)
@@ -46,11 +56,7 @@ function vizzedit{T <: Union(FixedVector, Real)}(x::T, inputs, numberwidth=5)
     )
     addition_vec = lift(first, mouse_add_drag_id)
     ET      = eltype(T)
-    if ET <: FloatingPoint
-        new_num = lift(+, x, lift(/, addition_vec, ET(500)))
-    else
-        new_num = lift(+, x, lift(div, addition_vec, ET(10)))
-    end
+    new_num = lift(slide, startvalue, addition_vec, range)
 
     new_num_gl = lift(num2glstring, new_num, numberwidth)
     lift(update!, vizz[:glyphs], new_num_gl)

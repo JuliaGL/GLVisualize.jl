@@ -13,12 +13,12 @@ function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, customizatio
     @materialize! gap, model, scale = customizations
 	for ind=1:length(grid)
 		robj 	= grid[ind]
-		bb_s 	= robj.boundingbox
+		bb_s 	= boundingbox(robj)
 		w 		= lift(width, bb_s)
 		model_scale = lift(max_xyz_inv, w, Vec{N, Int}(1)...)
 		robj[:model] = lift(grid_translation, scale, model_scale, bb_s, robj[:model], ind2sub(size(grid), ind)...) # update transformation matrix
 	end
-	vec(grid)
+	Context(grid...)
 end
 
 visualize_default{T <: Composable}(::Vector{T}, ::Style, kw_args...) = Dict(

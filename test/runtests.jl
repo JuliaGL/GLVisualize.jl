@@ -1,5 +1,5 @@
 using ModernGL
-using FileIO, Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
+using FileIO, MeshIO,Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes, Colors
 using Base.Test
 w, renderloop = glscreen()
@@ -27,7 +27,7 @@ view(visualize(grid), screen3D)
 println("3d done")
 
 
-view(visualize(grid2D, scale=Vec3f0(1000,1000,1.0)), screen2D, method=:orthographic_pixel)
+view(visualize(grid2D, scale=Vec3f0(200,200,1.0)), screen2D, method=:orthographic_pixel)
 
 println("2d done")
 
