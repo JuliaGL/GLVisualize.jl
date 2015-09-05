@@ -1,4 +1,4 @@
-
+@enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
 
 
 function get_cube_rotations(eyeposition, lookatv)
@@ -25,9 +25,6 @@ function get_cube_rotations(eyeposition, lookatv)
 	top, bottom, front, back, right, left
 end
 
-@enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
-
-
 
 function cubeside_lift(_, id, top, bottom, front, back, left, right, h)
     if h.value[1] == id && h.value[2] >= 0 && h.value[2] <= 5
@@ -42,41 +39,10 @@ function cubeside_lift(_, id, top, bottom, front, back, left, right, h)
     Quaternions.Quaternion(1f0, 0f0, 0f0, 0f0)
 end
 
-
-function cubecamera(
-		window,
-		cube_area 	= Input(Rectangle(0,0,150,150)),
-		eyeposition = Vec3f0(2),
-    	lookatv 	= Vec3f0(0)
-	)
-
-    dd = doubleclick(window.inputs[:mousebuttonspressed], 0.1);
-    h = window.inputs[:mouse_hover];
-    id = Input(4)
-    m = filter(x->h.value[1] == id.value, false, dd);
-    @materialize mouseposition, mousebuttonspressed, buttonspressed, scroll_y, window_size = window.inputs
-    const T = Float32;
-    
-    mouseposition   	= lift(Vec{2, T}, mouseposition);
-    clickedwithoutkeyL 	= lift(GLAbstraction.mousepressed_without_keyboard, mousebuttonspressed, Input(0), buttonspressed)
-    clickedwithoutkeyM 	= lift(GLAbstraction.mousepressed_without_keyboard, mousebuttonspressed, Input(2), buttonspressed)
-    nokeydown 			= lift(isempty,    buttonspressed);
-    anymousedown 		= lift(isnotempty, mousebuttonspressed);
-    mousedraggdiffL 	= lift(last, foldl(GLAbstraction.mousediff, (false, Vec2f0(0.0f0), Vec2f0(0.0f0)), clickedwithoutkeyL, mouseposition));
-    mousedraggdiffM 	= lift(last, foldl(GLAbstraction.mousediff, (false, Vec2f0(0.0f0), Vec2f0(0.0f0)), clickedwithoutkeyM, mouseposition));
-
-    theta       = lift(GLAbstraction.thetalift, mousedraggdiffL, 50f0)
-    xtrans      = lift(/, scroll_y, 5f0)
-    ytrans      = lift(/, lift(first, mousedraggdiffM), 200f0)
-    ztrans      = lift(/, lift(last, mousedraggdiffM), -200f0)
-    trans       = lift(Vec{3, T}, xtrans, ytrans, ztrans)
-
-    far, near, fov = Input(100f0), Input(1f0), Input(43f0);
-
-
-    xdir 	= Vec3f0(1f0,0f0,0f0)
-    ydir 	= Vec3f0(0f0,1f0,0f0)
-    zdir 	= Vec3f0(0f0,0f0,1f0)
+function colored_cube()
+    xdir    = Vec3f0(1f0,0f0,0f0)
+    ydir    = Vec3f0(0f0,1f0,0f0)
+    zdir    = Vec3f0(0f0,0f0,1f0)
     origin  = Vec3f0(-0.5)
     const quads = [
         (Quad(origin + zdir,   xdir, ydir), RGBA(1.0f0,0f0,0f0,1f0)), # Top
@@ -87,8 +53,22 @@ function cubecamera(
         (Quad(origin,          zdir, ydir), RGBA(0f0,0f0,0.5f0,1f0)), # Left
     ]
     p = merge(map(GLNormalMesh, quads))
+end
 
-
+function cubecamera{T}(
+		window,
+		cube_area 	= Input(Rectangle(0,0,150,150)),
+		eyeposition::Vec{3,T} = Vec3f0(2),
+    	lookatv::Vec{3,T} 	= Vec3f0(0)
+	)
+    @materialize mousebuttonspressed, window_size = window.inputs
+    
+    dd = doubleclick(window.inputs[:mousebuttonspressed], 0.1);
+    h = window.inputs[:mouse_hover]
+    id = Input(4)
+    m = filter(x->h.value[1] == id.value, false, dd);
+    
+    p = colored_cube()
 
     resetto = lift(cubeside_lift, m, id, get_cube_rotations(eyeposition, lookatv)..., Input(h))
 
@@ -98,8 +78,8 @@ function cubecamera(
         h[1] == ortho1.id || h[1] == ortho2.id
     end
     c = lift(hovers_ortho) do ho
-        ho && return RGBA(1f0, 1f0, 1f0, 1f0)
-        RGBA(0.9f0, 0.9f0, 0.9f0, 1f0)
+        ho && return RGBA(0.8f0, 0.8f0, 0.8f0, 0.8f0)
+        RGBA(0.5f0, 0.5f0, 0.5f0, 1f0)
     end
     isperspective = foldl(true, mousebuttonspressed) do v0, clicked
         clicked==[0] && hovers_ortho.value && return !v0
@@ -117,37 +97,29 @@ function cubecamera(
         GLAbstraction.ORTHOGRAPHIC
     end
 
+    theta, trans, zoom  = default_camera_control(window.inputs)
+    far, near, fov      = Input(100f0), Input(1f0), Input(43f0)
     main_cam = PerspectiveCamera(
-        window.area,
-        Vec3f0(2),
-        Vec3f0(0),
-        theta,
-        trans,
-        fov,
-        near,
-        far,
-        mprojection,
-        m,
-        resetto
+        window.area,eyeposition,lookatv,
+        theta,trans,zoom,fov,near,far,
+        mprojection,m,resetto
     )
     window.cameras[:perspective] = main_cam
 
-    cubescreen = Screen(window, area=cube_area);
-    piv = main_cam.pivot;
-    rot   = lift(getfield, piv, :rotation);
+    cubescreen = Screen(window, area=cube_area)
+    piv   = main_cam.pivot;
+    rot   = lift(getfield, piv, :rotation)
     model = lift(inv, lift(rotationmatrix4, rot))
 
     cam = DummyCamera(
         farclip=far,
         nearclip=near,
-        view=Input(lookat(Vec3f0(2), Vec3f0(0), Vec3f0(0,0,1))),
+        view=Input(lookat(eyeposition, lookatv, Vec3f0(0,0,1))),
         projection=lift(perspectiveprojection, cubescreen.area, fov, near, far)
     );
 
-    cubescreen.cameras[:cam_cube] = cam;
-
-    robj = visualize(p, model=model, preferred_camera=:cam_cube);
-
+    cubescreen.cameras[:cam_cube] = cam
+    robj = visualize(p, model=model, preferred_camera=:cam_cube)
 
 
     push!(id, robj.id)
