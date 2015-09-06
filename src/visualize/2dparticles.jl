@@ -15,6 +15,29 @@ function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, custo
     visualize(start_val, s, customizations)
 end
 
+visualize_default{T <: Real}(::Union(Texture{Point{2, T}, 1}, Vector{Point{2, T}}), ::Style{:lines}, kw_args=Dict()) = Dict(
+    :preferred_camera => :orthographic_pixel,
+    :color => RGBA(1f0, 0f0, 0f0, 1f0)
+)
+
+function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value, s))
+    start_val = GLBuffer(locations.value)
+    lift(update!, start_val, locations)
+    visualize(start_val, s, customizations)
+end
+
+function visualize{T <: Real}(
+        positions::GLBuffer{Point{2, T}},
+        s::Style{:lines}, data=visualize_default(positions, s)
+    )
+    data[:vertex] = positions
+    robj = assemble_std(
+        positions, data,
+        "dots.vert", "dots.frag",
+        primitive=GL_LINE_STRIP
+    )
+end
+
 function visualize{T <: Real}(
         positions::Texture{Point{2, T}, 1},
         s::Style, customizations=visualize_default(positions, s)
