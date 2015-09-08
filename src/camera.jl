@@ -55,11 +55,18 @@ function colored_cube()
     p = merge(map(GLNormalMesh, quads))
 end
 
+
+function fit(target::AABB, actual::AABB)
+    w1, w2 = width(target), width(actual)
+    move_diff = minimum(actual)-minimum(target)
+    scalematrix(w1-w2)*translationmatrix(move_diff)
+end
+
 function cubecamera{T}(
 		window,
-		cube_area 	= Input(Rectangle(0,0,150,150)),
-		eyeposition::Vec{3,T} = Vec3f0(2),
-    	lookatv::Vec{3,T} 	= Vec3f0(0)
+		cube_area 	           = Input(Rectangle(0,0,150,150)),
+		eyeposition::Vec{3,T}  = Vec3f0(2),
+    	lookatv::Vec{3,T} 	   = Vec3f0(0)
 	)
     @materialize mousebuttonspressed, window_size = window.inputs
     
@@ -106,25 +113,22 @@ function cubecamera{T}(
     )
     window.cameras[:perspective] = main_cam
 
-    cubescreen = Screen(window, area=cube_area)
     piv   = main_cam.pivot;
     rot   = lift(getfield, piv, :rotation)
     model = lift(inv, lift(rotationmatrix4, rot))
-
-    cam = DummyCamera(
+    cubescreen = Screen(window, area=cube_area)
+    cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,
         nearclip=near,
         view=Input(lookat(eyeposition, lookatv, Vec3f0(0,0,1))),
-        projection=lift(perspectiveprojection, cubescreen.area, fov, near, far)
-    );
-
-    cubescreen.cameras[:cam_cube] = cam
-    robj = visualize(p, model=model, preferred_camera=:cam_cube)
+        projection=lift(perspectiveprojection, cube_area, fov, near, far)
+    )
+    robj = visualize(p, model=model, preferred_camera=:cube_cam)
 
 
     push!(id, robj.id)
     view(robj, cubescreen);
     view(ortho1, cubescreen, method=:fixed_pixel);
     view(ortho2, cubescreen, method=:fixed_pixel);
-	cubescreen
+	window
 end
