@@ -12,10 +12,10 @@ end
 
 
 function dropequal(a::Signal)
-    is_equal = foldl((false, a.value), a) do v0, v1
+    is_equal = foldp((false, a.value), a) do v0, v1
         (v0[2] == v1, v1)
     end
-    dropwhen(lift(first, is_equal), a.value, a)
+    dropwhen(const_lift(first, is_equal), a.value, a)
 end
 
 function eval_visualize(source::AbstractString, _, visualize_screen, edit_screen)
@@ -37,16 +37,16 @@ function eval_visualize(source::AbstractString, _, visualize_screen, edit_screen
 end
 
 function init_romeo()
-    sourcecode_area = lift(GLVisualize.ROOT_SCREEN.area) do x
+    sourcecode_area = const_lift(GLVisualize.ROOT_SCREEN.area) do x
     	Rectangle(0, 0, div(x.w, 7)*3, x.h)
     end
-    visualize_area = lift(GLVisualize.ROOT_SCREEN.area) do x
+    visualize_area = const_lift(GLVisualize.ROOT_SCREEN.area) do x
         Rectangle(div(x.w,7)*3, 0, div(x.w, 7)*3, x.h)
     end
-    search_area = lift(visualize_area) do x
+    search_area = const_lift(visualize_area) do x
         Rectangle(x.x, x.y, x.w, div(x.h,10))
     end
-    edit_area = lift(GLVisualize.ROOT_SCREEN.area) do x
+    edit_area = const_lift(GLVisualize.ROOT_SCREEN.area) do x
     	Rectangle(div(x.w, 7)*6, 0, div(x.w, 7), x.h)
     end
 
@@ -56,16 +56,16 @@ function init_romeo()
     search_screen       = Screen(visualize_screen,        area=search_area)
     edit_screen         = Screen(GLVisualize.ROOT_SCREEN, area=edit_area)
 
-    w_height = lift(GLVisualize.ROOT_SCREEN.area) do x
+    w_height = const_lift(GLVisualize.ROOT_SCREEN.area) do x
     	x.h
     end
-    source_offset = lift(w_height) do x
+    source_offset = const_lift(w_height) do x
         translationmatrix(Vec3(30,x-30,0))
     end
-    w_height_search = lift(search_screen.area) do x
+    w_height_search = const_lift(search_screen.area) do x
         x.h
     end
-    search_offset = lift(w_height_search) do x
+    search_offset = const_lift(w_height_search) do x
         translationmatrix(Vec3(30,x-30,0))
     end
 

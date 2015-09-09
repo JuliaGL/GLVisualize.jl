@@ -88,7 +88,7 @@ end
 
 const time_i = Input(1)
 println(size(planets[:, 1]))
-const positions     = lift(send_frame, time_i, Input(planets))
+const positions     = const_lift(send_frame, time_i, Input(planets))
 const robj          = visualize(positions, model=scalematrix(Vec3(0.1f0)))
 len = length(planets[:, 1])
 const planet_lines  = [visualize(reshape(planets[:, i], (250, 100)), particle_color=RGBA(rand(Float32,3)..., 0.4f0), model=scalematrix(Vec3(0.01f0))) for i=1:4]

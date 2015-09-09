@@ -43,7 +43,7 @@ function visualize{S <: AbstractString}(text::Signal{S}, s::Style, customization
     positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
     style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text.value))))
     robj        = visualize(glyphs, positions, style_index, customizations[:model], s, customizations)
-    lift(update_text, text, Input(robj))
+    const_lift(update_text, text, Input(robj))
     robj
 end 
 function visualize(
@@ -86,9 +86,9 @@ function cursor(positions, range, model)
     atlas = GLVisualize.get_texture_atlas()
     data = merge(Dict(
         :model               => model,
-        :visible             => lift(cursor_visible, range),
-        :offset              => lift(Cint, lift(first, range)),
-        :color               => lift(cool_color, bounce(0f0:0.2f0:1f0)),
+        :visible             => const_lift(cursor_visible, range),
+        :offset              => const_lift(Cint, const_lift(first, range)),
+        :color               => const_lift(cool_color, bounce(0f0:0.2f0:1f0)),
         :positions           => positions,
         :glyph               => Sprite{GLuint}(GLVisualize.get_font!('|')),
         :uvs                 => atlas.attributes.buffer,
@@ -126,10 +126,10 @@ function textedit_signals(inputs, background, text)
     # create object which can globally hold the text and selection 
     text_raw    = TextWithSelection(text[:glyphs], 0:0)
     text_edit   = Input(text_raw)
-    shift       = lift(in, GLFW.KEY_LEFT_SHIFT, buttonspressed)
-    selection   = lift(
+    shift       = const_lift(in, GLFW.KEY_LEFT_SHIFT, buttonspressed)
+    selection   = const_lift(
         last, 
-        foldl(
+        foldp(
             move_cursor, 
             (selection.value, selection.value), 
             arrow_navigation, selection,
@@ -140,48 +140,48 @@ function textedit_signals(inputs, background, text)
 
     is_text(x) = x[2][1] == background.id || x[2][1] == text.id
     selection  = keepwhen(
-        lift(is_text, mousedragdiff_objectid), 
+        const_lift(is_text, mousedragdiff_objectid), 
         0:0, selection
     )
-    lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
+    const_lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
 
-    strg_v          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V])
-    strg_c          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C])
-    strg_x          = lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X])
-    enter_key       = lift(==, buttonspressed, [GLFW.KEY_ENTER])
-    del             = lift(==, buttonspressed, [GLFW.KEY_BACKSPACE])
+    strg_v          = const_lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V])
+    strg_c          = const_lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C])
+    strg_x          = const_lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X])
+    enter_key       = const_lift(==, buttonspressed, [GLFW.KEY_ENTER])
+    del             = const_lift(==, buttonspressed, [GLFW.KEY_BACKSPACE])
 
-    enter_insert    = lift(insert_enter,   keepwhen(enter_key, true, enter_key))
-    clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)
+    enter_insert    = const_lift(insert_enter,   keepwhen(enter_key, true, enter_key))
+    clipboard_copy  = const_lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)
 
-    delete_text     = lift(deletetext,     keepwhen(del,    true, del),     text_edit)
-    cut_text        = lift(cutclipboard,   keepwhen(strg_x, true, strg_x),  text_edit)
+    delete_text     = const_lift(deletetext,     keepwhen(del,    true, del),     text_edit)
+    cut_text        = const_lift(cutclipboard,   keepwhen(strg_x, true, strg_x),  text_edit)
 
 
-    clipboard_paste = lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
+    clipboard_paste = const_lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
 
-    text_gate       = lift(isnotempty, unicodeinput)
+    text_gate       = const_lift(isnotempty, unicodeinput)
     unicode_input   = keepwhen(text_gate, Char['0'], unicodeinput)
     text_to_insert  = merge(clipboard_paste, unicode_input, enter_insert)
-    text_to_insert  = lift(process_for_gl, text_to_insert)
+    text_to_insert  = const_lift(process_for_gl, text_to_insert)
     
-    text_inserted   = lift(inserttext, text_edit, text_to_insert)
+    text_inserted   = const_lift(inserttext, text_edit, text_to_insert)
 
     text_updates    = merge(
-        lift(return_nothing, text_inserted),
-        lift(return_nothing, clipboard_copy),
-        lift(return_nothing, delete_text),
-        lift(return_nothing, cut_text),
-        lift(return_nothing, selection)
+        const_lift(return_nothing, text_inserted),
+        const_lift(return_nothing, clipboard_copy),
+        const_lift(return_nothing, delete_text),
+        const_lift(return_nothing, cut_text),
+        const_lift(return_nothing, selection)
     )
     text_selection_signal = sampleon(text_updates, text_edit)
 
-    selection   = lift(x->x.selection,  text_selection_signal)
-    text_sig    = lift(x->x.text,       text_selection_signal)
+    selection   = const_lift(x->x.selection,  text_selection_signal)
+    text_sig    = const_lift(x->x.text,       text_selection_signal)
 
-    lift(update_positions, text_sig, Input(text), Input(background[:style_index]))
-    foldl(visualize_selection, 0:0, selection,    Input(background[:style_index]))
-    lift(utf8, text_sig), selection
+    const_lift(update_positions, text_sig, Input(text), Input(background[:style_index]))
+    foldp(visualize_selection, 0:0, selection,    Input(background[:style_index]))
+    const_lift(utf8, text_sig), selection
 end
 
 

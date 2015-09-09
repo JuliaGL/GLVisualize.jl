@@ -21,14 +21,14 @@ function getmodel(xtheta, ytheta, ztheta, translation)
 	zaxis 			= Vec3(0,0,1)
 	translate 		= Vector3{T}(0,0,0)
 	p0 				= Pivot(origin, xaxis, yaxis, zaxis, Quaternions.Quaternion(1f0,0f0,0f0,0f0), translate, Vector3{T}(1))
-	pivot 			= foldl(fold_pivot, p0, lift(tuple, xtheta, ytheta, ztheta, translation))
+	pivot 			= foldp(fold_pivot, p0, const_lift(tuple, xtheta, ytheta, ztheta, translation))
 
-	modelmatrix 	= lift(transformationmatrix, pivot)
+	modelmatrix 	= const_lift(transformationmatrix, pivot)
 end
 
 const inputs = GLVisualize.ROOT_SCREEN.inputs
 
-const mouse_hover = lift(first,GLVisualize.SELECTION[:mouse_hover])
+const mouse_hover = const_lift(first,GLVisualize.SELECTION[:mouse_hover])
 
 function mousedragg_fold(t0, mouse_down1, mouseposition1, objectid)
 	mouse_down0, draggstart, objectidstart, mouseposition0 = t0
@@ -46,21 +46,21 @@ function diff_mouse(mouse_down_draggstart_mouseposition)
 end
 function get_drag_diff(inputs)
 	@materialize mousebuttonspressed, mousereleased, mouseposition = inputs
-	mousedown = lift(isnotempty, mousebuttonspressed)
-	mousedraggdiff = lift(diff_mouse, 
-						foldl(mousedragg_fold, (false, Vec2(0), Vector2(0), Vec2(0)), mousedown, mouseposition, mouse_hover))
+	mousedown = const_lift(isnotempty, mousebuttonspressed)
+	mousedraggdiff = const_lift(diff_mouse, 
+						foldp(mousedragg_fold, (false, Vec2(0), Vector2(0), Vec2(0)), mousedown, mouseposition, mouse_hover))
 	return keepwhen(mousedown, (Vec2(0), Vector2(0)), mousedraggdiff)
 end
 
-leftmousedown_lift(mousebuttons) = length(mousebuttons) == 1 && first(mousebuttons)
-ctrldown_lift(keyboardkeys) 	 = length(keyboardkeys) == 1 && first(keyboardkeys) == GLFW.KEY_LEFT_CONTROL
-leftdown = lift(leftmousedown_lift, inputs[:mousebuttonspressed])
-ctrldown = lift(ctrldown_lift, inputs[:buttonspressed])
-leftdown_ctrldown = lift(AND, leftdown, ctrldown)
+leftmousedown_const_lift(mousebuttons) = length(mousebuttons) == 1 && first(mousebuttons)
+ctrldown_const_lift(keyboardkeys) 	 = length(keyboardkeys) == 1 && first(keyboardkeys) == GLFW.KEY_LEFT_CONTROL
+leftdown = const_lift(leftmousedown_const_lift, inputs[:mousebuttonspressed])
+ctrldown = const_lift(ctrldown_const_lift, inputs[:buttonspressed])
+leftdown_ctrldown = const_lift(AND, leftdown, ctrldown)
 
 iscat(x) = x[1] == 3
 
-is_cat 	= lift(iscat, mouse_hover)
+is_cat 	= const_lift(iscat, mouse_hover)
 
 
 
@@ -70,7 +70,7 @@ function cat_gizmo_fold(gizmo_started, iscat, ctrdown)
 	(!gizmo_started && ctrdown && iscat) && return true
 	false
 end
-cat_gizmo = foldl(cat_gizmo_fold, false,  is_cat, ctrldown)
+cat_gizmo = foldp(cat_gizmo_fold, false,  is_cat, ctrldown)
 
 
 
@@ -94,7 +94,7 @@ gizmo_mesh = merge(gizmo_mesh)
 
 const gizmo = visualize(gizmo_mesh, visible=cat_gizmo)
 
-function gizmodir_lift(draggdiff_id)
+function gizmodir_const_lift(draggdiff_id)
 	(dragg, (id, index)) = draggdiff_id
 	if id == gizmo.alluniforms[:objectid]
 		return gizmo_directions[index+1]*dragg.x
@@ -102,7 +102,7 @@ function gizmodir_lift(draggdiff_id)
 	Vec3(0)
 end
 const dragdiff_id = get_drag_diff(inputs)
-gizmo_dir = lift(/, lift(gizmodir_lift, dragdiff_id), 10f0)
+gizmo_dir = const_lift(/, const_lift(gizmodir_const_lift, dragdiff_id), 10f0)
 
 model 	= getmodel(Input(0f0), Input(0f0), Input(0f0), gizmo_dir)
 

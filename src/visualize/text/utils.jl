@@ -114,7 +114,7 @@ function Base.utf8(v::GPUVector{GLSprite})
 	data = gpu_data(v)
 	utf8(join(map(back2julia, data)))
 end
-# lift will have a boolean value at first argument position
+# const_lift will have a boolean value at first argument position
 copyclipboard(_, text_selection) = copyclipboard(text_selection)
 function copyclipboard(text_selection)
 	selection, text = text_selection.selection, text_selection.text

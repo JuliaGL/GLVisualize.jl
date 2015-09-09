@@ -22,10 +22,10 @@ function test_data()
 	particles 		= [Particle(x0, Vector2D(1.0, 0.001*i)) for i=1:max_particles]
 	colors 			= texture_buffer(RGBA{U8}[RGBA{U8}(1., 0.1, clamp(0.001*i, 0.0, 1.0), 1.0) for i=1:max_particles])
 
-	particle_stream = lift(step!, particles, table, bounce(1:10))
+	particle_stream = const_lift(step!, particles, table, bounce(1:10))
 
 	v0 				= map(to_points, particles)
-	pointstream 	= lift(to_points, v0, particle_stream) 
+	pointstream 	= const_lift(to_points, v0, particle_stream) 
 	view(visualize(pointstream, color=colors, primitive=GLNormalMesh(Sphere(Point3{Float32}(0), 1f0))))
 end
 

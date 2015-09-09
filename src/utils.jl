@@ -20,7 +20,7 @@ macro visualize_gen(input, target, S)
 
         function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
             tex = $target(signal.value)
-            lift(update!, Input(tex), signal)
+            const_lift(update!, Input(tex), signal)
             visualize(tex, s, customizations)
         end
     end)
@@ -32,7 +32,7 @@ texture_or_scalar(x) = x
 texture_or_scalar(x::Array) = Texture(x)
 function texture_or_scalar{A <: Array}(x::Signal{A})
     tex = Texture(x.value)
-    lift(update!, tex, x)
+    const_lift(update!, tex, x)
     tex
 end
 
@@ -74,19 +74,19 @@ end
 
 function y_partition(area, percent)
     amount = percent / 100.0
-    p = lift(area) do r
+    p = const_lift(area) do r
         (Rectangle{Int}(r.x, r.y, r.w, round(Int, r.h*amount)),
             Rectangle{Int}(r.x, round(Int, r.h*amount), r.w, round(Int, r.h*(1-amount))))
     end
-    return lift(first, p), lift(last, p)
+    return const_lift(first, p), const_lift(last, p)
 end
 function x_partition(area, percent)
     amount = percent / 100.0
-    p = lift(area) do r
+    p = const_lift(area) do r
         (Rectangle{Int}(r.x, r.y, round(Int, r.w*amount), r.h ),
             Rectangle{Int}(round(Int, r.w*amount), r.y, round(Int, r.w*(1-amount)), r.h))
     end
-    return lift(first, p), lift(last, p)
+    return const_lift(first, p), const_lift(last, p)
 end
 
 

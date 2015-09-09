@@ -11,6 +11,6 @@ function myfilter(img, sigma)
 	convert(Image{BGRA{U8}}, img).data
 end
 
-imgsig = lift(myfilter, img, slider_s);
+imgsig = const_lift(myfilter, img, slider_s);
 view(visualize(imgsig))
 view(slider)

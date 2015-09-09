@@ -17,9 +17,10 @@ visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visuali
 
 function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, customizations=visualize_default(locations.value, s))
     start_val = texture_buffer(locations.value)
-    lift(update!, start_val, locations)
+    const_lift(update!, start_val, locations)
     visualize(start_val, s, customizations)
 end
+
 
 
 function visualize{T <: Real}(
@@ -30,7 +31,7 @@ function visualize{T <: Real}(
     @materialize stroke_width, scale, glow_width = customizations
     data = merge(collect_for_gl(primitive), customizations)
     data[:positions] = positions
-    data[:offset_scale] = lift(+, lift(/, stroke_width, Input(2)), glow_width, scale)
+    data[:offset_scale] = const_lift(+, const_lift(/, stroke_width, Input(2)), glow_width, scale)
     
     robj = assemble_instanced(
         positions,
@@ -68,17 +69,17 @@ visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value
 function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualize_default(r.value, s))
     @materialize! primitive = customizations
     @materialize stroke_width, glow_width = customizations
-    scale = lift(rectangle_scale, r)
+    scale = const_lift(rectangle_scale, r)
     data = merge(Dict(
-        :position  => lift(rectangle_position, r),
+        :position  => const_lift(rectangle_position, r),
         :scale     => scale,
-        :offset_scale => lift(+, lift(/, stroke_width, Input(2)), glow_width, scale)
+        :offset_scale => const_lift(+, const_lift(/, stroke_width, Input(2)), glow_width, scale)
     ), collect_for_gl(primitive), customizations)
 
     robj = assemble_std(
         r, data,
         "particles2D_single.vert", "distance_shape.frag",
-        boundingbox=lift(AABB{Float32}, r)
+        boundingbox=const_lift(AABB{Float32}, r)
     )
     empty!(robj.prerenderfunctions)
     empty!(robj.postrenderfunctions)

@@ -20,7 +20,7 @@ visualize{T}(value::Vector{Point{3, T}}, s::Style, customizations=visualize_defa
 
 function visualize{T}(signal::Signal{Vector{Point{3, T}}}, s::Style, customizations=visualize_default(signal.value, s))
     tex = texture_buffer(signal.value)
-    lift(update!, tex, signal)
+    const_lift(update!, tex, signal)
     visualize(tex, s, customizations)
 end
 

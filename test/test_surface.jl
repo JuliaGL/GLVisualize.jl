@@ -6,7 +6,7 @@ function xy_data(x,y,i, N)
 end
 generate(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
 function surface_data(N)
-	heightfield = lift(generate, bounce(1f0:200f0), N)
+	heightfield = const_lift(generate, bounce(1f0:200f0), N)
 	return (heightfield, :surface)
 end
 surface_data(40)

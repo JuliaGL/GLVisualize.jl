@@ -233,7 +233,7 @@ function insert_selectionquery!(name::Symbol, value::Rectangle)
     SELECTION[name]
 end
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}})
-    lift(value) do v
+    const_lift(value) do v
     SELECTION_QUERIES[name] = v
     end
     SELECTION[name]         = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
@@ -254,7 +254,7 @@ function fold_loop(v0, timediff_range)
 end
 
 loop(range::Range; t=TIMER_SIGNAL) =
-    foldl(fold_loop, first(range), lift(tuple, t, range))
+    foldp(fold_loop, first(range), const_lift(tuple, t, range))
 
 
 function fold_bounce(v0, v1)
@@ -269,9 +269,9 @@ function fold_bounce(v0, v1)
 end
 
 bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
-    lift(first, foldl(fold_bounce, (first(range), one(T)), lift(tuple, t, range)))
+    const_lift(first, foldp(fold_bounce, (first(range), one(T)), const_lift(tuple, t, range)))
 
-insert_selectionquery!(:mouse_hover, lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
+insert_selectionquery!(:mouse_hover, const_lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
     Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
 end)
 
@@ -296,7 +296,7 @@ glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil[1])
 glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, framebuffsize...)
 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthStencil[1])
 
-lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
+const_lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
     if all(x->x>0, window_size)
         resize_nocopy!(COLOR_BUFFER, tuple(window_size...))
         resize_nocopy!(STENCIL_BUFFER, tuple(window_size...))
@@ -306,7 +306,7 @@ lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
 end
 function postprocess(screen_texture, screen)
     data = merge(Dict(
-        :resolution => lift(Vec2f0, screen.inputs[:framebuffer_size]),
+        :resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),
         :u_texture0 => screen_texture
     ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
     program = TemplateProgram(

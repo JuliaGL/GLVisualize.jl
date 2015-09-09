@@ -9,7 +9,7 @@ function mkCube(p::GeometryTypes.Point3{Float32}, hsz::Float32)
 end
 
 function mkCube(p::GeometryTypes.Point3{Float32}, hsz::Reactive.Signal)
-    lift(x -> mkCube( p, Float32(x/10)), hsz)
+    const_lift(x -> mkCube( p, Float32(x/10)), hsz)
 end
 
 robj1 = visualize([ mkCube(Point3(0.5f0,0.0f0,0.0f0),timer),

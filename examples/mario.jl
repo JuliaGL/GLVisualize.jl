@@ -49,7 +49,7 @@ play{T}(array::Array{T, 3}, slice) = array[:, :, slice]
 
 signify{T}(x::Array{T, 2}) = Input(x)
 function signify{T}(x::Array{T, 3})
-	lift(play, x, loop(1:size(x, 3)))
+	const_lift(play, x, loop(1:size(x, 3)))
 end
 
 bgra{T}(rgb::RGB{T}) 		= BGRA(rgb.b, rgb.g, rgb.r, one(T))
@@ -73,10 +73,10 @@ end
 
 # Put everything together
 arrows 			= sampleon(bounce(1:10), GLVisualize.ROOT_SCREEN.inputs[:arrow_navigation])
-keys 			= lift(arrows2vec, arrows) 
-mario_signal 	= lift(update, 8.0, keys, Mario(0.0, 0.0, 0.0, 0.0, :right))
-image_stream 	= lift(mario2image, mario_signal)
-modelmatrix 	= lift(mario2model, mario_signal)
+keys 			= const_lift(arrows2vec, arrows) 
+mario_signal 	= const_lift(update, 8.0, keys, Mario(0.0, 0.0, 0.0, 0.0, :right))
+image_stream 	= const_lift(mario2image, mario_signal)
+modelmatrix 	= const_lift(mario2model, mario_signal)
 
 view(visualize(image_stream, model=modelmatrix))
   

@@ -24,8 +24,8 @@ println("reshape done")
 
 xhalf(r)       = Rectangle{Int}(r.x,r.y, div(r.w,2), r.h)
 xhalf2(r)      = Rectangle{Int}(div(r.w, 2), r.y, div(r.w, 2), r.h)
-const screen3D = Screen(w, area=lift(xhalf, w.area))
-const screen2D = Screen(w, area=lift(xhalf2, w.area))
+const screen3D = Screen(w, area=const_lift(xhalf, w.area))
+const screen2D = Screen(w, area=const_lift(xhalf2, w.area))
 println("screens done")
 
 view(visualize(grid), screen3D)
@@ -41,3 +41,4 @@ glClearColor(1,1,1,1)
 
 renderloop()
 end
+

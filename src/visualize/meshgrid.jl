@@ -27,6 +27,6 @@ function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize
     assemble_instanced(
         grid, data,
         "util.vert", "meshgrid.vert", "standard.frag",
-        boundingbox=lift(particle_grid_bb, grid_min, grid_max, color_norm)
+        boundingbox=const_lift(particle_grid_bb, grid_min, grid_max, color_norm)
     )
 end

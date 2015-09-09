@@ -9,26 +9,26 @@ keys 		= w.inputs[:buttonspressed]
 selection 	= Input(4:3)
 text_raw 	= TextWithSelection([1,2,3,4], selection.value)
 text 		= Input(text_raw)
-lift(s->(text_raw.selection=s), selection) # is there really no other way?!
+const_lift(s->(text_raw.selection=s), selection) # is there really no other way?!
 
 Base.IntSet(a...) = IntSet(a)
 
-strg_v 		= lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
-strg_c 		= lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
-strg_x 		= lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
-del    		= lift(==, keys, IntSet(GLFW.KEY_DELETE))
+strg_v 		= const_lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V))
+strg_c 		= const_lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
+strg_x 		= const_lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
+del    		= const_lift(==, keys, IntSet(GLFW.KEY_DELETE))
 
-clipboard_copy  = lift(copyclipboard,  keepwhen(strg_c, true, strg_v), 	text)
-delete_text 	= lift(deletetext,     keepwhen(del, 	true, del), 	text)
+clipboard_copy  = const_lift(copyclipboard,  keepwhen(strg_c, true, strg_v), 	text)
+delete_text 	= const_lift(deletetext,     keepwhen(del, 	true, del), 	text)
 
-clipboard_paste = lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
+clipboard_paste = const_lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
 
-text_gate 		= lift(isnotempty, unicode) #lift(AND, lift(is_textinput_modifiers, keys), lift(isnotempty, unicode))
+text_gate 		= const_lift(isnotempty, unicode) #const_lift(AND, const_lift(is_textinput_modifiers, keys), const_lift(isnotempty, unicode))
 unicode_input 	= keepwhen(text_gate, Char['0'], unicode)
 text_to_insert 	= merge(clipboard_paste, unicode_input)
-text_to_insert 	= lift(x->map(GLSprite, map_fonts(x)), text_to_insert)
+text_to_insert 	= const_lift(x->map(GLSprite, map_fonts(x)), text_to_insert)
 
-lift(inserttext, text, text_to_insert)
+const_lift(inserttext, text, text_to_insert)
 
 while w.inputs[:open].value
 	GLFW.PollEvents()
