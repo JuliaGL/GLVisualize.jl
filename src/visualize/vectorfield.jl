@@ -1,7 +1,7 @@
 visualize_default(::Union(Array{Vec{3, Float32}, 3}, Texture{Vec{3, Float32}, 3}), ::Style, kw_args) = @compat Dict(
     :primitive      => GLNormalMesh(Pyramid(Point{3, Float32}(0, 0,-0.5), 1f0, 0.2f0)),
     :boundingbox    => AABB{Float32}(Vec3f0(-1), Vec3f0(1)),
-    :norm           => Vec2f0(-1,1),
+    :color_norm           => Vec2f0(-1,1),
     :color          => RGBA{Ufixed8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1)]
 )
 
@@ -28,7 +28,7 @@ function visualize(vectorfield::Signal{Array{Vec{3, Float32}, 3}}, s::Style, cus
 end
 
 function visualize(vectorfield::Array{Vec{3, Float32}, 3}, s::Style, customizations=visualize_default(vectorfield, s))
-    _norm = map(norm, vectorfield)
-    customizations[:norm] = Vec2f0(minimum(_norm), maximum(_norm))
+    _norm = map(color_norm, vectorfield)
+    customizations[:color_norm] = Vec2f0(minimum(_norm), maximum(_norm))
     visualize(Texture(vectorfield, minfilter=:nearest, x_repeat=:clamp_to_edge), s, customizations)
 end

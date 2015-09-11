@@ -11,6 +11,7 @@ function visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style
         :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
         :styles             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
+        :startposition      => Vec2f0(0),
         :technique          => :square,
         :preferred_camera   => :orthographic_pixel,
     )
@@ -27,8 +28,9 @@ end
 
 
 function visualize(text::AbstractString, s::Style, customizations=visualize_default(text, s))
+    startposition = get(customizations, :startposition, Point2f0(0))
     glyphs      = GPUVector(texture_buffer(process_for_gl(text)))
-    positions   = GPUVector(texture_buffer(calc_position(glyphs)))
+    positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
     style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(Uint16(0), Uint16(0)), length(text))))
     visualize(glyphs, positions, style_index, customizations[:model], s, customizations)  
 end 

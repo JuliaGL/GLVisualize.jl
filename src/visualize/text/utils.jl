@@ -179,15 +179,14 @@ export TextWithSelection
 export visualize_selection
 
 
-calc_position(glyphs::GPUVector) = calc_position(gpu_data(glyphs))
-function calc_position(glyphs)
+calc_position(glyphs::GPUVector, startposition=Vec2f0(0)) = calc_position(gpu_data(glyphs), startposition)
+function calc_position(glyphs, startposition=Vec2f0(0))
 	const PF16 = Point{2, Float16}
     positions = fill(PF16(0.0), length(glyphs))
 	if !isempty(glyphs)
 	    global FONT_EXTENDS, ID_TO_CHAR
-	    last_pos  = PF16(0.0)
+	    last_pos  = PF16(startposition)
 	    lastglyph = first(glyphs)
-	    newline_id = get_font!('\n')
 	    for (i,glyph) in enumerate(glyphs)
 	        extent = FONT_EXTENDS[glyph[1]]
 	        if isnewline(lastglyph)

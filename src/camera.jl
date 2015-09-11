@@ -56,18 +56,16 @@ function colored_cube()
 end
 
 
-function fit(target::AABB, actual::AABB)
-    w1, w2 = width(target), width(actual)
-    move_diff = minimum(actual)-minimum(target)
-    scalematrix(w1-w2)*translationmatrix(move_diff)
-end
 
-function cubecamera{T}(
-		window,
-		cube_area 	           = Input(Rectangle(0,0,150,150)),
-		eyeposition::Vec{3,T}  = Vec3f0(2),
-    	lookatv::Vec{3,T} 	   = Vec3f0(0)
+function cubecamera(
+		window;
+		cube_area 	 = Input(Rectangle(0,0,150,150)),
+		eyeposition  = Vec3f0(2),
+    	lookatv 	 = Vec3f0(0),
+        trans        = Input(Vec3f0(0)),
+        theta        = Input(Vec3f0(0))
 	)
+    const T = Float32
     @materialize mousebuttonspressed, window_size = window.inputs
     
     dd = doubleclick(window.inputs[:mousebuttonspressed], 0.1);
@@ -77,7 +75,7 @@ function cubecamera{T}(
     
     p = colored_cube()
 
-    resetto = lift(cubeside_lift, m, id, get_cube_rotations(eyeposition, lookatv)..., Input(h))
+    resetto = lift(cubeside_lift, m, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
 
     ortho1 = visualize(Rectangle(0f0,0f0, 20f0, 20f0), thickness=1f0)
     ortho2 = visualize(Rectangle(5f0,5f0, 20f0, 20f0), thickness=1f0)
@@ -104,7 +102,7 @@ function cubecamera{T}(
         GLAbstraction.ORTHOGRAPHIC
     end
 
-    theta, trans, zoom  = default_camera_control(window.inputs)
+    theta, trans, zoom  = default_camera_control(window.inputs, theta=theta, trans=trans)
     far, near, fov      = Input(100f0), Input(1f0), Input(43f0)
     main_cam = PerspectiveCamera(
         window.area,eyeposition,lookatv,
@@ -116,11 +114,11 @@ function cubecamera{T}(
     piv   = main_cam.pivot;
     rot   = lift(getfield, piv, :rotation)
     model = lift(inv, lift(rotationmatrix4, rot))
-    cubescreen = Screen(window, area=cube_area)
+    cubescreen = Screen(window, area=cube_area, transparent=Input(true))
     cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,
         nearclip=near,
-        view=Input(lookat(eyeposition, lookatv, Vec3f0(0,0,1))),
+        view=Input(lookat(eyeposition, value(lookatv), Vec3f0(0,0,1))),
         projection=lift(perspectiveprojection, cube_area, fov, near, far)
     )
     robj = visualize(p, model=model, preferred_camera=:cube_cam)

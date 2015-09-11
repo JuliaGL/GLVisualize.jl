@@ -56,21 +56,21 @@ function GLVisualizeShader(shaders...; attributes...)
     )
 end
 
-function default_boundingbox(main)
+function default_boundingbox(main, model)
     main == nothing && return Input(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    Input(AABB{Float32}(main))
+    lift(*, model, AABB{Float32}(main))
 end
-function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main), primitive=GL_TRIANGLES)
+function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     std_renderobject(dict, program, boundingbox, primitive)
 end
 
-function assemble_instanced(main, dict, shaders...; boundingbox=default_boundingbox(main), primitive=GL_TRIANGLES)
+function assemble_instanced(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     instanced_renderobject(dict, length(main), program, boundingbox, primitive)
 end
 
-function assemble_instanced(main::GPUVector, dict, shaders...; boundingbox=default_boundingbox(main), primitive=GL_TRIANGLES)
+function assemble_instanced(main::GPUVector, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     instanced_renderobject(dict, main, program, boundingbox, primitive)
 end

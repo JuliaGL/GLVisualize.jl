@@ -20,7 +20,7 @@ vec3 aastep(vec3 threshold, vec3 value) {
 }
 void main()
 {
- 	vec3  v  		= vec3(vposition.xyz) * gridsteps * M_PI;
+ 	vec3  v  		= (vec3(vposition.xyz) * gridsteps*10 * M_PI) - 1.5;
     vec3  f  		= abs(sin(v));
     vec3  g  		= aastep(vec3(0.999), f);
     float c  		= max(g.x, max(g.y, g.z));

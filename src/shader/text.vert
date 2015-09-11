@@ -4,9 +4,9 @@
 in vec2 vertices;
 in vec2 texturecoordinates;
 
-uniform usamplerBuffer  glyphs;
-uniform samplerBuffer   positions;
-uniform usamplerBuffer  style_index;
+uniform usamplerBuffer glyphs;
+uniform samplerBuffer  positions;
+uniform usamplerBuffer style_index;
 
 uniform samplerBuffer uvs;
 uniform sampler1D styles;
@@ -15,6 +15,8 @@ uniform int technique;
 uniform uint objectid;
 
 uniform mat4 projectionview, model;
+uniform mat4 fixed_projectionview;
+uniform vec2 resolution;
 
 out vec2 o_uv;
 out vec4 o_color;
@@ -45,7 +47,7 @@ void main(){
     	glyph_scale   = uv_dims.zw;
     	//flip uv and resize it to the correct size (for lookup in texture atlas)
     	o_uv 		  = (vec2(texturecoordinates.x, 1-texturecoordinates.y)*uv_dims.zw)+uv_dims.xy;
-    }else{ // special casing for particles.
+    }else{ // special casing for particles
         bearing     = vec2(0.0, -6.0);
         glyph_scale = attributes2.zw; //use advance instead of uv dimensions
         o_uv        = texturecoordinates; //texture coordinates need to be unscaled
@@ -56,8 +58,8 @@ void main(){
     o_style 		  = 5;
     o_id 			  = uvec2(objectid, index+1);
     o_technique 	  = technique;
-    gl_Position       = projectionview * model * vec4(
+    gl_Position   = projectionview * model * vec4(
     	position + bearing + (vertices*glyph_scale), 
     	0, 1
-    ); 
+    );
 }

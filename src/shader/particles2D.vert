@@ -16,6 +16,7 @@ uniform samplerBuffer positions;
 uniform mat4 projectionview, model;
 
 vec4 getindex(sampler2D tex, int index);
+vec4 getindex(sampler1D tex, int index);
 
 const int SPRITE = 1;
 const int CIRCLE = 2;
@@ -27,7 +28,7 @@ out vec4 o_color;
 flat out int o_technique;
 flat out int o_style;
 flat out uvec2 o_id;
-
+#define EPS32 0.000000119209289550781250
 void main(){
 	int   index		  = gl_InstanceID;
     o_uv              = texturecoordinates; 
@@ -36,6 +37,7 @@ void main(){
     o_technique 	  = technique;
     o_style 		  = 5;
     o_id 			  = uvec2(objectid, index+1);
-    gl_Position       = projectionview * model * vec4(position + (vertices*scale), 0, 1); 
+    gl_Position       = projectionview * model * vec4(position + (vertices*scale), index*EPS32, 1);  //*EPS32 make sure to have slighty different Z for depth testing
     
 }
+

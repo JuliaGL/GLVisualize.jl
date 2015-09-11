@@ -86,7 +86,7 @@ get_font!(char::Char,
 
 function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
 	#select_font_face(cc, font)
-	bitmap, extent = renderface(face, glyph, (42, 42))
+	bitmap, extent = renderface(face, glyph, (21, 21))
 	rect = Rectangle(0, 0, size(bitmap)...)
     uv   = push!(ta.rectangle_packer, rect).area #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small.") #TODO resize surface

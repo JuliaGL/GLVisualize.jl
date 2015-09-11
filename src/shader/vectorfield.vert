@@ -12,7 +12,7 @@ in vec3 normals;
 uniform vec3 light[4];
 uniform sampler3D vectorfield;
 uniform sampler1D color;
-uniform vec2 norm;
+uniform vec2 color_norm;
 
 uniform vec3 cube_min;
 uniform vec3 cube_max;
@@ -23,7 +23,7 @@ void render(vec3 vertices, vec3 normals, vec4 color, mat4 viewmodel, mat4 projec
 
 vec3 position(AABB cube, ivec3 dims, int index);
 vec4 getindex(sampler3D tex, int index);
-vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
+vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 color_norm);
 mat4 rotation(vec3 direction);
 mat4 getmodelmatrix(vec3 xyz, vec3 scale);
 mat4 rotationmatrix_y(float angle);
@@ -42,7 +42,7 @@ void main()
     mat4 rot            = rotation(direction);
     mat4 trans          = getmodelmatrix(pos+(cell_size/2.0), cell_size);
     float intensity     = length(direction);
-    vec4 instance_color = color_lookup(intensity, color, norm);
+    vec4 instance_color = color_lookup(intensity, color, color_norm);
     render(vertices, normals, instance_color, view*model*trans*rot, projection, light);
     o_id                = uvec2(objectid, gl_InstanceID);
 }

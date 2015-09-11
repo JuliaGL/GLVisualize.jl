@@ -12,14 +12,14 @@ function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :scale      => scale,
-        :norm       => n
+        :color_norm => n
     )
 end
 @visualize_gen Matrix{Float32} Texture Style
 
 function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize_default(grid, s))
     @materialize! color, primitive = customizations
-    @materialize grid_min, grid_max, norm = customizations
+    @materialize grid_min, grid_max, color_norm = customizations
     data = merge(Dict(
         :y_scale => grid,
         :color   => Texture(color),
@@ -27,6 +27,6 @@ function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize
     assemble_instanced(
         grid, data,
         "util.vert", "meshgrid.vert", "standard.frag",
-        boundingbox=lift(particle_grid_bb, grid_min, grid_max, norm)
+        boundingbox=lift(particle_grid_bb, grid_min, grid_max, color_norm)
     )
 end

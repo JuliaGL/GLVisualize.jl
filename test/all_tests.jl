@@ -132,6 +132,7 @@ push!(TEST_DATA, sierpinski_data(4))
 
 println("surface")
 # surface plot
+using GLPlot, GeometryTypes, GLAbstraction, Colors
 function xy_data(x,y,i, N)
 	x = ((x/N)-0.5f0)*i
 	y = ((y/N)-0.5f0)*i
@@ -139,6 +140,10 @@ function xy_data(x,y,i, N)
 	Float32(sin(r)/r)
 end
 generate(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
+a = colormap("RdBu");
+b = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), a);
+glplot(generate(20f0, 128), :surface, color=b);
+
 function surface_data(N)
 	heightfield = lift(generate, bounce(1f0:200f0), N)
 	return visualize(heightfield, :surface, color_norm=Vec2f0(-0.21, 1.0))
@@ -147,8 +152,8 @@ a = colormap("RdBu")
 b = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), a)
 c = colormap("Blues")
 d = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), c)
-push!(TEST_DATA, visualize(generate(25f0, 128), :surface, color=d))
 push!(TEST_DATA, visualize(generate(20f0, 128), :surface, color=b))
+push!(TEST_DATA, visualize(generate(25f0, 128), :surface, color=d))
 push!(TEST_DATA, surface_data(128))
 
 println("vectorfielddata")
@@ -171,7 +176,7 @@ function volume_data(N)
 end
 
 
-const vol_data = volume_data(64)
+const vol_data = volume_data(32)
 push!(TEST_DATA, visualize(vol_data, :mip))
 push!(TEST_DATA, visualize(vol_data, :absorption, absorption=bounce(0f0:1f0:50f0)))
 push!(TEST_DATA, visualize(vol_data, :iso, isovalue=bounce(0f0:0.01f0:1f0)))
