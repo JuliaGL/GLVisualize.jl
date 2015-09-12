@@ -132,7 +132,6 @@ push!(TEST_DATA, sierpinski_data(4))
 
 println("surface")
 # surface plot
-using GLPlot, GeometryTypes, GLAbstraction, Colors
 function xy_data(x,y,i, N)
 	x = ((x/N)-0.5f0)*i
 	y = ((y/N)-0.5f0)*i
@@ -140,9 +139,6 @@ function xy_data(x,y,i, N)
 	Float32(sin(r)/r)
 end
 generate(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
-a = colormap("RdBu");
-b = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), a);
-glplot(generate(20f0, 128), :surface, color=b);
 
 function surface_data(N)
 	heightfield = lift(generate, bounce(1f0:200f0), N)
@@ -164,7 +160,7 @@ vectorfielddata(N, i) = Vec3f0[Vec3f0(Float32(cos(x/N*3f0)*i), cos(y/7i), cos(i/
 const t = bounce(1f0:0.1f0:5f0)
 
 push!(TEST_DATA, visualize(vectorfielddata(14, 1f0)))
-push!(TEST_DATA, visualize(lift(vectorfielddata, 7, t), norm=Vec2f0(1, 5)))
+push!(TEST_DATA, visualize(lift(vectorfielddata, 7, t), color_norm=Vec2f0(1, 5)))
 println("volume_data")
 
 # volume rendering
