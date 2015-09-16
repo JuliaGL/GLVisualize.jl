@@ -27,6 +27,7 @@ Pkg.checkout("FixedSizeArrays")
 Pkg.checkout("Meshes", "ntuples")
 Pkg.checkout("ModernGL")
 Pkg.checkout("GLWindow")
+Pkg.checkout("FreeType")
 Pkg.checkout("GLAbstraction")
 ```
 It should run without errors by now.
