@@ -83,7 +83,7 @@ void main()
 	vec4 instance_color = color_lookup(pos.z, color, color_norm);
 	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
 	render(pos, normalvec, instance_color, view * model, projection, light);
-	o_id                = uvec2(objectid, gl_InstanceID);
+	o_id                = uvec2(objectid, gl_InstanceID+1);
 }
 
 

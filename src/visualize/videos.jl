@@ -8,7 +8,7 @@ end
 function play{T}(buffer::Array{T, 2}, video_stream, t)
     eof(video_stream) && seekstart(video_stream)
     w,h 	= size(buffer)
-    buffer 	= reinterpret(Uint8, buffer, (3, w,h))
+    buffer 	= reinterpret(UInt8, buffer, (3, w,h))
     read!(video_stream, buffer) # looses type and shape
     return reinterpret(T, buffer, (w,h))
 end

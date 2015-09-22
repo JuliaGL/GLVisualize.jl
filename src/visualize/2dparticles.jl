@@ -1,8 +1,14 @@
-visualize_default{T <: Real}(::Union(Texture{Point{2, T}, 1}, Vector{Point{2, T}}), ::Style, kw_args=Dict()) = Dict(
-    :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :color              => RGBA(1f0, 0f0, 0f0, 1f0),
-    :scale              => Vec2f0(50),
-    :technique          => :circle,
+GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, ::Style, kw_args=Dict()) = Dict(
+    :primitive          => GLUVMesh2D(Rectangle(-0.5f0, -0.5f0, 1f0, 1f0)),
+    :scale              => Vec2f0(20),
+    :shape              => RECTANGLE,
+    :style              => Cint(OUTLINED) | Cint(FILLED),
+    :stroke_width       => 4f0,
+    :glow_width         => 4f0,
+    :transparent_picking => false,
+    :color              => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :stroke_color       => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :glow_color         => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
     :preferred_camera   => :orthographic_pixel
 )
 
@@ -15,76 +21,60 @@ function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, custo
     visualize(start_val, s, customizations)
 end
 
-visualize_default{T <: Real}(::Union(Texture{Point{2, T}, 1}, Vector{Point{2, T}}), ::Style{:lines}, kw_args=Dict()) = Dict(
-    :preferred_camera => :orthographic_pixel,
-    :color => RGBA(1f0, 0f0, 0f0, 1f0)
-)
-
-function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value, s))
-    start_val = GLBuffer(locations.value)
-    lift(update!, start_val, locations)
-    visualize(start_val, s, customizations)
-end
-
-function visualize{T <: Real}(
-        positions::GLBuffer{Point{2, T}},
-        s::Style{:lines}, data=visualize_default(positions, s)
-    )
-    data[:vertex] = positions
-    robj = assemble_std(
-        positions, data,
-        "dots.vert", "dots.frag",
-        primitive=GL_LINE_STRIP
-    )
-end
 
 function visualize{T <: Real}(
         positions::Texture{Point{2, T}, 1},
         s::Style, customizations=visualize_default(positions, s)
     )
-    @materialize! primitive, technique = customizations
-    data = merge(Dict(
-        :positions           => positions,
-        :technique           => lift(to_gl_technique, technique)
-    ), collect_for_gl(primitive), customizations)
-
-    assemble_instanced(
+    @materialize! primitive = customizations
+    @materialize stroke_width, scale, glow_width = customizations
+    data = merge(collect_for_gl(primitive), customizations)
+    data[:positions] = positions
+    data[:offset_scale] = lift(+, lift(/, stroke_width, Input(2)), glow_width, scale)
+    
+    robj = assemble_instanced(
         positions,
         data,
         "util.vert", "particles2D.vert", "distance_shape.frag",
     )
+    empty!(robj.prerenderfunctions)
+    prerender!(robj,
+        glDisable, GL_DEPTH_TEST,
+        glDepthMask, GL_FALSE,
+        glDisable, GL_CULL_FACE,
+        enabletransparency
+    )
+    robj
 end
-
-#=
-begin
-local const POSITIONS = GPUVector{Point{2, Float32}}[]
-local const SCALE     = GPUVector{Vec{2, Float32}}[]
-getposition()   = isempty(POSITIONS) ? push!(POSITIONS, GPUVector(texture_buffer(Point{2, Float32}[])))[] : POSITIONS[]
-getscale()      = isempty(SCALE) ? push!(SCALE, GPUVector(texture_buffer(Point{2, Float32}[])))[] : SCALE[]
-end
-=#
-
 
 
 visualize_default{T <: Real}(::Rectangle{T}, ::Style, kw_args=Dict()) = Dict(
-    :primitive      => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :color          => RGBA(1f0, 0f0, 0f0, 1f0),
-    :style          => Cint(4),
-    :preferred_camera => :orthographic_pixel,
-    :technique      => to_gl_technique(:square),
-    :thickness      => 4f0
+    :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+    :shape              => Cint(RECTANGLE),
+    :style              => Cint(OUTLINED) | Cint(FILLED),
+    :stroke_width       => 2f0,
+    :glow_width         => 2f0,
+    :transparent_picking => false,
+    :color              => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :stroke_color       => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :glow_color         => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :preferred_camera   => :orthographic_pixel
 )
+
 rectangle_position(r::Rectangle) = Point{2, Float32}(r.x, r.y)
 rectangle_scale(r::Rectangle)    = Vec{2, Float32}(r.w, r.h)
 
 visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Input(r), s, customizations)
 function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualize_default(r.value, s))
     @materialize! primitive = customizations
-
+    @materialize stroke_width, glow_width = customizations
+    scale = lift(rectangle_scale, r)
     data = merge(Dict(
-        :position            => lift(rectangle_position, r),
-        :scale               => lift(rectangle_scale, r),
+        :position  => lift(rectangle_position, r),
+        :scale     => scale,
+        :offset_scale => lift(+, lift(/, stroke_width, Input(2)), glow_width, scale)
     ), collect_for_gl(primitive), customizations)
+
     robj = assemble_std(
         r, data,
         "particles2D_single.vert", "distance_shape.frag",

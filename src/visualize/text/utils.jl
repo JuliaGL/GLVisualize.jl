@@ -1,4 +1,4 @@
-isnewline(x) = x[1] == Uint16('\n')
+isnewline(x) = x[1] == UInt16('\n')
 # i must be a valid character index
 function next_newline(text, i::Integer)
 	res = findnext(isnewline, text, i)

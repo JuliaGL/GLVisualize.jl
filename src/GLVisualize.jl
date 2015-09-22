@@ -15,6 +15,7 @@ using FixedPointNumbers
 using FileIO
 using Meshes
 using Packing
+using SignedDistanceFields
 import Images
 
 
@@ -51,6 +52,7 @@ include(joinpath("edit", "color_chooser.jl"))
 include(joinpath("edit", "numbers.jl"))
 export vizzedit # edits some value, name should be changed in the future!
 
+include(joinpath("visualize", "shared.jl"))
 include(joinpath("visualize", "text", "utils.jl"))
 include(joinpath("visualize", "2dparticles.jl"))
 include(joinpath("visualize", "containers.jl"))
@@ -67,9 +69,12 @@ include(joinpath("visualize", "videos.jl"))
 include(joinpath("visualize", "volume.jl"))
 include(joinpath("visualize", "axis.jl"))
 include(joinpath("visualize", "colormap.jl"))
+include(joinpath("visualize", "parametric.jl"))
+include(joinpath("visualize", "lines.jl"))
 
 include("camera.jl")
 export cubecamera
+export Shape, CIRCLE, RECTANGLE, DISTANCEFIELD, Technique, FILLED, OUTLINED, GLOWING, TEXTURE_FILL, ROUNDED_RECTANGLE
 
 Base.precompile(glscreen, ())
 end # module

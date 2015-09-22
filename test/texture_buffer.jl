@@ -20,7 +20,7 @@ init_glutils()
 
 # Test for creating a GLBuffer with a 1D Julia Array
 # You need to supply the cardinality, as it can't be inferred
-# indexbuffer is a shortcut for GLBuffer(GLUint[0,1,2,2,3,0], 1, buffertype = GL_ELEMENT_ARRAY_BUFFER)
+# indexbuffer is a shortcut for GLBuffer(GLUInt[0,1,2,2,3,0], 1, buffertype = GL_ELEMENT_ARRAY_BUFFER)
 indexes = indexbuffer(GLuint[0,1,2])
 # Test for creating a GLBuffer with a 1D Julia Array of Vectors
 #v = Vec2f[Vec2f(0.0, 0.5), Vec2f(0.5, -0.5), Vec2f(-0.5,-0.5)]

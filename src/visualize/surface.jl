@@ -1,7 +1,7 @@
 Base.minimum(t::Texture) = minimum(gpu_data(t))
 Base.maximum(t::Texture) = maximum(gpu_data(t))
 
-function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::Style{:surface}, kw_args...)
+function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, ::Style{:surface}, kw_args...)
     grid_min    = get(kw_args[1], :grid_min, Vec2f0(-1, -1))
     grid_max    = get(kw_args[1], :grid_max, Vec2f0( 1,  1))
     grid_length = grid_max - grid_min

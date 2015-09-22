@@ -2,7 +2,7 @@ immutable SelectionID{T}
     objectid::T
     index::T
 end
-typealias GLSelection SelectionID{Uint16}
+typealias GLSelection SelectionID{UInt16}
 typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle, selection, selectionquery)
     selectionquery[name] = value
@@ -23,22 +23,27 @@ function delete_selectionquery!(name::Symbol, selection, selectionquery)
     delete!(selection, name)
     nothing
 end
+immutable GLFramebuffer
+    render_framebuffer::GLuint
+    color::Texture{RGBA{Ufixed8}, 2}
+    objectid::Texture{Vec{2, GLushort}, 2}
+    depth::GLuint
+end
 
-
-function resizebuffers(window_size, color_buffer, objectid_buffer, depth_buffer)
+function resizebuffers(window_size, framebuffer::GLFramebuffer)
     if all(x->x>0, window_size)
-        resize_nocopy!(color_buffer,    tuple(window_size...))
-        resize_nocopy!(objectid_buffer,  tuple(window_size...))
-        glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer[1])
+        resize_nocopy!(framebuffer.color,    tuple(window_size...))
+        resize_nocopy!(framebuffer.objectid,  tuple(window_size...))
+        glBindRenderbuffer(GL_RENDERBUFFER, framebuffer.depth)
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, window_size...)
     end
     nothing
 end
 
-function postprocess(screen_texture, screen)
+function postprocess(framebuffer::GLFramebuffer, screen::Screen)
     data = merge(Dict(
         :resolution => lift(Vec2f0, screen.inputs[:framebuffer_size]),
-        :u_texture0 => screen_texture
+        :u_texture0 => framebuffer.color
     ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
     assemble_std(
         nothing, data,
@@ -46,13 +51,12 @@ function postprocess(screen_texture, screen)
     )
 end
 
-
-function setup_framebuffers(framebuffsize::Signal{Vec{2, Int}})
+function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
     render_framebuffer = glGenFramebuffers()
     glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
 
     buffersize      = tuple(framebuffsize.value...)
-    color_buffer    = Texture(RGBA{Ufixed8},     buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
+    color_buffer    = Texture(RGBA{Ufixed8},    buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
     objectid_buffer = Texture(Vec{2, GLushort}, buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer.id, 0)
@@ -60,13 +64,13 @@ function setup_framebuffers(framebuffsize::Signal{Vec{2, Int}})
 
     depth_buffer = GLuint[0]
     glGenRenderbuffers(1, depth_buffer)
-    glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer[1])
+    db = depth_buffer[]
+    glBindRenderbuffer(GL_RENDERBUFFER, db)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, buffersize...)
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buffer[1])
-
-    lift(resizebuffers, framebuffsize, color_buffer, objectid_buffer, depth_buffer)
-
-    render_framebuffer, color_buffer, objectid_buffer, depth_buffer
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, db)
+    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, db)
+    lift(resizebuffers, framebuffsize, fb)
+    fb
 end
 
 export glscreen
@@ -95,12 +99,13 @@ function glscreen()
     end
     global ROOT_SCREEN = createwindow(name, resolution..., windowhints=windowhints, debugging=debugging)
     screen = ROOT_SCREEN
-    global TIMER_SIGNAL = fpswhen(screen.inputs[:open], 60.0)
+    global TIMER_SIGNAL = Input(0.0)
 
 
 
-    render_framebuffer, color_buffer, objectid_buffer, depth_buffer = setup_framebuffers(screen.inputs[:framebuffer_size])
-    postprocess_robj = postprocess(color_buffer, screen)
+    framebuffer = GLFramebuffer(screen.inputs[:framebuffer_size])
+    screen.inputs[:framebuffer] = framebuffer
+    postprocess_robj = postprocess(framebuffer, screen)
 
     selection      = Dict{Symbol, Input{Matrix{Vec{2, Int}}}}()
     selectionquery = Dict{Symbol, Rectangle{Int}}()
@@ -115,14 +120,16 @@ function glscreen()
     global ID_TO_CHAR        = Dict{Int, Char}()
 
     map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
-    renderloop_fun(renderloop_callback=()->nothing) = renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
+    renderloop_fun(renderloop_callback=()->nothing) = renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
     screen, renderloop_fun
 end
 
 
-function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
+function renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
+    render_framebuffer = screen.inputs[:framebuffer].render_framebuffer
+    objectid_buffer = screen.inputs[:framebuffer].objectid
     while screen.inputs[:open].value
-        renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
+        renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
         renderloop_callback()
     end
     GLFW.Terminate()
@@ -135,14 +142,14 @@ function update_selectionqueries(selectionquery, objectid_buffer, selection, are
         glReadBuffer(GL_COLOR_ATTACHMENT1)
         for (key, value) in selectionquery
             if value.x > 0 && value.y > 0 && value.w <= area.w && value.h <= area.h
-                data = Array(Vec{2, Uint16}, value.w, value.h)
+                data = Array(Vec{2, UInt16}, value.w, value.h)
                 glReadPixels(value.x, value.y, value.w, value.h, objectid_buffer.format, objectid_buffer.pixeltype, data)
                 push!(selection[key], convert(Matrix{Vec{2, Int}}, data))
             end
         end
     end
 end
-function renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
+function renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
     #tic()
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
@@ -272,3 +279,10 @@ function doubleclick(mouseclick, threshold)
     dd = lift(last, ddclick)
     return dd
 end
+
+
+function screenshot(window, path="screenshot.png")
+    img = gpu_data(window.inputs[:framebuffer].color)[window.area.value]
+    save(path, rotl90(img), true)
+end
+export screenshot

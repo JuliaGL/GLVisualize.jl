@@ -16,7 +16,7 @@ flat out uvec2 o_id;
 
 void main()
 {
-	o_id = uvec2(objectid, attribute_id);
+	o_id = uvec2(objectid, attribute_id+1);
 	vec4 instance_color = texelFetch(attributes, int(attribute_id), 0);
 	render(vertices, normals, instance_color, view*model, projection, light);
 }

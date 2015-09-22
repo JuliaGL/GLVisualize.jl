@@ -177,7 +177,7 @@ function collect_for_gl{T <: HomogenousMesh}(m::T)
 end
 
 
-function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}))
+function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}})
     grid_min    = Vec2f0(-1, -1)
     grid_max    = Vec2f0( 1,  1)
     grid_length = grid_max - grid_min
@@ -225,7 +225,7 @@ immutable SelectionID{T}
     objectid::T
     index::T
 end
-typealias GLSelection SelectionID{Uint16}
+typealias GLSelection SelectionID{UInt16}
 typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle)
     SELECTION_QUERIES[name] = value
@@ -347,7 +347,7 @@ function renderloop(screen)
             if value.h < 1 || value.h > 5000
             println(value.h) # debug output
             end
-            const data = Array(Vec{2, Uint16}, value.w, value.h)
+            const data = Array(Vec{2, UInt16}, value.w, value.h)
             glReadPixels(value.x, value.y, value.w, value.h, STENCIL_BUFFER.format, STENCIL_BUFFER.pixeltype, data)
             push!(SELECTION[key], convert(Matrix{Vec{2, Int}}, data))
         end

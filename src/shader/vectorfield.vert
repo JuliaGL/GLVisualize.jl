@@ -44,7 +44,7 @@ void main()
     float intensity     = length(direction);
     vec4 instance_color = color_lookup(intensity, color, color_norm);
     render(vertices, normals, instance_color, view*model*trans*rot, projection, light);
-    o_id                = uvec2(objectid, gl_InstanceID);
+    o_id                = uvec2(objectid, gl_InstanceID+1);
 }
 
 

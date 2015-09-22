@@ -17,6 +17,6 @@ out vec2 o_uv;
 void main()
 {
     o_uv = texturecoordinates;
-	o_id = uvec2(objectid, gl_VertexID);
+	o_id = uvec2(objectid, gl_VertexID+1);
 	render(vertices, normals, color, view*model, projection, light);
 }

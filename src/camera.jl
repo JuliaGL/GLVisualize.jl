@@ -27,8 +27,9 @@ end
 
 
 function cubeside_lift(_, id, top, bottom, front, back, left, right, h)
-    if h.value[1] == id && h.value[2] >= 0 && h.value[2] <= 5
-        side =  CubeSides(h.value[2])
+    index = h.value[2]
+    if h.value[1] == id && index >= 1 && index <= 6
+        side =  CubeSides(h.value[2]-1)
         side == TOP     && return top
         side == BOTTOM  && return bottom
         side == FRONT   && return front
@@ -38,7 +39,18 @@ function cubeside_lift(_, id, top, bottom, front, back, left, right, h)
     end
     Quaternions.Quaternion(1f0, 0f0, 0f0, 0f0)
 end
+import Base: +
+Base.clamp{T}(x::T) = clamp(x, T(0),T(1))
++{T}(a::RGBA{T}, b::Number) = RGBA{T}(clamp(comp1(a)+b), clamp(comp2(a)+b), clamp(comp3(a)+b), clamp(alpha(a)+b))
 
+function cubeside_color(id, h, startcolors, colortex)
+    index = h[2]
+    update!(colortex, startcolors)
+    if h[1] == id
+        (index >= 1 && index <= 6) && (colortex[index] = [startcolors[index] + 0.5])
+    end
+    nothing
+end
 function colored_cube()
     xdir    = Vec3f0(1f0,0f0,0f0)
     ydir    = Vec3f0(0f0,1f0,0f0)
@@ -55,6 +67,7 @@ function colored_cube()
     p = merge(map(GLNormalMesh, quads))
 end
 
+Base.middle{T}(r::Rectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2)))
 
 
 function cubecamera(
@@ -66,19 +79,31 @@ function cubecamera(
         theta        = Input(Vec3f0(0))
 	)
     const T = Float32
-    @materialize mousebuttonspressed, window_size = window.inputs
+    @materialize mousebuttonspressed, window_size, mouseposition = window.inputs
     
-    dd = doubleclick(window.inputs[:mousebuttonspressed], 0.1);
+    dd = doubleclick(window.inputs[:mousebuttonspressed], 0.2)
     h = window.inputs[:mouse_hover]
     id = Input(4)
-    m = filter(x->h.value[1] == id.value, false, dd);
+    should_reset = filter(x->h.value[1] == id.value, false, dd)
     
     p = colored_cube()
+    resetto = lift(cubeside_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
+    inside_trans = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
+    outside_trans = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
+    cube_rotation = lift(cube_area, mouseposition) do ca, mp
+        m = minimum(ca)
+        max_dist = norm(maximum(ca) - m)
+        mindist = max_dist *0.9f0
+        maxdist = max_dist *1.5f0
+        m, mp = Point{2, Float32}(m), Point{2, Float32}(mp)
+        t = norm(m-mp)
+        t = Float32((t-mindist)/(maxdist-mindist))
+        t = clamp(t, 0f0,1f0)
+        slerp(inside_trans, outside_trans, t)
+    end
 
-    resetto = lift(cubeside_lift, m, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
-
-    ortho1 = visualize(Rectangle(0f0,0f0, 20f0, 20f0), thickness=1f0)
-    ortho2 = visualize(Rectangle(5f0,5f0, 20f0, 20f0), thickness=1f0)
+    ortho1 = visualize(Rectangle(0f0,0f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
+    ortho2 = visualize(Rectangle(5f0,5f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
     hovers_ortho = lift(h) do h
         h[1] == ortho1.id || h[1] == ortho2.id
     end
@@ -91,8 +116,8 @@ function cubecamera(
         v0
     end
 
-    ortho1[:color] = c
-    ortho2[:color] = c
+    ortho1[:stroke_color] = c
+    ortho2[:stroke_color] = c
     ortho2[:model] = lift(isperspective) do isp
         isp && return translationmatrix(Vec3f0(5,5,0))*scalematrix(Vec3f0(0.8))
         scalematrix(Vec3f0(1.0))
@@ -107,13 +132,15 @@ function cubecamera(
     main_cam = PerspectiveCamera(
         window.area,eyeposition,lookatv,
         theta,trans,zoom,fov,near,far,
-        mprojection,m,resetto
+        mprojection,should_reset,resetto
     )
     window.cameras[:perspective] = main_cam
 
-    piv   = main_cam.pivot;
+    piv   = main_cam.pivot
     rot   = lift(getfield, piv, :rotation)
-    model = lift(inv, lift(rotationmatrix4, rot))
+    model = lift(cube_rotation, lift(inv, rot)) do cr, r
+        translationmatrix(Vec3f0(3,3,0)) * Mat{4,4,T}(cr) * translationmatrix(Vec3f0(-3,-3,0)) * Mat{4,4,T}(r)
+    end 
     cubescreen = Screen(window, area=cube_area, transparent=Input(true))
     cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,
@@ -122,11 +149,13 @@ function cubecamera(
         projection=lift(perspectiveprojection, cube_area, fov, near, far)
     )
     robj = visualize(p, model=model, preferred_camera=:cube_cam)
-
+    start_colors = p.attributes
+    color_tex    = robj[:attributes]
+    lift(cubeside_color, id, h, Input(start_colors), Input(color_tex))
 
     push!(id, robj.id)
     view(robj, cubescreen);
-    view(ortho1, cubescreen, method=:fixed_pixel);
-    view(ortho2, cubescreen, method=:fixed_pixel);
+    view(ortho1, cubescreen, method=:fixed_pixel)
+    view(ortho2, cubescreen, method=:fixed_pixel)
 	window
 end

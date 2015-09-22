@@ -212,7 +212,8 @@ particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1
 push!(TEST_DATA2D, visualize(foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
 	lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), scale=Vec2f0(10, 10)))
 
-
+foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:100],
+    lift(particle_data2D, bounce(1f0:1f0:50f0), 100))
 # text
 include("utf8_example_text.jl")
 push!(TEST_DATA2D, visualize(utf8_example_text))

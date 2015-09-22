@@ -1,4 +1,4 @@
-visualize_default(vol::Union(Array{Float32, 3}, Texture{Float32, 3}), ::Style{:volume2}, kw_args=Dict()) = Dict(
+visualize_default(vol::Union{Array{Float32, 3}, Texture{Float32, 3}}, ::Style{:volume2}, kw_args=Dict()) = Dict(
     :hull                   => GLPlainMesh(Cube(Vec3(0), Vec3(1))),
     :u_shape                => Vec3(size(vol)...),
     :light_position         => Vec3(0.25, 1.0, 3.0),

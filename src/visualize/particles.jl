@@ -3,7 +3,7 @@ function Base.delete!(dict::Dict, key, default)
     return default
 end
 function visualize_default{T <: Point{3}}(
-        particles::Union(Texture{T, 1}, Vector{T}), 
+        particles::Union{Texture{T, 1}, Vector{T}}, 
         s::Style, kw_args=Dict()
     )
     color = delete!(kw_args, :color, RGBA(1f0, 0f0, 0f0, 1f0))

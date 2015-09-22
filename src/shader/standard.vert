@@ -13,7 +13,7 @@ flat out uvec2 o_id;
 
 void main()
 {
-	o_id = uvec2(objectid, gl_VertexID);
+	o_id = uvec2(objectid, gl_VertexID+1);
 	render(vertices, normals, color, view*model, projection, light);
 }
 

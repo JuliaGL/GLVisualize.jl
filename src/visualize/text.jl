@@ -1,29 +1,20 @@
-visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style, kw_args=Dict()) = Dict(
+visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
     :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
-    :technique          => :sprite,
+    :shape              => Cint(DISTANCEFIELD),
     :preferred_camera   => :orthographic_pixel
 )
 
-function visualize_default(::Union(GPUVector{GLSprite}, AbstractString), ::Style{:square}, kw_args=Dict())
+function visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style{:square}, kw_args=Dict())
     return Dict(
         :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
         :styles             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
         :startposition      => Vec2f0(0),
-        :technique          => :square,
+        :shape              => SQUARE,
         :preferred_camera   => :orthographic_pixel,
     )
-end
-
-let TECHNIQUE_MAP = Dict(
-        :sprite => Cint(1),
-        :circle => Cint(2),
-        :square => Cint(3),
-    )
-    global to_gl_technique
-    to_gl_technique(technique) = TECHNIQUE_MAP[technique]
 end
 
 
@@ -31,10 +22,26 @@ function visualize(text::AbstractString, s::Style, customizations=visualize_defa
     startposition = get(customizations, :startposition, Point2f0(0))
     glyphs      = GPUVector(texture_buffer(process_for_gl(text)))
     positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
-    style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(Uint16(0), Uint16(0)), length(text))))
+    style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text))))
     visualize(glyphs, positions, style_index, customizations[:model], s, customizations)  
 end 
 
+function update_text(newtext::AbstractString, text_robj::RenderObject)
+    @materialize positions, glyphs, style_index = text_robj.uniforms
+    resize!(glyphs, length(newtext))
+    update!(glyphs, process_for_gl(newtext))
+    update_positions(glyphs, text_robj, style_index)
+
+end
+function visualize{S <: AbstractString}(text::Signal{S}, s::Style, customizations=visualize_default(text, s))
+    startposition = get(customizations, :startposition, Point2f0(0))
+    glyphs      = GPUVector(texture_buffer(process_for_gl(text.value)))
+    positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
+    style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text.value))))
+    robj        = visualize(glyphs, positions, style_index, customizations[:model], s, customizations)
+    lift(update_text, text, Input(robj))
+    robj
+end 
 function visualize(
         glyphs      ::GPUVector{GLSprite}, 
         positions   ::GPUVector{Point{2, Float16}},
@@ -42,23 +49,30 @@ function visualize(
         model,
         s::Style, customizations=visualize_default(glyphs, s))
 
-    @materialize! atlas, primitive, technique = customizations
+    @materialize! atlas, primitive = customizations
     data = merge(customizations, Dict(
         :model               => model,
         :positions           => positions,
         :glyphs              => glyphs,
         :uvs                 => atlas.attributes,
-        :images              => atlas.images,
+        :distancefield       => atlas.images,
         :style_index         => style_index,
-        :technique           => lift(to_gl_technique, technique)
     ), collect_for_gl(primitive))
     bb      = AABB{Float32}(gpu_data(positions))
     extent  = FONT_EXTENDS[glyphs[1][1]]
-    assemble_instanced(
+    robj = assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
         boundingbox=Input(AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
     )
+    empty!(robj.prerenderfunctions)
+    prerender!(robj,
+        glDisable, GL_DEPTH_TEST,
+        glDepthMask, GL_FALSE,
+        glDisable, GL_CULL_FACE,
+        enabletransparency
+    )
+    robj
 end
 
 

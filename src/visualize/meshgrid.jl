@@ -1,4 +1,4 @@
-function visualize_default(grid::Union(Texture{Float32, 2}, Matrix{Float32}), ::Style, kw_args=Dict())
+function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, ::Style, kw_args=Dict())
     grid_min    = get(kw_args, :grid_min, Vec2f0(-1, -1))
     grid_max    = get(kw_args, :grid_max, Vec2f0( 1,  1))
     grid_length = grid_max - grid_min

@@ -1,10 +1,10 @@
 
 drag_x(drag_id) = drag_id[1][1]
 
-printforslider(io::IOBuffer, x::FloatingPoint, numberwidth::Int=5) = print(io, @sprintf("%0.5f", x)[1:numberwidth])
+printforslider(io::IOBuffer, x::AbstractFloat, numberwidth::Int=5) = print(io, @sprintf("%0.5f", x)[1:numberwidth])
 printforslider(io::IOBuffer, x::Integer, numberwidth::Int=5) = print(io, @sprintf("%5d", x)[1:numberwidth])
 printforslider(x::Integer, numberwidth::Int=5) = @sprintf("%5d", x)[1:numberwidth]
-printforslider(x::FloatingPoint, numberwidth::Int=5) = @sprintf("%0.5f", x)[1:numberwidth]
+printforslider(x::AbstractFloat, numberwidth::Int=5) = @sprintf("%0.5f", x)[1:numberwidth]
 function printforslider(x::FixedVector, numberwidth=5)
     io = IOBuffer()
     for elem in x
@@ -41,7 +41,7 @@ function slide(startvalue, slide_pos, range::Range)
     clamp(val, range)
 end
 
-vizzedit{T <: Union(FixedVector, Real)}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
+vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
 
 function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
     T = typeof(startvalue)

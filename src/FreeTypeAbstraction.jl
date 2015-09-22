@@ -46,7 +46,7 @@ end
 setpixelsize(face, x, y) = setpixelsize(face, (x, y))
 
 function setpixelsize(face, size)
-	err = FT_Set_Pixel_Sizes(face[1], Uint32(size[1]), Uint32(size[2]))
+	err = FT_Set_Pixel_Sizes(face[1], UInt32(size[1]), UInt32(size[2]))
     if err != 0
         error("Couldn't set the pixel size for font with error $err")
     end
@@ -80,7 +80,7 @@ end
 
 function glyphbitmap(bmpRec::FreeType.FT_Bitmap)
     @assert bmpRec.pixel_mode == FreeType.FT_PIXEL_MODE_GRAY
-    bmp = Array(Uint8, bmpRec.width, bmpRec.rows)
+    bmp = Array(UInt8, bmpRec.width, bmpRec.rows)
     row = bmpRec.buffer
     if bmpRec.pitch < 0
         row -= bmpRec.pitch * (rbmpRec.rows - 1)

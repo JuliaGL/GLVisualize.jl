@@ -1,4 +1,4 @@
-visualize_default(::Union(Array{Vec{3, Float32}, 3}, Texture{Vec{3, Float32}, 3}), ::Style, kw_args) = @compat Dict(
+visualize_default(::Union{Array{Vec{3, Float32}, 3}, Texture{Vec{3, Float32}, 3}}, ::Style, kw_args) = @compat Dict(
     :primitive      => GLNormalMesh(Pyramid(Point{3, Float32}(0, 0,-0.5), 1f0, 0.2f0)),
     :boundingbox    => AABB{Float32}(Vec3f0(-1), Vec3f0(1)),
     :color_norm     => Vec2f0(-1,1),
