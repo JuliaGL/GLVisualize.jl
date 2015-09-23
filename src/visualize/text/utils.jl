@@ -200,7 +200,7 @@ function calc_position(glyphs, startposition=Vec2f0(0))
 	            last_pos += PF16(extent.advance[1], 0)
 	            finalpos = last_pos
 	            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
-	            (i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
+	            #(i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
 	            positions[i] = finalpos
 	        end
 	        lastglyph = glyph

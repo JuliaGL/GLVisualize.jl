@@ -31,8 +31,8 @@ out uvec2 fragment_groupid;
 out vec4 fragment_color;
 
 void main(){
-	float signed_distance = circle(vec2(fract(f_uv.x), f_uv.y));
-    float inside  = aastep(0.0, 1.5, signed_distance);
+	float signed_distance = rectangle(f_uv);
+    float inside  = aastep(0.0, 120, signed_distance);
     fragment_color = vec4(f_color.rgb, f_color.a*inside);
     fragment_groupid = uvec2(0);
 }

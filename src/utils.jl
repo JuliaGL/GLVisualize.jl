@@ -89,20 +89,6 @@ function x_partition(area, percent)
     return lift(first, p), lift(last, p)
 end
 
-function collect_for_gl{T <: HomogenousMesh}(m::T)
-    result = Dict{Symbol, Any}()
-    attribs = attributes(m)
-    @materialize! vertices, faces = attribs
-    result[:vertices]   = GLBuffer(vertices)
-    result[:faces]      = indexbuffer(faces)
-    for (field, val) in attribs
-        if field in [:texturecoordinates, :normals, :attribute_id]
-            result[field] = GLBuffer(val)
-        else
-            result[field] = Texture(val)
-        end
-    end
-    result
-end
+
 
 particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))

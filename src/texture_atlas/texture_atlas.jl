@@ -100,7 +100,7 @@ get_font!(char::Char,
         ) = get!(texture_atlas, char, font)
 
 
-function sdistancefield(img, min_size=64)
+function sdistancefield(img, min_size=32)
 	w, h = size(img)
 	w1, h1 = w, h
 	restrict_steps = 0
@@ -126,13 +126,17 @@ function sdistancefield(img, min_size=64)
 	maxlen = norm(sz)
 	sw, sh = size(sd)
 
-	Float16[clamp(sd[i,j]/maxlen, -1, 1) for i=1:sw, j=1:sh], Vec2f0(w1, h1)
+	Float16[clamp(sd[i,j]/maxlen, -1, 1) for i=1:sw, j=1:sh], Vec2f0(w1, h1), (2^restrict_steps)
 end
 
 function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
 	#select_font_face(cc, font)
-	bitmap, extent = renderface(face, glyph, (256, 256))
-	sd, real_size = sdistancefield(bitmap)
+	bitmap, extent = renderface(face, glyph, (128, 128))
+	s = extent.scale
+	sd, real_size, scaling_factor = sdistancefield(bitmap)
+	if min(size(bitmap)...) > 0
+		extent 			= extent .* Vec2f0(scaling_factor)
+	end
 	rect = Rectangle(0, 0, size(sd)...)
     uv   = push!(ta.rectangle_packer, rect).area #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small.") #TODO resize surface

@@ -7,6 +7,22 @@ immutable FontExtent{T}
     scale               ::Vec{2, T}
 end
 
+
+import Base: ./, .*
+
+.*{T, T2}(f::FontExtent{T}, scaling::Vec{2, T2}) = FontExtent(
+    f.vertical_bearing * scaling[1],
+    f.horizontal_bearing * scaling[2],
+    f.advance .* scaling,
+    f.scale .* scaling,
+)
+./{T, T2}(f::FontExtent{T}, scaling::Vec{2, T2}) = FontExtent(
+    f.vertical_bearing ./ scaling,
+    f.horizontal_bearing ./ scaling,
+    f.advance ./ scaling,
+    f.scale ./ scaling,
+)
+
 FontExtent(fontmetric::FreeType.FT_Glyph_Metrics, scale=64) = FontExtent(
     div(Vec{2, Int}(fontmetric.vertBearingX, fontmetric.vertBearingY), scale),
     div(Vec{2, Int}(fontmetric.horiBearingX, fontmetric.horiBearingY), scale),

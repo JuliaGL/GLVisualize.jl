@@ -72,8 +72,8 @@ void main(void)
     float start = 0.0 - (AA_THICKNESS/thickness_aa);
     float end = 1.0 + (AA_THICKNESS/thickness_aa);
 
-    float xstart = (g_lastlen[1])/thickness_aa;
-    float xend = (g_lastlen[2])/thickness_aa;
+    float xstart = (g_lastlen[1])/maxlength;
+    float xend = (g_lastlen[2])/maxlength;
 
     if( dot(v0,n1) > 0 ) { 
         // start at negative miter

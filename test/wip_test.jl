@@ -1,19 +1,10 @@
-using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, MeshIO, Meshes, FileIO
-using GLFW, ModernGL
-const screen = GLVisualize.ROOT_SCREEN
+using GLVisualize, GLAbstraction, GeometryTypes, Reactive, ColorTypes, ModernGL
+w,r = glscreen()
+glClearColor(1,1,1,1)
 
-t = readall(open("wip_test.jl"))
+text = visualize("utf8_exa|mp>le_text")
 
-text = visualize(t)
+view(text)
 
-
-
-
-w = GLVisualize.ROOT_SCREEN
-view(background, 							method=:orthographic_pixel)
-view(text, 									method=:orthographic_pixel)
-view(cursor(text[:positions], selection), 	method=:orthographic_pixel)
-
-
-renderloop()
+r()
 

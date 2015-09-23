@@ -3,6 +3,7 @@ visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args
     :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
     :shape              => Cint(DISTANCEFIELD),
+    :transparent_picking => true,
     :preferred_camera   => :orthographic_pixel
 )
 
@@ -12,7 +13,8 @@ function visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style
         :styles             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
         :startposition      => Vec2f0(0),
-        :shape              => SQUARE,
+        :shape              => Cint(RECTANGLE),
+        :transparent_picking => true,
         :preferred_camera   => :orthographic_pixel,
     )
 end
@@ -20,9 +22,9 @@ end
 
 function visualize(text::AbstractString, s::Style, customizations=visualize_default(text, s))
     startposition = get(customizations, :startposition, Point2f0(0))
-    glyphs      = GPUVector(texture_buffer(process_for_gl(text)))
-    positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
-    style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text))))
+    glyphs        = GPUVector(texture_buffer(process_for_gl(text)))
+    positions     = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
+    style_index   = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text))))
     visualize(glyphs, positions, style_index, customizations[:model], s, customizations)  
 end 
 
@@ -89,12 +91,13 @@ function cursor(positions, range, model)
         :glyph               => Sprite{GLuint}(GLVisualize.get_font!('|')),
         :uvs                 => atlas.attributes.buffer,
         :images              => atlas.images,
+        :shape               => Cint(DISTANCEFIELD),
         :preferred_camera    => :orthographic_pixel
     ), collect_for_gl(GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0))))
 
     shader = assemble_std(
         Rectangle(0f0, 0f0, 1f0, 1f0), data, 
-        "util.vert", "text_single.vert", "text.frag"
+        "util.vert", "text_single.vert", "distance_shape.frag"
     )
 end
 export cursor

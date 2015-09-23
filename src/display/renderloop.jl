@@ -24,10 +24,10 @@ function delete_selectionquery!(name::Symbol, selection, selectionquery)
     nothing
 end
 immutable GLFramebuffer
-    render_framebuffer::GLuint
-    color::Texture{RGBA{Ufixed8}, 2}
-    objectid::Texture{Vec{2, GLushort}, 2}
-    depth::GLuint
+    render_framebuffer:: GLuint
+    color::              Texture{RGBA{Ufixed8}, 2}
+    objectid::           Texture{Vec{2, GLushort}, 2}
+    depth::              GLuint
 end
 
 function resizebuffers(window_size, framebuffer::GLFramebuffer)
@@ -99,7 +99,7 @@ function glscreen()
     end
     global ROOT_SCREEN = createwindow(name, resolution..., windowhints=windowhints, debugging=debugging)
     screen = ROOT_SCREEN
-    global TIMER_SIGNAL = Input(0.0)
+    global TIMER_SIGNAL = fpswhen(screen.inputs[:open], 60.0)
 
 
 
@@ -283,6 +283,6 @@ end
 
 function screenshot(window, path="screenshot.png")
     img = gpu_data(window.inputs[:framebuffer].color)[window.area.value]
-    save(path, rotl90(img), true)
+    #save(path, rotl90(img), true)
 end
 export screenshot

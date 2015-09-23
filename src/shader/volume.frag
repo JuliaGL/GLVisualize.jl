@@ -18,6 +18,7 @@ uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
 uniform int algorithm;
 uniform float isovalue;
+uniform vec3 dimensions;
 
 const int view_samples = 512;
 const float max_distance = sqrt(1.0);
@@ -115,14 +116,14 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     vec3  pos           = front;
     vec3  Lo            = vec3(0.0);
     int   i             = 0;
-    vec4 _color          = vec4(0.0);
+    vec4 _color         = vec4(0.0);
     pos += stepsize_dir;//apply first, to padd
-    for (i; i < num_samples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
+    for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir) 
     {
-        float density = texture(intensities, pos).x;
+        float density = texture(intensities, pos/dimensions).x;
         if (density <= 0.0)
             continue;
-        if(abs(density - isovalue) < 0.03)
+        if(abs(density - isovalue) < 0.1)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
@@ -139,13 +140,12 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 {
     vec3  stepsize_dir  = dir * stepsize;
     vec3  pos           = front;
-    vec3  Lo            = vec3(0.0);
     int   i             = 0;
     pos += stepsize_dir;//apply first, to padd
     float maximum        = 0.0;
-    for (i; i < num_samples && (!is_outside(pos) || i==1); ++i, pos += stepsize_dir) 
+    for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir) 
     {
-        float density = texture(intensities, pos).x;
+        float density = texture(intensities, pos/dimensions).x;
         if (density <= 0.0)
             continue;
         if(maximum < density)
