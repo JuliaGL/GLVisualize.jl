@@ -123,7 +123,7 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
         float density = texture(intensities, pos/dimensions).x;
         if (density <= 0.0)
             continue;
-        if(abs(density - isovalue) < 0.1)
+        if(abs(density - isovalue) < 0.01)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);

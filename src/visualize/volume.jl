@@ -1,3 +1,10 @@
+visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Texture{T, 3}}, s::Style{:iso}, kw_args=Dict()) = merge(
+    visualize_default(a, Style{:default}(), kw_args), Dict(:isovalue => 0.5f0, :algorithm  => Cint(2))
+)
+visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Texture{T, 3}}, s::Style{:absorption}, kw_args=Dict()) = merge(
+    visualize_default(a, Style{:default}(), kw_args), Dict(:absorption => 1f0, :algorithm  => Cint(1))
+)
+
 function visualize_default{T <: Union{Colorant, AbstractFloat}}(::Union{Array{T, 3}, Texture{T, 3}}, ::Style, kw_args=Dict())
     dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
     Dict(
@@ -10,12 +17,6 @@ function visualize_default{T <: Union{Colorant, AbstractFloat}}(::Union{Array{T,
     )
 end
 
-visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Texture{T, 3}}, s::Style{:iso}, kw_args=Dict()) = merge(
-    visualize_default(a, Style{:default}(), kw_args), Dict(:isovalue => 0.5f0, :algorithm  => Cint(2))
-)
-visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Texture{T, 3}}, s::Style{:absorption}, kw_args=Dict()) = merge(
-    visualize_default(a, Style{:default}(), kw_args), Dict(:absorption => 1f0, :algorithm  => Cint(1))
-)
 
 @visualize_gen Array{Float32, 3} Texture Style
 @visualize_gen Array{Gray{Ufixed8}, 3} Texture Style
