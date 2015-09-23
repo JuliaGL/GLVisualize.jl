@@ -7,7 +7,7 @@ ModernGL
 FixedSizeArrays
 GeometryTypes
 ColorTypes
-Reactive
+Reactive 0.2.0
 Quaternions
 Compat
 FixedPointNumbers

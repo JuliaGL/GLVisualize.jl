@@ -3,6 +3,7 @@ visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args
     :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
     :shape              => Cint(DISTANCEFIELD),
+    :style              => Cint(FILLED),
     :transparent_picking => true,
     :preferred_camera   => :orthographic_pixel
 )
@@ -14,6 +15,7 @@ function visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style
         :atlas              => get_texture_atlas(),
         :startposition      => Vec2f0(0),
         :shape              => Cint(RECTANGLE),
+        :style               => Cint(FILLED),
         :transparent_picking => true,
         :preferred_camera   => :orthographic_pixel,
     )
@@ -92,6 +94,7 @@ function cursor(positions, range, model)
         :uvs                 => atlas.attributes.buffer,
         :images              => atlas.images,
         :shape               => Cint(DISTANCEFIELD),
+        :style               => Cint(FILLED),
         :preferred_camera    => :orthographic_pixel
     ), collect_for_gl(GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0))))
 

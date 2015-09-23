@@ -1,32 +1,37 @@
 visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, ::Style{:lines}, kw_args=Dict()) = Dict(
-    :shape                  => RECTANGLE,
+    :shape                  => Cint(RECTANGLE),
     :style                  => Cint(FILLED),
     :transparent_picking    => false,
     :preferred_camera       => :orthographic_pixel,
     :color                  => RGBA(1f0, 0f0, 0f0, 1f0),
-    :thickness              => 4f0
+    :thickness              => 4f0,
+    :dotted                 => false
 )
 
 function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value,s))
-    start_val = GLBuffer(locations.value)
-    lift(update!, start_val, locations)
-    visualize(start_val, s, customizations)
+    ll = lift(lastlen, locations, typ = Vector{Float32})
+    maxlength = lift(last, ll)
+
+    start_valp = GLBuffer(locations.value)
+    start_vall = GLBuffer(ll.value)
+    lift(update!, start_valp, locations)
+    lift(update!, start_vall, ll)
+    visualize(start_valp, start_vall, maxlength, s, customizations)
 end
 
 function lastlen(points)
-    result = zeros(eltype(points), length(points))
+    result = zeros(eltype(points[1]), length(points))
     for i=1:length(points)
         i0 = max(i-1,1)
         result[i] = result[i0] + norm(points[i0]-points[i])
     end
     result
 end
-function visualize{T}(positions::GLBuffer{Point{2, T}}, s::Style{:lines}, data=visualize_default(locations.value,s))
+function visualize{T}(positions::GLBuffer{Point{2, T}}, ll::GLBuffer{T}, maxlength, s::Style{:lines}, data=visualize_default(locations.value,s))
     ps = gpu_data(positions)
-    ll = lastlen(ps)
     data[:vertex]    = positions
-    data[:lastlen]   = GLBuffer(ll)
-    data[:maxlength] = last(ll)
+    data[:lastlen]   = ll
+    data[:maxlength] = maxlength
 
     program = GLVisualizeShader("lines.vert", "lines.geom", "lines.frag")
     std_renderobject( 

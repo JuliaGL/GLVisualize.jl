@@ -79,7 +79,7 @@ function cubecamera(
         theta        = Input(Vec3f0(0))
 	)
     const T = Float32
-    @materialize mousebuttonspressed, window_size, mouseposition = window.inputs
+    @materialize mousebuttonspressed, window_size, mouseposition, buttonspressed = window.inputs
     
     dd = doubleclick(window.inputs[:mousebuttonspressed], 0.2)
     h = window.inputs[:mouse_hover]
@@ -126,8 +126,10 @@ function cubecamera(
         isp && return GLAbstraction.PERSPECTIVE
         GLAbstraction.ORTHOGRAPHIC
     end
-
-    theta, trans, zoom  = default_camera_control(window.inputs, theta=theta, trans=trans)
+    use_cam = lift(buttonspressed) do b
+        b == [GLFW.KEY_LEFT_CONTROL]
+    end
+    theta, trans, zoom  = default_camera_control(window.inputs, theta=theta, trans=trans, filtersignal=use_cam)
     far, near, fov      = Input(100f0), Input(1f0), Input(43f0)
     main_cam = PerspectiveCamera(
         window.area,eyeposition,lookatv,

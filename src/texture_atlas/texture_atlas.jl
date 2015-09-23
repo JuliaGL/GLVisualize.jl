@@ -66,15 +66,16 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	tex_size 			= Vec2f0(size(texture_atlas.images))
 	uv_start 			= Vec2f0(uv.x, uv.y)
 	uv_width 			= Vec2f0(uv.w, uv.h)
+	real_heightpx 		= real_width[2]
 	halfpadding 		= (uv_width - real_width) / 2f0
 	real_start 			= uv_start + halfpadding # include padding
-	real_start 			/= tex_size # use normalized texture coordinates
-	real_width 			/= tex_size
+	relative_start 		= real_start ./ tex_size # use normalized texture coordinates
+	relative_width 		= real_width ./ tex_size
 	
 	bearing 			= extent.horizontal_bearing
 	attributes 			= GLSpriteAttribute[
-		GLSpriteAttribute(real_start..., real_width...), # last remaining digits are optional, so we use them to cache this calculation
-		GLSpriteAttribute(bearing[1], -(uv.h-bearing[2]), extent.advance...), 
+		GLSpriteAttribute(relative_start..., relative_width...), # last remaining digits are optional, so we use them to cache this calculation
+		GLSpriteAttribute(bearing[1], -(real_heightpx-bearing[2]), extent.advance...), 
 	]
 	i = texture_atlas.index
 	push!(texture_atlas.attributes, attributes)
@@ -103,11 +104,7 @@ get_font!(char::Char,
 function sdistancefield(img, min_size=32)
 	w, h = size(img)
 	w1, h1 = w, h
-	restrict_steps = 0
-	while w1 > 64 || h1 > 64
-		restrict_steps += 1
-		w1, h1 = Images.restrict_size(w1), Images.restrict_size(h1)
-	end
+	restrict_steps = 2
 	halfpad = 2*(2^restrict_steps) # padd so that after restrict it comes out as roughly 4 pixel
 	w, h = w+2halfpad, h+2halfpad #pad this, to avoid cuttoffs
 	in_or_out = Bool[begin
@@ -120,6 +117,7 @@ function sdistancefield(img, min_size=32)
 	end for i=1:w, j=1:h]
 	sd = sdf(in_or_out)
 	for i=1:restrict_steps 
+		w1, h1 = Images.restrict_size(w1), Images.restrict_size(h1)
 		sd = Images.restrict(sd) #downsample
 	end
 	sz = Vec2f0(size(img))
@@ -132,10 +130,12 @@ end
 function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
 	#select_font_face(cc, font)
 	bitmap, extent = renderface(face, glyph, (128, 128))
-	s = extent.scale
 	sd, real_size, scaling_factor = sdistancefield(bitmap)
 	if min(size(bitmap)...) > 0
-		extent 			= extent .* Vec2f0(scaling_factor)
+		s = real_size ./ Vec2f0(size(bitmap))
+		extent = extent .* s
+	else
+		extent = extent ./ Vec2f0(2^2)
 	end
 	rect = Rectangle(0, 0, size(sd)...)
     uv   = push!(ta.rectangle_packer, rect).area #find out where to place the rectangle

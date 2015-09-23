@@ -94,6 +94,14 @@ function renderface(face, c::Char, pixelsize=(32,32))
     return glyphbitmap(glyphRec.bitmap), FontExtent(glyphRec.metrics)
 end
 
+function getextent(face, c::Char, pixelsize)
+    setpixelsize(face, pixelsize)
+    faceRec = unsafe_load(face[1])
+    loadchar(face, c)
+    glyphRec = unsafe_load(faceRec.glyph)
+    FontExtent(glyphRec.metrics)
+end
+
 function glyphbitmap(bmpRec::FreeType.FT_Bitmap)
     @assert bmpRec.pixel_mode == FreeType.FT_PIXEL_MODE_GRAY
     bmp = Array(UInt8, bmpRec.width, bmpRec.rows)

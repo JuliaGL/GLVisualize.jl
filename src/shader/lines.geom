@@ -18,6 +18,7 @@ flat out uvec2 f_id;
 uniform vec2 resolution;
 uniform float maxlength;
 uniform float thickness;
+uniform bool dotted;
 
 vec2 screen_space(vec4 vertex)
 {
@@ -71,10 +72,14 @@ void main(void)
 
     float start = 0.0 - (AA_THICKNESS/thickness_aa);
     float end = 1.0 + (AA_THICKNESS/thickness_aa);
-
-    float xstart = (g_lastlen[1])/maxlength;
-    float xend = (g_lastlen[2])/maxlength;
-
+    float xstart, xend;
+    if(!dotted){
+        xstart  = 1;
+        xend    = 1;
+    }else{
+        xstart  = (g_lastlen[1])/thickness_aa;
+        xend    = (g_lastlen[2])/thickness_aa;
+    }
     if( dot(v0,n1) > 0 ) { 
         // start at negative miter
         emit_vertex((p1 - length_a * miter_a), vec2(xstart, end), 1);

@@ -50,9 +50,9 @@ void main(){
     	o_uv 		    = (vec2(texturecoordinates.x, 1-texturecoordinates.y)*glyph_scale)+uv_dims.xy;
         glyph_scale    *= 4096;
     }else{ // special casing for particles
-        bearing         = vec2(0.0, -17.0);
+        bearing         = vec2(0.0, -8.0);
         glyph_scale     = attributes2.zw; //use advance instead of uv dimensions
-        o_uv            = texturecoordinates; //texture coordinates need to be unscaled
+        o_uv            = texturecoordinates*0.99 - 0.01; //texture coordinates need to be unscaled
     }
     uvec2  style_i      = texelFetch(style_index, index).xy;
     vec2  position	    = texelFetch(positions, index).xy;

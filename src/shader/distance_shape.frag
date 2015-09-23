@@ -95,7 +95,7 @@ void main(){
         alpha *= o_glow_color.a;
         final_color = mix(final_color, vec4(o_glow_color.rgb, alpha), outside);
     }
-    fragment_color = vec4(fill_color.rgb, fill_color.a*inside);
+    fragment_color = final_color;
     if(transparent_picking || final_color.a >= 0.99999999)
         fragment_groupid = o_id;
 }
