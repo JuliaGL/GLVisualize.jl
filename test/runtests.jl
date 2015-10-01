@@ -3,7 +3,7 @@ using FileIO, MeshIO,Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes, Colors
 using Base.Test
 
-if !isinteractive() # only do test if called from REPL... this is for automated testing environments which fail for OpenGL stuff, but I'd like to test if at least including works
+if isinteractive() # only do test if called from REPL... this is for automated testing environments which fail for OpenGL stuff, but I'd like to test if at least including works
 w, renderloop = glscreen()
 
 
