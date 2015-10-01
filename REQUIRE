@@ -7,10 +7,9 @@ ModernGL
 FixedSizeArrays
 GeometryTypes
 ColorTypes
-Reactive 0.2.0
+Reactive
 Quaternions
 Compat
 FixedPointNumbers
 FileIO
-Meshes
 FreeType

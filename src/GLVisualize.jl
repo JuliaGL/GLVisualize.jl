@@ -13,7 +13,6 @@ using Quaternions
 using Compat
 using FixedPointNumbers
 using FileIO
-using Meshes
 using Packing
 using SignedDistanceFields
 import Images
