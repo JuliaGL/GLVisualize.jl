@@ -2,8 +2,9 @@ using ModernGL
 using FileIO, MeshIO,Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes, Colors
 using Base.Test
-w, renderloop = glscreen()
 
+if !isinteractive() # only do test if called from REPL... this is for automated testing environments which fail for OpenGL stuff, but I'd like to test if at least including works
+w, renderloop = glscreen()
 
 
 const TEST_DATA   = RenderObject[]
@@ -12,7 +13,7 @@ const TEST_DATA2D = RenderObject[]
 include(string("all_tests.jl"))
 
 println(length(TEST_DATA))
-grid    = reshape(TEST_DATA,   (2,3,3))
+grid    = reshape(TEST_DATA,   close_to_square(length(TEST_DATA)))
 grid2D  = reshape(TEST_DATA2D, close_to_square(length(TEST_DATA2D)))
 
 println("reshape done")
@@ -35,3 +36,4 @@ println("viewing it now")
 glClearColor(1,1,1,1)
 
 renderloop()
+end
