@@ -13,3 +13,5 @@ Compat
 FixedPointNumbers
 FileIO
 FreeType
+SignedDistanceFields
+Images
