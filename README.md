@@ -15,19 +15,15 @@ Right now it relies on a mixture of packages not in METADATA and different branc
 You should use a relatively new version of Julia 0.4.
 Here is a script adding the packages and checking out the correct branches:
 ```Julia
-Pkg.clone("https://github.com/JuliaIO/FileIO.jl.git")
+Pkg.clone("Images")
+Pkg.clone("https://github.com/yurivish/SignedDistanceFields.jl") 
 Pkg.clone("https://github.com/JuliaIO/MeshIO.jl.git")
 Pkg.clone("https://github.com/JuliaGeometry/Packing.jl.git")
-Pkg.clone("https://github.com/JuliaIO/ImageMagick.jl.git")
-Pkg.build("ImageMagick")
 Pkg.clone("https://github.com/JuliaGL/GLVisualize.jl.git")
-Pkg.checkout("Images", "sd/fileio")
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("FixedSizeArrays")
-Pkg.checkout("Meshes", "ntuples")
 Pkg.checkout("ModernGL")
 Pkg.checkout("GLWindow")
-Pkg.checkout("FreeType")
 Pkg.checkout("GLAbstraction")
 ```
 It should run without errors by now.
