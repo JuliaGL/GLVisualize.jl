@@ -1,5 +1,5 @@
 using ModernGL
-using FileIO, MeshIO,Meshes, GLAbstraction, GLVisualize, Reactive, GLWindow
+using FileIO, MeshIO, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes, Colors
 using Base.Test
 
