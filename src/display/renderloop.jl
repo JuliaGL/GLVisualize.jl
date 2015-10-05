@@ -125,11 +125,12 @@ function glscreen()
 end
 
 
-function renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
-    render_framebuffer = screen.inputs[:framebuffer].render_framebuffer
-    objectid_buffer = screen.inputs[:framebuffer].objectid
+
+function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
     while screen.inputs[:open].value
-        renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
+    	@async Reactive.run(10000)
+        renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
+    	@async Reactive.run(10000)
         renderloop_callback()
     end
     GLFW.Terminate()
