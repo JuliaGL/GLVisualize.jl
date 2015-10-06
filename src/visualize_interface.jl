@@ -40,7 +40,7 @@ function view(
          error("Method $method not a known camera type")
 	end
 	merge!(robj.uniforms, collect(camera), Dict(
-		:resolution => lift(Vec2f0, screen.inputs[:framebuffer_size]),
+		:resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
 	push!(screen.renderlist, robj)

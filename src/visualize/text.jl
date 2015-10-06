@@ -139,7 +139,7 @@ function textedit_signals(inputs, background, text)
     )
 
     is_text(x) = x[2][1] == background.id || x[2][1] == text.id
-    selection  = keepwhen(
+    selection  = filterwhen(
         const_lift(is_text, mousedragdiff_objectid), 
         0:0, selection
     )
@@ -151,17 +151,17 @@ function textedit_signals(inputs, background, text)
     enter_key       = const_lift(==, buttonspressed, [GLFW.KEY_ENTER])
     del             = const_lift(==, buttonspressed, [GLFW.KEY_BACKSPACE])
 
-    enter_insert    = const_lift(insert_enter,   keepwhen(enter_key, true, enter_key))
-    clipboard_copy  = const_lift(copyclipboard,  keepwhen(strg_c, true, strg_v),  text_edit)
+    enter_insert    = const_lift(insert_enter,   filterwhen(enter_key, true, enter_key))
+    clipboard_copy  = const_lift(copyclipboard,  filterwhen(strg_c, true, strg_v),  text_edit)
 
-    delete_text     = const_lift(deletetext,     keepwhen(del,    true, del),     text_edit)
-    cut_text        = const_lift(cutclipboard,   keepwhen(strg_x, true, strg_x),  text_edit)
+    delete_text     = const_lift(deletetext,     filterwhen(del,    true, del),     text_edit)
+    cut_text        = const_lift(cutclipboard,   filterwhen(strg_x, true, strg_x),  text_edit)
 
 
-    clipboard_paste = const_lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
+    clipboard_paste = const_lift(clipboardpaste, filterwhen(strg_v, true, strg_v))
 
     text_gate       = const_lift(isnotempty, unicodeinput)
-    unicode_input   = keepwhen(text_gate, Char['0'], unicodeinput)
+    unicode_input   = filterwhen(text_gate, Char['0'], unicodeinput)
     text_to_insert  = merge(clipboard_paste, unicode_input, enter_insert)
     text_to_insert  = const_lift(process_for_gl, text_to_insert)
     

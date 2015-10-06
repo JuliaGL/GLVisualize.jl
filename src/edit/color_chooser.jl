@@ -13,7 +13,7 @@ function vizzedit(x::RGBA, inputs)
   slide_addition  = const_lift(drag_xy, filter(is_num, (Vec2f0(0), Vec(0,0), Vec(0,0)), drag))
   haschanged    = foldp((t0, t1) -> (t0[2]!=t1, t1), (false, slide_addition.value), slide_addition)
   haschanged    = const_lift(first, haschanged)
-  slide_addition  = keepwhen(haschanged, Vec2f0(0), slide_addition)
+  slide_addition  = filterwhen(haschanged, Vec2f0(0), slide_addition)
 
   slide_addition  = const_lift(last, foldp(GLAbstraction.mousediff, (false, Vec2f0(0), Vec2f0(0)), ## (Note 2)
                   const_lift(isclicked, mbutton_clicked), slide_addition))

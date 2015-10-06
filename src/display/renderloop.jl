@@ -76,8 +76,8 @@ end
 export glscreen
 
 function glscreen()
-	name="GLVisualize" 
-	resolution=nothing 
+	name="GLVisualize"
+	resolution=nothing
 	debugging=false
 
     windowhints = [
@@ -126,17 +126,39 @@ end
 
 
 
-function renderloop(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj, renderloop_callback)
+function renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
+    render_framebuffer = screen.inputs[:framebuffer].render_framebuffer
+    objectid_buffer = screen.inputs[:framebuffer].objectid
     while screen.inputs[:open].value
-    	@async Reactive.run(10000)
-        renderloop_inner(screen, render_framebuffer, selectionquery, objectid_buffer, selection, postprocess_robj)
-    	@async Reactive.run(10000)
+    	@async Reactive.run(100)
+        renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
         renderloop_callback()
     end
     GLFW.Terminate()
     FreeTypeAbstraction_done()
 end
+function renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
+    #tic()
 
+    glDisable(GL_SCISSOR_TEST)
+    glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
+    glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    render(screen)
+    yield()
+    #Read all the selection queries
+    update_selectionqueries(selectionquery, objectid_buffer, selection, screen.area.value)
+    yield()
+    glDisable(GL_SCISSOR_TEST)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    glViewport(screen.area.value)
+    glClear(GL_COLOR_BUFFER_BIT)
+    render(postprocess_robj)
+    GLFW.SwapBuffers(screen.nativewindow)
+    GLFW.PollEvents()
+    yield()
+end
 
 function update_selectionqueries(selectionquery, objectid_buffer, selection, area)
     if !isempty(selectionquery)
@@ -150,30 +172,7 @@ function update_selectionqueries(selectionquery, objectid_buffer, selection, are
         end
     end
 end
-function renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
-    #tic()
-    
 
-    glDisable(GL_SCISSOR_TEST)
-    glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
-    glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    render(screen)
-    yield()
-    #Read all the selection queries
-    update_selectionqueries(selectionquery, objectid_buffer, selection, screen.area.value)
-
-    glDisable(GL_SCISSOR_TEST)
-    glBindFramebuffer(GL_FRAMEBUFFER, 0)
-    glViewport(screen.area.value)
-    glClear(GL_COLOR_BUFFER_BIT)
-    render(postprocess_robj)
-    GLFW.SwapBuffers(screen.nativewindow)
-    GLFW.PollEvents()
-
-    yield()
-end
 
 
 
@@ -219,7 +218,7 @@ function mousedragdiff_objectid(inputs, mouse_hover)
             mousedown, mouseposition, mouse_hover
         )
     )
-    return keepwhen(mousedown, (Vec2f0(0), Vec(0,0), Vec(0,0)), mousedraggdiff)
+    return filterwhen(mousedown, (Vec2f0(0), Vec(0,0), Vec(0,0)), mousedraggdiff)
 end
 
 function to_arrow_symbol(button_set)

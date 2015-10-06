@@ -49,7 +49,7 @@ function get_drag_diff(inputs)
 	mousedown = const_lift(isnotempty, mousebuttonspressed)
 	mousedraggdiff = const_lift(diff_mouse, 
 						foldp(mousedragg_fold, (false, Vec2(0), Vector2(0), Vec2(0)), mousedown, mouseposition, mouse_hover))
-	return keepwhen(mousedown, (Vec2(0), Vector2(0)), mousedraggdiff)
+	return filterwhen(mousedown, (Vec2(0), Vector2(0)), mousedraggdiff)
 end
 
 AND(a,b) = a&&b

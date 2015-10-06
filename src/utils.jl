@@ -58,7 +58,7 @@ end
 
 function default_boundingbox(main, model)
     main == nothing && return Input(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    lift(*, model, AABB{Float32}(main))
+    const_lift(*, model, AABB{Float32}(main))
 end
 function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)

@@ -144,7 +144,8 @@ push!(TEST_DATA, visualize(vol_data, :iso, isovalue=bounce(0f0:0.01f0:1f0)))
 #2D distance field
 xy_data(x,y,i) = Float32(sin(x/i)*sin(y/i))
 generate_distfield(i) = Float32[xy_data(x,y,i) for x=1:512, y=1:512]
-push!(TEST_DATA2D, visualize(const_lift(generate_distfield, bounce(50f0:500f0)), :distancefield))
+const dfdata = const_lift(generate_distfield, bounce(50f0:500f0))
+push!(TEST_DATA2D, visualize(dfdata, :distancefield))
 
 
 function image_test_data(N)
@@ -163,12 +164,11 @@ push!(TEST_DATA2D, image_test_data(20)...)
 
 # 2D particles
 particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
+const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
+	const_lift(particle_data2D, bounce(1f0:1f0:50f0), 512))
 
-push!(TEST_DATA2D, visualize(foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
-	const_lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), scale=Vec2f0(10, 10)))
+push!(TEST_DATA2D, visualize(p2ddata, scale=Vec2f0(10, 10)))
 
-foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:100],
-    const_lift(particle_data2D, bounce(1f0:1f0:50f0), 100))
 # text
 include("utf8_example_text.jl")
 push!(TEST_DATA2D, visualize(utf8_example_text))

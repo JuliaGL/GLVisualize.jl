@@ -18,13 +18,13 @@ strg_c 		= const_lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C))
 strg_x 		= const_lift(==, keys, IntSet(GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X))
 del    		= const_lift(==, keys, IntSet(GLFW.KEY_DELETE))
 
-clipboard_copy  = const_lift(copyclipboard,  keepwhen(strg_c, true, strg_v), 	text)
-delete_text 	= const_lift(deletetext,     keepwhen(del, 	true, del), 	text)
+clipboard_copy  = const_lift(copyclipboard,  filterwhen(strg_c, true, strg_v), 	text)
+delete_text 	= const_lift(deletetext,     filterwhen(del, 	true, del), 	text)
 
-clipboard_paste = const_lift(clipboardpaste, keepwhen(strg_v, true, strg_v))
+clipboard_paste = const_lift(clipboardpaste, filterwhen(strg_v, true, strg_v))
 
 text_gate 		= const_lift(isnotempty, unicode) #const_lift(AND, const_lift(is_textinput_modifiers, keys), const_lift(isnotempty, unicode))
-unicode_input 	= keepwhen(text_gate, Char['0'], unicode)
+unicode_input 	= filterwhen(text_gate, Char['0'], unicode)
 text_to_insert 	= merge(clipboard_paste, unicode_input)
 text_to_insert 	= const_lift(x->map(GLSprite, map_fonts(x)), text_to_insert)
 
