@@ -87,10 +87,10 @@ function cubecamera(
     should_reset = filter(x->h.value[1] == id.value, false, dd)
     
     p = colored_cube()
-    resetto = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
-    inside_trans = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
-    outside_trans = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
-    cube_rotation = const_lift(cube_area, mouseposition) do ca, mp
+    resetto         = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
+    inside_trans    = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
+    outside_trans   = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
+    cube_rotation   = const_lift(cube_area, mouseposition) do ca, mp
         m = minimum(ca)
         max_dist = norm(maximum(ca) - m)
         mindist = max_dist *0.9f0
@@ -107,7 +107,7 @@ function cubecamera(
     hovers_ortho = const_lift(h) do h
         h[1] == ortho1.id || h[1] == ortho2.id
     end
-    c = const_const_lift(hovers_ortho) do ho
+    c = const_lift(hovers_ortho) do ho
         ho && return RGBA(0.8f0, 0.8f0, 0.8f0, 0.8f0)
         RGBA(0.5f0, 0.5f0, 0.5f0, 1f0)
     end
@@ -122,7 +122,7 @@ function cubecamera(
         isp && return translationmatrix(Vec3f0(5,5,0))*scalematrix(Vec3f0(0.8))
         scalematrix(Vec3f0(1.0))
     end
-    mprojection = const_const_lift(isperspective) do isp
+    mprojection = const_lift(isperspective) do isp
         isp && return GLAbstraction.PERSPECTIVE
         GLAbstraction.ORTHOGRAPHIC
     end

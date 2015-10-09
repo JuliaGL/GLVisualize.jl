@@ -5,6 +5,15 @@ visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Tex
     visualize_default(a, Style{:default}(), kw_args), Dict(:absorption => 1f0, :algorithm  => Cint(1))
 )
 
+function visualize_default{T <: Union{Colorant, AbstractFloat}, X}(img::Images.Image{T, 3, X}, ::Style, kw_args=Dict())
+    dims = Vec3f0(1)
+    if haskey(img.properties,"pixelspacing")
+        dims = Vec3f0(map(float, img.properties["pixelspacing"]))
+        dims = dims/max(dims...)
+    end
+    data = merge(Dict(:dimensions=>dims), kw_args)
+    visualize_default(img.data, Style{:default}(), data)
+end
 function visualize_default{T <: Union{Colorant, AbstractFloat}}(::Union{Array{T, 3}, Texture{T, 3}}, ::Style, kw_args=Dict())
     dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
     Dict(
@@ -23,6 +32,9 @@ end
 
 to_modelspace(x, model) = Vec3f0(inv(model)*Vec4f0(x...,1))
     
+function visualize{T <: Union{Colorant, AbstractFloat}, X}(img::Images.Image{T, 3, X}, s::Style, kw_args=visualize_default(img, s))
+    visualize(map(Float32, img.data), s, kw_args)
+end
 function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 3}, s::Style, customizations=visualize_default(intensities, s))
     @materialize! hull = customizations # pull out variables to avoid duplications
     customizations[:intensities] = intensities
