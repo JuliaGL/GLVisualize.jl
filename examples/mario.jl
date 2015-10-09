@@ -1,5 +1,5 @@
-using GeometryTypes, GLVisualize, GLAbstraction, GeometryTypes, ImageMagick, FileIO, ColorTypes, ImageIO, Reactive
-
+using GeometryTypes, GLVisualize, GLAbstraction, GeometryTypes, ImageMagick, FileIO, ColorTypes, Reactive
+w, r = glscreen()
 type Mario{T}
     x 			::T
     y 			::T
@@ -17,13 +17,13 @@ function physics(dt, mario)
 end
 
 function walk(keys, mario)
-    mario.vx = keys.x
-    mario.direction = keys.x < 0.0 ? :left : keys.x > 0.0 ? :right : mario.direction
+    mario.vx = keys[1]
+    mario.direction = keys[1] < 0.0 ? :left : keys[1] > 0.0 ? :right : mario.direction
     mario
 end
 
 function jump(keys, mario)
-    if keys.y > 0.0 && mario.vy == 0.0 
+    if keys[2] > 0.0 && mario.vy == 0.0 
     	mario.vy = 6.0
     end
 	mario
@@ -39,7 +39,7 @@ end
 
 
 
-mario2model(mario) = translationmatrix(Vec3(mario.x, mario.y, 0f0))*scalematrix(Vec3(5f0))
+mario2model(mario) = translationmatrix(Vec3f0(mario.x, mario.y, 0f0))*scalematrix(Vec3f0(5f0))
 
 const mario_images = Dict()
 
@@ -56,7 +56,7 @@ bgra{T}(rgb::RGB{T}) 		= BGRA(rgb.b, rgb.g, rgb.r, one(T))
 bgra{T}(rgb::Array{RGB{T}}) = map(bgra, rgb)
 bgra(rgb) = rgb
 for verb in ["jump", "walk", "stand"], dir in ["left", "right"]
-	gif = bgra(read(File("imgs", "mario", verb, dir*".gif")).data)
+	gif = bgra(load(joinpath("imgs", "mario", verb, dir*".gif")).data)
 	mario_images[verb*dir] = signify(gif)
 end
 function mario2image(mario, images=mario_images) 
@@ -64,11 +64,11 @@ function mario2image(mario, images=mario_images)
 	mario_images[verb*string(mario.direction)].value # is a signal of pictures itself (animation), so .value samples the current image
 end
 function arrows2vec(direction)
-	direction == :up 	&& return Vector2( 0.0,  1.0)
-	direction == :down 	&& return Vector2( 0.0, -1.0)
-	direction == :right && return Vector2( 3.0,  0.0)
-	direction == :left 	&& return Vector2(-3.0,  0.0)
-	Vector2(0.0)
+	direction == :up 	&& return Vec2f0( 0.0,  1.0)
+	direction == :down 	&& return Vec2f0( 0.0, -1.0)
+	direction == :right && return Vec2f0( 3.0,  0.0)
+	direction == :left 	&& return Vec2f0(-3.0,  0.0)
+	Vec2f0(0.0)
 end
 
 # Put everything together
@@ -80,4 +80,4 @@ modelmatrix 	= const_lift(mario2model, mario_signal)
 
 view(visualize(image_stream, model=modelmatrix))
   
-renderloop()
+r()
