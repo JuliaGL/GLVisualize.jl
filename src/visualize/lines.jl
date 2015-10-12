@@ -9,13 +9,13 @@ visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}
 )
 
 function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value,s))
-    ll = lift(lastlen, locations, typ = Vector{Float32})
-    maxlength = lift(last, ll)
+    ll = const_lift(lastlen, locations)
+    maxlength = const_lift(last, ll)
 
     start_valp = GLBuffer(locations.value)
     start_vall = GLBuffer(ll.value)
-    lift(update!, start_valp, locations)
-    lift(update!, start_vall, ll)
+    const_lift(update!, start_valp, locations)
+    const_lift(update!, start_vall, ll)
     visualize(start_valp, start_vall, maxlength, s, customizations)
 end
 
@@ -33,7 +33,7 @@ function visualize{T}(positions::GLBuffer{Point{2, T}}, ll::GLBuffer{T}, maxleng
     data[:lastlen]   = ll
     data[:maxlength] = maxlength
 
-    program = GLVisualizeShader("lines.vert", "lines.geom", "lines.frag")
+    program = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag", attributes=data)
     std_renderobject( 
         data, program,
         Input(AABB{Float32}(ps)), GL_LINE_STRIP_ADJACENCY 

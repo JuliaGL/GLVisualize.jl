@@ -53,6 +53,7 @@ export vizzedit # edits some value, name should be changed in the future!
 
 include(joinpath("visualize", "shared.jl"))
 include(joinpath("visualize", "text", "utils.jl"))
+include(joinpath("visualize", "lines.jl"))
 include(joinpath("visualize", "2dparticles.jl"))
 include(joinpath("visualize", "containers.jl"))
 include(joinpath("visualize", "distancefields.jl"))
@@ -69,7 +70,6 @@ include(joinpath("visualize", "volume.jl"))
 include(joinpath("visualize", "axis.jl"))
 include(joinpath("visualize", "colormap.jl"))
 include(joinpath("visualize", "parametric.jl"))
-include(joinpath("visualize", "lines.jl"))
 
 include("camera.jl")
 export cubecamera

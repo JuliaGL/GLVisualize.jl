@@ -3,17 +3,21 @@
 in vec2 vertex;
 in float lastlen;
 //in float thickness;
-uniform vec4 color;
+{{color_type}} color;
 
 uniform mat4 projectionview, model;
 out vec4 g_color;
 out float g_lastlen;
 out float g_thickness;
 
+vec4 getindex(sampler2D tex, int index);
+vec4 getindex(sampler1D tex, int index);
+
 void main()
 {
 	g_lastlen 	= lastlen;
+	int index 	= gl_VertexID;
 	//g_thickness = thickness;
-	g_color 	= color;
+	g_color 	= {{color_calculation}};
 	gl_Position = projectionview*model*vec4(vertex, 0, 1);
 }
