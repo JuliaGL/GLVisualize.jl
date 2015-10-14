@@ -78,19 +78,19 @@ void main(){
     float inside        = aastep(0.0, 1.0, signed_distance);
     float outside       = abs(aastep(-1.0, 0.0, signed_distance));
 
-    if((style & TEXTURE_FILL) != 0 && inside > 0.0)
+    if(((style & TEXTURE_FILL) != 0) && inside > 0.0)
         fill_color = texture(texture_fill, vec2(o_uv.x, 1-o_uv.y));
     else
         fill_color = o_fill_color;
 
-    if(((style & FILLED) != 0 || (style & TEXTURE_FILL) != 0)){
+    if((style & (FILLED | TEXTURE_FILL)) != 0){
         final_color = mix(final_color, fill_color, inside);
     }
     if((style & OUTLINED) != 0){
         float t = aastep(0, half_stroke, signed_distance);
         final_color = mix(final_color, o_stroke_color, t);
     }
-    if((style & GLOWING) != 0 ){
+    if((style & GLOWING) != 0){
         float alpha = 1-(outside*abs(clamp(signed_distance, -1, 0))*7);
         alpha *= o_glow_color.a;
         final_color = mix(final_color, vec4(o_glow_color.rgb, alpha), outside);

@@ -15,7 +15,7 @@ GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector
 visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visualize_default(locations, s)) =
     visualize(texture_buffer(locations), s, customizations)
 
-function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, customizations=visualize_default(locations.value, s))
+function visualize(locations::Signal{Vector{Point2f0}}, s::Style, customizations=visualize_default(locations.value, s))
     start_val = texture_buffer(locations.value)
     const_lift(update!, start_val, locations)
     visualize(start_val, s, customizations)

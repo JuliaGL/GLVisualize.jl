@@ -1,0 +1,2 @@
+using GLVisualize, GLAbstraction
+OrthographicCamera(GLVisualize.ROOT_SCREEN.inputs)
