@@ -8,6 +8,7 @@ layout(triangle_strip, max_vertices = 7) out;
 
 in vec4 g_color[];
 in float g_lastlen[];
+flat in uvec2 g_id[];
 //in float g_thickness[];
 
 out vec4 f_color;
@@ -31,8 +32,7 @@ void emit_vertex(vec2 position, vec2 uv, int index)
     f_uv          = uv;
     f_color       = g_color[index];
     gl_Position   = vec4(position / resolution, 0.0, 1.0 );
-    f_id          = uvec2(0);
-
+    f_id          = g_id[index];
     EmitVertex();
 }
 #define AA_THICKNESS 3.0

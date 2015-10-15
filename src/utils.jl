@@ -38,7 +38,8 @@ end
 
 isnotempty(x) = !isempty(x)
 AND(a,b) = a&&b
-
+OR(a,b) = a||b
+export OR
 
 call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
 call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
@@ -92,3 +93,48 @@ end
 
 
 particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
+
+@enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
+
+"""
+Returns two signals, one boolean signal if clicked over `robj` and another 
+one that consists of the object clicked on and another argument indicating that it's the first click
+"""
+function clicked(robj::RenderObject, window::Screen, button::MouseButton)
+    @materialize mouse_hover, mousebuttonspressed = window.inputs
+    leftclicked = const_lift(mouse_hover, mousebuttonspressed) do mh, mbp
+        mh[1] == robj.id && mbp == Int[button]
+    end
+    clicked_on_obj = keepwhen(leftclicked, false, leftclicked)
+    clicked_on_obj = const_lift((mh, x)->(x,robj,mh), mouse_hover, leftclicked)
+    leftclicked, clicked_on_obj
+end
+
+"""
+Returns a boolean signal indicating if the mouse hovers over `robj`
+"""
+is_hovering(robj::RenderObject, window::Screen) = const_lift(window.inputs[:mouse_hover]) do mh
+    mh[1] == robj.id
+end
+
+
+"""
+Returns a signal with the difference from dragstart and current mouse position, 
+and the index from the current ROBJ id.
+"""
+function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
+    @materialize mouse_hover, mousebuttonspressed, mouseposition = window.inputs
+    start_value = (Vec2f0(0), mouse_hover.value[2], false, Vec2f0(0))
+    tmp_signal = foldl(start_value, mouse_hover, mousebuttonspressed, mouseposition) do past, mh, mbp, mpos
+        diff, dragstart_index, was_clicked, dragstart_pos = past
+        over_obj = mh[1] == robj.id
+        is_clicked = mbp == Int[button]
+        if is_clicked && was_clicked # is draggin'
+            return (dragstart_pos-mpos, dragstart_index, true, dragstart_pos)
+        elseif over_obj && is_clicked && !was_clicked # drag started
+            return (Vec2f0(0), mh[2], true, mpos)
+        end
+        return start_value
+    end
+    const_lift(getindex, tmp_signal, 1:2)
+end

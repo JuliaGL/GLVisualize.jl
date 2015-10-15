@@ -178,6 +178,10 @@ vec3 position(Rectangle rectangle, ivec2 dims, int index)
     return vec3(stretch(linear_index(dims, index), rectangle.origin, rectangle.width), 0);
 }
 
+vec4 color_lookup(float intensity, vec4 color, vec2 norm)
+{
+    return color;
+}
 
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm)
 {

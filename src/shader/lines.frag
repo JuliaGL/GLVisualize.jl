@@ -55,6 +55,6 @@ void main(){
         fragment_color   = vec4(f_color.rgb, f_color.a*aastep(0.0, 1.0, f_uv.y));;
     }
     
-    fragment_groupid = uvec2(0);
+    fragment_groupid = f_id;
 }
 

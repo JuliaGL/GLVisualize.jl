@@ -31,7 +31,8 @@ export y_partition
 export x_partition
 export loop
 export bounce
-
+export leftclicked
+export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 
 include(joinpath("display", "renderloop.jl"))
 
@@ -49,6 +50,7 @@ export GLSpriteStyle
 
 include(joinpath("edit", "color_chooser.jl"))
 include(joinpath("edit", "numbers.jl"))
+include(joinpath("edit", "line_edit.jl"))
 export vizzedit # edits some value, name should be changed in the future!
 
 include(joinpath("visualize", "shared.jl"))

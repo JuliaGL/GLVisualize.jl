@@ -16,15 +16,16 @@ function visualize_default{T <: Union{Colorant, AbstractFloat}, X}(img::Images.I
     data = merge(Dict(:dimensions=>dims), kw_args)
     visualize_default(img.data, Style{:default}(), data)
 end
-function visualize_default{T <: Union{Colorant, AbstractFloat}}(::Union{Array{T, 3}, Texture{T, 3}}, ::Style, kw_args=Dict())
+function visualize_default{T <: Union{Colorant, AbstractFloat}}(vol::Union{Array{T, 3}, Texture{T, 3}}, ::Style, kw_args=Dict())
     dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
     Dict(
         :dimensions       => dims,
         :hull             => GLUVWMesh(Cube{Float32}(Vec3f0(0), dims)),
         :light_position   => Vec3f0(0.25, 1.0, 3.0),
-        :color            => RGBA(0.9f0, 0.0f0, 0.2f0, 1f0),
+        :color            => Texture(RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)]),
         :light_intensity  => Vec3f0(15.0),
         :algorithm        => Cint(3),
+        :color_norm       => Vec2f0(minimum(vol), maximum(vol))
     )
 end
 
@@ -43,15 +44,11 @@ function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 
     data = merge(customizations, collect_for_gl(hull))
     robj = assemble_std(
         hull.vertices, data,
-        "volume.vert", "volume.frag",
+        "util.vert", "volume.vert", "volume.frag",
     )
-    empty!(robj.prerenderfunctions)
     prerender!(robj,
-        glEnable,       GL_DEPTH_TEST,
-        glDepthMask,    GL_TRUE,
         glEnable,       GL_CULL_FACE,
         glCullFace,     GL_FRONT,
-        enabletransparency
     )
     robj
 end
