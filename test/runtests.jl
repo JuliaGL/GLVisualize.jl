@@ -2,7 +2,6 @@ using ModernGL
 using FileIO, MeshIO, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes, Colors
 using Base.Test
-
 function is_ci()
 	get(ENV, "TRAVIS", "") == "true" || get(ENV, "APPVEYOR", "") == "true" || get(ENV, "CI", "") == "true"
 end
@@ -25,6 +24,7 @@ view(visualize(grid2D), w, method=:perspective)
 glClearColor(1,1,1,1)
 
 renderloop()
+
 end
 
 

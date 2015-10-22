@@ -10,7 +10,6 @@ function arbitrary_surface_data(N)
 	visualize(x, y, z, :surface)
 end
 push!(TEST_DATA, arbitrary_surface_data(100))
-
 println("Barplot")
 # Barplot
 push!(TEST_DATA, visualize(Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:50, j=1:50]))
@@ -160,27 +159,28 @@ end
 
 push!(TEST_DATA2D, image_test_data(20)...)
 
-
+s = Vec2f0(15)
 # 2D particles
 particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
 const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
 	const_lift(particle_data2D, bounce(1f0:1f0:50f0), 512))
-particle_robj = visualize(p2ddata, scale=Vec2f0(10, 10))
+particle_robj = visualize(p2ddata, scale=s)
 push!(TEST_DATA2D, particle_robj)
 
-push!(TEST_DATA2D, visualize(particle_robj[:positions], style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
-push!(TEST_DATA2D, visualize(particle_robj[:positions], style=Cint(FILLED), shape=Cint(CIRCLE)))
-push!(TEST_DATA2D, visualize(particle_robj[:positions], style=Cint(FILLED)|Cint(FILLED), shape=Cint(RECTANGLE)))
-push!(TEST_DATA2D, visualize(particle_robj[:positions], style=Cint(FILLED)|Cint(FILLED)|Cint(GLOWING), shape=Cint(ROUNDED_RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED), shape=Cint(CIRCLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED), shape=Cint(RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED)|Cint(GLOWING), shape=Cint(ROUNDED_RECTANGLE)))
 let gif = load("doge.png").data
 	
 push!(TEST_DATA2D, visualize(
 	particle_robj[:positions], 
 	style=Cint(FILLED)|Cint(FILLED)|Cint(TEXTURE_FILL), 
 	shape=Cint(ROUNDED_RECTANGLE),
-	texture_fill=Texture(gif))
+	texture_fill=Texture(gif), scale=s),
 )
 end
+
 curve_data(i) = Point2f0[Point2f0(sin(x/i)*250, x) for x=1:1024]
 push!(TEST_DATA2D, visualize(const_lift(curve_data, bounce(20f0:0.1f0:1024f0)), :lines))
 

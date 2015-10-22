@@ -8,6 +8,7 @@ using ModernGL
 using FixedSizeArrays
 using GeometryTypes
 using ColorTypes
+using Colors
 using Reactive
 using Quaternions
 using Compat
@@ -31,7 +32,9 @@ export y_partition
 export x_partition
 export loop
 export bounce
-export leftclicked
+export clicked
+export dragged_on
+export is_hovering
 export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 
 include(joinpath("display", "renderloop.jl"))
@@ -75,7 +78,7 @@ include(joinpath("visualize", "parametric.jl"))
 
 include("camera.jl")
 export cubecamera
-export Shape, CIRCLE, RECTANGLE, DISTANCEFIELD, Technique, FILLED, OUTLINED, GLOWING, TEXTURE_FILL, ROUNDED_RECTANGLE
+export Shape, CIRCLE, RECTANGLE, DISTANCEFIELD, Technique, FILLED, OUTLINED, GLOWING, TEXTURE_FILL, ROUNDED_RECTANGLE, TRIANGLE
 
 Base.precompile(glscreen, ())
 end # module

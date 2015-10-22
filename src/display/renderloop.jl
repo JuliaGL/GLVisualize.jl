@@ -25,7 +25,7 @@ function delete_selectionquery!(name::Symbol, selection, selectionquery)
 end
 immutable GLFramebuffer
     render_framebuffer:: GLuint
-    color::              Texture{RGBA{Ufixed8}, 2}
+    color::              Texture{RGBA{UFixed8}, 2}
     objectid::           Texture{Vec{2, GLushort}, 2}
     depth::              GLuint
 end
@@ -56,7 +56,7 @@ function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
     glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
 
     buffersize      = tuple(framebuffsize.value...)
-    color_buffer    = Texture(RGBA{Ufixed8},    buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
+    color_buffer    = Texture(RGBA{UFixed8},    buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
     objectid_buffer = Texture(Vec{2, GLushort}, buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer.id, 0)
@@ -118,7 +118,7 @@ function glscreen()
     global DEFAULT_FONT_FACE = newface(fn)
     global FONT_EXTENDS      = Dict{Int, FontExtent}()
     global ID_TO_CHAR        = Dict{Int, Char}()
-
+    glClearColor(1,1,1,1)
     map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
     renderloop_fun(renderloop_callback=()->nothing) = renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
     screen, renderloop_fun
@@ -130,7 +130,7 @@ function renderloop(screen, selectionquery, selection, postprocess_robj, renderl
     render_framebuffer = screen.inputs[:framebuffer].render_framebuffer
     objectid_buffer = screen.inputs[:framebuffer].objectid
     while screen.inputs[:open].value
-    	#@async Reactive.run(100)
+    	@async Reactive.run(100)
         renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
         renderloop_callback()
     end

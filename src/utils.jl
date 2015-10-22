@@ -100,7 +100,7 @@ particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AA
 Returns two signals, one boolean signal if clicked over `robj` and another 
 one that consists of the object clicked on and another argument indicating that it's the first click
 """
-function clicked(robj::RenderObject, window::Screen, button::MouseButton)
+function clicked(robj::RenderObject, button::MouseButton, window::Screen)
     @materialize mouse_hover, mousebuttonspressed = window.inputs
     leftclicked = const_lift(mouse_hover, mousebuttonspressed) do mh, mbp
         mh[1] == robj.id && mbp == Int[button]
@@ -138,3 +138,5 @@ function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
     end
     const_lift(getindex, tmp_signal, 1:2)
 end
+
+points2f0{T}(positions::Vector{T}, range::Range) = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]

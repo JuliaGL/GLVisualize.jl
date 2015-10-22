@@ -1,23 +1,22 @@
 using GLAbstraction, ModernGL, GLWindow, MeshIO, Meshes, GeometryTypes, ColorTypes, Reactive, GLFW, FixedPointNumbers, FileIO
-
 println(versioninfo())
 function checkerror()
 	err = glGetError()
 	(err != GL_NO_ERROR) && error("shit... $(GLENUM(err).name)")
 end
 GLFW.Init()
-    windowhints = [
-        (GLFW.SAMPLES,      0),
-        (GLFW.DEPTH_BITS,   0),
+windowhints = [
+    (GLFW.SAMPLES,      0),
+    (GLFW.DEPTH_BITS,   0),
 
-        (GLFW.ALPHA_BITS,   8),
-        (GLFW.RED_BITS,     8),
-        (GLFW.GREEN_BITS,   8),
-        (GLFW.BLUE_BITS,    8),
+    (GLFW.ALPHA_BITS,   8),
+    (GLFW.RED_BITS,     8),
+    (GLFW.GREEN_BITS,   8),
+    (GLFW.BLUE_BITS,    8),
 
-        (GLFW.STENCIL_BITS, 0),
-        (GLFW.AUX_BUFFERS,  0)
-    ]
+    (GLFW.STENCIL_BITS, 0),
+    (GLFW.AUX_BUFFERS,  0)
+]
 const ROOT_SCREEN = createwindow("Romeo", 1024, 1024, windowhints=windowhints, debugging=false)
 
 frag_shader = frag"""
@@ -208,16 +207,34 @@ function visualize(grid::Texture{Float32, 2}, customizations=visualize_default(g
         frag_shader
     )
     checkerror()
-    robj = instanced_renderobject(data, length(grid), Input(program), Input(AABB(Vec3f0(0), Vec3f0(1))))
+    boundingbox = Input(AABB(Vec3f0(0), Vec3f0(1)))
+    
+    robj = instanced_renderobject(data, Input(program), boundingbox, GL_TRIANGLES, grid)
     checkerror()
     robj
 end
 
-robj = visualize(Texture(rand(Float32, 81,81)))
+robj1 = visualize(Texture(rand(Float32, 100,100)))
+robj2 = visualize(Texture(rand(Float32, 100,100)))
+robj3 = visualize(Texture(rand(Float32, 100,100)))
+robj4 = visualize(Texture(rand(Float32, 100,100)))
+robj2[:model] = translationmatrix(Vec3f0(0,2,0))
+robj3[:model] = translationmatrix(Vec3f0(2,2,0))
+robj4[:model] = translationmatrix(Vec3f0(2,0,0))
+view(robj1)
+view(robj2)
+view(robj3)
+view(robj4)
+cam = collect(PerspectiveCamera(ROOT_SCREEN.inputs, Vec3f0(2), Vec3f0(0)))
+merge!(robj1.uniforms, cam)
+merge!(robj2.uniforms, cam)
+merge!(robj3.uniforms, cam)
+merge!(robj4.uniforms, cam)
 
-merge!(robj.uniforms, collect(PerspectiveCamera(ROOT_SCREEN.inputs, Vec3f0(2), Vec3f0(0))))
-
-push!(ROOT_SCREEN.renderlist, robj)
+push!(ROOT_SCREEN.renderlist, robj1)
+push!(ROOT_SCREEN.renderlist, robj2)
+push!(ROOT_SCREEN.renderlist, robj3)
+push!(ROOT_SCREEN.renderlist, robj4)
 
 const SELECTION         = Dict{Symbol, Input{Matrix{Vec{2, Int}}}}()
 const SELECTION_QUERIES = Dict{Symbol, Rectangle{Int}}()
@@ -276,15 +293,13 @@ insert_selectionquery!(:mouse_hover, const_lift(ROOT_SCREEN.inputs[:mousepositio
 end)
 
 
-
-
 global const RENDER_FRAMEBUFFER = glGenFramebuffers()
 glBindFramebuffer(GL_FRAMEBUFFER, RENDER_FRAMEBUFFER)
 
 
 framebuffsize = ROOT_SCREEN.inputs[:framebuffer_size].value
 buffersize      = tuple(framebuffsize...)
-COLOR_BUFFER    = Texture(RGBA{Ufixed8},     buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
+COLOR_BUFFER    = Texture(RGBA{UFixed8},     buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
 STENCIL_BUFFER = Texture(Vec{2, GLushort}, buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, COLOR_BUFFER.id, 0)
 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, STENCIL_BUFFER.id, 0)

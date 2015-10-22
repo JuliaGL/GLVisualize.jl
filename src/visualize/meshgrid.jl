@@ -26,7 +26,7 @@ function visualize(grid::Texture{Float32, 2}, s::Style, customizations=visualize
     ), collect_for_gl(primitive), customizations)
     assemble_instanced(
         grid, data,
-        "meshgrid.vert", "standard.frag",
+        "util.vert", "meshgrid.vert", "standard.frag",
         boundingbox=const_lift(particle_grid_bb, grid_min, grid_max, color_norm)
     )
 end

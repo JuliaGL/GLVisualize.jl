@@ -54,7 +54,8 @@ function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
         (zero(T), false, Vec2f0(0), 0, zero(T), 0),
         mousedown, inputs[:mouseposition], inputs[:mouse_hover], Input(Int(vizz.id)), Input(numberwidth+1) #plus space
     )
-    addition_vec = const_lift(first, mouse_add_drag_id)
+    addition_vec = droprepeats(const_lift(first, mouse_add_drag_id))
+
     ET      = eltype(T)
     new_num = const_lift(slide, startvalue, addition_vec, range)
 

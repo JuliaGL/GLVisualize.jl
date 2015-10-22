@@ -4,6 +4,7 @@
 #define RECTANGLE         1
 #define ROUNDED_RECTANGLE 2
 #define DISTANCEFIELD     3
+#define TRIANGLE          4
 
 #define FILLED       1
 #define OUTLINED     2
@@ -19,6 +20,17 @@ float aastep(float threshold1, float value) {
 float aastep(float threshold1, float threshold2, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value)-smoothstep(threshold2-afwidth, threshold2+afwidth, value);
+}
+
+#define M_SQRT_2 1.4142135
+float triangle(vec2 P)
+{
+    P -= 0.5;
+    float x = M_SQRT_2/2.0 * (P.x - P.y);
+    float y = M_SQRT_2/2.0 * (P.x + P.y);
+    float r1 = max(abs(x), abs(y)) - 1./(2*M_SQRT_2);
+    float r2 = P.y;
+    return -max(r1,r2);
 }
 
 float circle(vec2 uv){ 
@@ -73,7 +85,9 @@ void main(){
     	signed_distance = rounded_rectangle(o_uv, vec2(0.2), vec2(0.8));
     else if(shape == RECTANGLE)
         signed_distance = rectangle(o_uv);
-    
+    else if(shape == TRIANGLE)
+        signed_distance = triangle(o_uv);
+
     float half_stroke   = (stroke_width/2) / max(scale.x, scale.y);
     float inside        = aastep(0.0, 1.0, signed_distance);
     float outside       = abs(aastep(-1.0, 0.0, signed_distance));

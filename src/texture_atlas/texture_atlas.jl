@@ -1,16 +1,16 @@
-immutable Sprite{T} <: FixedVector{1, T}
+immutable Sprite{N, T} <: FixedVector{N, T}
 	#attribute_id::T # lookup attribute_id for attribute texture
-	_::NTuple{1, T}
+	_::NTuple{N, T}
 end
-immutable SpriteStyle{T} <: FixedVector{2, T}
+immutable SpriteStyle{N, T} <: FixedVector{N, T}
 	#color_id::T # lookup attribute_id for attribute texture
 	#technique::T
-	_::NTuple{2, T}
+	_::NTuple{N, T}
 end
 
 
-immutable SpriteAttribute{T} <: FixedVector{4, T}
-	_::NTuple{4, T}
+immutable SpriteAttribute{N, T} <: FixedVector{N, T}
+	_::NTuple{N, T}
 	#u::T
 	#v::T
 	#x_scale::T
@@ -18,9 +18,9 @@ immutable SpriteAttribute{T} <: FixedVector{4, T}
 end
 
 
-typealias GLSpriteAttribute SpriteAttribute{Float16}
-typealias GLSprite Sprite{UInt32}
-typealias GLSpriteStyle SpriteStyle{UInt16}
+typealias GLSpriteAttribute SpriteAttribute{4, Float16}
+typealias GLSprite Sprite{1, UInt32}
+typealias GLSpriteStyle SpriteStyle{2, UInt16}
 const GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE
 
 type TextureAtlas

@@ -1,4 +1,4 @@
-using GLVisualize, GLFW, GLAbstraction, Reactive, ModernGL, GLWindow, Color
+using GLVisualize, GLFW, GLAbstraction, Reactive, ModernGL, GLWindow, Colors, GeometryTypes
 
 
 # From behaviour, we understand that loading GLFW opens the window
@@ -37,47 +37,53 @@ function eval_visualize(source::AbstractString, _, visualize_screen, edit_screen
 end
 
 function init_romeo()
-    sourcecode_area = const_lift(GLVisualize.ROOT_SCREEN.area) do x
+    w, renderloop = glscreen()
+    sourcecode_area = const_lift(w.area) do x
     	Rectangle(0, 0, div(x.w, 7)*3, x.h)
     end
-    visualize_area = const_lift(GLVisualize.ROOT_SCREEN.area) do x
+    visualize_area = const_lift(w.area) do x
         Rectangle(div(x.w,7)*3, 0, div(x.w, 7)*3, x.h)
     end
     search_area = const_lift(visualize_area) do x
         Rectangle(x.x, x.y, x.w, div(x.h,10))
     end
-    edit_area = const_lift(GLVisualize.ROOT_SCREEN.area) do x
+    edit_area = const_lift(w.area) do x
     	Rectangle(div(x.w, 7)*6, 0, div(x.w, 7), x.h)
     end
 
 
-    sourcecode_screen   = Screen(GLVisualize.ROOT_SCREEN, area=sourcecode_area)
-    visualize_screen    = Screen(GLVisualize.ROOT_SCREEN, area=visualize_area)
-    search_screen       = Screen(visualize_screen,        area=search_area)
-    edit_screen         = Screen(GLVisualize.ROOT_SCREEN, area=edit_area)
+    sourcecode_screen   = Screen(w, area=sourcecode_area)
+    visualize_screen    = Screen(w, area=visualize_area)
+    search_screen       = Screen(visualize_screen, area=search_area)
+    edit_screen         = Screen(w, area=edit_area)
 
-    w_height = const_lift(GLVisualize.ROOT_SCREEN.area) do x
-    	x.h
-    end
+    w_height = const_lift(getfield, w.area, :h)
     source_offset = const_lift(w_height) do x
-        translationmatrix(Vec3(30,x-30,0))
+        translationmatrix(Vec3f0(30,x-30,0))
     end
-    w_height_search = const_lift(search_screen.area) do x
-        x.h
-    end
+    w_height_search = const_lift(getfield, search_screen.area, :h)
     search_offset = const_lift(w_height_search) do x
-        translationmatrix(Vec3(30,x-30,0))
+        translationmatrix(Vec3f0(30,x-30,0))
     end
 
-    #const sourcecode  = visualize("barplot = Float32[(sin(i/10f0) + cos(j/2f0))/4f0 \n for i=1:10, j=1:10]\n", model=source_offset, screen=sourcecode_screen)
-    barplot            = visualize(Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:10, j=1:10], screen=visualize_screen)
-    #search            = visualize("barplot\n", model=search_offset, color=rgba(0.9,0,0.2,1), screen=search_screen)
+    sourcecode  = visualize("barplot = Float32[(sin(i/10f0) + cos(j/2f0))/4f0 \n for i=1:10, j=1:10]\n", model=source_offset, styles=Texture([RGBA{U8}(0.9,1.0,1.,1)]))
+    
+    barplot     = visualize(Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:10, j=1:10])
+    search      = visualize("barplot\n", model=search_offset, styles=Texture([RGBA{U8}(0.9,1.0,1.,1)]))
 
-    push!(visualize_screen.renderlist, barplot)
+    view(barplot, visualize_screen)
+    view(search, search_screen)
+
+    background, cursor_robj, text_sig = vizzedit(sourcecode[:glyphs], sourcecode, w.inputs)
+    view(background, sourcecode_screen)
+    view(sourcecode, sourcecode_screen)
+    view(cursor_robj, sourcecode_screen)
+
     glClearColor(0,0,0,0)
+
+    renderloop()
 end
 
 init_romeo()
 
-renderloop()
 

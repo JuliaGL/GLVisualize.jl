@@ -16,13 +16,13 @@ function visualize_default{T <: Union{Colorant, AbstractFloat}, X}(img::Images.I
     data = merge(Dict(:dimensions=>dims), kw_args)
     visualize_default(img.data, Style{:default}(), data)
 end
-function visualize_default{T <: Union{Colorant, AbstractFloat}}(vol::Union{Array{T, 3}, Texture{T, 3}}, ::Style, kw_args=Dict())
+function visualize_default{T <: Union{Colorant, AbstractFloat}}(vol::Union{Array{T, 3}, Texture{T, 3}}, s::Style, kw_args=Dict())
     dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
     Dict(
         :dimensions       => dims,
         :hull             => GLUVWMesh(Cube{Float32}(Vec3f0(0), dims)),
         :light_position   => Vec3f0(0.25, 1.0, 3.0),
-        :color            => Texture(RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)]),
+        :color            => default(Vector{RGBA}, s),
         :light_intensity  => Vec3f0(15.0),
         :algorithm        => Cint(3),
         :color_norm       => Vec2f0(minimum(vol), maximum(vol))
@@ -31,17 +31,18 @@ end
 
 
 @visualize_gen Array{Float32, 3} Texture Style
-@visualize_gen Array{Gray{Ufixed8}, 3} Texture Style
+@visualize_gen Array{Gray{UFixed8}, 3} Texture Style
 
 to_modelspace(x, model) = Vec3f0(inv(model)*Vec4f0(x...,1))
     
 visualize{T <: Union{Colorant, AbstractFloat}, X}(img::Images.Image{T, 3, X}, s::Style, kw_args=visualize_default(img, s)) = 
     visualize(map(Float32, img.data), s, kw_args)
 
-function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 3}, s::Style, customizations=visualize_default(intensities, s))
-    @materialize! hull = customizations # pull out variables to avoid duplications
-    customizations[:intensities] = intensities
-    data = merge(customizations, collect_for_gl(hull))
+function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 3}, s::Style, data=visualize_default(intensities, s))
+    @materialize! hull, color = data # pull out variables to avoid duplications
+    data[:intensities] = intensities
+    data[:color] = gl_convert(color)
+    data = merge(data, collect_for_gl(hull))
     robj = assemble_std(
         hull.vertices, data,
         "util.vert", "volume.vert", "volume.frag",

@@ -1,11 +1,11 @@
-visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, ::Style{:lines}, kw_args=Dict()) = Dict(
-    :shape                  => Cint(RECTANGLE),
-    :style                  => Cint(FILLED),
-    :transparent_picking    => false,
-    :preferred_camera       => :orthographic_pixel,
-    :color                  => RGBA(1f0, 0f0, 0f0, 1f0),
-    :thickness              => 4f0,
-    :dotted                 => false
+visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, s::Style{:lines}, kw_args=Dict()) = Dict(
+    :shape               => RECTANGLE,
+    :style               => FILLED,
+    :transparent_picking => false,
+    :preferred_camera    => :orthographic_pixel,
+    :color               => default(RGBA, s),
+    :thickness           => 2f0,
+    :dotted              => false
 )
 
 function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value,s))
@@ -27,15 +27,24 @@ function lastlen(points)
     end
     result
 end
-function visualize{T}(positions::GLBuffer{Point{2, T}}, ll::GLBuffer{T}, maxlength, s::Style{:lines}, data=visualize_default(locations.value,s))
+function visualize{T}(positions::GLBuffer{Point{2, T}}, ll::GLBuffer{T}, maxlength, s::Style{:lines}, data=visualize_default(positions,s))
     ps = gpu_data(positions)
     data[:vertex]    = positions
     data[:lastlen]   = ll
     data[:maxlength] = maxlength
+    data[:max_primitives] = Cint(length(positions)-4)
 
     program = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag", attributes=data)
     std_renderobject( 
         data, program,
         Input(AABB{Float32}(ps)), GL_LINE_STRIP_ADJACENCY 
     )
+end
+
+
+function visualize{T <: AbstractFloat}(positions::Vector{T}, range::Range, s::Style{:lines}, data=visualize_default(positions,s))
+    length(positions) != length(range) && throw(
+        DimensionMismatsch("length of $(typeof(positions)) $(length(positions)) and $(typeof(range)) $(length(range)) must match")
+    )
+    visualize(points2f0(positions, range), s, data)
 end

@@ -40,6 +40,11 @@ vec4 color_lookup(float intensity, vec4 color, vec2 norm)
     return color;
 }
 
+vec4 color_lookup(float intensity, samplerBuffer color_ramp, vec2 norm)
+{
+    return texelFetch(color_ramp, int(_normalize(intensity, norm.x, norm.y)*textureSize(color_ramp)));
+}
+
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm)
 {
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));

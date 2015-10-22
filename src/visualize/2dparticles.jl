@@ -1,14 +1,14 @@
-GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, ::Style, kw_args=Dict()) = Dict(
+GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, s::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(-0.5f0, -0.5f0, 1f0, 1f0)),
     :scale              => Vec2f0(20),
     :shape              => RECTANGLE,
-    :style              => Cint(OUTLINED) | Cint(FILLED),
+    :style              => OUTLINED|FILLED,
     :stroke_width       => 4f0,
     :glow_width         => 4f0,
     :transparent_picking => false,
-    :color              => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
-    :stroke_color       => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
-    :glow_color         => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :color              => default(RGBA, s),
+    :stroke_color       => RGBA{Float32}(0.9, 0.9, 1.0, 1.0),
+    :glow_color         => RGBA{Float32}(0.,0.,0., 0.7),
     :preferred_camera   => :orthographic_pixel
 )
 
