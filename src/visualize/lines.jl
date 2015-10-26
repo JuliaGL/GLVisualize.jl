@@ -1,4 +1,4 @@
-visualize_default{T <: Point}(::Union{Texture{T, 1}, Vector{T}}, s::Style{:lines}, kw_args=Dict()) = Dict(
+visualize_default{T <: Real}(::VecTypes{Point{2, T}}, s::Style{:lines}, kw_args=Dict()) = Dict(
     :shape               => RECTANGLE,
     :style               => FILLED,
     :transparent_picking => false,
@@ -37,7 +37,7 @@ function visualize{T <: Point, FT <: AbstractFloat}(positions::GLBuffer{T}, ll::
     program = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag", attributes=data)
     std_renderobject(
         data, program,
-        Signal(AABB{Float32}(ps)), GL_LINE_STRIP_ADJACENCY 
+        Signal(AABB{Float32}(ps)), GL_LINE_STRIP_ADJACENCY
     )
 end
 

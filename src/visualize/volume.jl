@@ -1,11 +1,12 @@
-visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Texture{T, 3}}, s::Style{:iso}, kw_args=Dict()) = merge(
+typealias VolumeElTypes Union{Colorant, AbstractFloat}
+visualize_default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, kw_args=Dict()) = merge(
     visualize_default(a, Style{:default}(), kw_args), Dict(:isovalue => 0.5f0, :algorithm  => Cint(2))
 )
-visualize_default{T <: Union{Colorant, AbstractFloat}}(a::Union{Array{T, 3}, Texture{T, 3}}, s::Style{:absorption}, kw_args=Dict()) = merge(
+visualize_default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, kw_args=Dict()) = merge(
     visualize_default(a, Style{:default}(), kw_args), Dict(:absorption => 1f0, :algorithm  => Cint(1))
 )
 
-function visualize_default{T <: Union{Colorant, AbstractFloat}, X}(img::Images.Image{T, 3, X}, ::Style, kw_args=Dict())
+function visualize_default{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, ::Style, kw_args=Dict())
     dims = Vec3f0(1)
     if haskey(img.properties,"pixelspacing")
         spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
@@ -16,7 +17,7 @@ function visualize_default{T <: Union{Colorant, AbstractFloat}, X}(img::Images.I
     data = merge(Dict(:dimensions=>dims), kw_args)
     visualize_default(img.data, Style{:default}(), data)
 end
-function visualize_default{T <: Union{Colorant, AbstractFloat}}(vol::Union{Array{T, 3}, Texture{T, 3}}, s::Style, kw_args=Dict())
+function visualize_default{T <: VolumeElTypes}(vol::VolumeTypes{T}, s::Style, kw_args=Dict())
     dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
     Dict(
         :dimensions       => dims,
@@ -30,26 +31,20 @@ function visualize_default{T <: Union{Colorant, AbstractFloat}}(vol::Union{Array
 end
 
 
-@visualize_gen Array{Float32, 3} Texture Style
-@visualize_gen Array{Gray{UFixed8}, 3} Texture Style
-
-to_modelspace(x, model) = Vec3f0(inv(model)*Vec4f0(x...,1))
-    
 visualize{T <: Union{Colorant, AbstractFloat}, X}(img::Images.Image{T, 3, X}, s::Style, kw_args=visualize_default(img, s)) = 
     visualize(map(Float32, img.data), s, kw_args)
 
 function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 3}, s::Style, data=visualize_default(intensities, s))
     @materialize! hull, color = data # pull out variables to avoid duplications
     data[:intensities] = intensities
-    data[:color] = gl_convert(color)
     data = merge(data, collect_for_gl(hull))
     robj = assemble_std(
         hull.vertices, data,
         "util.vert", "volume.vert", "volume.frag",
     )
     prerender!(robj,
-        glEnable,       GL_CULL_FACE,
-        glCullFace,     GL_FRONT,
+        glEnable,   GL_CULL_FACE,
+        glCullFace, GL_FRONT,
     )
     robj
 end

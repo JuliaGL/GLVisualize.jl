@@ -1,6 +1,6 @@
 visualize_default(::Shader, ::Style, kw_args=Dict()) = Dict(
-    :color            => RGBA{Float32}(0,0,0,1),
-    :primitive        => GLUVMesh2D(SimpleRectangle{Float32}(0f0,0f0,1f0, 1f0)),
+    :color            => default(RGBA),
+    :primitive        => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,1f0, 1f0)),
     :preferred_camera => :orthographic_pixel
 )
 

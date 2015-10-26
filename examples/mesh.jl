@@ -1,4 +1,3 @@
-# taken from http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html#mayavi.mlab.mesh
 dphi, dtheta = pi/250.0f0, pi/250.0f0
 function mgrid(dim1, dim2)
     X = [i for i in dim1, j in dim2]
@@ -18,5 +17,5 @@ z = r.*sin(phi).*sin(theta)
 
 using GLVisualize, GLAbstraction
 w,r = glscreen()
-view(visualize(x,y,z, :surface))
+view(visualize((x,y,z), :surface))
 r()

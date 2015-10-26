@@ -41,13 +41,6 @@ AND(a,b) = a&&b
 OR(a,b) = a||b
 export OR
 
-call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
-call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
-
-
-
-call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
-call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 
 function GLVisualizeShader(shaders...; attributes...)
     shaders = map(shader -> load(joinpath(shaderdir(), shader)), shaders)
@@ -90,9 +83,6 @@ function x_partition(area, percent)
     return const_lift(first, p), const_lift(last, p)
 end
 
-
-
-particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
 
 @enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
 

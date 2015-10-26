@@ -11,9 +11,6 @@ uniform sampler2D y;
 uniform sampler2D z;
 
 
-uniform vec2 grid_min;
-uniform vec2 grid_max;
-
 uniform vec3 scale;
 
 uniform mat4 view, model, projection;

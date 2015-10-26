@@ -58,9 +58,9 @@ function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
     buffersize      = tuple(framebuffsize.value...)
     color_buffer    = Texture(RGBA{UFixed8},    buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
     objectid_buffer = Texture(Vec{2, GLushort}, buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
-    depth_buffer    = Texture(Float32, buffersize, 
-        internalformat  = GL_DEPTH_COMPONENT32F, 
-        format          = GL_DEPTH_COMPONENT, 
+    depth_buffer    = Texture(Float32, buffersize,
+        internalformat  = GL_DEPTH_COMPONENT32F,
+        format          = GL_DEPTH_COMPONENT,
         minfilter=:nearest, x_repeat=:clamp_to_edge
     )
 
@@ -78,7 +78,7 @@ export glscreen
 function glscreen(;name="GLVisualize",
     resolution=nothing,
     debugging=false)
-	
+
 
     windowhints = [
         (GLFW.SAMPLES,      0),

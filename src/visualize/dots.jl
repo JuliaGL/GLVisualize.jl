@@ -1,29 +1,24 @@
-function visualize_default{T}(::Vector{Point{3, T}}, s::Style{:dots}, kw_args...)
-    color = get(kw_args[1], :color, default(RGBA, s))
-    delete!(kw_args[1], :color)
-    color = texture_or_scalar(color)
-    Dict(
-        :color       => color,
-        :point_size  => 1f0
-    )
-end
+visualize_default{T}(::Vector{Point{3, T}}, ::Style{:dots}, kw_args=Dict()) = Dict(
+    :color      => default(RGBA),
+    :point_size => 1f0
+)
 
-@visualize_gen Vector{Point{3, Float32}} GLBuffer Style{:dots}
+visualize{T}(x::Vector{Point{3, T}}, s::Style{:dots}, data=visualize_default(positions, s)) =
+    visualize(gl_convert(GLBuffer, x), s, data)
+
 
 function visualize{T}(
-        positions::GLBuffer{Point{3, T}}, 
-        s::Style{:dots}, 
-        data=visualize_default(positions, s)
+        positions::GLBuffer{Point{3, T}},
+        s::Style{:dots},
+        parameters=visualize_default(positions, s)
     )
-    @materialize! point_size = data
-    data[:vertex] = positions
+    @materialize! point_size = parameters
+    parameters[:vertex] = positions
     robj = assemble_std(
-        positions, data,
+        positions, parameters,
         "dots.vert", "dots.frag",
         primitive=GL_POINTS
     )
     prerender!(robj, glPointSize, point_size)
     robj
 end
-
-

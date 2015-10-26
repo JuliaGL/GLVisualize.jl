@@ -1,9 +1,10 @@
 Base.minimum(t::Texture) = minimum(gpu_data(t))
 Base.maximum(t::Texture) = maximum(gpu_data(t))
 
-function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, s::Style{:surface}, kw_args...)
-    grid_min    = get(kw_args[1], :grid_min, Vec2f0(-1, -1))
-    grid_max    = get(kw_args[1], :grid_max, Vec2f0( 1,  1))
+
+function visualize_default{T <: AbstractFloat}(grid::MatTypes{T}, ::Style{:surface}, kw_args=Dict())
+    grid_min    = get(kw_args, :grid_min, Vec2f0(-1, -1))
+    grid_max    = get(kw_args, :grid_max, Vec2f0( 1,  1))
     grid_length = grid_max - grid_min
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0)
     Dict(
@@ -12,17 +13,19 @@ function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, s:
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :color_norm => Vec2f0(minimum(grid), maximum(grid)),
-        :scale      => scale .* Vec3f0(grid_length..., 1f0)
+        :scale      => scale .* Vec3f0(grid_length..., 1f0),
+        :preferred_camera => :perspective,
+        :model            => Input(eye(Mat4f0)),
+        :light            => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
     )
 end
 
 
-function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations=visualize_defaults(grid, s))
+function visualize{T <: AbstractFloat}(grid::Texture{T, 2}, s::Style{:surface}, customizations=visualize_default(grid, s))
     @materialize! color, primitive = customizations
     @materialize grid_min, grid_max, color_norm = customizations
     data = merge(Dict(
-        :z              => grid,
-        :color          => Texture(color),
+        :z => grid,
     ), collect_for_gl(primitive), customizations)
 
     bb = const_lift(particle_grid_bb, grid_min, grid_max, color_norm) # This is not accurate. color_norm doesn't need to reflect the real height. also it doesn't get recalculated when the texture changes.
@@ -38,27 +41,14 @@ end
 
 #Surface from x,y,z matrices
 
-visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, style=:default; kw_args...) = visualize(x,y,z, Style{style}(), visualize_default(z, style, kw_args))
 
-
-#Can't be handled by the @gen_visualize macro
-function visualize{T <: Signal{Matrix{Float32}}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z.value, s))
-    xt, yt, zt = Texture(x.value), Texture(y.value), Texture(z.value)
-    preserve(const_lift(update!, xt, x))
-    preserve(const_lift(update!, yt, y))
-    preserve(const_lift(update!, yt, y))
-    visualize(xt, yt, zt, s, customizations)
-end
-visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s)) =
-    visualize(Texture(x),Texture(y), Texture(z), s, customizations)
-
-function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z, s))
+function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_default(z, s))
     @materialize! color, primitive = customizations
     data = merge(Dict(
-        :x              => x,
-        :y              => y,
-        :z              => z,
-        :color          => Texture(color)
+        :x      => x,
+        :y      => y,
+        :z      => z,
+        :color  => Texture(color)
     ), collect_for_gl(primitive), customizations)
 
     min_x, min_y, min_z = minimum(x), minimum(y), minimum(z)
