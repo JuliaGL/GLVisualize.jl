@@ -1,4 +1,4 @@
-visualize_default{T}(::Vector{Point{3, T}}, ::Style{:dots}, kw_args=Dict()) = Dict(
+visualize_default{T <: Point{3}}(::Vector{T}, ::Style{:dots}, kw_args=Dict()) = Dict(
     :color      => default(RGBA),
     :point_size => 1f0
 )

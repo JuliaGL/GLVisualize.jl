@@ -1,14 +1,16 @@
-visualize_default(::AABB{Float32}, ::Style{:grid}, kw_args=Dict()) = Dict(
-    :bg_colorc =>  RGBA{Float32}(0.8,0.8,0.8,1.0),
-    :grid_color => RGBA{Float32}(0.9,0.9,0.9,1.0),
-    :grid_thickness => Vec3f0(2), 
-    :gridsteps => Vec3f0(5), 
+_default(::Union{GLPlainMesh, Geometry}, ::Style{:grid}, kw_args=Dict()) = Dict(
+    :color          => default(RGBA),
+    :bg_colorc      => default(RGBA, s, 2),
+    :grid_thickness => Vec3f0(2),
+    :gridsteps      => Vec3f0(5),
 )
 
-function visualize(c::AABB{Float32}, ::Style{:grid}, default)
-    primitive   = GLPlainMesh(c)
-    data        = merge(default, collect_for_gl(primitive))
-    robj        = GLVisualize.assemble_std(
+visualize(g::Geometry, s::Style{:grid}, data=visualize_default(g, s)) = 
+    visualize(GLPlainMesh(g), s, data)
+
+function visualize(primitive::GLPlainMesh, ::Style{:grid}, data)
+    merge!(data, collect_for_gl(primitive))
+    robj = GLVisualize.assemble_std(
         vertices(primitive), data,
         "grid.vert", "grid.frag",
         boundingbox=Signal(c)

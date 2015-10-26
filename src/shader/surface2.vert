@@ -1,9 +1,10 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
+
 in vec2 vertices;
 
 uniform vec3 light[4];
-uniform sampler1D color;
+{{color_type}} color;
 uniform vec2 color_norm;
 
 uniform sampler2D x;
@@ -73,14 +74,16 @@ void main()
 {
 	ivec2 dims 		= textureSize(z, 0);
 	vec3 pos;
-	pos.x 			= linear_texture(x, gl_InstanceID, vertices).x;
-	pos.y 			= linear_texture(y, gl_InstanceID, vertices).x;
-	pos.z 			= linear_texture(z, gl_InstanceID, vertices).x;
-	//pos 			+= vec3(vertices*scale.xy, 0.0);
+	int index 		= gl_InstanceID;
+
+	pos.x 			= linear_texture(x, index, vertices).x;
+	pos.y 			= linear_texture(y, index, vertices).x;
+	pos.z 			= linear_texture(z, index, vertices).x;
+
 	vec4 instance_color = color_lookup(pos.z, color, color_norm);
-	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
+	vec3 normalvec 		= getnormal(z, linear_index(dims, index, vertices));
 	render(pos, normalvec, instance_color, view * model, projection, light);
-	o_id                = uvec2(objectid, gl_InstanceID+1);
+	o_id                = uvec2(objectid, index+1);
 }
 
 

@@ -1,3 +1,7 @@
+# As long as we don't calculate bounding boxes on the gpu, this needs to do:
+Base.minimum(t::Texture) = minimum(gpu_data(t))
+Base.maximum(t::Texture) = maximum(gpu_data(t))
+
 call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
 call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
 

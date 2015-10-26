@@ -49,7 +49,7 @@ type TextureAtlas
 			Dict{Any, Int}(),
 			1,
 			images,
-			GPUVector(texture_buffer(GLSpriteAttribute[]))
+			GPUVector(TextureBuffer(GLSpriteAttribute[]))
 		)
 	end
 end
@@ -61,7 +61,7 @@ const local TEXTURE_ATLAS = TextureAtlas[]
 get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
 end
 
-Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do 
+Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do
 	uv, rect, extent, real_width = render(glyph, font, texture_atlas)
 	tex_size 			= Vec2f0(size(texture_atlas.images))
 	uv_start 			= Vec2f0(uv.x, uv.y)
@@ -71,11 +71,11 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	real_start 			= uv_start + halfpadding # include padding
 	relative_start 		= real_start ./ tex_size # use normalized texture coordinates
 	relative_width 		= real_width ./ tex_size
-	
+
 	bearing 			= extent.horizontal_bearing
 	attributes 			= GLSpriteAttribute[
 		GLSpriteAttribute(relative_start..., relative_width...), # last remaining digits are optional, so we use them to cache this calculation
-		GLSpriteAttribute(bearing[1], -(real_heightpx-bearing[2]), extent.advance...), 
+		GLSpriteAttribute(bearing[1], -(real_heightpx-bearing[2]), extent.advance...),
 	]
 	i = texture_atlas.index
 	push!(texture_atlas.attributes, attributes)
@@ -83,20 +83,20 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	i0 					= i-1# zero indexed for OpenGL and ascii compatibility
 	FONT_EXTENDS[i0] 	= extent # extends get saved for the attribute id
 	ID_TO_CHAR[i0] 		= glyph
-	return i0 
+	return i0
 end
 
 
-Base.get!(texture_atlas::TextureAtlas, glyphs, font) = 
+Base.get!(texture_atlas::TextureAtlas, glyphs, font) =
 	map(glyph->get!(texture_atlas, glyph, font), collect(glyphs))
 
 map_fonts(
-		text, 
-		font 			= DEFAULT_FONT_FACE, 
+		text,
+		font 			= DEFAULT_FONT_FACE,
         texture_atlas 	= get_texture_atlas()
         ) = get!(texture_atlas, text, font)
-get_font!(char::Char, 
-			font 			= DEFAULT_FONT_FACE, 
+get_font!(char::Char,
+			font 			= DEFAULT_FONT_FACE,
 	        texture_atlas 	= get_texture_atlas()
         ) = get!(texture_atlas, char, font)
 
@@ -112,11 +112,11 @@ function sdistancefield(img, min_size=32)
 		if checkbounds(Bool, size(img), x,y)
 			img[x,y] >  0.5
 		else
-			false 
+			false
 		end
 	end for i=1:w, j=1:h]
 	sd = sdf(in_or_out)
-	for i=1:restrict_steps 
+	for i=1:restrict_steps
 		w1, h1 = Images.restrict_size(w1), Images.restrict_size(h1)
 		sd = Images.restrict(sd) #downsample
 	end
@@ -143,4 +143,3 @@ function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_
     ta.images[uv] = sd
     uv, rect, extent, real_size
 end
-

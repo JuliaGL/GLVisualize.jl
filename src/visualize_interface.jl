@@ -1,7 +1,11 @@
-
 typealias VecTypes{T} Union{Vector{T}, Texture{T}, Signal{Vector{T}}}
 typealias MatTypes{T} Union{Matrix{T}, Texture{T, 2}, Signal{Matrix{T}}}
 typealias VolumeTypes{T} Union{Array{T, 3}, Texture{T, 3}, Signal{Array{T, 3}}}
+
+
+typealias VecOrSig{T} Union{Vector{T}, Signal{Vector{T}}}
+typealias MatOrSig{T} Union{Matrix{T}, Signal{Matrix{T}}}
+typealias VolumeOrSig{T} Union{Array{T, 3}, Signal{Array{T, 3}}}
 
 visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)),
 	which either means the implementation is incomplete or not implemented yet.
@@ -9,32 +13,26 @@ visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("
 	visualize(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => RenderObject""")
 
 function visualize_default(
-		value::Any, style::Symbol, kw_args::Dict{Symbol, Any}, 
+		value::Any, style::Symbol, kw_args::Dict{Symbol, Any},
 		defaults=Dict(
 		    :model      	  => Signal(eye(Mat4f0)),
 		    :light      	  => Signal(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
 		    :preferred_camera => :perspective
 		)
 	)
-	parameters_calculated = visualize_default(value, Style{style}(), parameters_dict)
+	parameters_calculated = _default(value, Style{style}(), parameters_dict)
 	merge(defaults, parameters_calculated, parameters_dict)
 end
 
-"""
-gl_convert needs some exceptions for GLVisualize.
-gl_convert just converts everything to native OpenGL types.
-E.g. Vector{Float64} -> GLBuffer{Float32}, Vec{3, Int} --> Vec{3, Cint}
-"""
-GLAbstraction.gl_convert{T <: Vec}(x::Tuple) = gl_convert(x, minfilter=:nearest, x_repeat=:clamp_to_edge)
 
 """
 Creates a default visualization for any value.
 The dafaults can be customized via the key word arguments and the style parameter.
-The style can change the the look completely (e.g points displayed as lines, or particles), 
+The style can change the the look completely (e.g points displayed as lines, or particles),
 while the key word arguments just alter the parameters of one visualization.
 Always returns a context, which can be displayed on a window via view(::Context, [display]).
 """
-visualize(value::Any, style::Symbol=:default; kw_args...) = 
+visualize(value::Any, style::Symbol=:default; kw_args...) =
     visualize(value::Any, Style{style}, Dict{Symbol, Any}(kw_args)) # convert to internally used format
 
 function visualize(value::Any, style::Style, parameters::Dict)
@@ -42,7 +40,7 @@ function visualize(value::Any, style::Style, parameters::Dict)
 	visualize(
 		gl_convert(value),
 		style,
-		visualize_default(gpu_value, style, parameters)
+		visualize_default(value, style, parameters)
 	)::Context
 end
 

@@ -1,12 +1,18 @@
 typealias VolumeElTypes Union{Colorant, AbstractFloat}
-visualize_default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, kw_args=Dict()) = merge(
-    visualize_default(a, Style{:default}(), kw_args), Dict(:isovalue => 0.5f0, :algorithm  => Cint(2))
-)
-visualize_default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, kw_args=Dict()) = merge(
-    visualize_default(a, Style{:default}(), kw_args), Dict(:absorption => 1f0, :algorithm  => Cint(1))
-)
 
-function visualize_default{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, ::Style, kw_args=Dict())
+_default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, kw_args=Dict()) = merge(
+    visualize_default(a, Style{:default}(), kw_args), Dict(
+        :isovalue => 0.5f0, 
+        :algorithm  => Cint(2)
+))
+
+_default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, kw_args=Dict()) = merge(
+    visualize_default(a, Style{:default}(), kw_args), Dict(
+        :absorption => 1f0, 
+        :algorithm  => Cint(1)
+))
+
+function _default{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, ::Style, kw_args=Dict())
     dims = Vec3f0(1)
     if haskey(img.properties,"pixelspacing")
         spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
@@ -17,10 +23,9 @@ function visualize_default{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, ::
     data = merge(Dict(:dimensions=>dims), kw_args)
     visualize_default(img.data, Style{:default}(), data)
 end
-function visualize_default{T <: VolumeElTypes}(vol::VolumeTypes{T}, s::Style, kw_args=Dict())
-    dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
+function _default{T <: VolumeElTypes}(vol::VolumeTypes{T}, s::Style, kw_args=Dict())
+    dims = get!(kw_args, :dimensions, Vec3f0(1))
     Dict(
-        :dimensions       => dims,
         :hull             => GLUVWMesh(Cube{Float32}(Vec3f0(0), dims)),
         :light_position   => Vec3f0(0.25, 1.0, 3.0),
         :color            => default(Vector{RGBA}, s),
@@ -31,11 +36,11 @@ function visualize_default{T <: VolumeElTypes}(vol::VolumeTypes{T}, s::Style, kw
 end
 
 
-visualize{T <: Union{Colorant, AbstractFloat}, X}(img::Images.Image{T, 3, X}, s::Style, kw_args=visualize_default(img, s)) = 
-    visualize(map(Float32, img.data), s, kw_args)
+visualize{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, s::Style, data=visualize_default(img, s)) = 
+    visualize(gl_convert(img.data), s, data)
 
 function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 3}, s::Style, data=visualize_default(intensities, s))
-    @materialize! hull, color = data # pull out variables to avoid duplications
+    @materialize! hull = data # pull out variables to avoid duplications
     data[:intensities] = intensities
     data = merge(data, collect_for_gl(hull))
     robj = assemble_std(
