@@ -36,15 +36,14 @@ function _default{T <: VolumeElTypes}(vol::VolumeTypes{T}, s::Style, kw_args=Dic
 end
 
 
-visualize{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, s::Style, data=visualize_default(img, s)) = 
+visualize{T <: VolumeElTypes, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict) = 
     visualize(gl_convert(img.data), s, data)
 
-function visualize{T <: Union{Colorant, AbstractFloat}}(intensities::Texture{T, 3}, s::Style, data=visualize_default(intensities, s))
+function _visualize{T <: VolumeElTypes}(intensities::Texture{T, 3}, s::Style, data::Dict)
     @materialize! hull = data # pull out variables to avoid duplications
     data[:intensities] = intensities
-    data = merge(data, collect_for_gl(hull))
     robj = assemble_std(
-        hull.vertices, data,
+        hull, data,
         "util.vert", "volume.vert", "volume.frag",
     )
     prerender!(robj,

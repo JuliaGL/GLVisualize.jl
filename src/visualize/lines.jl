@@ -23,7 +23,7 @@ function lastlen(points)
     result
 end
 
-function visualize{T <: Point{2}}(locations::Signal{Vector{T}}}, s::style"lines", data)
+function visualize{T <: Point{2}}(locations::Signal{Vector{T}}, s::style"lines", data)
     if dotted
         ll = const_lift(lastlen, locations)
         data[maxlength] = const_lift(last, ll)

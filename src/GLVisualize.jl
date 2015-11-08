@@ -38,6 +38,7 @@ export is_hovering
 export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 
 include(joinpath("display", "renderloop.jl"))
+include("boundingbox.jl")
 
 
 include("visualize_interface.jl")
@@ -65,11 +66,9 @@ include(joinpath("visualize", "distancefields.jl"))
 include(joinpath("visualize", "dots.jl"))
 include(joinpath("visualize", "image.jl"))
 include(joinpath("visualize", "mesh.jl"))
-include(joinpath("visualize", "meshgrid.jl"))
 include(joinpath("visualize", "particles.jl"))
 include(joinpath("visualize", "surface.jl"))
 include(joinpath("visualize", "text.jl"))
-include(joinpath("visualize", "vectorfield.jl"))
 include(joinpath("visualize", "videos.jl"))
 include(joinpath("visualize", "volume.jl"))
 include(joinpath("visualize", "axis.jl"))

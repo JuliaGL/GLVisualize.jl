@@ -33,7 +33,7 @@ while the key word arguments just alter the parameters of one visualization.
 Always returns a context, which can be displayed on a window via view(::Context, [display]).
 """
 visualize(value::Any, style::Symbol=:default; kw_args...) =
-    visualize(value::Any, Style{style}, Dict{Symbol, Any}(kw_args)) # convert to internally used format
+    visualize(value::Any, Style{style}(), Dict{Symbol, Any}(kw_args)) # convert to internally used format
 
 function visualize(value::Any, style::Style, parameters::Dict)
     parameters[:origin] = value # preserve origin value... maybe this should be via weak reference?

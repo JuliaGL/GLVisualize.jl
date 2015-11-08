@@ -1,11 +1,11 @@
-_default(::Union{GLPlainMesh, Geometry}, ::Style{:grid}, kw_args=Dict()) = Dict(
+_default(::Union{GLPlainMesh, GeometryPrimitive}, ::Style{:grid}, kw_args=Dict()) = Dict(
     :color          => default(RGBA),
     :bg_colorc      => default(RGBA, s, 2),
     :grid_thickness => Vec3f0(2),
     :gridsteps      => Vec3f0(5),
 )
 
-visualize(g::Geometry, s::Style{:grid}, data=visualize_default(g, s)) = 
+visualize(g::GeometryPrimitive, s::Style{:grid}, data=visualize_default(g, s)) =
     visualize(GLPlainMesh(g), s, data)
 
 function visualize(primitive::GLPlainMesh, ::Style{:grid}, data)

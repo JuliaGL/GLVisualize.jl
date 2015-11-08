@@ -1,8 +1,3 @@
-type Grid{T}
-    from::Range{T}
-    to::Range{T}
-end
-
 visualize{T <: AbstractFloat}(t::Tuple{MatTypes{T}, Range, Range}, style) = visualize((t[1], Grid(t[2], t[3])), style)
 
 
@@ -34,7 +29,6 @@ function visualize{T <: AbstractFloat}(grid::Texture{T, 2}, s::Style{:surface}, 
         boundingbox=bb
     )
 end
-
 
 
 #Surface from x,y,z matrices
