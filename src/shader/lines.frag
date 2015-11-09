@@ -33,7 +33,7 @@ float circle(vec2 uv){
 float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
 {
     vec2 d = max(tl-uv, uv-br);
-    return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl);
+    return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
 
 out uvec2 fragment_groupid;
