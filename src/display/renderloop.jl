@@ -130,7 +130,6 @@ function renderloop(screen, selectionquery, selection, postprocess_robj, renderl
     render_framebuffer = screen.inputs[:framebuffer].render_framebuffer
     objectid_buffer = screen.inputs[:framebuffer].objectid
     while screen.inputs[:open].value
-    	@async Reactive.run(100)
         renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
         renderloop_callback()
     end

@@ -165,7 +165,11 @@ particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1
 const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
 	const_lift(particle_data2D, bounce(1f0:1f0:50f0), 512))
 particle_robj = visualize(p2ddata, scale=s)
+
+
+
 push!(TEST_DATA2D, particle_robj)
+println(particle_robj[:positions])
 
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED), shape=Cint(CIRCLE)))
