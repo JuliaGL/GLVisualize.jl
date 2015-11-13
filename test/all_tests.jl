@@ -169,8 +169,6 @@ particle_robj = visualize(p2ddata, scale=s)
 
 
 push!(TEST_DATA2D, particle_robj)
-println(particle_robj[:positions])
-
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED), shape=Cint(CIRCLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED), shape=Cint(RECTANGLE)))
