@@ -48,17 +48,18 @@ function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
     vizz                = visualize(printforslider(startvalue, numberwidth))
     mbutton_clicked     = inputs[:mousebuttonspressed]
 
-    mousedown           = lift(isnotempty, mbutton_clicked)
-    mouse_add_drag_id   = foldl(
+    mousedown           = const_lift(isnotempty, mbutton_clicked)
+    mouse_add_drag_id   = foldp(
         add_mouse_drags,
         (zero(T), false, Vec2f0(0), 0, zero(T), 0),
         mousedown, inputs[:mouseposition], inputs[:mouse_hover], Input(Int(vizz.id)), Input(numberwidth+1) #plus space
     )
-    addition_vec = lift(first, mouse_add_drag_id)
-    ET      = eltype(T)
-    new_num = lift(slide, startvalue, addition_vec, range)
+    addition_vec = droprepeats(const_lift(first, mouse_add_drag_id))
 
-    new_num_gl = lift(num2glstring, new_num, numberwidth)
-    lift(update!, vizz[:glyphs], new_num_gl)
+    ET      = eltype(T)
+    new_num = const_lift(slide, startvalue, addition_vec, range)
+
+    new_num_gl = const_lift(num2glstring, new_num, numberwidth)
+    const_lift(update!, vizz[:glyphs], new_num_gl)
     return new_num, vizz
 end

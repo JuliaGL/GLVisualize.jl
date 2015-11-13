@@ -18,7 +18,9 @@ end
 
 visualize(value::Any, 	  style::Symbol=:default; kw_args...) = visualize(value,  Style{style}(), visualize_default(value, 	      style, kw_args))
 visualize(signal::Signal, style::Symbol=:default; kw_args...) = visualize(signal, Style{style}(), visualize_default(signal.value, style, kw_args))
-visualize(file::File, 	  style::Symbol=:default; kw_args...) = visualize(read(file), style; kw_args...)
+visualize(file::File, 	  style::Symbol=:default; kw_args...) = visualize(FileIO.load(file), style; kw_args...)
+
+visualize(robj::RenderObject) = robj
 
 
 function view(
@@ -40,7 +42,7 @@ function view(
          error("Method $method not a known camera type")
 	end
 	merge!(robj.uniforms, collect(camera), Dict(
-		:resolution => lift(Vec2f0, screen.inputs[:framebuffer_size]),
+		:resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
 	push!(screen.renderlist, robj)
@@ -50,3 +52,8 @@ view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; kw_args...) = for robj in 
 	view(robj, screen; kw_args...)
 end
 view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c), screen; kw_args...)
+
+
+default{T}(::T, s::Style) = default(T, s)
+default{T <: Colorant}(::Type{T}, s::Style) = RGBA{Float32}(0.78, 0.01, 0.93, 1.0)
+default{T <: Colorant}(::Type{Vector{T}}, s::Style) = map(x->RGBA{U8}(x, 1.0), colormap("Blues"))

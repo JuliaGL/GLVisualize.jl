@@ -10,7 +10,6 @@ function arbitrary_surface_data(N)
 	visualize(x, y, z, :surface)
 end
 push!(TEST_DATA, arbitrary_surface_data(100))
-
 println("Barplot")
 # Barplot
 push!(TEST_DATA, visualize(Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:50, j=1:50]))
@@ -42,8 +41,8 @@ generate_particles(N,x,i) = Point3f0(
 update_particles(i, N) 		= Point3f0[generate_particles(N,x, i) for x=1:N]
 particle_color(positions) 	= RGBA{U8}[RGBA{U8}(((cos(pos[1])+1)/2),0.0,((sin(pos[2])+1)/2),  1.0f0) for pos in positions]
 function particle_data(N)
-	locations 	= lift(update_particles, bounce(1f0:0.1f0:10f0), N)
-	colors 		= lift(particle_color, locations)
+	locations 	= const_lift(update_particles, bounce(1f0:0.1f0:10f0), N)
+	colors 		= const_lift(particle_color, locations)
 	visualize(locations, color=colors)
 end
 push!(TEST_DATA, particle_data(1024))
@@ -51,7 +50,7 @@ particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 push!(TEST_DATA,  visualize(
 	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024],
 	primitive 	= GLNormalMesh("cat.obj"),
-	color 		= lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)),
+	color 		= const_lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)),
 	scale 		= Vec3f0(0.2)
 ))
 
@@ -96,7 +95,7 @@ end
 generate(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
 
 function surface_data(N)
-	heightfield = lift(generate, bounce(1f0:200f0), N)
+	heightfield = const_lift(generate, bounce(1f0:200f0), N)
 	return visualize(heightfield, :surface, color_norm=Vec2f0(-0.21, 1.0))
 end
 a = colormap("RdBu")
@@ -115,7 +114,7 @@ vectorfielddata(N, i) = Vec3f0[Vec3f0(Float32(cos(x/N*3f0)*i), cos(y/7i), cos(i/
 const t = bounce(1f0:0.1f0:5f0)
 
 push!(TEST_DATA, visualize(vectorfielddata(14, 1f0)))
-push!(TEST_DATA, visualize(lift(vectorfielddata, 7, t), color_norm=Vec2f0(1, 5)))
+push!(TEST_DATA, visualize(const_lift(vectorfielddata, 7, t), color_norm=Vec2f0(1, 5)))
 println("volume_data")
 
 # volume rendering
@@ -144,31 +143,49 @@ push!(TEST_DATA, visualize(vol_data, :iso, isovalue=bounce(0f0:0.01f0:1f0)))
 #2D distance field
 xy_data(x,y,i) = Float32(sin(x/i)*sin(y/i))
 generate_distfield(i) = Float32[xy_data(x,y,i) for x=1:512, y=1:512]
-push!(TEST_DATA2D, visualize(lift(generate_distfield, bounce(50f0:500f0)), :distancefield))
+const dfdata = const_lift(generate_distfield, bounce(50f0:500f0))
+push!(TEST_DATA2D, visualize(dfdata, :distancefield))
 
 
 function image_test_data(N)
+	test_image_dir = Pkg.dir("GLVisualize", "test", "test_images")
+	abs_paths = map(x->joinpath(test_image_dir, x), readdir(test_image_dir))
 	return map(visualize, (
 		RGBA{U8}[RGBA{U8}(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
-		#load(Pkg.dir("GLVisualize", "test", "test.mp4")),
-		load(Pkg.dir("GLVisualize", "test", "drawing.jpg")),
-		load(Pkg.dir("GLVisualize", "test", "dealwithit.jpg")),
-		load(Pkg.dir("GLVisualize", "test", "feelsgood.png")),
+		#map(load, abs_paths)...
 	))
 end
 
 
 push!(TEST_DATA2D, image_test_data(20)...)
 
-
+s = Vec2f0(15)
 # 2D particles
 particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
+const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
+	const_lift(particle_data2D, bounce(1f0:1f0:50f0), 512))
+particle_robj = visualize(p2ddata, scale=s)
 
-push!(TEST_DATA2D, visualize(foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
-	lift(particle_data2D, bounce(1f0:1f0:50f0), 512)), scale=Vec2f0(10, 10)))
 
-foldl(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:100],
-    lift(particle_data2D, bounce(1f0:1f0:50f0), 100))
+
+push!(TEST_DATA2D, particle_robj)
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED), shape=Cint(CIRCLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED), shape=Cint(RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED)|Cint(GLOWING), shape=Cint(ROUNDED_RECTANGLE)))
+let gif = load("doge.png").data
+	
+push!(TEST_DATA2D, visualize(
+	particle_robj[:positions], 
+	style=Cint(FILLED)|Cint(FILLED)|Cint(TEXTURE_FILL), 
+	shape=Cint(ROUNDED_RECTANGLE),
+	texture_fill=Texture(gif), scale=s),
+)
+end
+
+curve_data(i) = Point2f0[Point2f0(sin(x/i)*250, x) for x=1:1024]
+push!(TEST_DATA2D, visualize(const_lift(curve_data, bounce(20f0:0.1f0:1024f0)), :lines))
+
 # text
 include("utf8_example_text.jl")
 push!(TEST_DATA2D, visualize(utf8_example_text))

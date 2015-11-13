@@ -1,25 +1,26 @@
-GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, ::Style, kw_args=Dict()) = Dict(
+GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, s::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(-0.5f0, -0.5f0, 1f0, 1f0)),
     :scale              => Vec2f0(20),
     :shape              => RECTANGLE,
-    :style              => Cint(OUTLINED) | Cint(FILLED),
+    :style              => OUTLINED|FILLED,
     :stroke_width       => 4f0,
     :glow_width         => 4f0,
     :transparent_picking => false,
-    :color              => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
-    :stroke_color       => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
-    :glow_color         => RGBA{Float32}(0.3, 0.1, 0.9, 1.0),
+    :color              => default(RGBA, s),
+    :stroke_color       => RGBA{Float32}(0.9, 0.9, 1.0, 1.0),
+    :glow_color         => RGBA{Float32}(0.,0.,0., 0.7),
     :preferred_camera   => :orthographic_pixel
 )
 
 visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visualize_default(locations, s)) =
     visualize(texture_buffer(locations), s, customizations)
 
-function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style, customizations=visualize_default(locations.value, s))
+function visualize(locations::Signal{Vector{Point2f0}}, s::Style, customizations=visualize_default(locations.value, s))
     start_val = texture_buffer(locations.value)
-    lift(update!, start_val, locations)
+    const_lift(update!, start_val, locations)
     visualize(start_val, s, customizations)
 end
+
 
 
 function visualize{T <: Real}(
@@ -30,7 +31,7 @@ function visualize{T <: Real}(
     @materialize stroke_width, scale, glow_width = customizations
     data = merge(collect_for_gl(primitive), customizations)
     data[:positions] = positions
-    data[:offset_scale] = lift(+, lift(/, stroke_width, Input(2)), glow_width, scale)
+    data[:offset_scale] = const_lift(+, const_lift(/, stroke_width, Input(2)), glow_width, scale)
     
     robj = assemble_instanced(
         positions,
@@ -68,17 +69,17 @@ visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value
 function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualize_default(r.value, s))
     @materialize! primitive = customizations
     @materialize stroke_width, glow_width = customizations
-    scale = lift(rectangle_scale, r)
+    scale = const_lift(rectangle_scale, r)
     data = merge(Dict(
-        :position  => lift(rectangle_position, r),
+        :position  => const_lift(rectangle_position, r),
         :scale     => scale,
-        :offset_scale => lift(+, lift(/, stroke_width, Input(2)), glow_width, scale)
+        :offset_scale => const_lift(+, const_lift(/, stroke_width, Input(2)), glow_width, scale)
     ), collect_for_gl(primitive), customizations)
 
     robj = assemble_std(
         r, data,
         "particles2D_single.vert", "distance_shape.frag",
-        boundingbox=lift(AABB{Float32}, r)
+        boundingbox=const_lift(AABB{Float32}, r)
     )
     empty!(robj.prerenderfunctions)
     empty!(robj.postrenderfunctions)

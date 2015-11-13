@@ -26,7 +26,7 @@ function get_cube_rotations(eyeposition, lookatv)
 end
 
 
-function cubeside_lift(_, id, top, bottom, front, back, left, right, h)
+function cubeside_const_lift(_, id, top, bottom, front, back, left, right, h)
     index = h.value[2]
     if h.value[1] == id && index >= 1 && index <= 6
         side =  CubeSides(h.value[2]-1)
@@ -87,10 +87,10 @@ function cubecamera(
     should_reset = filter(x->h.value[1] == id.value, false, dd)
     
     p = colored_cube()
-    resetto = lift(cubeside_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
-    inside_trans = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
-    outside_trans = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
-    cube_rotation = lift(cube_area, mouseposition) do ca, mp
+    resetto         = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
+    inside_trans    = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
+    outside_trans   = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
+    cube_rotation   = const_lift(cube_area, mouseposition) do ca, mp
         m = minimum(ca)
         max_dist = norm(maximum(ca) - m)
         mindist = max_dist *0.9f0
@@ -104,29 +104,29 @@ function cubecamera(
 
     ortho1 = visualize(Rectangle(0f0,0f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
     ortho2 = visualize(Rectangle(5f0,5f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
-    hovers_ortho = lift(h) do h
+    hovers_ortho = const_lift(h) do h
         h[1] == ortho1.id || h[1] == ortho2.id
     end
-    c = lift(hovers_ortho) do ho
+    c = const_lift(hovers_ortho) do ho
         ho && return RGBA(0.8f0, 0.8f0, 0.8f0, 0.8f0)
         RGBA(0.5f0, 0.5f0, 0.5f0, 1f0)
     end
-    isperspective = foldl(true, mousebuttonspressed) do v0, clicked
+    isperspective = foldp(true, mousebuttonspressed) do v0, clicked
         clicked==[0] && hovers_ortho.value && return !v0
         v0
     end
 
     ortho1[:stroke_color] = c
     ortho2[:stroke_color] = c
-    ortho2[:model] = lift(isperspective) do isp
+    ortho2[:model] = const_lift(isperspective) do isp
         isp && return translationmatrix(Vec3f0(5,5,0))*scalematrix(Vec3f0(0.8))
         scalematrix(Vec3f0(1.0))
     end
-    mprojection = lift(isperspective) do isp
+    mprojection = const_lift(isperspective) do isp
         isp && return GLAbstraction.PERSPECTIVE
         GLAbstraction.ORTHOGRAPHIC
     end
-    use_cam = lift(buttonspressed) do b
+    use_cam = const_lift(buttonspressed) do b
         b == [GLFW.KEY_LEFT_CONTROL]
     end
     theta, trans, zoom  = default_camera_control(window.inputs, theta=theta, trans=trans, filtersignal=use_cam)
@@ -139,8 +139,8 @@ function cubecamera(
     window.cameras[:perspective] = main_cam
 
     piv   = main_cam.pivot
-    rot   = lift(getfield, piv, :rotation)
-    model = lift(cube_rotation, lift(inv, rot)) do cr, r
+    rot   = const_lift(getfield, piv, :rotation)
+    model = const_lift(cube_rotation, const_lift(inv, rot)) do cr, r
         translationmatrix(Vec3f0(3,3,0)) * Mat{4,4,T}(cr) * translationmatrix(Vec3f0(-3,-3,0)) * Mat{4,4,T}(r)
     end 
     cubescreen = Screen(window, area=cube_area, transparent=Input(true))
@@ -148,12 +148,12 @@ function cubecamera(
         farclip=far,
         nearclip=near,
         view=Input(lookat(eyeposition, value(lookatv), Vec3f0(0,0,1))),
-        projection=lift(perspectiveprojection, cube_area, fov, near, far)
+        projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
     )
     robj = visualize(p, model=model, preferred_camera=:cube_cam)
     start_colors = p.attributes
     color_tex    = robj[:attributes]
-    lift(cubeside_color, id, h, Input(start_colors), Input(color_tex))
+    const_lift(cubeside_color, id, h, Input(start_colors), Input(color_tex))
 
     push!(id, robj.id)
     view(robj, cubescreen);

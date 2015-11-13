@@ -8,6 +8,7 @@ using ModernGL
 using FixedSizeArrays
 using GeometryTypes
 using ColorTypes
+using Colors
 using Reactive
 using Quaternions
 using Compat
@@ -31,7 +32,10 @@ export y_partition
 export x_partition
 export loop
 export bounce
-
+export clicked
+export dragged_on
+export is_hovering
+export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 
 include(joinpath("display", "renderloop.jl"))
 
@@ -49,10 +53,12 @@ export GLSpriteStyle
 
 include(joinpath("edit", "color_chooser.jl"))
 include(joinpath("edit", "numbers.jl"))
+include(joinpath("edit", "line_edit.jl"))
 export vizzedit # edits some value, name should be changed in the future!
 
 include(joinpath("visualize", "shared.jl"))
 include(joinpath("visualize", "text", "utils.jl"))
+include(joinpath("visualize", "lines.jl"))
 include(joinpath("visualize", "2dparticles.jl"))
 include(joinpath("visualize", "containers.jl"))
 include(joinpath("visualize", "distancefields.jl"))
@@ -69,11 +75,10 @@ include(joinpath("visualize", "volume.jl"))
 include(joinpath("visualize", "axis.jl"))
 include(joinpath("visualize", "colormap.jl"))
 include(joinpath("visualize", "parametric.jl"))
-include(joinpath("visualize", "lines.jl"))
 
 include("camera.jl")
 export cubecamera
-export Shape, CIRCLE, RECTANGLE, DISTANCEFIELD, Technique, FILLED, OUTLINED, GLOWING, TEXTURE_FILL, ROUNDED_RECTANGLE
+export Shape, CIRCLE, RECTANGLE, DISTANCEFIELD, Technique, FILLED, OUTLINED, GLOWING, TEXTURE_FILL, ROUNDED_RECTANGLE, TRIANGLE
 
 Base.precompile(glscreen, ())
 end # module

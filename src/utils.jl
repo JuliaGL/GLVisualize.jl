@@ -20,7 +20,7 @@ macro visualize_gen(input, target, S)
 
         function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
             tex = $target(signal.value)
-            lift(update!, Input(tex), signal)
+            const_lift(update!, Input(tex), signal)
             visualize(tex, s, customizations)
         end
     end)
@@ -32,13 +32,14 @@ texture_or_scalar(x) = x
 texture_or_scalar(x::Array) = Texture(x)
 function texture_or_scalar{A <: Array}(x::Signal{A})
     tex = Texture(x.value)
-    lift(update!, tex, x)
+    const_lift(update!, tex, x)
     tex
 end
 
 isnotempty(x) = !isempty(x)
 AND(a,b) = a&&b
-
+OR(a,b) = a||b
+export OR
 
 call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
 call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
@@ -58,7 +59,7 @@ end
 
 function default_boundingbox(main, model)
     main == nothing && return Input(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    lift(*, model, AABB{Float32}(main))
+    const_lift(*, model, AABB{Float32}(main))
 end
 function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
@@ -74,21 +75,68 @@ end
 
 function y_partition(area, percent)
     amount = percent / 100.0
-    p = lift(area) do r
+    p = const_lift(area) do r
         (Rectangle{Int}(r.x, r.y, r.w, round(Int, r.h*amount)),
             Rectangle{Int}(r.x, round(Int, r.h*amount), r.w, round(Int, r.h*(1-amount))))
     end
-    return lift(first, p), lift(last, p)
+    return const_lift(first, p), const_lift(last, p)
 end
 function x_partition(area, percent)
     amount = percent / 100.0
-    p = lift(area) do r
+    p = const_lift(area) do r
         (Rectangle{Int}(r.x, r.y, round(Int, r.w*amount), r.h ),
             Rectangle{Int}(round(Int, r.w*amount), r.y, round(Int, r.w*(1-amount)), r.h))
     end
-    return lift(first, p), lift(last, p)
+    return const_lift(first, p), const_lift(last, p)
 end
 
 
 
 particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
+
+@enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
+
+"""
+Returns two signals, one boolean signal if clicked over `robj` and another 
+one that consists of the object clicked on and another argument indicating that it's the first click
+"""
+function clicked(robj::RenderObject, button::MouseButton, window::Screen)
+    @materialize mouse_hover, mousebuttonspressed = window.inputs
+    leftclicked = const_lift(mouse_hover, mousebuttonspressed) do mh, mbp
+        mh[1] == robj.id && mbp == Int[button]
+    end
+    clicked_on_obj = keepwhen(leftclicked, false, leftclicked)
+    clicked_on_obj = const_lift((mh, x)->(x,robj,mh), mouse_hover, leftclicked)
+    leftclicked, clicked_on_obj
+end
+
+"""
+Returns a boolean signal indicating if the mouse hovers over `robj`
+"""
+is_hovering(robj::RenderObject, window::Screen) = const_lift(window.inputs[:mouse_hover]) do mh
+    mh[1] == robj.id
+end
+
+
+"""
+Returns a signal with the difference from dragstart and current mouse position, 
+and the index from the current ROBJ id.
+"""
+function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
+    @materialize mouse_hover, mousebuttonspressed, mouseposition = window.inputs
+    start_value = (Vec2f0(0), mouse_hover.value[2], false, Vec2f0(0))
+    tmp_signal = foldl(start_value, mouse_hover, mousebuttonspressed, mouseposition) do past, mh, mbp, mpos
+        diff, dragstart_index, was_clicked, dragstart_pos = past
+        over_obj = mh[1] == robj.id
+        is_clicked = mbp == Int[button]
+        if is_clicked && was_clicked # is draggin'
+            return (dragstart_pos-mpos, dragstart_index, true, dragstart_pos)
+        elseif over_obj && is_clicked && !was_clicked # drag started
+            return (Vec2f0(0), mh[2], true, mpos)
+        end
+        return start_value
+    end
+    const_lift(getindex, tmp_signal, 1:2)
+end
+
+points2f0{T}(positions::Vector{T}, range::Range) = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]

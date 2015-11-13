@@ -7,7 +7,7 @@ uniform sampler3D intensities;
 
 uniform vec3 light_position = vec3(1.0, 1.0, 3.0);
 uniform vec3 light_intensity = vec3(15.0);
-uniform vec4 color;
+{{color_type}} color;
 uniform float absorption = 1.0;
 
 uniform vec3 eyeposition;
@@ -19,6 +19,7 @@ uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 uniform int algorithm;
 uniform float isovalue;
 uniform vec3 dimensions;
+uniform vec2 color_norm;
 
 const int view_samples = 512;
 const float max_distance = sqrt(1.0);
@@ -29,6 +30,25 @@ const int num_ligth_samples = 16;
 const float lscale = max_distance / float(num_ligth_samples);
 const float density_factor =9;
 
+float _normalize(float val, float from, float to)
+{
+    return (val-from) / (to - from);
+}
+
+vec4 color_lookup(float intensity, vec4 color, vec2 norm)
+{
+    return color;
+}
+
+vec4 color_lookup(float intensity, samplerBuffer color_ramp, vec2 norm)
+{
+    return texelFetch(color_ramp, int(_normalize(intensity, norm.x, norm.y)*textureSize(color_ramp)));
+}
+
+vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm)
+{
+    return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
+}
 
 
 float GetDensity(vec3 pos)
@@ -118,6 +138,8 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     int   i             = 0;
     vec4 _color         = vec4(0.0);
     pos += stepsize_dir;//apply first, to padd
+    vec4 difuse_color   = color_lookup(isovalue, color, color_norm);
+
     for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir) 
     {
         float density = texture(intensities, pos/dimensions).x;
@@ -128,8 +150,8 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
             vec3 L2 = -L;
-            Lo     = blinn_phong(N, pos, L, color.rgb);
-            Lo     += blinn_phong(N, pos, L2, color.rgb);
+            Lo     = blinn_phong(N, pos, L, difuse_color.rgb);
+            Lo     += blinn_phong(N, pos, L2, difuse_color.rgb);
             _color = vec4(Lo, 1);
             break;
         }
@@ -149,11 +171,9 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
         if (density <= 0.0)
             continue;
         if(maximum < density)
-        {
             maximum = density;
-        }
     }
-    return vec4(maximum);
+    return color_lookup(maximum, color, color_norm);
 }
 void main()
 {
