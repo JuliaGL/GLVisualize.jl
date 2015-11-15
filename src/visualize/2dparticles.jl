@@ -17,7 +17,7 @@ visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visuali
 
 function visualize(locations::Signal{Vector{Point2f0}}, s::Style, customizations=visualize_default(locations.value, s))
     start_val = texture_buffer(locations.value)
-    const_lift(update!, start_val, locations)
+    preserve(const_lift(update!, start_val, locations))
     visualize(start_val, s, customizations)
 end
 

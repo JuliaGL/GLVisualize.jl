@@ -14,8 +14,8 @@ function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines
 
     start_valp = GLBuffer(locations.value)
     start_vall = GLBuffer(ll.value)
-    const_lift(update!, start_valp, locations)
-    const_lift(update!, start_vall, ll)
+    preserve(const_lift(update!, start_valp, locations))
+    preserve(const_lift(update!, start_vall, ll))
     visualize(start_valp, start_vall, maxlength, s, customizations)
 end
 

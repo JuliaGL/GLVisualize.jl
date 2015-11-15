@@ -50,7 +50,7 @@ function edit_line(
     drag0, index0   = mousedrag_index.value
 	diff_signal = foldl(mouse_drag_diff, (index0, Vec2f0(0), drag0), mousedrag_index)
 	diff_signal = droprepeats(const_lift(getindex, diff_signal, 1:2)) #throw away drag, tmp
-	const_lift(gpu_diff_set!, point_gpu, diff_signal, direction_restriction, clampto)
+	preserve(const_lift(gpu_diff_set!, point_gpu, diff_signal, direction_restriction, clampto))
 	points[:visible] = lift(OR, hovering_lines, hovering_points)
 	Context(line_robj, points), diff_signal
 end
@@ -94,7 +94,7 @@ function vizzedit(colors::Vector{RGBA{U8}}, window)
     for i=1:4
         c_channel = points2f0(Float32[p.(i)*scale_factor for p in colors], range)
         c_i, diff = edit_line(c_channel, dir_restrict, (0, scale_factor), window, color=channel_color(i, 0.8f0))
-        const_lift(edit_color, color_tex, colors, diff, i, Float32(scale_factor))
+        preserve(const_lift(edit_color, color_tex, colors, diff, i, Float32(scale_factor)))
         push!(c, c_i)
     end
     c, color_tex

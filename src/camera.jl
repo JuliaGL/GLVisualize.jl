@@ -153,7 +153,7 @@ function cubecamera(
     robj = visualize(p, model=model, preferred_camera=:cube_cam)
     start_colors = p.attributes
     color_tex    = robj[:attributes]
-    const_lift(cubeside_color, id, h, Input(start_colors), Input(color_tex))
+    preserve(const_lift(cubeside_color, id, h, Input(start_colors), Input(color_tex)))
 
     push!(id, robj.id)
     view(robj, cubescreen);
