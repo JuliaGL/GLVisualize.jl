@@ -13,7 +13,7 @@ visualize{T <: Colorant}(img::Array{T, 1}, s::Style, customizations=visualize_de
 
 function visualize{T <: Colorant}(img::Signal{Array{T, 1}}, s::Style, customizations=visualize_default(img.value, s))
     tex = Texture(img.value)
-    lift(update!, tex, img)
+    preserve(map(update!, tex, img))
     visualize(tex, s, customizations)
 end
 

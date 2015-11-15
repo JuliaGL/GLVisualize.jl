@@ -14,7 +14,7 @@ insert_selectionquery(value, selectionquery, name) = selectionquery[name] = valu
 
 
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}}, selection, selectionquery)
-    const_lift(insert_selectionquery, value, selectionquery, name)
+    preserve(const_lift(insert_selectionquery, value, selectionquery, name))
     selection[name]  = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
     selection[name]
 end
@@ -69,7 +69,7 @@ function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, buffersize...)
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, db)
     fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, db)
-    const_lift(resizebuffers, framebuffsize, fb)
+    preserve(const_lift(resizebuffers, framebuffsize, fb))
     fb
 end
 

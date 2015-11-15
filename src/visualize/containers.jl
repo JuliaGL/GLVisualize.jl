@@ -39,7 +39,7 @@ function visualize{T <: Composable}(list::Vector{T}, s::Style, customizations=vi
 	x_align = const_lift(first, const_lift(minimum, bb_s))
 	for elem in list[2:end]
 		bb_s 		 = boundingbox(elem)
-		transformation(elem, const_lift(list_translation, y_start, x_align, bb_s))
+		transformation(elem, preserve(const_lift(list_translation, y_start, x_align, bb_s)))
 		y_width 	 = const_lift(y_coord, const_lift(width, bb_s))
 		y_start 	 = const_lift(-, y_start, const_lift(+, y_width, gap))
 	end

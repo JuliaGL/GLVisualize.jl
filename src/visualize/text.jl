@@ -43,7 +43,7 @@ function visualize{S <: AbstractString}(text::Signal{S}, s::Style, customization
     positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
     style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text.value))))
     robj        = visualize(glyphs, positions, style_index, customizations[:model], s, customizations)
-    const_lift(update_text, text, Input(robj))
+    preserve(const_lift(update_text, text, Input(robj)))
     robj
 end 
 function visualize(
@@ -143,7 +143,7 @@ function textedit_signals(inputs, background, text)
         const_lift(is_text, mousedragdiff_objectid), 
         0:0, selection
     )
-    const_lift(s->(text_edit.value.selection=s), selection) # is there really no other way?!
+    preserve(const_lift(s->(text_edit.value.selection=s), selection)) # is there really no other way?!
 
     strg_v          = const_lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V])
     strg_c          = const_lift(==, buttonspressed, [GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C])
@@ -179,8 +179,8 @@ function textedit_signals(inputs, background, text)
     selection   = const_lift(x->x.selection,  text_selection_signal)
     text_sig    = const_lift(x->x.text,       text_selection_signal)
 
-    const_lift(update_positions, text_sig, Input(text), Input(background[:style_index]))
-    foldp(visualize_selection, 0:0, selection,    Input(background[:style_index]))
+    preserve(const_lift(update_positions, text_sig, Input(text), Input(background[:style_index])))
+    preserve(foldp(visualize_selection, 0:0, selection,    Input(background[:style_index])))
     const_lift(utf8, text_sig), selection
 end
 
