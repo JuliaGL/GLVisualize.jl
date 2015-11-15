@@ -251,8 +251,8 @@ function insert_selectionquery!(name::Symbol, value::Rectangle)
 end
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}})
     const_lift(value) do v
-    SELECTION_QUERIES[name] = v
-    end
+        SELECTION_QUERIES[name] = v
+    end |> preserve
     SELECTION[name]         = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
     SELECTION[name]
 end
@@ -290,7 +290,7 @@ bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
 
 insert_selectionquery!(:mouse_hover, const_lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
     Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
-end)
+end |> preserve)
 
 
 global const RENDER_FRAMEBUFFER = glGenFramebuffers()
@@ -318,7 +318,8 @@ const_lift(ROOT_SCREEN.inputs[:framebuffer_size]) do window_size
         glBindRenderbuffer(GL_RENDERBUFFER, rboDepthStencil[1])
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, (window_size)...)
     end
-end
+end |> preserve
+
 function postprocess(screen_texture, screen)
     data = merge(Dict(
         :resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),

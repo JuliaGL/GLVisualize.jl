@@ -60,6 +60,6 @@ function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
     new_num = const_lift(slide, startvalue, addition_vec, range)
 
     new_num_gl = const_lift(num2glstring, new_num, numberwidth)
-    const_lift(update!, vizz[:glyphs], new_num_gl)
+    preserve(const_lift(update!, vizz[:glyphs], new_num_gl))
     return new_num, vizz
 end

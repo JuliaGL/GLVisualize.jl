@@ -23,7 +23,7 @@ end
 
 function visualize(vectorfield::Signal{Array{Vec{3, Float32}, 3}}, s::Style, customizations=visualize_default(vectorfield, s))
     tex = Texture(vectorfield.value, minfilter=:nearest, x_repeat=:clamp_to_edge)
-    const_lift(update!, tex, vectorfield)
+    preserve(const_lift(update!, tex, vectorfield))
     visualize(tex, s, customizations)
 end
 

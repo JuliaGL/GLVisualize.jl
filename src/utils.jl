@@ -20,7 +20,7 @@ macro visualize_gen(input, target, S)
 
         function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
             tex = $target(signal.value)
-            const_lift(update!, Input(tex), signal)
+            preserve(const_lift(update!, Input(tex), signal))
             visualize(tex, s, customizations)
         end
     end)
@@ -32,7 +32,7 @@ texture_or_scalar(x) = x
 texture_or_scalar(x::Array) = Texture(x)
 function texture_or_scalar{A <: Array}(x::Signal{A})
     tex = Texture(x.value)
-    const_lift(update!, tex, x)
+    preserve(const_lift(update!, tex, x))
     tex
 end
 
