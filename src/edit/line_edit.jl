@@ -1,6 +1,6 @@
 float_diff(a,b) = Vec2f2(a-b)
 function vizzedit{T}(points::Vector{Point{2,T}}, window; color=default(RGBA))
-	line 	= visualize(Input(points), :lines)
+	line 	= visualize(Signal(points), :lines)
 	point_gpu = line[:vertex]
 	points 	= visualize(Texture(point_gpu), shape=Cint(CIRCLE), style=Cint(GLOWING) | Cint(FILLED) | Cint(OUTLINED))
 	hovering_lines  = is_hovering(line, window)
@@ -31,7 +31,7 @@ function edit_line(
         line, direction_restriction::Vec2f0, clampto, window; 
         color=default(RGBA{Float32}, Style{:default}())
     )
-	line_robj = visualize(Input(line), :lines, color=color, thickness = 4f0)
+	line_robj = visualize(Signal(line), :lines, color=color, thickness = 4f0)
 	point_gpu = line_robj[:vertex]
 	points 	  = visualize(
         Texture(point_gpu), 

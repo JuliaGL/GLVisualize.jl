@@ -6,7 +6,7 @@ typealias GLSelection SelectionID{UInt16}
 typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle, selection, selectionquery)
     selectionquery[name] = value
-    selection[name]      = Input(Vec{2, Int}[]')
+    selection[name]      = Signal(Vec{2, Int}[]')
     selection[name]
 end
 
@@ -15,7 +15,7 @@ insert_selectionquery(value, selectionquery, name) = selectionquery[name] = valu
 
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}}, selection, selectionquery)
     preserve(const_lift(insert_selectionquery, value, selectionquery, name))
-    selection[name]  = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
+    selection[name]  = Signal(Array(Vec{2, Int}, value.value.w, value.value.h))
     selection[name]
 end
 function delete_selectionquery!(name::Symbol, selection, selectionquery)
@@ -107,7 +107,7 @@ function glscreen()
     screen.inputs[:framebuffer] = framebuffer
     postprocess_robj = postprocess(framebuffer, screen)
 
-    selection      = Dict{Symbol, Input{Matrix{Vec{2, Int}}}}()
+    selection      = Dict{Symbol, Signal{Matrix{Vec{2, Int}}}}()
     selectionquery = Dict{Symbol, Rectangle{Int}}()
     insert_selectionquery!(:mouse_hover, const_lift(mouse_selection, screen.inputs[:mouseposition]), selection, selectionquery)
     add_complex_signals(screen, selection) #add the drag events and such

@@ -43,7 +43,7 @@ function visualize{S <: AbstractString}(text::Signal{S}, s::Style, customization
     positions   = GPUVector(texture_buffer(calc_position(glyphs, startposition)))
     style_index = GPUVector(texture_buffer(fill(GLSpriteStyle(UInt16(0), UInt16(0)), length(text.value))))
     robj        = visualize(glyphs, positions, style_index, customizations[:model], s, customizations)
-    preserve(const_lift(update_text, text, Input(robj)))
+    preserve(const_lift(update_text, text, Signal(robj)))
     robj
 end 
 function visualize(
@@ -67,7 +67,7 @@ function visualize(
     robj = assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
-        boundingbox=Input(AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
+        boundingbox=Signal(AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
     )
     empty!(robj.prerenderfunctions)
     prerender!(robj,
@@ -125,7 +125,7 @@ function textedit_signals(inputs, background, text)
     @materialize unicodeinput, selection, buttonspressed, arrow_navigation, mousedragdiff_objectid = inputs
     # create object which can globally hold the text and selection 
     text_raw    = TextWithSelection(text[:glyphs], 0:0)
-    text_edit   = Input(text_raw)
+    text_edit   = Signal(text_raw)
     shift       = const_lift(in, GLFW.KEY_LEFT_SHIFT, buttonspressed)
     selection   = const_lift(
         last, 
@@ -179,8 +179,8 @@ function textedit_signals(inputs, background, text)
     selection   = const_lift(x->x.selection,  text_selection_signal)
     text_sig    = const_lift(x->x.text,       text_selection_signal)
 
-    preserve(const_lift(update_positions, text_sig, Input(text), Input(background[:style_index])))
-    preserve(foldp(visualize_selection, 0:0, selection,    Input(background[:style_index])))
+    preserve(const_lift(update_positions, text_sig, Signal(text), Signal(background[:style_index])))
+    preserve(foldp(visualize_selection, 0:0, selection,    Signal(background[:style_index])))
     const_lift(utf8, text_sig), selection
 end
 

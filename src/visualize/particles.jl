@@ -2,10 +2,7 @@ function Base.delete!(dict::Dict, key, default)
     haskey(dict, key) && return pop!(dict, key)
     return default
 end
-function visualize_default{T <: Point{3}}(
-        particles::Union{Texture{T, 1}, Vector{T}}, 
-        s::Style, kw_args=Dict()
-    )
+function visualize_default{T <: Point}(particles::Union{Texture{T},Vector{T}}, s::Style, kw_args=Dict())
     color = delete!(kw_args, :color, RGBA(1f0, 0f0, 0f0, 1f0))
     color = texture_or_scalar(color)
     Dict(
@@ -15,10 +12,10 @@ function visualize_default{T <: Point{3}}(
     )
 end
 
-visualize{T}(value::Vector{Point{3, T}}, s::Style, customizations=visualize_default(value, s)) = 
+visualize{T <: Point}(value::Vector{T}, s::Style, customizations=visualize_default(value, s)) = 
     visualize(texture_buffer(value), s, customizations)
 
-function visualize{T}(signal::Signal{Vector{Point{3, T}}}, s::Style, customizations=visualize_default(signal.value, s))
+function visualize{T <: Point}(signal::Signal{Vector{T}}, s::Style, customizations=visualize_default(signal.value, s))
     tex = texture_buffer(value(signal))
     preserve(const_lift(update!, tex, signal))
     visualize(tex, s, customizations)
@@ -51,8 +48,8 @@ function Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Vector{Point{3, T2}}, 
     AABB{T}(_min, _max)
 end
 
-function visualize{T}(
-        positions::Texture{Point{3, T}, 1}, 
+function visualize{T<:Point}(
+        positions::Texture{T, 1}, 
         s::Style, customizations=visualize_default(positions, s)
     )
     @materialize! primitive = customizations
@@ -63,7 +60,7 @@ function visualize{T}(
     assemble_instanced(
         positions, data,
         "util.vert", "particles.vert", "standard.frag",
-        boundingbox=Input(AABB{Float32}(positions, scale, AABB{Float32}(vertices(primitive))))
+        boundingbox=Signal(AABB{Float32}(positions, scale, AABB{Float32}(vertices(primitive))))
     )
 end
 

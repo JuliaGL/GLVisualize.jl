@@ -6,9 +6,9 @@ include(Pkg.dir("GLVisualize", "src", "visualize", "text", "utils.jl"))
 unicode 	= w.inputs[:unicodeinput]
 keys 		= w.inputs[:buttonspressed]
 
-selection 	= Input(4:3)
+selection 	= Signal(4:3)
 text_raw 	= TextWithSelection([1,2,3,4], selection.value)
-text 		= Input(text_raw)
+text 		= Signal(text_raw)
 const_lift(s->(text_raw.selection=s), selection) # is there really no other way?!
 
 Base.IntSet(a...) = IntSet(a)

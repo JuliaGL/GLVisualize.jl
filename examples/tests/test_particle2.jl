@@ -1,7 +1,7 @@
 using GLVisualize, AbstractGPUArray, GLAbstraction, GeometryTypes, Reactive, ColorTypes, Meshes, MeshIO
 
 # install a time varying signal
-const timer = Input(1)  
+const timer = Signal(1)  
 
 function mkCube(p::GeometryTypes.Point3{Float32}, hsz::Float32)
     cube    = GLNormalMesh( Cube( Vec3( p.x, p.y, p.z), Vec3(hsz)))

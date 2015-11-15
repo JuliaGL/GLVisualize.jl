@@ -72,22 +72,22 @@ Base.middle{T}(r::Rectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2)))
 
 function cubecamera(
 		window;
-		cube_area 	 = Input(Rectangle(0,0,150,150)),
+		cube_area 	 = Signal(Rectangle(0,0,150,150)),
 		eyeposition  = Vec3f0(2),
     	lookatv 	 = Vec3f0(0),
-        trans        = Input(Vec3f0(0)),
-        theta        = Input(Vec3f0(0))
+        trans        = Signal(Vec3f0(0)),
+        theta        = Signal(Vec3f0(0))
 	)
     const T = Float32
     @materialize mousebuttonspressed, window_size, mouseposition, buttonspressed = window.inputs
     
     dd = doubleclick(window.inputs[:mousebuttonspressed], 0.2)
     h = window.inputs[:mouse_hover]
-    id = Input(4)
+    id = Signal(4)
     should_reset = filter(x->h.value[1] == id.value, false, dd)
     
     p = colored_cube()
-    resetto         = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Input(h))
+    resetto         = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Signal(h))
     inside_trans    = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
     outside_trans   = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
     cube_rotation   = const_lift(cube_area, mouseposition) do ca, mp
@@ -130,7 +130,7 @@ function cubecamera(
         b == [GLFW.KEY_LEFT_CONTROL]
     end
     theta, trans, zoom  = default_camera_control(window.inputs, theta=theta, trans=trans, filtersignal=use_cam)
-    far, near, fov      = Input(100f0), Input(1f0), Input(43f0)
+    far, near, fov      = Signal(100f0), Signal(1f0), Signal(43f0)
     main_cam = PerspectiveCamera(
         window.area,eyeposition,lookatv,
         theta,trans,zoom,fov,near,far,
@@ -143,17 +143,17 @@ function cubecamera(
     model = const_lift(cube_rotation, const_lift(inv, rot)) do cr, r
         translationmatrix(Vec3f0(3,3,0)) * Mat{4,4,T}(cr) * translationmatrix(Vec3f0(-3,-3,0)) * Mat{4,4,T}(r)
     end 
-    cubescreen = Screen(window, area=cube_area, transparent=Input(true))
+    cubescreen = Screen(window, area=cube_area, transparent=Signal(true))
     cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,
         nearclip=near,
-        view=Input(lookat(eyeposition, value(lookatv), Vec3f0(0,0,1))),
+        view=Signal(lookat(eyeposition, value(lookatv), Vec3f0(0,0,1))),
         projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
     )
     robj = visualize(p, model=model, preferred_camera=:cube_cam)
     start_colors = p.attributes
     color_tex    = robj[:attributes]
-    preserve(const_lift(cubeside_color, id, h, Input(start_colors), Input(color_tex)))
+    preserve(const_lift(cubeside_color, id, h, Signal(start_colors), Signal(color_tex)))
 
     push!(id, robj.id)
     view(robj, cubescreen);

@@ -20,7 +20,7 @@ vec2i(vec::Vec) = vec2i(vec...)
 function screen(robj, w)
 	bb = boundingbox(robj).value
 	m = vec2i(bb.minimum)
-	area = Input(Rectangle{Int}(0,0, ((vec2i(bb.maximum)-m)+30)...))
+	area = Signal(Rectangle{Int}(0,0, ((vec2i(bb.maximum)-m)+30)...))
 	view(visualize(area, style=Cint(OUTLINED)), method=:fixed_pixel)
 	robj[:model] = translationmatrix(Vec3f0(15,15,0)-bb.minimum)
 	view(robj, method=:fixed_pixel)

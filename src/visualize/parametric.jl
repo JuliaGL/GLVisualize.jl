@@ -11,5 +11,5 @@ function visualize(func::Shader, s::Style, data=visualize_default(func, s))
     shader = GLVisualizeShader("parametric.vert", "parametric.frag", attributes=data, view=Dict(
         "function" => bytestring(func.source)
     ))
-    std_renderobject(data, shader, Input(AABB{Float32}(vertices(primitive))))
+    std_renderobject(data, shader, Signal(AABB{Float32}(vertices(primitive))))
 end

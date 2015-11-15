@@ -17,7 +17,7 @@ function visualize(vectorfield::Texture{Vec{3, Float32}, 3}, s::Style, customiza
     program = assemble_instanced(
         vectorfield, data,
         "util.vert", "vectorfield.vert", "standard.frag",
-        boundingbox=Input(boundingbox)
+        boundingbox=Signal(boundingbox)
     )
 end
 

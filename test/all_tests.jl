@@ -179,7 +179,7 @@ push!(TEST_DATA2D, visualize(
 	particle_robj[:positions], 
 	style=Cint(FILLED)|Cint(FILLED)|Cint(TEXTURE_FILL), 
 	shape=Cint(ROUNDED_RECTANGLE),
-	texture_fill=Texture(gif), scale=s),
+	texture_fill=Texture(gif), scale=Vec2f0(50)),
 )
 end
 

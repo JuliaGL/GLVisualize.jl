@@ -47,7 +47,7 @@ const mario_images = Dict()
 play{T}(array::Array{T, 3}, slice) = array[:, :, slice]
 	
 
-signify{T}(x::Array{T, 2}) = Input(x)
+signify{T}(x::Array{T, 2}) = Signal(x)
 function signify{T}(x::Array{T, 3})
 	const_lift(play, x, loop(1:size(x, 3)))
 end

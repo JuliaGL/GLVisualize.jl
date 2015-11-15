@@ -11,7 +11,7 @@ function visualize(c::AABB{Float32}, ::Style{:grid}, default)
     robj        = GLVisualize.assemble_std(
         vertices(primitive), data,
         "grid.vert", "grid.frag",
-        boundingbox=Input(c)
+        boundingbox=Signal(c)
     )
     empty!(robj.prerenderfunctions)
     prerender!(robj,

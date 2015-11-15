@@ -42,7 +42,7 @@ visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, style=:default; kw_args...) = 
 
 
 #Can't be handled by the @gen_visualize macro
-function visualize{T <: Input{Matrix{Float32}}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z.value, s))
+function visualize{T <: Signal{Matrix{Float32}}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_defaults(z.value, s))
     xt, yt, zt = Texture(x.value), Texture(y.value), Texture(z.value)
     preserve(const_lift(update!, xt, x))
     preserve(const_lift(update!, yt, y))

@@ -188,8 +188,8 @@ function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}})
         :grid_max   => grid_max,
         :scale      => scale,
         :norm       => Vec2f0(0, 5),
-        :model      	  => Input(eye(Mat4f0)),
-    	:light      	  => Input(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
+        :model      	  => Signal(eye(Mat4f0)),
+    	:light      	  => Signal(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
     	:preferred_camera => :perspective
     )
 end
@@ -207,9 +207,9 @@ function visualize(grid::Texture{Float32, 2}, customizations=visualize_default(g
         frag_shader
     )
     checkerror()
-    boundingbox = Input(AABB(Vec3f0(0), Vec3f0(1)))
+    boundingbox = Signal(AABB(Vec3f0(0), Vec3f0(1)))
     
-    robj = instanced_renderobject(data, Input(program), boundingbox, GL_TRIANGLES, grid)
+    robj = instanced_renderobject(data, Signal(program), boundingbox, GL_TRIANGLES, grid)
     checkerror()
     robj
 end
@@ -236,7 +236,7 @@ push!(ROOT_SCREEN.renderlist, robj2)
 push!(ROOT_SCREEN.renderlist, robj3)
 push!(ROOT_SCREEN.renderlist, robj4)
 
-const SELECTION         = Dict{Symbol, Input{Matrix{Vec{2, Int}}}}()
+const SELECTION         = Dict{Symbol, Signal{Matrix{Vec{2, Int}}}}()
 const SELECTION_QUERIES = Dict{Symbol, Rectangle{Int}}()
 immutable SelectionID{T}
     objectid::T
@@ -246,14 +246,14 @@ typealias GLSelection SelectionID{UInt16}
 typealias ISelection SelectionID{Int}
 function insert_selectionquery!(name::Symbol, value::Rectangle)
     SELECTION_QUERIES[name] = value
-    SELECTION[name]         = Input(Vec{2, Int}[]')
+    SELECTION[name]         = Signal(Vec{2, Int}[]')
     SELECTION[name]
 end
 function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}})
     const_lift(value) do v
         SELECTION_QUERIES[name] = v
     end |> preserve
-    SELECTION[name]         = Input(Array(Vec{2, Int}, value.value.w, value.value.h))
+    SELECTION[name]         = Signal(Array(Vec{2, Int}, value.value.w, value.value.h))
     SELECTION[name]
 end
 function delete_selectionquery!(name::Symbol)

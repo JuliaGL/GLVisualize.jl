@@ -1,4 +1,4 @@
-GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, s::Style, kw_args=Dict()) = Dict(
+GLVisualize.visualize_default{T <: Point{2}}(::Union{Texture{T, 1}, Vector{T}}, s::Style{:default}, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(-0.5f0, -0.5f0, 1f0, 1f0)),
     :scale              => Vec2f0(20),
     :shape              => RECTANGLE,
@@ -12,10 +12,10 @@ GLVisualize.visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector
     :preferred_camera   => :orthographic_pixel
 )
 
-visualize(locations::Vector{Point{2, Float32}}, s::Style, customizations=visualize_default(locations, s)) =
+visualize{T<:Point{2}}(locations::Vector{T}, s::Style, customizations=visualize_default(locations, s)) =
     visualize(texture_buffer(locations), s, customizations)
 
-function visualize(locations::Signal{Vector{Point2f0}}, s::Style, customizations=visualize_default(locations.value, s))
+function visualize{T<:Point{2}}(locations::Signal{Vector{T}}, s::Style{:default}, customizations=visualize_default(locations.value, s))
     start_val = texture_buffer(locations.value)
     preserve(const_lift(update!, start_val, locations))
     visualize(start_val, s, customizations)
@@ -23,15 +23,15 @@ end
 
 
 
-function visualize{T <: Real}(
-        positions::Texture{Point{2, T}, 1},
+function visualize{T <: Point{2}}(
+        positions::Texture{T, 1},
         s::Style, customizations=visualize_default(positions, s)
     )
     @materialize! primitive = customizations
     @materialize stroke_width, scale, glow_width = customizations
     data = merge(collect_for_gl(primitive), customizations)
     data[:positions] = positions
-    data[:offset_scale] = const_lift(+, const_lift(/, stroke_width, Input(2)), glow_width, scale)
+    data[:offset_scale] = const_lift(+, const_lift(/, stroke_width, Signal(2)), glow_width, scale)
     
     robj = assemble_instanced(
         positions,
@@ -65,7 +65,7 @@ visualize_default{T <: Real}(::Rectangle{T}, ::Style, kw_args=Dict()) = Dict(
 rectangle_position(r::Rectangle) = Point{2, Float32}(r.x, r.y)
 rectangle_scale(r::Rectangle)    = Vec{2, Float32}(r.w, r.h)
 
-visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Input(r), s, customizations)
+visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Signal(r), s, customizations)
 function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualize_default(r.value, s))
     @materialize! primitive = customizations
     @materialize stroke_width, glow_width = customizations
@@ -73,7 +73,7 @@ function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualiz
     data = merge(Dict(
         :position  => const_lift(rectangle_position, r),
         :scale     => scale,
-        :offset_scale => const_lift(+, const_lift(/, stroke_width, Input(2)), glow_width, scale)
+        :offset_scale => const_lift(+, const_lift(/, stroke_width, Signal(2)), glow_width, scale)
     ), collect_for_gl(primitive), customizations)
 
     robj = assemble_std(

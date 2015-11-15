@@ -15,7 +15,7 @@ function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield},
     program = assemble_std(
         distancefield, data,
         "uv_vert.vert", "distancefield.frag",
-        boundingbox=Input(AABB{Float32}(Vec3f0(0), Vec3f0(size(distancefield)...,0)))
+        boundingbox=Signal(AABB{Float32}(Vec3f0(0), Vec3f0(size(distancefield)...,0)))
     )
 end
 

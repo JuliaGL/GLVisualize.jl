@@ -25,6 +25,6 @@ function visualize{T <: Colorant}(img::Texture{T, 2}, s::Style, data=visualize_d
     assemble_std(
         img, data,
         "uv_vert.vert", "texture.frag",
-        boundingbox=Input(AABB{Float32}(Vec3f0(0), Vec3f0(size(img)...,0)))
+        boundingbox=Signal(AABB{Float32}(Vec3f0(0), Vec3f0(size(img)...,0)))
     )
 end

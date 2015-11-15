@@ -105,7 +105,7 @@ end
 const dragdiff_id = get_drag_diff(inputs)
 gizmo_dir = const_lift(/, const_lift(gizmodir_const_lift, dragdiff_id), 10f0)
 
-model 	= getmodel(Input(0f0), Input(0f0), Input(0f0), gizmo_dir)
+model 	= getmodel(Signal(0f0), Signal(0f0), Signal(0f0), gizmo_dir)
 
 
 msh 	= GLNormalMesh(file"cat.obj")

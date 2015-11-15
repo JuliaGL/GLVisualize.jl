@@ -1,5 +1,5 @@
 visualize_default{T <: Composable, N}(::Array{T, N}, ::Style, kw_args...) = Dict(
-    :gap 	=> Input(Vec3f0(0.1, 0.1, 0.0)),
+    :gap 	=> Signal(Vec3f0(0.1, 0.1, 0.0)),
    	:scale 	=> Vec3f0(1.0, 1.0, 1.0)
 )
 

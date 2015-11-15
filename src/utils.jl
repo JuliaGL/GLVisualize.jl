@@ -20,7 +20,7 @@ macro visualize_gen(input, target, S)
 
         function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
             tex = $target(signal.value)
-            preserve(const_lift(update!, Input(tex), signal))
+            preserve(const_lift(update!, Signal(tex), signal))
             visualize(tex, s, customizations)
         end
     end)
@@ -58,7 +58,7 @@ function GLVisualizeShader(shaders...; attributes...)
 end
 
 function default_boundingbox(main, model)
-    main == nothing && return Input(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
+    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
     const_lift(*, model, AABB{Float32}(main))
 end
 function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
