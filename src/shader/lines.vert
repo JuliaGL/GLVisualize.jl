@@ -1,6 +1,6 @@
 {{GLSL_VERSION}}
 
-in vec2 vertex;
+{{vertex_type}} vertex;
 in float lastlen;
 //in float thickness;
 {{color_type}} color;
@@ -16,6 +16,9 @@ out float g_thickness;
 vec4 getindex(sampler2D tex, int index);
 vec4 getindex(sampler1D tex, int index);
 
+vec4 to_vec4(vec3 v){return vec4(v, 1);}
+vec4 to_vec4(vec2 v){return vec4(v, 0, 1);}
+
 void main()
 {
 	g_lastlen 	= lastlen;
@@ -23,5 +26,5 @@ void main()
 	g_id 		= uvec2(objectid, index+1);
 	//g_thickness = thickness;
 	g_color 	= {{color_calculation}};
-	gl_Position = projectionview*model*vec4(vertex, 0, 1);
+	gl_Position = projectionview*model*to_vec4(vertex);
 }

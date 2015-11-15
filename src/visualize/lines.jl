@@ -1,4 +1,4 @@
-visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}}}, s::Style{:lines}, kw_args=Dict()) = Dict(
+visualize_default{T <: Real, N}(::Union{Texture{Point{N, T}, 1}, Vector{Point{N, T}}}, s::Style{:lines}, kw_args=Dict()) = Dict(
     :shape               => RECTANGLE,
     :style               => FILLED,
     :transparent_picking => false,
@@ -8,7 +8,7 @@ visualize_default{T <: Real}(::Union{Texture{Point{2, T}, 1}, Vector{Point{2, T}
     :dotted              => false
 )
 
-function visualize(locations::Signal{Vector{Point{2, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value,s))
+function visualize{N}(locations::Signal{Vector{Point{N, Float32}}}, s::Style{:lines}, customizations=visualize_default(locations.value,s))
     ll = const_lift(lastlen, locations)
     maxlength = const_lift(last, ll)
 
@@ -27,7 +27,7 @@ function lastlen(points)
     end
     result
 end
-function visualize{T}(positions::GLBuffer{Point{2, T}}, ll::GLBuffer{T}, maxlength, s::Style{:lines}, data=visualize_default(positions,s))
+function visualize{T <: Point, FT <: AbstractFloat}(positions::GLBuffer{T}, ll::GLBuffer{FT}, maxlength, s::Style{:lines}, data=visualize_default(positions,s))
     ps = gpu_data(positions)
     data[:vertex]    = positions
     data[:lastlen]   = ll
@@ -35,7 +35,7 @@ function visualize{T}(positions::GLBuffer{Point{2, T}}, ll::GLBuffer{T}, maxleng
     data[:max_primitives] = Cint(length(positions)-4)
 
     program = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag", attributes=data)
-    std_renderobject( 
+    std_renderobject(
         data, program,
         Input(AABB{Float32}(ps)), GL_LINE_STRIP_ADJACENCY 
     )
