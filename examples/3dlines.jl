@@ -28,8 +28,5 @@ end
 using GLVisualize, Reactive
 w, r = glscreen()
 buff = GLBuffer(s)
-x = map(p->p[1], xyz)
-y = map(p->p[2], xyz)
-z = map(p->p[3], xyz)
-view(visualize(x,y,z, :surface), method=:perspective)
+view(visualize(Signal(xyz), :lines, color=buff), method=:perspective)
 r()

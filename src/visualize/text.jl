@@ -1,17 +1,17 @@
 visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args=Dict()) = Dict(
     :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-    :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
+    :color              => RGBA{Float32}(0.0,0.0,0.0,1.0),
     :atlas              => get_texture_atlas(),
     :shape              => Cint(DISTANCEFIELD),
     :style              => Cint(FILLED),
     :transparent_picking => true,
     :preferred_camera   => :orthographic_pixel
 )
-
+#=
 function visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style{:square}, kw_args=Dict())
     return Dict(
         :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
-        :styles             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
+        :color             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
         :startposition      => Vec2f0(0),
         :shape              => Cint(RECTANGLE),
@@ -20,7 +20,7 @@ function visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style
         :preferred_camera   => :orthographic_pixel,
     )
 end
-
+=#
 
 function visualize(text::AbstractString, s::Style, customizations=visualize_default(text, s))
     startposition = get(customizations, :startposition, Point2f0(0))
@@ -67,7 +67,7 @@ function visualize(
     robj = assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
-        boundingbox=Signal(AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
+        boundingbox=const_lift(*, model, AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
     )
     empty!(robj.prerenderfunctions)
     prerender!(robj,

@@ -3,7 +3,7 @@ function Base.delete!(dict::Dict, key, default)
     return default
 end
 function visualize_default{T <: Point}(particles::Union{Texture{T},Vector{T}}, s::Style, kw_args=Dict())
-    color = delete!(kw_args, :color, RGBA(1f0, 0f0, 0f0, 1f0))
+    color = delete!(kw_args, :color, default(RGBA, s))
     color = texture_or_scalar(color)
     Dict(
         :primitive  => GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1))),

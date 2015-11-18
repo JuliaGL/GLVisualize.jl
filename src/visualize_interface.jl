@@ -55,5 +55,5 @@ view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c)
 
 
 default{T}(::T, s::Style) = default(T, s)
-default{T <: Colorant}(::Type{T}, s::Style) = RGBA{Float32}(0.78, 0.01, 0.93, 1.0)
+default{T <: Colorant}(::Type{T}, s::Style) = RGBA{Float32}(0.0f0,0.74736935f0,1.0f0,1.0f0)
 default{T <: Colorant}(::Type{Vector{T}}, s::Style) = map(x->RGBA{U8}(x, 1.0), colormap("Blues", 20))

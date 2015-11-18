@@ -79,8 +79,9 @@ void main(){
 
     if(shape == CIRCLE)
     	signed_distance = circle(o_uv);
-    else if(shape == DISTANCEFIELD)
+    else if(shape == DISTANCEFIELD){
         signed_distance = -texture(distancefield, o_uv).r;
+    }
     else if(shape == ROUNDED_RECTANGLE)
     	signed_distance = rounded_rectangle(o_uv, vec2(0.2), vec2(0.8));
     else if(shape == RECTANGLE)

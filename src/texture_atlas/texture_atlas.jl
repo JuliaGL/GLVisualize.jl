@@ -40,9 +40,9 @@ type TextureAtlas
 	function TextureAtlas(initial_size=(4096, 4096))
 
 		images = Texture(fill(Float16(0.0), initial_size...), minfilter=:linear, magfilter=:linear)
-		glBindTexture(GL_TEXTURE_2D, images.id)
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16)
-		glBindTexture(GL_TEXTURE_2D, 0)
+		#glBindTexture(GL_TEXTURE_2D, images.id)
+		#glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16)
+		#glBindTexture(GL_TEXTURE_2D, 0)
 
 		new(
 			RectanglePacker(Rectangle(0, 0, initial_size...)),

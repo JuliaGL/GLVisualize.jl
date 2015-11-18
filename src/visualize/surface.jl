@@ -1,14 +1,14 @@
 Base.minimum(t::Texture) = minimum(gpu_data(t))
 Base.maximum(t::Texture) = maximum(gpu_data(t))
 
-function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, ::Style{:surface}, kw_args...)
+function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, s::Style{:surface}, kw_args...)
     grid_min    = get(kw_args[1], :grid_min, Vec2f0(-1, -1))
     grid_max    = get(kw_args[1], :grid_max, Vec2f0( 1,  1))
     grid_length = grid_max - grid_min
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0)
     Dict(
         :primitive  => GLMesh2D(Rectangle(0f0,0f0,1f0,1f0)),
-        :color      => RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)],
+        :color      => default(Vector{RGBA},s),
         :grid_min   => grid_min,
         :grid_max   => grid_max,
         :color_norm => Vec2f0(minimum(grid), maximum(grid)),

@@ -52,7 +52,7 @@ void main(){
         float inside     = aastep(0.01, 120.0, signed_distance);
         fragment_color   = vec4(f_color.rgb, f_color.a*inside);
     }else{
-        fragment_color   = vec4(f_color.rgb, aastep(0.1, 0.9, f_uv.y));
+        fragment_color   = vec4(f_color.rgb, f_color.a*aastep(0.2, 0.8, f_uv.y));
     }
     fragment_groupid = f_id;
 }

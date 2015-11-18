@@ -66,31 +66,9 @@ rectangle_position(r::Rectangle) = Point{2, Float32}(r.x, r.y)
 rectangle_scale(r::Rectangle)    = Vec{2, Float32}(r.w, r.h)
 
 visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Signal(r), s, customizations)
-function visualize{T}(r::Signal{Rectangle{T}}, s::Style, customizations=visualize_default(r.value, s))
-    @materialize! primitive = customizations
-    @materialize stroke_width, glow_width = customizations
-    scale = const_lift(rectangle_scale, r)
-    data = merge(Dict(
-        :position  => const_lift(rectangle_position, r),
-        :scale     => scale,
-        :offset_scale => const_lift(+, const_lift(/, stroke_width, Signal(2)), glow_width, scale)
-    ), collect_for_gl(primitive), customizations)
-
-    robj = assemble_std(
-        r, data,
-        "particles2D_single.vert", "distance_shape.frag",
-        boundingbox=const_lift(AABB{Float32}, r)
-    )
-    empty!(robj.prerenderfunctions)
-    empty!(robj.postrenderfunctions)
-    prerender!(robj,
-        glDisable, GL_DEPTH_TEST,
-        glDepthMask, GL_FALSE,
-        glDisable, GL_CULL_FACE,
-        enabletransparency
-    )
-    postrender!(robj,
-        render, robj.vertexarray
-    )
-    robj
+function visualize{T}(r::Signal{Rectangle{T}}, s::Style, data=visualize_default(r.value, s))
+    xy = Point2f0(r.value.x, r.value.y)
+    wh = Vec2f0(r.value.w, r.value.h)
+    data[:scale] = wh
+    visualize([xy], s, data)
 end

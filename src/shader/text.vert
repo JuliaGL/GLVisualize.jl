@@ -9,7 +9,7 @@ uniform samplerBuffer  positions;
 uniform usamplerBuffer style_index;
 
 uniform samplerBuffer uvs;
-uniform sampler1D styles;
+{{color_type}} color;
 
 uniform int shape;
 uniform uint objectid;
@@ -56,9 +56,9 @@ void main(){
     }
     uvec2  style_i      = texelFetch(style_index, index).xy;
     vec2  position	    = texelFetch(positions, index).xy;
-    o_fill_color        = texelFetch(styles, int(style_i.x), 0);
-    o_stroke_color      = vec4(1,1,1,1);
-    o_glow_color 	    = vec4(0,0,0,1);
+    o_fill_color        = {{color_calculation}};
+    o_stroke_color      = vec4(0);
+    o_glow_color 	    = vec4(0);
     o_id 			    = uvec2(objectid, index+1);
     gl_Position         = projectionview * model * vec4(position+bearing+(vertices*glyph_scale), 0, 1);
 }

@@ -1,10 +1,10 @@
-function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, ::Style, kw_args=Dict())
+function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, s::Style, kw_args=Dict())
     grid_min    = get(kw_args, :grid_min, Vec2f0(-1, -1))
     grid_max    = get(kw_args, :grid_max, Vec2f0( 1,  1))
     grid_length = grid_max - grid_min
     scale = Vec3f0((1f0 / Vec2f0(size(grid))), 1f0) .* Vec3f0(grid_length, 1f0)
     p = GLNormalMesh(Cube{Float32}(Vec3f0(0), Vec3f0(1.0)))
-    c = RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)]
+    c = default(Vector{RGBA},s)
     n = Vec2f0(minimum(grid), maximum(grid))
     return Dict(
         :primitive  => p,

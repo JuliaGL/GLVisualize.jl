@@ -1,5 +1,5 @@
-function visualize_default{T}(::Vector{Point{3, T}}, ::Style{:dots}, kw_args...)
-    color = get(kw_args[1], :color, RGBA(1f0, 0f0, 0f0, 1f0))
+function visualize_default{T}(::Vector{Point{3, T}}, s::Style{:dots}, kw_args...)
+    color = get(kw_args[1], :color, default(RGBA, s))
     delete!(kw_args[1], :color)
     color = texture_or_scalar(color)
     Dict(

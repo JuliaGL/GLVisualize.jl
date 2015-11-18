@@ -75,10 +75,10 @@ end
 
 export glscreen
 
-function glscreen()
-	name="GLVisualize"
-	resolution=nothing
-	debugging=false
+function glscreen(;name="GLVisualize",
+    resolution=nothing,
+    debugging=false)
+	
 
     windowhints = [
         (GLFW.SAMPLES,      0),
@@ -113,7 +113,7 @@ function glscreen()
     add_complex_signals(screen, selection) #add the drag events and such
 
     FreeTypeAbstraction_init()
-    fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "hack_regular.ttf")
+    fn = Pkg.dir("GLVisualize", "src", "texture_atlas", "DejaVuSansMono.ttf")
     isfile(fn) || error("Could not locate font at $fn")
     global DEFAULT_FONT_FACE = newface(fn)
     global FONT_EXTENDS      = Dict{Int, FontExtent}()

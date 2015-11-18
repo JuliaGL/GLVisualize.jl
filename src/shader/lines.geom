@@ -60,7 +60,7 @@ void main(void)
     vec2 p2 = screen_space( gl_in[2].gl_Position ); // end of current segment, start of next segment
     vec2 p3 = screen_space( gl_in[3].gl_Position ); // end of next segment
 
-    float thickness_aa = thickness*5 + 2;
+    float thickness_aa = thickness + 2;
 
     
     // perform naive culling
