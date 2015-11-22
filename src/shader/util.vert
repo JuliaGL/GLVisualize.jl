@@ -25,10 +25,7 @@ float stretch(float val, float from, float to)
     return from + (val * (to - from));
 }
 
-float _normalize(float val, float from, float to)
-{
-    return (val-from) / (to - from);
-}
+float _normalize(float val, float from, float to){return (val-from) / (to - from);}
 vec2 _normalize(vec2 val, vec2 from, vec2 to)
 {
     return (val-from) * (to - from);
@@ -146,20 +143,19 @@ vec4 linear_texture(sampler3D tex, int index)
 {
     return texture(tex, linear_index(textureSize(tex, 0), index));
 }
-uvec4 getindex(usampler2D tex, int index)
-{
+uvec4 getindex(usampler2D tex, int index){
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
-vec4 getindex(sampler1D tex, int index)
-{
+vec4 getindex(samplerBuffer tex, int index){
+    return texelFetch(tex, index);
+}
+vec4 getindex(sampler1D tex, int index){
     return texelFetch(tex, index, 0);
 }
-vec4 getindex(sampler2D tex, int index)
-{
+vec4 getindex(sampler2D tex, int index){
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
-vec4 getindex(sampler3D tex, int index)
-{
+vec4 getindex(sampler3D tex, int index){
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
 
@@ -191,10 +187,9 @@ vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm)
 out vec3 o_normal;
 out vec3 o_lightdir;
 out vec3 o_vertex;
-out vec4 o_color;
 
 
-void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4])
+void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 light[4])
 {
     vec4 position_camspace  = viewmodel * vec4(vertex,  1);
     // normal in world space
@@ -203,8 +198,6 @@ void render(vec3 vertex, vec3 normal, vec4 color, mat4 viewmodel, mat4 projectio
     o_lightdir              = normalize(light[3] - vertex);
     // direction to camera
     o_vertex                = -position_camspace.xyz;
-    // 
-    o_color                 = color;
     // screen space coordinates of the vertex
     gl_Position             = projection * position_camspace; 
 }

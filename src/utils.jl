@@ -12,12 +12,9 @@ function Base.split(condition::Function, associative::Associative)
     A, B
 end
 
-#creates methods to accept signals, which then gets transfert to an OpenGL target type
-macro visualize_gen(input, target, S)
-    esc(quote
-        visualize(value::$input, s::$S, customizations=visualize_default(value, s)) =
-            visualize($target(value), s, customizations)
+<<<<<<< HEAD
 
+<<<<<<< HEAD
         function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
             tex = $target(signal.value)
             preserve(const_lift(update!, Signal(tex), signal))
@@ -43,12 +40,15 @@ export OR
 
 
 function GLVisualizeShader(shaders...; attributes...)
+=======
+function GLVisualizeShader(shaders)
+>>>>>>> 2624608... big clean up, ported most examples to new syntax, not working yet, though
     shaders = map(shader -> load(joinpath(shaderdir(), shader)), shaders)
-    TemplateProgram(shaders...;
-        attributes...,  fragdatalocation=[(0, "fragment_color"), (1, "fragment_groupid")],
-        updatewhile=ROOT_SCREEN.inputs[:open], update_interval=1.0
+    (shaders, ((:fragdatalocation,[(0, "fragment_color"), (1, "fragment_groupid")]),
+        (:updatewhile,ROOT_SCREEN.inputs[:open]), (:update_interval,1.0))
     )
 end
+<<<<<<< HEAD
 
 function default_boundingbox(main, model)
     main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
@@ -57,12 +57,25 @@ end
 function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     std_renderobject(dict, program, boundingbox, primitive, main)
+=======
+=======
+>>>>>>> b2cd26f... made a few more examples work
+function assemble_shader(data)
+    shader = data[:shader]
+    delete!(data, :shader)
+    bb  = get(data, :boundingbox, Signal(centered(AABB)))
+    glp = get(data, :gl_primtive, GL_TRIANGLES)
+    if haskey(data, :instances) 
+        robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
+    else
+        robj = std_renderobject(data, shader, bb, glp, nothing)
+    end
+    Context(robj)
+>>>>>>> 2624608... big clean up, ported most examples to new syntax, not working yet, though
 end
 
-function assemble_instanced(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
-    program = GLVisualizeShader(shaders..., attributes=dict)
-    instanced_renderobject(dict, program, boundingbox, primitive, main)
-end
+
+
 
 
 

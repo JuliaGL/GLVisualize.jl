@@ -1,0 +1,48 @@
+visualize_default{T <: Colorant}(image::MatTypes{T}, s::Style, data) = @gen_defaults! data begin
+    primitive ::GLUVMesh2D   = Rectangle{Float32}(0,0,size(image)...)
+    preferred_camera 	     = :orthographic_pixel
+    boundingbox 		     = GLBoundingBox(primitive)
+end
+
+inner_visualize{T <: Colorant}(img::Texture{T, 2}, s::Style, data::Dict) = assemble_shader(
+    img, data,
+    "uv_vert.vert", "texture.frag",
+    boundingbox=Signal(AABB{Float32}(Vec3f0(0), Vec3f0(size(img)...,0)))
+)
+
+immutable Intensity{N, T} <: FixedVector{N, T}
+	_::NTuple{N, T}
+end
+export Intensity
+
+_default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
+    color            = default(Vector{RGBA{U8}},s)
+    intensity        = main
+    primitive        = Rectangle{Float32}(0,0,size(main)...) :: (GeometryPrimitive => GLUVMesh2D,)
+    color_norm	     = Vec2f0(0, 1)
+    preferred_camera = :orthographic_pixel
+    boundingbox 	 = GLBoundingBox(primitive)
+    shader           = ("uv_vert.vert", "intensity.frag")
+end
+
+visualize_default(distancefield::Union{Texture{Float32, 2}, Array{Float32, 2}}, ::Style{:distancefield}, kw_args...) = @compat(Dict(
+    :color          => RGBA(1f0, 1f0, 1f0, 1f0),
+    :primitive      => GLUVMesh2D(Rectangle{Float32}(0f0,0f0, size(distancefield)...)),
+    :preferred_camera  => :orthographic_pixel
+))
+
+
+function visualize(distancefield::Texture{Float32, 2}, s::Style{:distancefield}, customizations=visualize_default(positions, s))
+    @materialize! primitive = customizations
+    data = merge(Dict(
+        :distancefield => distancefield,
+    ), collect_for_gl(primitive), customizations)
+
+    program = assemble_std(
+        distancefield, data,
+        "uv_vert.vert", "distancefield.frag",
+        boundingbox=Signal(AABB{Float32}(Vec3f0(0), Vec3f0(size(distancefield)...,0)))
+    )
+end
+
+

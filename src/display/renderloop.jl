@@ -41,14 +41,14 @@ function resizebuffers(window_size, framebuffer::GLFramebuffer)
 end
 
 function postprocess(framebuffer::GLFramebuffer, screen::Screen)
-    data = merge(Dict(
-        :resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),
-        :u_texture0 => framebuffer.color
-    ), collect_for_gl(GLUVMesh2D(SimpleRectangle(-1f0,-1f0, 2f0, 2f0))))
-    assemble_std(
-        nothing, data,
-        "fxaa.vert", "fxaa.frag", "fxaa_combine.frag"
-    )
+    extract_renderable(assemble_shader(@gen_defaults! Dict{Symbol, Any}() begin
+        main = nothing
+        model = eye(Mat4f0)
+        resolution = const_lift(Vec2f0, screen.inputs[:framebuffer_size])
+        u_texture0 = framebuffer.color
+        primitive  = GLUVMesh2D(SimpleRectangle(-1f0,-1f0, 2f0, 2f0))
+        shader = GLVisualizeShader("fxaa.vert", "fxaa.frag", "fxaa_combine.frag")
+    end))[]
 end
 
 function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
@@ -66,10 +66,15 @@ function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer.id, 0)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, objectid_buffer.id, 0)
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, depth_buffer.id, 0)
-    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, depth_buffer)
+
+    depth_buffer = GLuint[0]
+    glGenRenderbuffers(1, depth_buffer)
+    db = depth_buffer[]
+    glBindRenderbuffer(GL_RENDERBUFFER, db)
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, buffersize...)
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, db)
+    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, db)
     preserve(const_lift(resizebuffers, framebuffsize, fb))
-    glBindFramebuffer(GL_FRAMEBUFFER, 0)
     fb
 end
 
@@ -78,7 +83,6 @@ export glscreen
 function glscreen(;name="GLVisualize",
     resolution=nothing,
     debugging=false)
-
 
     windowhints = [
         (GLFW.SAMPLES,      0),
@@ -109,6 +113,7 @@ function glscreen(;name="GLVisualize",
 
     selection      = Dict{Symbol, Signal{Matrix{Vec{2, Int}}}}()
     selectionquery = Dict{Symbol, SimpleRectangle{Int}}()
+
     insert_selectionquery!(:mouse_hover, const_lift(mouse_selection, screen.inputs[:mouseposition]), selection, selectionquery)
     add_complex_signals(screen, selection) #add the drag events and such
 
@@ -290,5 +295,15 @@ function screenshot(window; path="screenshot.png", channel=:color)
     else
         error("Channel $channel does not exist. Only these channels are available: $channels")
     end
+end
+
+function depthmap(window, path="depthmap.png")
+    fb = window.inputs[:framebuffer]
+    window_size = window.area.value.w, window.area.value.h
+    glBindFramebuffer(GL_FRAMEBUFFER, fb.render_framebuffer)
+    glBindRenderbuffer(GL_RENDERBUFFER, fb.depth)
+    buffer = zeros(Float32, window_size...)
+    glReadPixels(0, 0, window_size..., GL_DEPTH_COMPONENT32, GL_FLOAT, buffer)
+    buffer
 end
 export screenshot

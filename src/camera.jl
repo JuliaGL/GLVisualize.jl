@@ -80,12 +80,12 @@ function cubecamera(
 	)
     const T = Float32
     @materialize mousebuttonspressed, window_size, mouseposition, buttonspressed = window.inputs
-    
+
     dd = doubleclick(window.inputs[:mousebuttonspressed], 0.2)
     h = window.inputs[:mouse_hover]
     id = Signal(4)
     should_reset = filter(x->h.value[1] == id.value, false, dd)
-    
+
     p = colored_cube()
     resetto         = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Signal(h))
     inside_trans    = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
@@ -142,7 +142,7 @@ function cubecamera(
     rot   = const_lift(getfield, piv, :rotation)
     model = const_lift(cube_rotation, const_lift(inv, rot)) do cr, r
         translationmatrix(Vec3f0(3,3,0)) * Mat{4,4,T}(cr) * translationmatrix(Vec3f0(-3,-3,0)) * Mat{4,4,T}(r)
-    end 
+    end
     cubescreen = Screen(window, area=cube_area, transparent=Signal(true))
     cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,

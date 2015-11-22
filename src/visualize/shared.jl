@@ -1,6 +1,0 @@
-@enum Shape CIRCLE RECTANGLE ROUNDED_RECTANGLE DISTANCEFIELD TRIANGLE
-
-const FILLED 		= Cint(1<<0) 
-const OUTLINED 		= Cint(1<<1)
-const GLOWING 		= Cint(1<<2) 
-const TEXTURE_FILL 	= Cint(1<<3)

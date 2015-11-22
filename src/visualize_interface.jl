@@ -1,29 +1,10 @@
-typealias VecTypes{T} Union{Vector{T}, Texture{T}, Signal{Vector{T}}}
-typealias MatTypes{T} Union{Matrix{T}, Texture{T, 2}, Signal{Matrix{T}}}
-typealias VolumeTypes{T} Union{Array{T, 3}, Texture{T, 3}, Signal{Array{T, 3}}}
 
-
-typealias VecOrSig{T} Union{Vector{T}, Signal{Vector{T}}}
-typealias MatOrSig{T} Union{Matrix{T}, Signal{Matrix{T}}}
-typealias VolumeOrSig{T} Union{Array{T, 3}, Signal{Array{T, 3}}}
-
-visualize_default(value::Any, style::Style, kw_args=Dict{Symbol, Any}) = error("""There are no defaults for the type $(typeof(value)),
-	which either means the implementation is incomplete or not implemented yet.
-	Consider defining visualize_default(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => Dict{Symbol, Any} and
-	visualize(::$(typeof(value)), ::Style, parameters::Dict{Symbol, Any}) => RenderObject""")
-
-function visualize_default(
-		value::Any, style::Symbol, kw_args::Dict{Symbol, Any},
-		defaults=Dict(
-		    :model      	  => Signal(eye(Mat4f0)),
-		    :light      	  => Signal(Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]),
-		    :preferred_camera => :perspective
-		)
-	)
-	parameters_calculated = _default(value, Style{style}(), parameters_dict)
-	merge(defaults, parameters_calculated, parameters_dict)
-end
-
+default(main, s, data) = _default(
+	main, s, merge(data, Dict(
+    :model      	  => eye(Mat4f0),
+    :light      	  => Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)],
+    :preferred_camera => :perspective
+)))
 
 """
 Creates a default visualization for any value.
@@ -32,19 +13,14 @@ The style can change the the look completely (e.g points displayed as lines, or 
 while the key word arguments just alter the parameters of one visualization.
 Always returns a context, which can be displayed on a window via view(::Context, [display]).
 """
-visualize(value::Any, style::Symbol=:default; kw_args...) =
-    visualize(value::Any, Style{style}(), Dict{Symbol, Any}(kw_args)) # convert to internally used format
-
-function visualize(value::Any, style::Style, parameters::Dict)
-    parameters[:origin] = value # preserve origin value... maybe this should be via weak reference?
-	visualize(
-		gl_convert(value),
-		style,
-		visualize_default(value, style, parameters)
-	)::Context
+visualize(main, s::Symbol=:default; kw_args...) = visualize(main, Style{s}(), Dict{Symbol, Any}(kw_args))::Context
+function visualize(main, s::Style, data::Dict)
+	assemble_shader(default(main, s, data))::Context
 end
+visualize(c::Composable) = Context(c)
+visualize(c::Context) = c
 
-visualize(c::Composable) = c
+
 
 
 function view(
@@ -82,5 +58,15 @@ default returns common defaults for a certain style and datatype.
 This is convenient, to quickly switch out default styles.
 """
 default{T}(::T, s::Style) = default(T, s)
-default{T <: Colorant}(::Type{T}, s::Style) = RGBA{Float32}(0.0f0,0.74736935f0,1.0f0,1.0f0)
-default{T <: Colorant}(::Type{Vector{T}}, s::Style) = map(x->RGBA{U8}(x, 1.0), colormap("Blues", 20))
+
+const color_defaults = RGBA{Float32}[
+	RGBA{Float32}(0.0f0,0.74736935f0,1.0f0,1.0f0),
+	RGBA{Float32}(0.78, 0.01, 0.93, 1.0),
+	RGBA{Float32}(0, 0, 0, 1.0),
+	RGBA{Float32}(0.78, 0.01, 0, 1.0)
+]
+function default{T <: Colorant}(::Type{T}, s::Style, index=1)
+    index>length(color_defaults) && error("There are only three color defaults.")
+    color_defaults[index]
+end
+default{T <: Colorant}(::Type{Vector{T}}, s::Style) = convert(Array{RGBA{U8}, 1}, map(x->RGBA{U8}(x, 1.0), colormap("Blues")))

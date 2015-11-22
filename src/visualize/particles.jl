@@ -1,85 +1,60 @@
-
-typealias P_Primitive                      Union{VecTypes{Sprite}, AbstractMesh, GLPoints, DistanceField, Sprite}
-typealias P_Position{T <: Point}           Union{VecTypes{T}, Grid, Cube, Void}
-typealias P_Scale{N,T}                     Union{VecTypes{Vec{N, T}}, Vec{N, T}, T, Void}
-typealias P_Rotation{T <: Quaternion}      Union{VecTypes{T}, T, Void} # rotation is optional (nothing)
-typealias P_Color{T <: Colorant}           Union{VecTypes{T}, T, Void}
-typealias P_Intensitiy{T <: AbstractFloat} Union{VecTypes{T}, T, Void}
-
-
-
-
-
-function Particles(data::Dict)
-    @gen_defaults! data begin
-        primitive   = GLPoints()
-        position    = Grid(-1:1, -1:1)
-        scale       = nothing
-        rotation    = nothing
-        color       = nothing
-        intensity   = nothing
-        color_norm  = nothing
+_default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict) = _default((centered(HyperRectangle{N, Float32}), main), s, data)
+function _default{T <: Vec3}(main::VolumeTypes{T}, s::Style, data::Dict)
+    data[:rotation] = vec(main)
+    get!(data, :color_norm) do
+        _norm = map(norm, vectorfield)
+        Vec2f0(minimum(_norm), maximum(_norm))
     end
-    Particles([data[key] for key in fieldnames(Particles)]...)
+    get!(data, :color, default(Vector{RGBA}))
+    _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), Grid(main)), s, data)
 end
 
-visualize{T<:Number}(p::MatTypes{T}, s::Style, data::Dict) = visualize((p, Grid(linspace(-1,1,size(p,1)), linspace(-1,1,size(p,1)))), s, data)
-visualize{T<:Number}(p::Tuple{MatTypes{T}, Grid}, s::Style, data::Dict) = _visualize(
-    Particles(scale=(data[:scale_x], data[:scale_y], p[1]), position=p[2]),
-    s, data
-)
-
-
-function visualize{T<:Point}(p::VecTypes{T}, s::Style, data::Dict)
-    data[:position] = p
-    _visualize(Particles(data), s, data)
-end
-function visualize(p::Tuple{P_Position, P_Primitive}, s::Style, data::Dict)
-    data[:position], data[:primitive] = p
-    _visualize(Particles(data), s, data)
+_default{Primitive <: Union{GeometryPrimitive{3}, AbstractMesh}, T <: Point}(p::Tuple{Primitive, VecTypes{T}}, s::Style, data::Dict) = @gen_defaults! data begin
+    primitive::GLNormalMesh = p[1]
+    color            = default(RGBA{Float32}, s) => TextureBuffer
+    position         = p[2]                      => TextureBuffer
+    scale            = nothing                   => TextureBuffer
+    rotation         = nothing                   => TextureBuffer
+    intensity        = nothing                   => TextureBuffer
+    color_norm       = nothing                   => TextureBuffer
+    instances        = position
+    boundingbox      = GLBoundingBox(position, scale, primitive)
+    shader           = GLVisualizeShader("util.vert", "particles.vert", "standard.frag")
 end
 
-_visualize{P <: AbstractMesh}(p::Particles{P}, s::Style, data::Dict) = assemble_shader(
-    p, data,
-    "util.vert", "Particles.vert", "standard.frag",
-)
-
-_visualize{P <: GLPoints}(p::Particles{P}, s::Style, data::Dict) = assemble_shader(
-    p, data,
-    "dots.vert", "dots.frag"
-)
-
-
-
-function _visualize{P <: DistanceField}(p::Particles{P}, s::Style, data::Dict)
-    robj = assemble_shader(
-        p, data,
-        "util.vert", "Particles.vert", "distance_shape.frag",
-    )
-    empty!(robj.prerenderfunctions)
-    prerender!(robj,
-        glDisable, GL_DEPTH_TEST,
-        glDepthMask, GL_FALSE,
-        glDisable, GL_CULL_FACE,
-        enabletransparency
-    )
-    robj
+_default{T <: Point}(positions::VecTypes{T}, s::style"points", data::Dict) = @gen_defaults! data begin
+    vertex       = positions => GLBuffer
+    point_size   = 2f0
+    prerender    = +((glPointSize, point_size),)
+    shader       = GLVisualizeShader("dots.vert", "dots.frag")
+    gl_primitive = GL_POINTS
 end
 
-function assemble_shader(p::Particles, data, shaderpaths...)
-    bb = AABB{Float32}(p)
-    data = merge(data, [key => gl_convert(p.(key)) for key in fieldnames(Particles)])
-    assemble_shader(p, data, bb, shaderpaths...)
-end
-function assemble_shader(main, data, boundingbox, shaderpaths...; primitive=GL_TRIANGLES)
-    program = GLVisualizeShader(shaders..., attributes=dict)
-    renderobject(main, data, program, boundingbox, primitive)
+
+function overall_scale(stroke_width, glow_width, scale)
+    final_scale = Vec3f0(scale)
+    (stroke_width > 0f0) && (final_scale += stroke_width/2f0)
+    (glow_width   > 0f0) && (final_scale += glow_width/2f0)
+    final_scale
 end
 
-const NeedsInstancing = Union{Particles}
-function renderobject(main::NeedsInstancing, data, program, boundingbox, primitive)
-    instanced_renderobject(data, program, boundingbox, primitive, main)
-end
-function renderobject(main::NeedsInstancing, data, program, boundingbox, primitive)
-    std_renderobject(data, program, boundingbox, primitive, main)
+primitive_shape(::Circle)    = CIRCLE
+primitive_shape(::Rectangle) = RECTANGLE
+
+_default{Primitive <: GeometryPrimitive{2}, Position <: Array{Point}}(p::Tuple{Primitive, Position}, s::Style, data::Dict) = @gen_defaults! data begin
+    scale               = 1f0
+    stroke_width        = 2f0
+    glow_width          = 0f0
+    offset_scale        = const_lift(overall_scale, stroke_width, glow_width, scale)
+    shape               = RECTANGLE
+    position            = p[2]                => GLBuffer
+    color               = default(RGBA, s)    => GLBuffer
+    stroke_color        = default(RGBA, s, 2) => GLBuffer
+    glow_color          = nothing             => GLBuffer
+    image               = nothing             => Texture
+    distancefield       = nothing             => Texture
+    transparent_picking = true
+    preferred_camera    = :orthographic_pixel
+    shader              = GLVisualizeShader("util.vert", "billboards.geom", "billboards.vert", "distance_shape.frag")
+    gl_primitive        = GL_POINTS
 end

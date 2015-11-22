@@ -1,22 +1,34 @@
-_default(::AbstractMesh, ::Style, kw_args=Dict()) = Dict{Symbol, Any}()
-_default(::GLNormalMesh, s::Style, kw_args=Dict()) = Dict{Symbol, Any}(
-    :color => default(RGBA, s)
-)
-
-#visualize(mesh::Mesh, s::Style, customizations=visualize_default(mesh, s)) = visualize(convert(GLNormalMesh, mesh), s, customizations)
-
-
-_visualize(mesh::NativeMesh{GLNormalMesh}, s::Style, data::Dict) = assemble_std(
-    mesh.vertices, data,
-    "util.vert", "standard.vert", "standard.frag"
-)
-
-_visualize(mesh::NativeMesh{GLNormalAttributeMesh}, s::Style, data::Dict) = assemble_std(
+#=
+_default(mesh::GLNormalAttributeMesh, s::Style, data::Dict) = assemble_std(
     mesh, data,
-    "util.vert", "attribute_mesh.vert", "standard.frag",
+    ("util.vert", "attribute_mesh.vert", "standard.frag"),
 )
+=#
 
-_visualize(mesh::NativeMesh{GLNormalUVMesh}, s::Style, data::Dict) = assemble_std(
-    mesh, data,
-    "util.vert", "uv_normal.vert", "uv_normal.frag",
+_default(mesh::GLNormalMesh, s::Style, data::Dict) = @gen_defaults! data begin
+    main 		= mesh
+    color 		= default(RGBA{Float32}, s)
+    boundingbox = GLBoundingBox(mesh)
+    shader 		= GLVisualizeShader("util.vert", "standard.vert", "standard.frag")
+end
+
+_default(main::GLPlainMesh, ::style"grid", data::Dict) = @gen_defaults! data begin
+    primitive       = main 
+    color           = default(RGBA, s, 1)
+    bg_colorc       = default(RGBA, s, 2)
+    grid_thickness  = Vec3f0(2)
+    gridsteps       = Vec3f0(5)
+    shader          = GLVisualizeShader("grid.vert", "grid.frag")
+    boundingbox     = GLBoundingBox(primitive)
+end
+#=
+empty!(robj.prerenderfunctions)
+prerender!(robj,
+    glEnable, GL_DEPTH_TEST,
+    glDepthMask, GL_FALSE,
+    glDepthFunc, GL_LEQUAL,
+    glEnable, GL_CULL_FACE,
+    glCullFace, GL_BACK,
+    enabletransparency
 )
+=#

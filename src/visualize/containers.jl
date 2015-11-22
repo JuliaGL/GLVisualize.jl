@@ -1,6 +1,5 @@
 visualize_default{T <: Composable, N}(::Array{T, N}, ::Style, kw_args...) = Dict(
-    :gap 	=> Signal(Vec3f0(0.1, 0.1, 0.0)),
-   	:scale 	=> Vec3f0(1.0, 1.0, 1.0)
+
 )
 
 max_xyz_inv(width, xmask=0, ymask=0, zmask=0) = 1f0/max(width[1]*xmask, width[2]*ymask , width[3]*zmask)
@@ -21,9 +20,6 @@ function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, customizatio
 	Context(grid...)
 end
 
-visualize_default{T <: Composable}(::Vector{T}, ::Style, kw_args...) = Dict(
-    :gap 	=> 0f0,
-)
 y_coord(x) = x[2]
 function list_translation(y_start, x_align, bb)
 	w = width(bb)[2]
@@ -31,11 +27,14 @@ function list_translation(y_start, x_align, bb)
 	translationmatrix(Vec3f0(x_move, y_start-w, 0))
 end
 
-function visualize{T <: Composable}(list::Vector{T}, s::Style, customizations=visualize_default(grid, s))
-    @materialize! gap = customizations
+function visualize{T <: Composable}(list::Vector{T}, s::Style, data::Dict)
+    @gen_defaults! data begin
+    	gap 	= Vec3f0(0.1, 0.1, 0.0)
+   		scale 	= Vec3f0(1.0, 1.0, 1.0)
+    end
     elem 	= first(list)
     bb_s 	= boundingbox(elem)
-	y_start = const_lift(-, const_lift(y_coord, const_lift(getfield, bb_s, :minimum)), gap)
+	y_start = const_lift(y_coord, const_lift(-, const_lift(minimum, bb_s), gap))
 	x_align = const_lift(first, const_lift(minimum, bb_s))
 	for elem in list[2:end]
 		bb_s 		 = boundingbox(elem)
