@@ -135,10 +135,9 @@ function renderloop(screen, selectionquery, selection, postprocess_robj, renderl
     end
     GLFW.Terminate()
     FreeTypeAbstraction_done()
+    GLAbstraction.empty_shader_cache!()
 end
 function renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
-    #tic()
-
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
     glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
