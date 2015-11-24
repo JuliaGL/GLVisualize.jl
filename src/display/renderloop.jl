@@ -24,18 +24,18 @@ function delete_selectionquery!(name::Symbol, selection, selectionquery)
     nothing
 end
 immutable GLFramebuffer
-    render_framebuffer:: GLuint
-    color::              Texture{RGBA{UFixed8}, 2}
-    objectid::           Texture{Vec{2, GLushort}, 2}
-    depth::              GLuint
+    render_framebuffer ::GLuint
+    color              ::Texture{RGBA{UFixed8}, 2}
+    objectid           ::Texture{Vec{2, GLushort}, 2}
+    depth              ::Texture{Float32, 2}
 end
 
 function resizebuffers(window_size, framebuffer::GLFramebuffer)
     if all(x->x>0, window_size)
-        resize_nocopy!(framebuffer.color,    tuple(window_size...))
-        resize_nocopy!(framebuffer.objectid,  tuple(window_size...))
-        glBindRenderbuffer(GL_RENDERBUFFER, framebuffer.depth)
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, window_size...)
+        ws = tuple(window_size...)
+        resize_nocopy!(framebuffer.color,    ws)
+        resize_nocopy!(framebuffer.objectid, ws)
+        resize_nocopy!(framebuffer.depth,    ws)
     end
     nothing
 end
@@ -58,18 +58,18 @@ function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
     buffersize      = tuple(framebuffsize.value...)
     color_buffer    = Texture(RGBA{UFixed8},    buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
     objectid_buffer = Texture(Vec{2, GLushort}, buffersize, minfilter=:nearest, x_repeat=:clamp_to_edge)
+    depth_buffer    = Texture(Float32, buffersize, 
+        internalformat  = GL_DEPTH_COMPONENT32F, 
+        format          = GL_DEPTH_COMPONENT, 
+        minfilter=:nearest, x_repeat=:clamp_to_edge
+    )
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer.id, 0)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, objectid_buffer.id, 0)
-
-    depth_buffer = GLuint[0]
-    glGenRenderbuffers(1, depth_buffer)
-    db = depth_buffer[]
-    glBindRenderbuffer(GL_RENDERBUFFER, db)
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, buffersize...)
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, db)
-    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, db)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, depth_buffer.id, 0)
+    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, depth_buffer)
     preserve(const_lift(resizebuffers, framebuffsize, fb))
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
     fb
 end
 
@@ -282,8 +282,14 @@ function doubleclick(mouseclick, threshold)
 end
 
 
-function screenshot(window, path="screenshot.png")
-    img = gpu_data(window.inputs[:framebuffer].color)[window.area.value]
-    save(path, rotl90(img), true)
+function screenshot(window; path="screenshot.png", channel=:color)
+    fb = window.inputs[:framebuffer]
+    channels = fieldnames(fb)[2:end]
+    if channel in channels
+        img = gpu_data(fb.(channel))[window.area.value]
+        save(path, rotl90(img), true)
+    else
+        error("Channel $channel does not exist. Only these channels are available: $channels")
+    end
 end
 export screenshot
