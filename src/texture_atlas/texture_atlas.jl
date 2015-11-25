@@ -45,7 +45,7 @@ type TextureAtlas
 		#glBindTexture(GL_TEXTURE_2D, 0)
 
 		new(
-			RectanglePacker(Rectangle(0, 0, initial_size...)),
+			RectanglePacker(SimpleRectangle(0, 0, initial_size...)),
 			Dict{Any, Int}(),
 			1,
 			images,
@@ -137,7 +137,7 @@ function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_
 	else
 		extent = extent ./ Vec2f0(2^2)
 	end
-	rect = Rectangle(0, 0, size(sd)...)
+	rect = SimpleRectangle(0, 0, size(sd)...)
     uv   = push!(ta.rectangle_packer, rect).area #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small.") #TODO resize surface
     ta.images[uv] = sd

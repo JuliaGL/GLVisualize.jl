@@ -237,19 +237,19 @@ push!(ROOT_SCREEN.renderlist, robj3)
 push!(ROOT_SCREEN.renderlist, robj4)
 
 const SELECTION         = Dict{Symbol, Signal{Matrix{Vec{2, Int}}}}()
-const SELECTION_QUERIES = Dict{Symbol, Rectangle{Int}}()
+const SELECTION_QUERIES = Dict{Symbol, SimpleRectangle{Int}}()
 immutable SelectionID{T}
     objectid::T
     index::T
 end
 typealias GLSelection SelectionID{UInt16}
 typealias ISelection SelectionID{Int}
-function insert_selectionquery!(name::Symbol, value::Rectangle)
+function insert_selectionquery!(name::Symbol, value::SimpleRectangle)
     SELECTION_QUERIES[name] = value
     SELECTION[name]         = Signal(Vec{2, Int}[]')
     SELECTION[name]
 end
-function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}})
+function insert_selectionquery!(name::Symbol, value::Signal{SimpleRectangle{Int}})
     const_lift(value) do v
         SELECTION_QUERIES[name] = v
     end |> preserve
@@ -289,7 +289,7 @@ bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
     const_lift(first, foldp(fold_bounce, (first(range), one(T)), const_lift(tuple, t, range)))
 
 insert_selectionquery!(:mouse_hover, const_lift(ROOT_SCREEN.inputs[:mouseposition]) do mpos
-    Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
+    SimpleRectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1,1)
 end |> preserve)
 
 
@@ -324,7 +324,7 @@ function postprocess(screen_texture, screen)
     data = merge(Dict(
         :resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),
         :u_texture0 => screen_texture
-    ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
+    ), collect_for_gl(GLUVMesh2D(SimpleRectangle(-1f0,-1f0, 2f0, 2f0))))
     program = TemplateProgram(
         load(Pkg.dir("GLVisualize", "src", "shader", "fxaa.vert")),
         load(Pkg.dir("GLVisualize", "src", "shader", "fxaa.frag")),

@@ -39,16 +39,16 @@ end
 function init_romeo()
     w, renderloop = glscreen()
     sourcecode_area = const_lift(w.area) do x
-    	Rectangle(0, 0, div(x.w, 7)*3, x.h)
+    	SimpleRectangle(0, 0, div(x.w, 7)*3, x.h)
     end
     visualize_area = const_lift(w.area) do x
-        Rectangle(div(x.w,7)*3, 0, div(x.w, 7)*3, x.h)
+        SimpleRectangle(div(x.w,7)*3, 0, div(x.w, 7)*3, x.h)
     end
     search_area = const_lift(visualize_area) do x
-        Rectangle(x.x, x.y, x.w, div(x.h,10))
+        SimpleRectangle(x.x, x.y, x.w, div(x.h,10))
     end
     edit_area = const_lift(w.area) do x
-    	Rectangle(div(x.w, 7)*6, 0, div(x.w, 7), x.h)
+    	SimpleRectangle(div(x.w, 7)*6, 0, div(x.w, 7), x.h)
     end
 
 

@@ -1,6 +1,6 @@
 visualize_default(distancefield::Union{Texture{Float32, 2}, Array{Float32, 2}}, s::Style{:distancefield}, kw_args...) = @compat(Dict(
     :color          => default(RGBA, s),
-    :primitive      => GLUVMesh2D(Rectangle{Float32}(0f0,0f0,size(distancefield)...)),
+    :primitive      => GLUVMesh2D(SimpleRectangle{Float32}(0f0,0f0,size(distancefield)...)),
     :preferred_camera  => :orthographic_pixel
 ))
 

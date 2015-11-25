@@ -1,5 +1,5 @@
 GLVisualize.visualize_default{T <: Point{2}}(::Union{Texture{T, 1}, Vector{T}}, s::Style{:default}, kw_args=Dict()) = Dict(
-    :primitive          => GLUVMesh2D(Rectangle(-0.5f0, -0.5f0, 1f0, 1f0)),
+    :primitive          => GLUVMesh2D(SimpleRectangle(-0.5f0, -0.5f0, 1f0, 1f0)),
     :scale              => Vec2f0(20),
     :shape              => RECTANGLE,
     :style              => OUTLINED|FILLED,
@@ -49,8 +49,8 @@ function visualize{T <: Point{2}}(
 end
 
 
-visualize_default{T <: Real}(::Rectangle{T}, ::Style, kw_args=Dict()) = Dict(
-    :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+visualize_default{T <: Real}(::SimpleRectangle{T}, ::Style, kw_args=Dict()) = Dict(
+    :primitive          => GLUVMesh2D(SimpleRectangle(0f0, 0f0, 1f0, 1f0)),
     :shape              => Cint(RECTANGLE),
     :style              => Cint(OUTLINED) | Cint(FILLED),
     :stroke_width       => 2f0,
@@ -62,11 +62,11 @@ visualize_default{T <: Real}(::Rectangle{T}, ::Style, kw_args=Dict()) = Dict(
     :preferred_camera   => :orthographic_pixel
 )
 
-rectangle_position(r::Rectangle) = Point{2, Float32}(r.x, r.y)
-rectangle_scale(r::Rectangle)    = Vec{2, Float32}(r.w, r.h)
+rectangle_position(r::SimpleRectangle) = Point{2, Float32}(r.x, r.y)
+rectangle_scale(r::SimpleRectangle)    = Vec{2, Float32}(r.w, r.h)
 
-visualize{T}(r::Rectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Signal(r), s, customizations)
-function visualize{T}(r::Signal{Rectangle{T}}, s::Style, data=visualize_default(r.value, s))
+visualize{T}(r::SimpleRectangle{T}, s::Style, customizations=visualize_default(r.value, s)) = visualize(Signal(r), s, customizations)
+function visualize{T}(r::Signal{SimpleRectangle{T}}, s::Style, data=visualize_default(r.value, s))
     xy = Point2f0(r.value.x, r.value.y)
     wh = Vec2f0(r.value.w, r.value.h)
     data[:scale] = wh

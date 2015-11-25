@@ -4,7 +4,7 @@ immutable SelectionID{T}
 end
 typealias GLSelection SelectionID{UInt16}
 typealias ISelection SelectionID{Int}
-function insert_selectionquery!(name::Symbol, value::Rectangle, selection, selectionquery)
+function insert_selectionquery!(name::Symbol, value::SimpleRectangle, selection, selectionquery)
     selectionquery[name] = value
     selection[name]      = Signal(Vec{2, Int}[]')
     selection[name]
@@ -13,7 +13,7 @@ end
 insert_selectionquery(value, selectionquery, name) = selectionquery[name] = value
 
 
-function insert_selectionquery!(name::Symbol, value::Signal{Rectangle{Int}}, selection, selectionquery)
+function insert_selectionquery!(name::Symbol, value::Signal{SimpleRectangle{Int}}, selection, selectionquery)
     preserve(const_lift(insert_selectionquery, value, selectionquery, name))
     selection[name]  = Signal(Array(Vec{2, Int}, value.value.w, value.value.h))
     selection[name]
@@ -44,7 +44,7 @@ function postprocess(framebuffer::GLFramebuffer, screen::Screen)
     data = merge(Dict(
         :resolution => const_lift(Vec2f0, screen.inputs[:framebuffer_size]),
         :u_texture0 => framebuffer.color
-    ), collect_for_gl(GLUVMesh2D(Rectangle(-1f0,-1f0, 2f0, 2f0))))
+    ), collect_for_gl(GLUVMesh2D(SimpleRectangle(-1f0,-1f0, 2f0, 2f0))))
     assemble_std(
         nothing, data,
         "fxaa.vert", "fxaa.frag", "fxaa_combine.frag"
@@ -108,7 +108,7 @@ function glscreen(;name="GLVisualize",
     postprocess_robj = postprocess(framebuffer, screen)
 
     selection      = Dict{Symbol, Signal{Matrix{Vec{2, Int}}}}()
-    selectionquery = Dict{Symbol, Rectangle{Int}}()
+    selectionquery = Dict{Symbol, SimpleRectangle{Int}}()
     insert_selectionquery!(:mouse_hover, const_lift(mouse_selection, screen.inputs[:mouseposition]), selection, selectionquery)
     add_complex_signals(screen, selection) #add the drag events and such
 
@@ -175,7 +175,7 @@ end
 
 
 
-mouse_selection(mpos) = Rectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1, 1)
+mouse_selection(mpos) = SimpleRectangle{Int}(round(Int, mpos[1]), round(Int, mpos[2]), 1, 1)
 
 
 
