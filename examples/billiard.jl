@@ -1,3 +1,5 @@
+Pkg.clone("https://github.com/dpsanders/BilliardModels.jl")
+
 using BilliardModels
 using GLVisualize, GeometryTypes, Reactive, ColorTypes, GLAbstraction, MeshIO, Meshes, Colors
 const table 		= Sinai_billiard(0.1)
