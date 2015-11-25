@@ -158,22 +158,23 @@ end
 
 
 push!(TEST_DATA2D, image_test_data(20)...)
+let gif = load("doge.png").data, N = 512, particle_color = Texture(map(x->RGBA{U8}(x.r, x.g, x.b, 1.), colormap("Blues", N)))
 
 s = Vec2f0(15)
 # 2D particles
 particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
-const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:512],
-	const_lift(particle_data2D, bounce(1f0:1f0:50f0), 512))
+const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:N],
+	const_lift(particle_data2D, bounce(1f0:1f0:50f0), N))
 particle_robj = visualize(p2ddata, scale=s)
 
 
 
+
 push!(TEST_DATA2D, particle_robj)
-push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, color=particle_color, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED), shape=Cint(CIRCLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED), shape=Cint(RECTANGLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED)|Cint(GLOWING), shape=Cint(ROUNDED_RECTANGLE)))
-let gif = load("doge.png").data
 	
 push!(TEST_DATA2D, visualize(
 	particle_robj[:positions], 

@@ -159,7 +159,7 @@ export inserttext
 inserttext(_, text_selection) = inserttext(text_selection)
 function inserttext(text_selection, to_insert)
 	selection, text = text_selection.selection, text_selection.text
-	if first(selection) > 0
+	if first(selection) > 0 && first(selection) <= length(text)
 		splice!(text, selection, to_insert)
 		chars_added = length(to_insert)
 		text_selection.selection = (first(selection)+chars_added):0 # when text gets removed, selection will turn into single selection

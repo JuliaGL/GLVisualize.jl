@@ -21,11 +21,8 @@ function test()
     grid2D  = reshape(grid, close_to_square(length(grid)))
     println("reshape done")
 
-
     view(visualize(grid2D), w, method=:perspective)
     glClearColor(1,1,1,1)
-
-    @async Reactive.run()
 
     renderloop()
 end

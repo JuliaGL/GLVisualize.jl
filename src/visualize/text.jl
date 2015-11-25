@@ -86,11 +86,11 @@ function cursor(positions, range, model)
     atlas = GLVisualize.get_texture_atlas()
     data = merge(Dict(
         :model               => model,
-        :visible             => const_lift(cursor_visible, range),
-        :offset              => const_lift(Cint, const_lift(first, range)),
-        :color               => const_lift(cool_color, bounce(0f0:0.2f0:1f0)),
+        :visible             => preserve(const_lift(cursor_visible, range)),
+        :offset              => preserve(const_lift(Cint, const_lift(first, range))),
+        :color               => preserve(const_lift(cool_color, bounce(0f0:0.2f0:1f0))),
         :positions           => positions,
-        :glyph               => Sprite{GLuint}(GLVisualize.get_font!('|')),
+        :glyph               => GLSprite(GLVisualize.get_font!('|')),
         :uvs                 => atlas.attributes.buffer,
         :images              => atlas.images,
         :shape               => Cint(DISTANCEFIELD),
@@ -127,7 +127,7 @@ function textedit_signals(inputs, background, text)
     text_raw    = TextWithSelection(text[:glyphs], 0:0)
     text_edit   = Signal(text_raw)
     shift       = const_lift(in, GLFW.KEY_LEFT_SHIFT, buttonspressed)
-    selection   = const_lift(
+    selection   = preserve(const_lift(
         last, 
         foldp(
             move_cursor, 
@@ -136,7 +136,7 @@ function textedit_signals(inputs, background, text)
             text_edit,
             shift
         )
-    )
+    ))
 
     is_text(x) = x[2][1] == background.id || x[2][1] == text.id
     selection  = filterwhen(
