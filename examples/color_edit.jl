@@ -16,7 +16,7 @@ end
 
 screen(v, w)
 
-view(visualize(load(joinpath(homedir(), "Desktop", "dragndrop", "smallfish.nrrd")), color=colortex))
+view(visualize(rand(Float32, 28,92), color=colortex))
 
 glClearColor(1,1,1,1)
 r()

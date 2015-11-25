@@ -19,9 +19,7 @@ for i=1:nloops
     append!(xyz, [Point3f0(sin(t), cos((2 + .02 * i) * t), cos((3 + .02 * i) * t)) for t in TL])
     unique_colors = base_colors1[i]
     hsv = HSV(unique_colors)
-    println(hsv, " ", unique_colors)
-    a = sequential_palette(hsv.h, N, s=hsv.s)
-    color_palette = map(x->RGBA{Float32}(x, 1.0), a)
+    color_palette = map(x->RGBA{Float32}(x, 1.0), sequential_palette(hsv.h, N, s=hsv.s))
     append!(s, color_palette)
 end
 
