@@ -52,9 +52,7 @@ function signify{T}(x::Array{T, 3})
 	const_lift(play, x, loop(1:size(x, 3)))
 end
 
-bgra{T}(rgb::RGB{T}) 		= BGRA{T}(rgb.r, rgb.g, rgb.b, one(T))
-bgra{T}(rgb::Array{RGB{T}}) = map(bgra, rgb)
-bgra(rgb) = rgb
+
 for verb in ["jump", "walk", "stand"], dir in ["left", "right"]
     img = load(joinpath("imgs", "mario", verb, dir*".gif")).data
 	gif = map(RGBA{U8}, img)
