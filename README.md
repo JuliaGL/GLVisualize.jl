@@ -17,6 +17,8 @@ Pkg.checkout("Reactive")
 Pkg.checkout("GLVisualize")
 Pkg.checkout("GLAbstraction")
 Pkg.checkout("GLWindow")
+Pkg.checkout("GeometryTypes")
+Pkg.checkout("Packing")
 ```
 
 
