@@ -67,12 +67,12 @@ function colored_cube()
     p = merge(map(GLNormalMesh, quads))
 end
 
-Base.middle{T}(r::Rectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2)))
+Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2)))
 
 
 function cubecamera(
 		window;
-		cube_area 	 = Signal(Rectangle(0,0,150,150)),
+		cube_area 	 = Signal(SimpleRectangle(0,0,150,150)),
 		eyeposition  = Vec3f0(2),
     	lookatv 	 = Vec3f0(0),
         trans        = Signal(Vec3f0(0)),
@@ -102,8 +102,8 @@ function cubecamera(
         slerp(inside_trans, outside_trans, t)
     end
 
-    ortho1 = visualize(Rectangle(0f0,0f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
-    ortho2 = visualize(Rectangle(5f0,5f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
+    ortho1 = visualize(SimpleRectangle(0f0,0f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
+    ortho2 = visualize(SimpleRectangle(5f0,5f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
     hovers_ortho = const_lift(h) do h
         h[1] == ortho1.id || h[1] == ortho2.id
     end

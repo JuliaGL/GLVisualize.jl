@@ -1,5 +1,5 @@
 function visualize_default{T <: Colorant}(image::Union{Texture{T, 1}, Vector{T}}, ::Style, kw_args=Dict())
-    dimension = get(kw_args, :dimension, Rectangle(0f0,0f0,40f0, 180f0))
+    dimension = get(kw_args, :dimension, SimpleRectangle(0f0,0f0,40f0, 180f0))
     Dict(
         :primitive        => GLUVMesh2D(dimension),
         :preferred_camera => :orthographic_pixel
