@@ -5,7 +5,7 @@ struct AABB
     vec3 min;
     vec3 max;
 };
-struct Rectangle
+struct SimpleRectangle
 {
     vec2 origin;
     vec2 width;
@@ -169,11 +169,11 @@ vec3 position(AABB cube, ivec3 dims, int index)
     return stretch(linear_index(dims, index), cube.min, cube.max);
 }
 //Implicit grid on a plane via a 2D array
-vec3 position(Rectangle rectangle, ivec2 dims, int index, vec2 offset)
+vec3 position(SimpleRectangle rectangle, ivec2 dims, int index, vec2 offset)
 {
     return vec3(stretch(linear_index(dims, index) + offset, rectangle.origin, rectangle.width), 0);
 }
-vec3 position(Rectangle rectangle, ivec2 dims, int index)
+vec3 position(SimpleRectangle rectangle, ivec2 dims, int index)
 {
     return vec3(stretch(linear_index(dims, index), rectangle.origin, rectangle.width), 0);
 }

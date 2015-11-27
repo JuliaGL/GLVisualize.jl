@@ -2,6 +2,7 @@
 // This version of the line shader simply cuts off the corners and
 // draws the line with no overdraw on neighboring segments at all
 {{GLSL_VERSION}}
+{{GLSL_EXTENSIONS}}
 
 layout(lines_adjacency) in;
 layout(triangle_strip, max_vertices = 9) out;

@@ -1,5 +1,5 @@
 visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args=Dict()) = Dict(
-    :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+    :primitive          => GLUVMesh2D(SimpleRectangle(0f0, 0f0, 1f0, 1f0)),
     :color              => RGBA{Float32}(0.0,0.0,0.0,1.0),
     :atlas              => get_texture_atlas(),
     :shape              => Cint(DISTANCEFIELD),
@@ -10,7 +10,7 @@ visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args
 #=
 function visualize_default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style{:square}, kw_args=Dict())
     return Dict(
-        :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+        :primitive          => GLUVMesh2D(SimpleRectangle(0f0, 0f0, 1f0, 1f0)),
         :color             => Texture([RGBA{U8}(0,0,0,0), RGBA{U8}(0.7,.5,1.,0.5)]),
         :atlas              => get_texture_atlas(),
         :startposition      => Vec2f0(0),
@@ -96,10 +96,10 @@ function cursor(positions, range, model)
         :shape               => Cint(DISTANCEFIELD),
         :style               => Cint(FILLED),
         :preferred_camera    => :orthographic_pixel
-    ), collect_for_gl(GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0))))
+    ), collect_for_gl(GLUVMesh2D(SimpleRectangle(0f0, 0f0, 1f0, 1f0))))
 
     shader = assemble_std(
-        Rectangle(0f0, 0f0, 1f0, 1f0), data, 
+        SimpleRectangle(0f0, 0f0, 1f0, 1f0), data, 
         "util.vert", "text_single.vert", "distance_shape.frag"
     )
 end

@@ -1,5 +1,5 @@
 {{GLSL_VERSION}}
-
+{{GLSL_EXTENSIONS}}
 
 #define CIRCLE            0
 #define RECTANGLE         1

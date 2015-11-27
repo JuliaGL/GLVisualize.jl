@@ -1,4 +1,5 @@
 {{GLSL_VERSION}}
+{{GLSL_EXTENSIONS}}
 
 {{vertex_type}} vertex;
 in float lastlen;

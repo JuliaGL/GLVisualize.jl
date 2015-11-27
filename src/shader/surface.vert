@@ -1,6 +1,6 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
-struct Rectangle
+struct SimpleRectangle
 {
     vec2 origin;
     vec2 width;
@@ -25,7 +25,7 @@ uniform mat4 view, model, projection;
 void render(vec3 vertices, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
 ivec2 ind2sub(ivec2 dim, int linearindex);
 vec2 linear_index(ivec2 dims, int index, vec2 offset);
-vec3 position(Rectangle rectangle, ivec2 dims, int index);
+vec3 position(SimpleRectangle rectangle, ivec2 dims, int index);
 vec4 linear_texture(sampler2D tex, int index, vec2 offset);
 vec4 color_lookup(float intensity, sampler1D color, vec2 norm);
 
@@ -80,7 +80,7 @@ flat out uvec2 o_id;
 void main()
 {
 	ivec2 dims 		= textureSize(z, 0);
-	vec3 pos 		= position(Rectangle(grid_min, grid_max), dims, gl_InstanceID);
+	vec3 pos 		= position(SimpleRectangle(grid_min, grid_max), dims, gl_InstanceID);
 	float intensity = linear_texture(z, gl_InstanceID, vertices).x;
 	pos += vec3(vertices*scale.xy, scale.z*intensity);
 	o_id                = uvec2(objectid, gl_InstanceID+1);

@@ -6,7 +6,7 @@ function screen(robj, w)
 	bb = boundingbox(robj)
 	area = const_lift(bb) do b
 		m = Vec{2,Int}(b.minimum)
-		Rectangle{Int}(m..., (Vec{2,Int}(b.maximum+30)-m)...)
+		SimpleRectangle{Int}(m..., (Vec{2,Int}(b.maximum+30)-m)...)
 	end
 	s = Screen(w, area=area)
 	transformation(robj, translationmatrix(Vec3f0(15,15,0)))

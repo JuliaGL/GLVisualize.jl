@@ -192,9 +192,3 @@ include("utf8_example_text.jl")
 push!(TEST_DATA2D, visualize(utf8_example_text))
 
 
-let 
-	image_dir = Pkg.dir("GLVisualize", "test", "test_images")
-	images = map(visualize, map(load, map(x->joinpath(image_dir,x), readdir(image_dir))))
-	append!(TEST_DATA2D, images)
-end
-
