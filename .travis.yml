@@ -6,4 +6,10 @@ julia:
   - 0.4
 notifications:
   email: false
-# uncomment the following lines to override the default test script
+addons:
+  apt:
+    packages:
+    - cmake
+    - libxxf86vm-dev
+    sources:
+    - kubuntu-backports

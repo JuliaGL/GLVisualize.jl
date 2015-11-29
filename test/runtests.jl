@@ -1,36 +1,59 @@
 using ModernGL
 using FileIO, MeshIO, GLAbstraction, GLVisualize, Reactive, GLWindow
 using GeometryTypes, ColorTypes, Colors
-using Base.Test
+using FactCheck
 
-is_ci() = (
-    get(ENV, "TRAVIS", "") == "true" || 
-    get(ENV, "APPVEYOR", "") == "true" || 
-    get(ENV, "CI", "") == "true"
-)
-
-function test()
-    w, renderloop = glscreen()
-
-    global TEST_DATA   = RenderObject[]
-    global TEST_DATA2D = RenderObject[]
-
-    include(string("all_tests.jl"))
-
-    grid    = vcat(TEST_DATA2D, TEST_DATA)
-    grid2D  = reshape(grid, close_to_square(length(grid)))
-    println("reshape done")
-
-    view(visualize(grid2D), w, method=:perspective)
-    glClearColor(1,1,1,1)
-
-    renderloop()
+has_opengl = false
+window = 0
+try
+    window, renderloop = glscreen()
+    @async renderloop()
+    has_opengl = true
+catch e
+    warn(string(
+        "you don't seem to have opengl. Tests will run without OpenGL.
+        If you're not in a VM and have a decent graphic card (> intel HD 3000),
+        update drivers and if it still doesn't work, report an issue on github:",
+        "\n", e
+    ))
 end
 
-# only do test if not CI... this is for automated testing environments which fail for OpenGL stuff, but I'd like to test if at least including works
-!is_ci() && test()
-   
+facts("particles") do
+    prima = centered(Cube)
+    primb = GLNormalMesh(centered(Sphere))
+    a = [rand(Point2f0) for i=1:20]
+    b = [rand(Point3f0) for i=1:20]
 
+    context("viewable creation") do
+        particles = map(visualize, (b, (prima, a), (primb, b)))
+        p1,p2,p3 = extract_renderable([particles...])
+        println(typeof(p1))
+        println(typeof(p2))
+        println(typeof(p3))
+        #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
+        @fact typeof(p1[][:primitive]) --> Cube{Float32}
+        @fact typeof(p2[][:primitive]) --> GLNormalMesh
 
+        #@fact particles[1][:positions] --> a
+        @fact p1[][:positions] --> b
+        @fact p2[][:positions] --> a
+        @fact p3[][:positions] --> b
 
+        if has_opengl
+            context("viewing") do
+                gl_obj = map(x->view(x), particles)
+                @fact gpu_data(gl_obj[1][:positions]) --> a
+                @fact typeof(gl_obj[1][:positions]) --> TextureBuffer
+                @fact typeof(gl_obj[1][:vertices]) --> GLBuffer
+            end
+        end
+    end
 
+end
+
+if has_opengl
+    while isopen(window)
+        sleep(0.01)
+        yield()
+    end
+end

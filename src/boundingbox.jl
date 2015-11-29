@@ -1,9 +1,3 @@
-
-function default_boundingbox(main, model)
-    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    const_lift(*, model, AABB{Float32}(main))
-end
-
 # As long as we don't calculate bounding boxes on the gpu, this needs to do:
 Base.minimum(t::Texture) = minimum(gpu_data(t))
 Base.maximum(t::Texture) = maximum(gpu_data(t))
@@ -19,32 +13,41 @@ call{T}(B::Type{AABB{T}}, a::GPUArray) = B(gpu_data(a))
 
 
 
-
 call{T, P<:Point}(B::Type{AABB{T}}, positions::GPUArray{P}, scale::GPUArray, primitive_bb) = B(gpu_data(positions), gpu_data(scale), primitive_bb)
 call{T, P<:Point}(B::Type{AABB{T}}, positions::GPUArray{P}, scale::Vec3f0, primitive_bb) = B(gpu_data(positions), scale, primitive_bb)
 call{T, P<:Point}(B::Type{AABB{T}}, positions::GPUArray{P}, scale::Void, primitive_bb) = B(gpu_data(positions), Vec3f0(1), primitive_bb)
 call{T, P<:Point}(B::Type{AABB{T}}, positions::VecOrSignal{P}, scale::Void, primitive_bb) = B(value(positions), Vec3f0(1), primitive_bb)
 
+convert_position(x::GPUArray) = gpu_data(x)
+convert_position(x) = x
 
-function call{T, T2, N}(B::Type{AABB{T}}, positions::VecOrSignal{Point{N, T2}}, scale, primitive)
-    bb = B(primitive)
-    B(value(positions), value(scale), bb)
+convert_scale(x::GPUArray, _) = gpu_data(x)
+convert_scale{N,T,X}(x::Vec{N,X}, ::Type{Vec{N, T}}) = Vec{N,T}(x)
+convert_scale{T,X}(x::Vec{2,X},   ::Type{Vec{3, T}}) = Vec{3,T}(x, 1)
+convert_scale{N,T,X}(x::Vec{N,X}, ::Type{Vec{2, T}}) = Vec{2,T}(x)
+convert_scale{A<:Array}(x::Vec, ::Type{A}) = convert_scale(x, eltype(A))
+convert_scale(x) = x
+
+convert_bb(x::AABB) = x
+convert_bb(x) = AABB{Float32}(x)
+function call{T}(B::Type{AABB{T}}, positions, scale, primitive)
+    p = convert_position(positions)
+    bb = convert_bb(primitive)
+    s = convert_scale(scale, typeof(minimum(bb)))
+    B(p,s,bb)
 end
-function call{T, T2, T3, N}(B::Type{AABB{T}}, p::VecOrSignal{Point{N, T2}}, scale::Vec{N, T3}, bb)
-    primitive_bb = B(bb)
-    positions = value(p)
+
+function call{T, N1,N2}(B::Type{AABB{T}}, positions::Vector{Point{N1, T}}, scale::Vec{N2, T}, primitive_bb::AABB{T})
     primitive_scaled_min = minimum(primitive_bb) .* scale
     primitive_scaled_max = maximum(primitive_bb) .* scale
     pmax = max(primitive_scaled_min, primitive_scaled_max)
     pmin = min(primitive_scaled_min, primitive_scaled_max)
-    main_bb = AABB{T}(positions)
-    mini,maxi = minimum(main_bb) + pmin, maximum(main_bb) + pmax
-    AABB{T}(mini, maxi)
+    main_bb = B(positions)
+    B(minimum(main_bb) + pmin, maximum(main_bb) + pmax)
 end
 
-function call{T, T2, T3, N}(B::Type{AABB{T}}, p::VecOrSignal{Point{N, T2}}, s::VecOrSignal{Vec{N, T3}}, bb)
-    primitive_bb = B(bb)
-    positions, scale = value(p), value(s)
+
+function call{T, N}(B::Type{AABB{T}}, positions::Vector{Point{N, T}}, scale::Vector{Vec{N, T}}, primitive_bb::AABB{T})
     _max = Vec{N, T}(typemin(T))
     _min = Vec{N, T}(typemax(T))
     for (p, s) in zip(positions, scale)
@@ -56,6 +59,9 @@ function call{T, T2, T3, N}(B::Type{AABB{T}}, p::VecOrSignal{Point{N, T2}}, s::V
         _min = min(_min, p + s_min_r)
         _max = max(_max, p + s_max_r)
     end
-    AABB{T}(_min, _max)
+    B(_min, _max)
 end
+
+
+
 particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
