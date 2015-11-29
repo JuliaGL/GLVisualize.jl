@@ -12,66 +12,24 @@ function Base.split(condition::Function, associative::Associative)
     A, B
 end
 
-<<<<<<< HEAD
-
-<<<<<<< HEAD
-        function visualize(signal::Signal{$input}, s::$S, customizations=visualize_default(signal.value, s))
-            tex = $target(signal.value)
-            preserve(const_lift(update!, Signal(tex), signal))
-            visualize(tex, s, customizations)
-        end
-    end)
-end
-
-
-# scalars can be uploaded directly to gpu, but not arrays
-texture_or_scalar(x) = x
-texture_or_scalar(x::Array) = Texture(x)
-function texture_or_scalar{A <: Array}(x::Signal{A})
-    tex = Texture(x.value)
-    preserve(const_lift(update!, tex, x))
-    tex
-end
-
-isnotempty(x) = !isempty(x)
-AND(a,b) = a&&b
-OR(a,b) = a||b
-export OR
-
-
-function GLVisualizeShader(shaders...; attributes...)
-=======
 function GLVisualizeShader(shaders)
->>>>>>> 2624608... big clean up, ported most examples to new syntax, not working yet, though
     shaders = map(shader -> load(joinpath(shaderdir(), shader)), shaders)
     (shaders, ((:fragdatalocation,[(0, "fragment_color"), (1, "fragment_groupid")]),
         (:updatewhile,ROOT_SCREEN.inputs[:open]), (:update_interval,1.0))
     )
 end
-<<<<<<< HEAD
 
-function default_boundingbox(main, model)
-    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    const_lift(*, model, AABB{Float32}(main))
-end
-function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
-    program = GLVisualizeShader(shaders..., attributes=dict)
-    std_renderobject(dict, program, boundingbox, primitive, main)
-=======
-=======
->>>>>>> b2cd26f... made a few more examples work
 function assemble_shader(data)
     shader = data[:shader]
     delete!(data, :shader)
     bb  = get(data, :boundingbox, Signal(centered(AABB)))
     glp = get(data, :gl_primtive, GL_TRIANGLES)
-    if haskey(data, :instances) 
+    if haskey(data, :instances)
         robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
     else
         robj = std_renderobject(data, shader, bb, glp, nothing)
     end
     Context(robj)
->>>>>>> 2624608... big clean up, ported most examples to new syntax, not working yet, though
 end
 
 
@@ -100,7 +58,7 @@ end
 @enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
 
 """
-Returns two signals, one boolean signal if clicked over `robj` and another 
+Returns two signals, one boolean signal if clicked over `robj` and another
 one that consists of the object clicked on and another argument indicating that it's the first click
 """
 function clicked(robj::RenderObject, button::MouseButton, window::Screen)
@@ -122,7 +80,7 @@ end
 
 
 """
-Returns a signal with the difference from dragstart and current mouse position, 
+Returns a signal with the difference from dragstart and current mouse position,
 and the index from the current ROBJ id.
 """
 function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)

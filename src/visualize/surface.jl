@@ -7,7 +7,7 @@ function _default{T <: AbstractFloat}(grid::MatTypes{T}, ::Style{:surface}, kw_a
     grid_length = grid_max - grid_min
     scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0)
     Dict(
-        :primitive  => GLMesh2D(Rectangle(0f0,0f0,1f0,1f0)),
+        :primitive  => GLMesh2D(SimpleRectangle(0f0,0f0,1f0,1f0)),
         :color      => default(Vector{RGBA}),
         :grid_min   => grid_min,
         :grid_max   => grid_max,

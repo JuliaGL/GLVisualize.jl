@@ -2,8 +2,6 @@ using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
 w,r = glscreen()
 cat = GLNormalMesh(load("cat.obj"))
-view(visualize(cat))
-r()
 sphere = GLNormalMesh(Sphere{Float32}(Vec3f0(0), 1f0), 32)
 
 function scale_gen(v0, nv)
@@ -34,12 +32,7 @@ a = visualize((cat, ps), scale=scale, color=color, rotation=rotation)
 
 cat_verts = vertices(cat)
 
-<<<<<<< HEAD
-w,r = glscreen()
 
-view(visualize((msh, ps)))
-r()
-=======
 cat_verts_signal = foldp(copy(cat_verts), bounce(0.00f0:0.1f0:1.0f0)) do v0, ts
     l = length(cat_verts)
     @inbounds for i=1:l
@@ -52,4 +45,4 @@ cat_verts_signal = foldp(copy(cat_verts), bounce(0.00f0:0.1f0:1.0f0)) do v0, ts
 end
 b = visualize((GLNormalMesh(centered(Sphere)), cat_verts_signal), scale=Vec3f0(0.01))
 view(visualize([a,b], gap=Vec3f0(0)))
->>>>>>> b2cd26f... made a few more examples work
+r()

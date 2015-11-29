@@ -66,15 +66,10 @@ function GLFramebuffer(framebuffsize::Signal{Vec{2, Int}})
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer.id, 0)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, objectid_buffer.id, 0)
-
-    depth_buffer = GLuint[0]
-    glGenRenderbuffers(1, depth_buffer)
-    db = depth_buffer[]
-    glBindRenderbuffer(GL_RENDERBUFFER, db)
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, buffersize...)
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, db)
-    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, db)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, depth_buffer.id, 0)
+    fb = GLFramebuffer(render_framebuffer, color_buffer, objectid_buffer, depth_buffer)
     preserve(const_lift(resizebuffers, framebuffsize, fb))
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
     fb
 end
 
@@ -295,15 +290,5 @@ function screenshot(window; path="screenshot.png", channel=:color)
     else
         error("Channel $channel does not exist. Only these channels are available: $channels")
     end
-end
-
-function depthmap(window, path="depthmap.png")
-    fb = window.inputs[:framebuffer]
-    window_size = window.area.value.w, window.area.value.h
-    glBindFramebuffer(GL_FRAMEBUFFER, fb.render_framebuffer)
-    glBindRenderbuffer(GL_RENDERBUFFER, fb.depth)
-    buffer = zeros(Float32, window_size...)
-    glReadPixels(0, 0, window_size..., GL_DEPTH_COMPONENT32, GL_FLOAT, buffer)
-    buffer
 end
 export screenshot

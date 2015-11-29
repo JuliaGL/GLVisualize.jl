@@ -94,7 +94,7 @@ vec3 _position(Nothing position, samplerBuffer position_x, samplerBuffer positio
     return vec3(texelFetch(position_x, index).x, texelFetch(position_y, index).x, texelFetch(position_z, index).x);
 }
 //vec3 position(AABB cube, Nothing position_x, Nothing position_y, Nothing position_z, int index);
-//vec3 position(Rectangle rect, Nothing position_x, Nothing position_y, Nothing position_z, int index);
+//vec3 position(SimpleRectangle rect, Nothing position_x, Nothing position_y, Nothing position_z, int index);
 void scale_it(Nothing scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index, inout vec3 V){}
 void scale_it(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index, inout vec3 V){V *= scale;}
 void scale_it(samplerBuffer scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index, inout vec3 V){

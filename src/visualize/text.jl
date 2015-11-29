@@ -1,5 +1,5 @@
 _default(::Union{GPUVector{GLSprite}, AbstractString}, ::Style, kw_args=Dict()) = Dict(
-    :primitive          => GLUVMesh2D(Rectangle(0f0, 0f0, 1f0, 1f0)),
+    :primitive          => GLUVMesh2D(SimpleRectangle(0f0, 0f0, 1f0, 1f0)),
     :styles             => Texture([RGBA{U8}(0.0,0.0,0.0,1.0)]),
     :atlas              => get_texture_atlas(),
     :shape              => DISTANCEFIELD,

@@ -39,7 +39,7 @@ function overall_scale(stroke_width, glow_width, scale)
 end
 
 primitive_shape(::Circle)    = CIRCLE
-primitive_shape(::Rectangle) = RECTANGLE
+primitive_shape(::SimpleRectangle) = RECTANGLE
 
 _default{Primitive <: GeometryPrimitive{2}, Position <: Array{Point}}(p::Tuple{Primitive, Position}, s::Style, data::Dict) = @gen_defaults! data begin
     scale               = 1f0
