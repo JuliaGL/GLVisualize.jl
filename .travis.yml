@@ -15,7 +15,10 @@ addons:
     - kubuntu-backports
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone(pwd()); Pkg.checkout("GLAbstraction", "sd/next²"); Pkg.checkout("GeometryTypes", "sd/typealias");Pkg.checkout("Reactive");Pkg.checkout("GLVisualize");Pkg.checkout("GLWindow");Pkg.checkout("GeometryTypes");Pkg.checkout("Packing");Pkg.checkout("FreeType")'
+  - julia -e 'Pkg.clone(pwd()); Pkg.checkout("GLAbstraction", "sd/next²")'
+  - julia -e 'Pkg.checkout("GeometryTypes", "sd/typealias")'
+  - julia -e 'Pkg.checkout("GLWindow");Pkg.checkout("Reactive")'
+  - julia -e 'Pkg.checkout("Packing");Pkg.checkout("FreeType")'
   - julia -e 'Pkg.test("GLVisualize"; coverage=true)'
 after_success:
     - julia -e 'cd(Pkg.dir("GLVisualize")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
