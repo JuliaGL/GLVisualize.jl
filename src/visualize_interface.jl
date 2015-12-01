@@ -1,10 +1,10 @@
 
 default(main, s, data) = _default(
-	main, s, merge(data, Dict(
+	main, s, merge(Dict(
     :model      	  => eye(Mat4f0),
     :light      	  => Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)],
     :preferred_camera => :perspective
-)))
+), data))
 
 """
 Creates a default visualization for any value.

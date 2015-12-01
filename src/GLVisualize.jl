@@ -24,6 +24,9 @@ import Base: merge, convert, show
 
 
 shaderdir() = Pkg.dir("GLVisualize", "src", "shader")
+assetpath(folders...) = joinpath(dirname(@__FILE__), "..", "assets", folders...)
+loadasset(folders...) = load(assetpath(folders...))
+export assetpath, loadasset
 
 include("FreeTypeAbstraction.jl")
 

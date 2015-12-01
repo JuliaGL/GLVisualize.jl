@@ -1,7 +1,7 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
 w,r = glscreen()
-cat = GLNormalMesh(load("cat.obj"))
+cat = GLNormalMesh(loadasset("cat.obj"))
 sphere = GLNormalMesh(Sphere{Float32}(Vec3f0(0), 1f0), 32)
 
 function scale_gen(v0, nv)
