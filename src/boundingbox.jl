@@ -25,16 +25,15 @@ convert_scale(x::GPUArray, _) = gpu_data(x)
 convert_scale{N,T,X}(x::Vec{N,X}, ::Type{Vec{N, T}}) = Vec{N,T}(x)
 convert_scale{T,X}(x::Vec{2,X},   ::Type{Vec{3, T}}) = Vec{3,T}(x, 1)
 convert_scale{N,T,X}(x::Vec{N,X}, ::Type{Vec{2, T}}) = Vec{2,T}(x)
-convert_scale{A<:Array}(x::Vec, ::Type{A}) = convert_scale(x, eltype(A))
-convert_scale(x) = x
+convert_scale{N,T}(x::Vec,        ::Type{HyperRectangle{N,T}}) = convert_scale(x, Vec{N,T})
+convert_scale(x, z) = x
 
 convert_bb(x::AABB) = x
 convert_bb(x) = AABB{Float32}(x)
 function call{T}(B::Type{AABB{T}}, positions, scale, primitive)
-    p = convert_position(positions)
-    bb = convert_bb(primitive)
-    s = convert_scale(scale, typeof(minimum(bb)))
-    B(p,s,bb)
+    p  = const_lift(convert_position, positions)
+    bb = const_lift(convert_bb, primitive)
+    const_lift(B, p, scale, bb)
 end
 
 function call{T, N1,N2}(B::Type{AABB{T}}, positions::Vector{Point{N1, T}}, scale::Vec{N2, T}, primitive_bb::AABB{T})
