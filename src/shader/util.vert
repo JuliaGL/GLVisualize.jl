@@ -64,31 +64,6 @@ mat4 rotationmatrix_y(float angle)
 
 const vec3 UP_VECTOR = vec3(0,0,1);
 
-mat4 rotation(vec3 direction)
-{
-    direction = normalize(direction);
-    mat4 rot = mat4(1.0);
-    if(direction == UP_VECTOR)
-        return rot;
-    vec3 xaxis = normalize(cross(UP_VECTOR, direction));
-
-    vec3 yaxis = normalize(cross(direction, xaxis));
-
-    rot[0][0] = xaxis.x;
-    rot[1][0] = yaxis.x;
-    rot[2][0] = direction.x;
-
-    rot[0][1] = xaxis.y;
-    rot[1][1] = yaxis.y;
-    rot[2][1] = direction.y;
-
-    rot[0][2] = xaxis.z;
-    rot[1][2] = yaxis.z;
-    rot[2][2] = direction.z;
-
-    return rot;
-}
-
 mat4 translate_scale(vec3 xyz, vec3 scale)
 {
    return mat4(
@@ -159,20 +134,6 @@ vec4 getindex(sampler3D tex, int index){
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
 
-//Implicit grid in a Cube via a 3D array
-vec3 position(AABB cube, ivec3 dims, int index)
-{
-    return stretch(linear_index(dims, index), cube.min, cube.max);
-}
-//Implicit grid on a plane via a 2D array
-vec3 position(SimpleRectangle rectangle, ivec2 dims, int index, vec2 offset)
-{
-    return vec3(stretch(linear_index(dims, index) + offset, rectangle.origin, rectangle.width), 0);
-}
-vec3 position(SimpleRectangle rectangle, ivec2 dims, int index)
-{
-    return vec3(stretch(linear_index(dims, index), rectangle.origin, rectangle.width), 0);
-}
 
 vec4 color_lookup(float intensity, vec4 color, vec2 norm)
 {
