@@ -32,29 +32,36 @@ end
 
 
 function overall_scale(stroke_width, glow_width, scale)
-    final_scale = Vec3f0(scale)
+    final_scale = Vec2f0(scale)
     (stroke_width > 0f0) && (final_scale += stroke_width/2f0)
     (glow_width   > 0f0) && (final_scale += glow_width/2f0)
     final_scale
 end
-
-primitive_shape(::Circle)    = CIRCLE
+GLAbstraction.gl_convert(img::Images.Image) = gl_convert(Images.data(img))
+primitive_shape(::Circle) = CIRCLE
 primitive_shape(::SimpleRectangle) = RECTANGLE
 
-_default{Primitive <: GeometryPrimitive{2}, Position <: Array{Point}}(p::Tuple{Primitive, Position}, s::Style, data::Dict) = @gen_defaults! data begin
-    scale               = 1f0
+primitive_scale(c::Circle) = Vec2f0(c.r)
+primitive_scale(r::SimpleRectangle) = Vec2f0(r.w, r.h)
+
+_default{Primitive <: GeometryPrimitive{2}, P <: Point}(p::Tuple{Primitive, Vector{P}}, s::Style, data::Dict) = @gen_defaults! data begin
+    scale               = Vec2f0(40)          => GLBuffer
     stroke_width        = 2f0
     glow_width          = 0f0
     offset_scale        = const_lift(overall_scale, stroke_width, glow_width, scale)
-    shape               = RECTANGLE
+    shape               = primitive_shape(p[1])
     position            = p[2]                => GLBuffer
+    rotation            = nothing             => GLBuffer
+    intensity           = nothing             => GLBuffer
+    color_norm          = nothing             => GLBuffer
+
     color               = default(RGBA, s)    => GLBuffer
     stroke_color        = default(RGBA, s, 2) => GLBuffer
-    glow_color          = nothing             => GLBuffer
+    glow_color          = default(RGBA, s, 3) => GLBuffer
     image               = nothing             => Texture
     distancefield       = nothing             => Texture
     transparent_picking = true
     preferred_camera    = :orthographic_pixel
-    shader              = GLVisualizeShader("util.vert", "billboards.geom", "billboards.vert", "distance_shape.frag")
+    shader              = GLVisualizeShader("util.vert", "sprites.geom", "sprites.vert", "distance_shape.frag")
     gl_primitive        = GL_POINTS
 end

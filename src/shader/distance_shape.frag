@@ -1,4 +1,7 @@
 {{GLSL_VERSION}}
+struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
+    bool _; //empty structs are not allowed
+};
 
 #define CIRCLE            0
 #define RECTANGLE         1
@@ -23,8 +26,7 @@ float aastep(float threshold1, float threshold2, float value) {
 }
 
 #define M_SQRT_2 1.4142135
-float triangle(vec2 P)
-{
+float triangle(vec2 P){
     P -= 0.5;
     float x = M_SQRT_2/2.0 * (P.x - P.y);
     float y = M_SQRT_2/2.0 * (P.x + P.y);
@@ -33,37 +35,36 @@ float triangle(vec2 P)
     return -max(r1,r2);
 }
 
-float circle(vec2 uv){ 
-    return (1-length(uv-0.5))-0.5; 
+float circle(vec2 uv){
+    return (1-length(uv-0.5))-0.5;
 }
-float rectangle(vec2 uv)
-{
+float rectangle(vec2 uv){
     vec2 d = max(-uv, uv-vec2(1));
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y))));
 }
-float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
-{
+float rounded_rectangle(vec2 uv, vec2 tl, vec2 br){
     vec2 d = max(tl-uv, uv-br);
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
 
-uniform sampler2D distancefield;
-uniform sampler2D texture_fill;
+{{distancefield_type}} distancefield;
+{{image_type}} image;
 
 uniform float stroke_width;
 uniform float glow_width;
-uniform vec2 scale;
 
+flat in vec2  f_scale;
+flat in vec4  f_color;
+flat in vec4  f_stroke_color;
+flat in vec4  f_glow_color;
+flat in uvec2 f_id;
+in vec2 f_uv;
 
-flat in vec4 o_fill_color;
-flat in vec4 o_stroke_color;
-flat in vec4 o_glow_color;
 
 uniform int style; // style and shape are uniforms for now. Making them a varying && using them for control flow is expected to kill performance
 uniform int shape;
 
-in vec2 o_uv;
-flat in uvec2 o_id;
+
 
 out uvec2 fragment_groupid;
 out vec4 fragment_color;
@@ -71,47 +72,56 @@ out vec4 fragment_color;
 uniform vec2 resolution;
 uniform bool transparent_picking;
 
+void fill(vec4 fillcolor, Nothing image, vec2 uv, float infill, inout vec4 color){
+    color = mix(color, fillcolor, infill);
+}
+void fill(vec4 c, sampler2D image, vec2 uv, float infill, inout vec4 color){
+    color = mix(color, texture(image, uv), infill);
+}
+void stroke(vec4 strokecolor, float signed_distance, float half_stroke, inout vec4 color){
+    if (half_stroke > 0.0){
+        float t = aastep(0, half_stroke, signed_distance);
+        color = mix(color, strokecolor, t);
+    }
+}
 
+void glow(vec4 glowcolor, float signed_distance, float outside, inout vec4 color){
+    if (glow_width > 0.0){
+        float alpha = 1-(outside*abs(clamp(signed_distance, -1, 0))*7); //TODO figure out better factor than 7
+        color = mix(color, vec4(glowcolor.rgb, alpha), outside);
+    }
+}
+
+float get_distancefield(sampler2D distancefield, vec2 uv){
+    return -texture(distancefield, uv).r;
+}
+float get_distancefield(Nothing distancefield, vec2 uv){
+    return 0.0;
+}
 void main(){
 
     float signed_distance = 0.0;
-    vec4 fill_color, final_color = vec4(0.0);
 
     if(shape == CIRCLE)
-    	signed_distance = circle(o_uv);
-    else if(shape == DISTANCEFIELD){
-        signed_distance = -texture(distancefield, o_uv).r;
-    }
+        signed_distance = circle(f_uv);
+    else if(shape == DISTANCEFIELD)
+        signed_distance = get_distancefield(distancefield, f_uv);
     else if(shape == ROUNDED_RECTANGLE)
-    	signed_distance = rounded_rectangle(o_uv, vec2(0.2), vec2(0.8));
+        signed_distance = rounded_rectangle(f_uv, vec2(0.2), vec2(0.8));
     else if(shape == RECTANGLE)
-        signed_distance = rectangle(o_uv);
+        signed_distance = rectangle(f_uv);
     else if(shape == TRIANGLE)
-        signed_distance = triangle(o_uv);
+        signed_distance = triangle(f_uv);
 
-    float half_stroke   = (stroke_width/2) / max(scale.x, scale.y);
+    float half_stroke   = (stroke_width/2) / max(f_scale.x, f_scale.y);
     float inside        = aastep(0.0, 1.0, signed_distance);
     float outside       = abs(aastep(-1.0, 0.0, signed_distance));
+    vec4 final_color    = vec4(0);
 
-    if(((style & TEXTURE_FILL) != 0) && inside > 0.0)
-        fill_color = texture(texture_fill, vec2(o_uv.x, 1-o_uv.y));
-    else
-        fill_color = o_fill_color;
+    fill(f_color, image, f_uv, inside, final_color);
+    stroke(f_stroke_color, signed_distance, half_stroke, final_color);
+    //glow(f_glow_color, signed_distance, outside, final_color);
 
-    if((style & (FILLED | TEXTURE_FILL)) != 0){
-        final_color = mix(final_color, fill_color, inside);
-    }
-    if((style & OUTLINED) != 0){
-        float t = aastep(0, half_stroke, signed_distance);
-        final_color = mix(final_color, o_stroke_color, t);
-    }
-    if((style & GLOWING) != 0){
-        float alpha = 1-(outside*abs(clamp(signed_distance, -1, 0))*7);
-        alpha *= o_glow_color.a;
-        final_color = mix(final_color, vec4(o_glow_color.rgb, alpha), outside);
-    }
     fragment_color = final_color;
-    if(transparent_picking || final_color.a >= 0.99999999)
-        fragment_groupid = o_id;
-}
 
+}

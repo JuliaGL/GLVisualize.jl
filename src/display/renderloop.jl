@@ -23,7 +23,7 @@ function delete_selectionquery!(name::Symbol, selection, selectionquery)
     delete!(selection, name)
     nothing
 end
-immutable GLFramebuffer
+type GLFramebuffer
     render_framebuffer ::GLuint
     color              ::Texture{RGBA{UFixed8}, 2}
     objectid           ::Texture{Vec{2, GLushort}, 2}
@@ -32,10 +32,18 @@ end
 
 function resizebuffers(window_size, framebuffer::GLFramebuffer)
     if all(x->x>0, window_size)
+        render_framebuffer = glGenFramebuffers()
+        glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
         ws = tuple(window_size...)
         resize_nocopy!(framebuffer.color,    ws)
         resize_nocopy!(framebuffer.objectid, ws)
         resize_nocopy!(framebuffer.depth,    ws)
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebuffer.color.id, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, framebuffer.objectid.id, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,  GL_TEXTURE_2D, framebuffer.depth.id, 0)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        framebuffer.render_framebuffer = render_framebuffer
     end
     nothing
 end
@@ -77,7 +85,7 @@ export glscreen
 
 function glscreen(;name="GLVisualize",
     resolution=nothing,
-    debugging=false)
+    debugging=true)
 
     windowhints = [
         (GLFW.SAMPLES,      0),
@@ -127,26 +135,26 @@ end
 
 
 function renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
-    render_framebuffer = screen.inputs[:framebuffer].render_framebuffer
-    objectid_buffer = screen.inputs[:framebuffer].objectid
+    framebuffer = screen.inputs[:framebuffer]
+    objectid_buffer = screen.inputs[:framebuffer]
     while screen.inputs[:open].value
-        renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
+        renderloop_inner(screen, framebuffer, selectionquery, selection, postprocess_robj)
         renderloop_callback()
     end
     GLFW.Terminate()
     FreeTypeAbstraction_done()
     GLAbstraction.empty_shader_cache!()
 end
-function renderloop_inner(screen, render_framebuffer, objectid_buffer, selectionquery, selection, postprocess_robj)
+function renderloop_inner(screen, framebuffer, selectionquery, selection, postprocess_robj)
     glDisable(GL_SCISSOR_TEST)
-    glBindFramebuffer(GL_FRAMEBUFFER, render_framebuffer)
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.render_framebuffer)
     glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     render(screen)
     yield()
     #Read all the selection queries
-    update_selectionqueries(selectionquery, objectid_buffer, selection, screen.area.value)
+    update_selectionqueries(selectionquery, framebuffer.objectid, selection, screen.area.value)
     yield()
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)

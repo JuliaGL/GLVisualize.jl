@@ -12,27 +12,19 @@ function Base.split(condition::Function, associative::Associative)
     A, B
 end
 
-function GLVisualizeShader(shaders)
-    shaders = map(shader -> load(joinpath(shaderdir(), shader)), shaders)
-    (shaders, ((:fragdatalocation,[(0, "fragment_color"), (1, "fragment_groupid")]),
-        (:updatewhile,ROOT_SCREEN.inputs[:open]), (:update_interval,1.0))
-    )
-end
 
 function assemble_shader(data)
     shader = data[:shader]
     delete!(data, :shader)
     bb  = get(data, :boundingbox, Signal(centered(AABB)))
-    glp = get(data, :gl_primtive, GL_TRIANGLES)
+    glp = get(data, :gl_primitive, GL_TRIANGLES)
     if haskey(data, :instances)
         robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
     else
-        robj = std_renderobject(data, shader, bb, glp, nothing)
+        robj = std_renderobject(data, shader, bb, glp)
     end
     Context(robj)
 end
-
-
 
 
 
