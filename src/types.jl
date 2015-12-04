@@ -22,7 +22,16 @@ function Grid{T, N}(a::Array{T, N})
 		linspace(0, s[i], size(a, i))
 	end)
 end
-Base.length(p::Grid) = mapreduce(+, length, p.dims)
+Base.length(p::Grid) = prod(map(length, p.dims))
+GLAbstraction.isa_gl_struct(x::Grid) = true
+GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"
+function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N,T}, uniform_name::Symbol)
+    return Dict{Symbol, Any}(
+        symbol("$uniform_name.minimum") => Vec{N,Float32}(map(first, g.dims)),
+        symbol("$uniform_name.maximum") => Vec{N,Float32}(map(last, g.dims)),
+        symbol("$uniform_name.dims")    => Vec{N,Cint}(map(length, g.dims)),
+    )
+end
 
 immutable Intensity{N, T} <: FixedVector{N, T}
 	_::NTuple{N, T}

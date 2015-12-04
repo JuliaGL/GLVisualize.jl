@@ -8,22 +8,39 @@ function _default{T <: Vec3}(main::VolumeTypes{T}, s::Style, data::Dict)
     get!(data, :color, default(Vector{RGBA}))
     _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), Grid(main)), s, data)
 end
-
-_default{Primitive <: Union{GeometryPrimitive{3}, AbstractMesh}, T <: Point}(p::Tuple{Primitive, VecTypes{T}}, s::Style, data::Dict) = @gen_defaults! data begin
-    primitive::GLNormalMesh = p[1]
-    color            = default(RGBA{Float32}, s) => TextureBuffer
-    position         = p[2]                      => TextureBuffer
-    scale            = nothing                   => TextureBuffer
-    rotation         = nothing                   => TextureBuffer
-    intensity        = nothing                   => TextureBuffer
-    color_norm       = nothing                   => TextureBuffer
-    instances        = position
-    boundingbox      = GLBoundingBox(position, scale, primitive)
-    shader           = GLVisualizeShader("util.vert", "particles.vert", "standard.frag")
+function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict)
+    data[:scale_z] = const_lift(vec, main)
+    _default((centered(Cube), Grid(main)), s, data)
 end
 
+function _default{Primitive <: Union{GeometryPrimitive{3}, AbstractMesh}, Position <: Union{Grid, VecTypes{Point}}}(
+        p::Tuple{Primitive, Position}, s::Style, data::Dict
+    )
+    @gen_defaults! data begin
+        primitive::GLNormalMesh = p[1]
+        color            = default(RGBA{Float32}, s) => TextureBuffer
+        position         = p[2]                      => TextureBuffer
+        scale            = nothing                   => TextureBuffer
+        scale_z          = nothing                   => TextureBuffer
+        scale_x          = scale_z!=nothing ? step(position.dims[1]) : nothing => TextureBuffer
+        scale_y          = scale_z!=nothing ? step(position.dims[2]) : nothing => TextureBuffer
+
+        rotation         = nothing                   => TextureBuffer
+        intensity        = nothing                   => TextureBuffer
+        color_norm       = nothing                   => Vec2f0
+        instances        = position
+        boundingbox      = GLBoundingBox(position, scale, primitive)
+        shader           = GLVisualizeShader("util.vert", "particles.vert", "standard.frag")
+    end
+
+
+end
 _default{T <: Point}(positions::VecTypes{T}, s::style"points", data::Dict) = @gen_defaults! data begin
     vertex       = positions => GLBuffer
+    color        = default(RGBA{Float32}, s) => GLBuffer
+    intensity    = default(RGBA{Float32}, s) => GLBuffer
+    color_norm   = nothing                   => Vec2f0
+
     point_size   = 2f0
     prerender    = +((glPointSize, point_size),)
     shader       = GLVisualizeShader("dots.vert", "dots.frag")
@@ -40,11 +57,12 @@ end
 GLAbstraction.gl_convert(img::Images.Image) = gl_convert(Images.data(img))
 primitive_shape(::Circle) = CIRCLE
 primitive_shape(::SimpleRectangle) = RECTANGLE
+primitive_shape{T}(::HyperRectangle{2,T}) = RECTANGLE
 
 primitive_scale(c::Circle) = Vec2f0(c.r)
 primitive_scale(r::SimpleRectangle) = Vec2f0(r.w, r.h)
 
-_default{Primitive <: GeometryPrimitive{2}, P <: Point}(p::Tuple{Primitive, Vector{P}}, s::Style, data::Dict) = @gen_defaults! data begin
+_default{Primitive <: GeometryPrimitive{2}, P <: Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) = @gen_defaults! data begin
     scale               = Vec2f0(40)          => GLBuffer
     stroke_width        = 2f0
     glow_width          = 0f0

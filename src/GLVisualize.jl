@@ -31,6 +31,7 @@ export assetpath, loadasset
 include("FreeTypeAbstraction.jl")
 
 include("types.jl")
+export CIRCLE, RECTANGLE, ROUNDED_RECTANGLE, DISTANCEFIELD, TRIANGLE
 include("boundingbox.jl")
 
 include("visualize_interface.jl")

@@ -44,7 +44,15 @@ function call{T, N1,N2}(B::Type{AABB{T}}, positions::Vector{Point{N1, T}}, scale
     main_bb = B(positions)
     B(minimum(main_bb) + pmin, maximum(main_bb) + pmax)
 end
-
+function call{T, R, N}(B::Type{AABB{T}}, grid::Grid{N, R}, scale::Void, primitive_bb::AABB{T})
+    primitive_scaled_min = minimum(primitive_bb)
+    primitive_scaled_max = maximum(primitive_bb)
+    pmax = max(primitive_scaled_min, primitive_scaled_max)
+    pmin = min(primitive_scaled_min, primitive_scaled_max)
+    mainmin = Vec(Vec{N, Float32}(map(first, grid.dims)), 0f0)
+    mainmax = Vec(Vec{N, Float32}(map(last, grid.dims)), 0f0)
+    B(mainmin + pmin, mainmax + pmax)
+end
 
 function call{T, N}(B::Type{AABB{T}}, positions::Vector{Point{N, T}}, scale::Vector{Vec{N, T}}, primitive_bb::AABB{T})
     _max = Vec{N, T}(typemin(T))

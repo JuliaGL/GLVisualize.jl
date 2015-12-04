@@ -11,7 +11,7 @@ struct SimpleRectangle
     vec2 width;
 };
 
-// stretch is 
+// stretch is
 vec3 stretch(vec3 val, vec3 from, vec3 to)
 {
     return from + (val * (to - from));
@@ -87,7 +87,10 @@ ivec3 ind2sub(ivec3 dim, int linearindex)
     return ivec3(linearindex / (dim.y * dim.z), (linearindex / dim.z) % dim.y, linearindex % dim.z);
 }
 
-
+float linear_index(int dims, int index)
+{
+    return float(index) / float(dims);
+}
 vec2 linear_index(ivec2 dims, int index)
 {
     ivec2 index2D = ind2sub(dims, index);
@@ -109,7 +112,7 @@ vec4 linear_texture(sampler2D tex, int index)
 }
 
 vec4 linear_texture(sampler2D tex, int index, vec2 offset)
-{   
+{
     ivec2 dims = textureSize(tex, 0);
     return texture(tex, linear_index(dims, index) + (offset/vec2(dims)));
 }
@@ -160,5 +163,5 @@ void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 ligh
     // direction to camera
     o_vertex                = -position_camspace.xyz;
     // screen space coordinates of the vertex
-    gl_Position             = projection * position_camspace; 
+    gl_Position             = projection * position_camspace;
 }

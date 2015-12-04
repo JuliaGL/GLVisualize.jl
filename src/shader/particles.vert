@@ -9,6 +9,22 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
     bool _; //empty structs are not allowed
 };
 
+struct Grid1D{
+    float minimum;
+    float maximum;
+    int dims;
+};
+struct Grid2D{
+    vec2 minimum;
+    vec2 maximum;
+    ivec2 dims;
+};
+struct Grid3D{
+    vec3 minimum;
+    vec3 maximum;
+    ivec3 dims;
+};
+
 {{position_type}} position;
 Nothing position_x;
 Nothing position_y;
@@ -16,9 +32,9 @@ Nothing position_z;
 Nothing intensity;
 
 {{scale_type}} scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
-Nothing scale_x;
-Nothing scale_y;
-Nothing scale_z;
+{{scale_x_type}} scale_x;
+{{scale_y_type}} scale_y;
+{{scale_z_type}} scale_z;
 
 {{rotation_type}}   rotation;
 {{color_type}}      color;
@@ -32,6 +48,11 @@ vec4 getindex(sampler1D tex, int index);
 vec4 getindex(samplerBuffer tex, int index);
 vec4 color_lookup(float intensity, vec4 color, vec2 norm);
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
+vec3 stretch(vec3 val, vec3 from, vec3 to);
+vec2 stretch(vec2 val, vec2 from, vec2 to);
+float stretch(float val, float from, float to);
+
+
 
 uniform uint objectid;
 flat out uvec2 o_id;
@@ -71,7 +92,7 @@ void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N)
     V = vec3(rot*vec4(V, 1));
     N = normalize(vec3(rot*vec4(N, 1)));
 }
-void rotate(vec3 direction, in vec3 vertices, in vec3 normal, int index){} 
+void rotate(vec3 direction, in vec3 vertices, in vec3 normal, int index){}
 
 void colorize(vec4 color, int index, Nothing intensity, Nothing color_norm)
 {
@@ -93,6 +114,23 @@ vec3 _position(Nothing position, samplerBuffer position_x, samplerBuffer positio
 {
     return vec3(texelFetch(position_x, index).x, texelFetch(position_y, index).x, texelFetch(position_z, index).x);
 }
+
+float linear_index(int dims, int index);
+vec2 linear_index(ivec2 dims, int index);
+vec3 linear_index(ivec3 dims, int index);
+
+vec3 _position(Grid1D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index)
+{
+    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0,0);
+}
+vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index)
+{
+    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0);
+}
+vec3 _position(Grid3D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index)
+{
+    return stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum);
+}
 //vec3 position(AABB cube, Nothing position_x, Nothing position_y, Nothing position_z, int index);
 //vec3 position(SimpleRectangle rect, Nothing position_x, Nothing position_y, Nothing position_z, int index);
 void scale_it(Nothing scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index, inout vec3 V){}
@@ -100,7 +138,9 @@ void scale_it(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int
 void scale_it(samplerBuffer scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index, inout vec3 V){
     V *= getindex(scale, index).xyz;
 }
-
+void scale_it(Nothing scale, float scale_x, float scale_y, samplerBuffer scale_z, int index, inout vec3 V){
+    V *= vec3(scale_x, scale_y, getindex(scale_z, index).x);
+}
 
 void main(){
 	int index = gl_InstanceID;
