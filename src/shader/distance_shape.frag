@@ -58,6 +58,7 @@ flat in vec4  f_color;
 flat in vec4  f_stroke_color;
 flat in vec4  f_glow_color;
 flat in uvec2 f_id;
+flat in int   f_primitive_index;
 in vec2 f_uv;
 
 
@@ -72,12 +73,17 @@ out vec4 fragment_color;
 uniform vec2 resolution;
 uniform bool transparent_picking;
 
+
 void fill(vec4 fillcolor, Nothing image, vec2 uv, float infill, inout vec4 color){
     color = mix(color, fillcolor, infill);
 }
 void fill(vec4 c, sampler2D image, vec2 uv, float infill, inout vec4 color){
-    color = mix(color, texture(image, uv), infill);
+    color = mix(color, texture(image, vec2(uv.x, 1-uv.y)), infill);
 }
+void fill(vec4 c, sampler2DArray image, vec2 uv, float infill, inout vec4 color){
+    color = mix(color, texture(image, vec3(uv, f_primitive_index)), infill);
+}
+
 void stroke(vec4 strokecolor, float signed_distance, float half_stroke, inout vec4 color){
     if (half_stroke > 0.0){
         float t = aastep(0, half_stroke, signed_distance);
@@ -114,8 +120,8 @@ void main(){
         signed_distance = triangle(f_uv);
 
     float half_stroke   = (stroke_width/2) / max(f_scale.x, f_scale.y);
-    float inside        = aastep(0.0, 1.0, signed_distance);
-    float outside       = abs(aastep(-1.0, 0.0, signed_distance));
+    float inside        = aastep(0.0, 100.0, signed_distance);
+    float outside       = abs(aastep(-100.0, 0.0, signed_distance));
     vec4 final_color    = vec4(0);
 
     fill(f_color, image, f_uv, inside, final_color);
@@ -123,5 +129,5 @@ void main(){
     //glow(f_glow_color, signed_distance, outside, final_color);
 
     fragment_color = final_color;
-
+    fragment_groupid = f_id;
 }

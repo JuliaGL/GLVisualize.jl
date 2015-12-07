@@ -5,7 +5,8 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
     bool _; //empty structs are not allowed
 };
 
-//{{uv_x_type}} uv_offset_width;
+
+{{uv_offset_width_type}} uv_offset_width;
 //{{uv_x_type}} uv_width;
 {{position_type}} position;
 Nothing position_x;
@@ -30,6 +31,7 @@ uniform uint objectid;
 
 flat out uvec2 g_id;
 
+out int  g_primitive_index;
 out vec3 g_position;
 out vec2 g_scale;
 
@@ -49,8 +51,9 @@ vec3 _position(vec2 p){return vec3(p, 0);}
 mat4 getmodelmatrix(vec3 xyz, vec3 scale);
 
 void main(){
+	g_primitive_index = gl_VertexID;
     g_position        = _position(position);
-    g_uv_offset_width = vec4(0,0,1,1);
+    g_uv_offset_width = uv_offset_width;
     g_id              = uvec2(objectid, gl_VertexID);
     g_color           = color;
     g_stroke_color    = stroke_color;

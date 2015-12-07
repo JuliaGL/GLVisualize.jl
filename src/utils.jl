@@ -66,8 +66,11 @@ end
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
-is_hovering(robj::RenderObject, window::Screen) = const_lift(window.inputs[:mouse_hover]) do mh
-    mh[1] == robj.id
+function is_hovering(robj::RenderObject, window::Screen)
+    ishover = const_lift(window.inputs[:mouse_hover]) do mh
+        mh[1] == robj.id
+    end
+    droprepeats(ishover)
 end
 
 

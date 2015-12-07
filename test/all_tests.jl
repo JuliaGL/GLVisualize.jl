@@ -181,7 +181,7 @@ push!(TEST_DATA2D, visualize(pos, scale=s, shape=Cint(ROUNDED_RECTANGLE)))
 push!(TEST_DATA2D, visualize(
 	pos,
 	shape=Cint(ROUNDED_RECTANGLE),
-	image=gif, scale=Vec2f0(60)),
+	image=gif, scale=Vec2f0(80)),
 )
 end
 #=

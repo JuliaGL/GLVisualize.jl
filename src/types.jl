@@ -32,7 +32,13 @@ function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N,T}, uniform_name::Symbol
         symbol("$uniform_name.dims")    => Vec{N,Cint}(map(length, g.dims)),
     )
 end
-
+function GLAbstraction.gl_convert_struct{T}(g::Grid{1,T}, uniform_name::Symbol)
+    return Dict{Symbol, Any}(
+        symbol("$uniform_name.minimum") => Float32(first(g.dims[1])),
+        symbol("$uniform_name.maximum") => Float32(last(g.dims[1])),
+        symbol("$uniform_name.dims")    => Cint(length(g.dims[1])),
+    )
+end
 immutable Intensity{N, T} <: FixedVector{N, T}
 	_::NTuple{N, T}
 end

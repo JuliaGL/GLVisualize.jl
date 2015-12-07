@@ -188,7 +188,8 @@ function calc_position(glyphs, startposition=Vec2f0(0))
 	    last_pos  = PF16(startposition)
 	    lastglyph = first(glyphs)
 	    for (i,glyph) in enumerate(glyphs)
-	        extent = FONT_EXTENDS[glyph[1]]
+	        extent = FONT_EXTENDS[glyph]
+	        bearing = PF16(extent.horizontal_bearing[1], -(extent.scale[2]-extent.horizontal_bearing[2]))
 	        if isnewline(lastglyph)
 	            if i<2
 	                last_pos = PF16(last_pos[1], last_pos[2]-extent.advance[2])
@@ -201,7 +202,7 @@ function calc_position(glyphs, startposition=Vec2f0(0))
 	            finalpos = last_pos
 	            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
 	            #(i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
-	            positions[i] = finalpos
+	            positions[i] = finalpos + bearing
 	        end
 	        lastglyph = glyph
 	    end
@@ -212,19 +213,19 @@ end
 export process_for_gl
 
 function process_for_gl(text, tabs=4)
-	result = GLSprite[]
+	result = Int[]
 	sizehint!(result, length(text))
 	for elem in text
 		if elem == '\t'
 			space = get_font!(' ')
-			append!(result, fill(GLSprite(space), tabs))
+			append!(result, fill(Int(space), tabs))
 		elseif elem == '\r'
 			#don't add
 		elseif elem == '\n'
 			nl = get_font!('\n')
-			push!(result, GLSprite(nl))
+			push!(result, Int(nl))
 		else
-			push!(result, GLSprite(get_font!(elem)))
+			push!(result, Int(get_font!(elem)))
 		end
 	end
 	return result

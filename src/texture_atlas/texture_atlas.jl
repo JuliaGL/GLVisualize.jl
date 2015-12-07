@@ -28,7 +28,8 @@ type TextureAtlas
 	mapping 		::Dict{Any, Int} # styled glyph to index in sprite_attributes
 	index 			::Int
 	images 			::Texture{Float16, 2}
-	attributes 		::GPUVector{GLSpriteAttribute}
+    attributes      ::Vector{Vec4f0}
+	scale 		    ::Vector{Vec2f0}
 	# sprite_attributes layout
 	# can be compressed quite a bit more
 	# ID Vertex1     Vertex2     Vertex3     Vertex4
@@ -49,7 +50,8 @@ type TextureAtlas
 			Dict{Any, Int}(),
 			1,
 			images,
-			GPUVector(TextureBuffer(GLSpriteAttribute[]))
+			Vec4f0[], 
+            Vec2f0[]
 		)
 	end
 end
@@ -70,15 +72,13 @@ Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.m
 	halfpadding 		= (uv_width - real_width) / 2f0
 	real_start 			= uv_start + halfpadding # include padding
 	relative_start 		= real_start ./ tex_size # use normalized texture coordinates
-	relative_width 		= real_width ./ tex_size
+	relative_width 		= (real_start+real_width) ./ tex_size
 
 	bearing 			= extent.horizontal_bearing
-	attributes 			= GLSpriteAttribute[
-		GLSpriteAttribute(relative_start..., relative_width...), # last remaining digits are optional, so we use them to cache this calculation
-		GLSpriteAttribute(bearing[1], -(real_heightpx-bearing[2]), extent.advance...),
-	]
+	uv_offset_width 	= Vec4f0(relative_start..., relative_width...)
 	i = texture_atlas.index
-	push!(texture_atlas.attributes, attributes)
+	push!(texture_atlas.attributes, uv_offset_width)
+    push!(texture_atlas.scale, Vec2f0(real_width))
 	texture_atlas.index = i+1
 	i0 					= i-1# zero indexed for OpenGL and ascii compatibility
 	FONT_EXTENDS[i0] 	= extent # extends get saved for the attribute id

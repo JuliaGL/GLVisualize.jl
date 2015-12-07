@@ -121,7 +121,7 @@ vec3 linear_index(ivec3 dims, int index);
 
 vec3 _position(Grid1D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index)
 {
-    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0,0);
+    return vec3(stretch(linear_index(99, index), 0, 1), 0,0);
 }
 vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index)
 {
@@ -139,20 +139,22 @@ void scale_it(samplerBuffer scale, Nothing scale_x, Nothing scale_y, Nothing sca
     V *= getindex(scale, index).xyz;
 }
 void scale_it(Nothing scale, float scale_x, float scale_y, samplerBuffer scale_z, int index, inout vec3 V){
-    V *= vec3(scale_x, scale_y, getindex(scale_z, index).x);
+    V *= vec3(0.001, 0.1, getindex(scale_z, index).x);
 }
-
+void scale_it(Nothing scale, float scale_x, samplerBuffer scale_y, float scale_z, int index, inout vec3 V){
+    V *= vec3(scale_x, getindex(scale_y, index).x, scale_z);
+}
 void main(){
 	int index = gl_InstanceID;
 	vec3 pos  = _position(position, position_x, position_y, position_z, index);
     vec3 V = vertices;
     vec3 N = normals;
 
-
     scale_it(scale, scale_x, scale_y, scale_z, index, V);
     rotate(rotation, index, V, N);
-    colorize(color, index, intensity, color_norm);
 
     o_id = uvec2(objectid, index);
     render(pos + V, N, view*model, projection, light);
+    colorize(color, index, intensity, color_norm);
+    
 }

@@ -34,16 +34,16 @@ facts("particles") do
     b = [rand(Point3f0) for i=1:20]
 
     context("viewable creation") do
-        particles = map(visualize, (b, (prima, a), (primb, b)))
+        particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in (b, (prima, a), (primb, b))]
         p1,p2,p3 = extract_renderable(Context(particles...))
         #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
-        @fact typeof(p1[][:primitive]) --> Cube{Float32}
-        @fact typeof(p2[][:primitive]) --> GLNormalMesh
+        @fact typeof(p1[:primitive]) --> Cube{Float32}
+        @fact typeof(p2[:primitive]) --> GLNormalMesh
 
         #@fact particles[1][:positions] --> a
-        @fact p1[][:positions] --> b
-        @fact p2[][:positions] --> a
-        @fact p3[][:positions] --> b
+        @fact p1[:positions] --> b
+        @fact p2[:positions] --> a
+        @fact p3[:positions] --> b
 
         if has_opengl
             context("viewing") do
