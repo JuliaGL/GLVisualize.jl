@@ -51,7 +51,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
     function GLVisualizeShader(paths...; kw_args...)
         paths = map(shader -> load(joinpath(shaderdir(), shader)), paths)
         new(paths, vcat(kw_args, [
-        	(:fragdatalocationc, [(0, "fragment_color"), (1, "fragment_groupid")]),
+        	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
     		(:updatewhile, ROOT_SCREEN.inputs[:open]),
     		(:update_interval, 1.0),
         ]))
