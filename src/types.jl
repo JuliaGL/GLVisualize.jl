@@ -28,6 +28,7 @@ function Grid{T, N}(a::Array{T, N})
 		linspace(0, s[i], size(a, i))
 	end)
 end
+
 Base.length(p::Grid) = prod(map(length, p.dims))
 GLAbstraction.isa_gl_struct(x::Grid) = true
 GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"

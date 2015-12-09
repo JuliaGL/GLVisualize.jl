@@ -50,7 +50,7 @@ type TextureAtlas
 			Dict{Any, Int}(),
 			1,
 			images,
-			Vec4f0[], 
+			Vec4f0[],
             Vec2f0[]
 		)
 	end
@@ -61,6 +61,19 @@ end
 begin #basically a singleton for the textureatlas
 const local TEXTURE_ATLAS = TextureAtlas[]
 get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
+end
+function get_uv_offset_width!(c::Char;
+        font          = DEFAULT_FONT_FACE,
+        texture_atlas = get_texture_atlas()
+    )
+    texture_atlas.attributes[get_font!(c, font, texture_atlas)+1]
+end
+
+function get_font_scale!(c::Char;
+        font          = DEFAULT_FONT_FACE,
+        texture_atlas = get_texture_atlas()
+    )
+    texture_atlas.scale[get_font!(c, font, texture_atlas)+1]
 end
 
 Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do

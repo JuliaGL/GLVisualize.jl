@@ -1,20 +1,29 @@
 typealias Primitives{N} Union{GeometryPrimitive{N}, AbstractMesh}
 typealias Primitives3D  Primitives{3}
-
+typealias ExtPrimitives Union{Primitives, Char, AbstractString}
 
 _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{2, Float32}), main), s, data)
 _default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{3, Float32}), main), s, data)
-_default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict) = _default((centered(HyperRectangle{N, Float32}), main), s, data)
+_default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
 
-function _default{N, T <: Vec}(main::ArrayTypes{N,T}, s::Style, data::Dict)
-    data[:rotation] = const_lift(vec, main)
+function create_minmax{T<:Vec,N}(x::Array{T,N})
+    _norm = map(norm, x)
+    Vec2f0(minimum(_norm), maximum(_norm))
+end
+const ARROW = '\U21E8'
+
+_default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict) = _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
+_default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default((ARROW, main), s, data)
+
+function _default{P<:ExtPrimitives, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
+    data[:rotation] = const_lift(vec, main[2])
     get!(data, :color_norm) do
-        _norm = const_lift(map, norm, main)
-        Vec2f0(minimum(_norm), maximum(_norm))
+        const_lift(create_minmax, main[2])
     end
     get!(data, :color, Texture(default(Vector{RGBA})))
-    _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), Grid(main)), s, data)
+    _default((main[1], Grid(main[2])), s, data)
 end
+
 function _default{N, P<:Primitives, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
     grid = Grid(main[2])
     @gen_defaults! data begin
@@ -63,7 +72,7 @@ function meshparticle(p, s, data)
 
         rotation         = nothing    => TextureBuffer
         intensity        = nothing    => TextureBuffer
-        color_norm       = nothing    => Vec2f0
+        color_norm       = nothing
         instances        = position
         boundingbox      = ParticleBoundingBox(
             position, position_x, position_y, position_z,
@@ -86,6 +95,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     gl_primitive = GL_POINTS
 end
 
+primitive_shape(::Char)   = DISTANCEFIELD
 primitive_shape(::Circle) = CIRCLE
 primitive_shape(::SimpleRectangle) = RECTANGLE
 primitive_shape{T}(::HyperRectangle{2,T}) = RECTANGLE
@@ -94,8 +104,22 @@ primitive_shape(x::Shape) = x
 primitive_scale(c::Circle) = Vec2f0(c.r)
 primitive_scale(r::SimpleRectangle) = Vec2f0(r.w, r.h)
 primitive_scale(r::Shape) = Vec2f0(40)
+primitive_scale(c::Char)  = get_font_scale!(c)
 
-_default{Primitive <: Union{GeometryPrimitive{2}, Shape}, P <: Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) = @gen_defaults! data begin
+
+primitive_uv_offset_width(c::Char) = get_uv_offset_width!(c)
+primitive_uv_offset_width(x)       = Vec4f0(0,0,1,1)
+
+primitive_distancefield(x) = nothing
+primitive_distancefield(::Char) = get_texture_atlas().images
+
+_default{Primitive<:Union{GeometryPrimitive{2}, Shape, Char}, P<:Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) =
+    sprites(p,s,data)
+
+_default{Primitive<:Union{GeometryPrimitive{2}, Shape, Char}, G<:Grid}(p::Tuple{Primitive, G}, s::Style, data::Dict) =
+    sprites(p,s,data)
+
+sprites(p, s, data) = @gen_defaults! data begin
     shape               = primitive_shape(p[1])
 
     position            = p[2]    => GLBuffer
@@ -117,16 +141,16 @@ _default{Primitive <: Union{GeometryPrimitive{2}, Shape}, P <: Point}(p::Tuple{P
 
     stroke_width        = 2f0
     glow_width          = 0f0
-    uv_offset_width     = Vec4f0(0,0,1,1) => GLBuffer
+    uv_offset_width     = primitive_uv_offset_width(p[1]) => GLBuffer
 
     image               = nothing => Texture
-    distancefield       = nothing => Texture
+    distancefield       = primitive_distancefield(p[1]) => Texture
     transparent_picking = true
 
     boundingbox         = ParticleBoundingBox(
         position, position_x, position_y, position_z,
         scale, scale_x, scale_y, scale_z,
-        primitive
+        SimpleRectangle{Float32}(0,0,1,1)
     )
     preferred_camera    = :orthographic_pixel
     shader              = GLVisualizeShader("util.vert", "sprites.geom", "sprites.vert", "distance_shape.frag")

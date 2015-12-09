@@ -11,8 +11,7 @@ in vec4 g_stroke_color[];
 in vec4 g_glow_color[];
 in vec3 g_position[];
 in vec2 g_scale[];
-flat in uvec2 g_id[];
-in mat4 g_model[];
+in uvec2 g_id[];
 
 flat out int  f_primitive_index;
 flat out vec2 f_scale;

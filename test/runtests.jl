@@ -60,15 +60,16 @@ facts("mesh particles") do
 end
 facts("sprite particles") do
     prima = centered(HyperRectangle{2, Float32})
-    primb = centered(Sphere{2, Float32})
+    primb = centered(HyperSphere{2, Float32})
     a = rand(Point2f0, 20)
     b = rand(Point3f0, 20)
     c = rand(Float32, 10)
     d = rand(Float32, 10,10)
-    e = rand(Vec3f0, 5,5,5)
+    e = rand(Vec3f0, 5,5)
+    f = rand(Vec3f0, 5,5,5)
 
     context("viewable creation") do
-        particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in (b, (prima, a), (primb, b), (primb, c), d, e)]
+        particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in (b, (prima, a), (primb, b), e)]
         p1,p2,p3 = extract_renderable(Context(particles...))
         #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
         #@fact typeof(p1[:primitive]) --> Cube{Float32}
@@ -81,7 +82,7 @@ facts("sprite particles") do
 
         if has_opengl
             context("viewing") do
-                gl_obj = view(visualize(particles), windows[1])
+                gl_obj = view(visualize(particles), windows[3])
                 #@fact gpu_data(gl_obj[1][:positions]) --> a
                 #@fact typeof(gl_obj[1][:positions]) --> TextureBuffer
                 #@fact typeof(gl_obj[1][:vertices]) --> GLBuffer
