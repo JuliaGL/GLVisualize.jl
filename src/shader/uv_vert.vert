@@ -1,13 +1,20 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
 
-in vec2 vertices;
+{{vertices_type}} vertices;
 in vec2 texturecoordinates;
 
-out vec2 o_uv;
-
 uniform mat4 projectionview, model;
+uniform uint objectid;
+
+out vec2       o_uv;
+flat out uvec2 o_objectid;
+
+vec4 _position(vec3 p){return vec4(p,1);}
+vec4 _position(vec2 p){return vec4(p,0,1);}
+
 void main(){
-	o_uv = texturecoordinates;
-	gl_Position = projectionview * model * vec4(vertices, 0, 1);
+	o_uv        = texturecoordinates;
+    o_objectid  = uvec2(objectid, gl_VertexID+1);
+	gl_Position = projectionview * model * _position(vertices);
 }

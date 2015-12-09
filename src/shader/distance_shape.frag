@@ -9,12 +9,31 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
 #define DISTANCEFIELD     3
 #define TRIANGLE          4
 
-#define FILLED       1
-#define OUTLINED     2
-#define GLOWING      4
-#define TEXTURE_FILL 8
+#define ALIASING_CONST    0.70710678118654757
+#define M_SQRT_2          1.4142135
 
-#define ALIASING_CONST 0.70710678118654757
+
+{{distancefield_type}}  distancefield;
+{{image_type}}          image;
+
+uniform float           stroke_width;
+uniform float           glow_width;
+uniform int             shape; // shape is a uniform for now. Making them a varying && using them for control flow is expected to kill performance
+uniform vec2            resolution;
+uniform bool            transparent_picking;
+
+flat in vec2            f_scale;
+flat in vec4            f_color;
+flat in vec4            f_stroke_color;
+flat in vec4            f_glow_color;
+flat in uvec2           f_id;
+flat in int             f_primitive_index;
+in vec2                 f_uv;
+
+
+
+out vec4  fragment_color;
+out uvec2 fragment_groupid;
 
 float aastep(float threshold1, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
@@ -25,7 +44,6 @@ float aastep(float threshold1, float threshold2, float value) {
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value)-smoothstep(threshold2-afwidth, threshold2+afwidth, value);
 }
 
-#define M_SQRT_2 1.4142135
 float triangle(vec2 P){
     P -= 0.5;
     float x = M_SQRT_2/2.0 * (P.x - P.y);
@@ -34,7 +52,6 @@ float triangle(vec2 P){
     float r2 = P.y;
     return -max(r1,r2);
 }
-
 float circle(vec2 uv){
     return (1-length(uv-0.5))-0.5;
 }
@@ -47,31 +64,6 @@ float rounded_rectangle(vec2 uv, vec2 tl, vec2 br){
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
 
-{{distancefield_type}} distancefield;
-{{image_type}} image;
-
-uniform float stroke_width;
-uniform float glow_width;
-
-flat in vec2  f_scale;
-flat in vec4  f_color;
-flat in vec4  f_stroke_color;
-flat in vec4  f_glow_color;
-flat in uvec2 f_id;
-flat in int   f_primitive_index;
-in vec2 f_uv;
-
-
-uniform int style; // style and shape are uniforms for now. Making them a varying && using them for control flow is expected to kill performance
-uniform int shape;
-
-
-
-out uvec2 fragment_groupid;
-out vec4 fragment_color;
-
-uniform vec2 resolution;
-uniform bool transparent_picking;
 
 
 void fill(vec4 fillcolor, Nothing image, vec2 uv, float infill, inout vec4 color){
@@ -128,6 +120,6 @@ void main(){
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
     //glow(f_glow_color, signed_distance, outside, final_color);
 
-    fragment_color = final_color;
+    fragment_color   = final_color;
     fragment_groupid = f_id;
 }

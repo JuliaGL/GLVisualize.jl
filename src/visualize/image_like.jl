@@ -1,3 +1,5 @@
+GLAbstraction.gl_convert(img::Images.Image) = gl_convert(Images.data(img))
+
 _default{T <: Colorant, X}(main::Images.Image{T, 2, X}, s::Style, d::Dict) = _default(Images.data(main), s, d)
 _default{T <: Colorant, X}(main::Signal{Images.Image{T, 2, X}}, s::Style, d::Dict) = _default(const_lift(Images.data, main), s, d)
 
