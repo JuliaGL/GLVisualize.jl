@@ -250,29 +250,31 @@ end
 
 
 
-function fold_loop(v0, timediff_range)
-    _, range = timediff_range
-    v0 == last(range) && return first(range)
-    v0+step(range)
+function fold_loop(v0, _)
+    val, range, index = v0
+    val = range[index]
+    index += 1
+    index>length(range) && (index = 1)
+    (val, range, index)
 end
 
 loop(range::Range; t=TIMER_SIGNAL) =
-    foldp(fold_loop, first(range), const_lift(tuple, t, range))
+    map(first, foldp(fold_loop, (first(range), range, 1), t))
 
 
-function fold_bounce(v0, v1)
-    _, range = v1
-    val, direction = v0
-    val += step(range)*direction
-    if val > last(range) || val < first(range)
-    direction = -direction
-    val += step(range)*direction
+function fold_bounce(v0, _)
+    val, range, index, direction = v0
+    val = range[index]
+    index += direction
+    if index in (length(range)+1, 0)
+        direction = -direction
+        index += 2direction
     end
-    (val, direction)
+    (val, range, index, direction)
 end
 
 bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
-    const_lift(first, foldp(fold_bounce, (first(range), one(T)), const_lift(tuple, t, range)))
+    map(first, foldp(fold_bounce, (first(range), range, 1, 1), t))
 
 function doubleclick(mouseclick, threshold)
     ddclick = foldp((time(), mouseclick.value, false), mouseclick) do v0, mclicked

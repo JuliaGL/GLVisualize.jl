@@ -1,9 +1,8 @@
-#=
-_default(mesh::GLNormalAttributeMesh, s::Style, data::Dict) = assemble_std(
-    mesh, data,
-    ("util.vert", "attribute_mesh.vert", "standard.frag"),
-)
-=#
+_default(mesh::GLNormalAttributeMesh, s::Style, data::Dict) = @gen_defaults! data begin
+    main 		= mesh
+    boundingbox = GLBoundingBox(mesh)
+    shader 		= GLVisualizeShader("util.vert", "attribute_mesh.vert", "standard.frag")
+end
 
 _default(mesh::GLNormalMesh, s::Style, data::Dict) = @gen_defaults! data begin
     main 		= mesh
@@ -13,7 +12,7 @@ _default(mesh::GLNormalMesh, s::Style, data::Dict) = @gen_defaults! data begin
 end
 
 _default(main::GLPlainMesh, ::style"grid", data::Dict) = @gen_defaults! data begin
-    primitive       = main 
+    primitive       = main
     color           = default(RGBA, s, 1)
     bg_colorc       = default(RGBA, s, 2)
     grid_thickness  = Vec3f0(2)

@@ -10,7 +10,7 @@ try
     window, renderloop = glscreen()
     @async renderloop()
     has_opengl = true
-    WN = 3
+    WN = 4
     windows = ntuple(WN) do i
         a = map(window.area) do wa
             h = wa.h÷WN
@@ -26,19 +26,45 @@ catch e
         "\n", e
     ))
 end
-
+function scale_gen(v0, nv)
+	l = length(v0)
+	@inbounds for i=1:l
+		v0[i] = Vec3f0(1,1,sin((nv*l)/i))/3f0
+	end
+	v0
+end
+function color_gen(v0, nv)
+	l = length(v0)
+	@inbounds for x=1:l
+		v0[x] = RGBA{U8}(x/l,nv,(sin(x/l/3)+1)/2.,1.)
+	end
+	v0
+end
 facts("mesh particles") do
     prima = centered(Cube)
-    primb = GLNormalMesh(centered(Sphere))
+    primb = GLNormalMesh(centered(Sphere), 8)
+    cat   = GLNormalMesh(loadasset("cat.obj"))
     a = rand(Point2f0, 20)
     b = rand(Point3f0, 20)
-    c = rand(Float32, 10)
+    c = collect(linspace(0.1f0,1.0f0,10f0))
     d = rand(Float32, 10,10)
     e = rand(Vec3f0, 5,5,5)
 
     context("viewable creation") do
+
         particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in (b, (prima, a), (primb, b), (primb, c), d, e)]
-        p1,p2,p3 = extract_renderable(Context(particles...))
+
+        ps 			 = primb.vertices
+        scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
+        scale_signal = foldp(scale_gen, scale_start, bounce(0.1f0:0.01f0:1.0f0))
+        scale 		 = scale_signal
+        color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), bounce(0.00f0:0.02f0:1.0f0))
+        color 		 = color_signal
+
+        rotation = -primb.normals
+
+        push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation, boundingbox=AABB(ps)))
+
         #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
         #@fact typeof(p1[:primitive]) --> Cube{Float32}
         #@fact typeof(p2[:primitive]) --> GLNormalMesh
@@ -58,49 +84,26 @@ facts("mesh particles") do
         end
     end
 end
-facts("sprite particles") do
-    prima = centered(HyperRectangle{2, Float32})
-    primb = centered(HyperSphere{2, Float32})
-    a = rand(Point2f0, 20)
-    b = rand(Point3f0, 20)
-    c = rand(Float32, 10)
-    d = rand(Float32, 10,10)
-    e = rand(Vec3f0, 5,5)
-    f = rand(Vec3f0, 5,5,5)
-
-    context("viewable creation") do
-        particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in (b, (prima, a), (primb, b), e)]
-        p1,p2,p3 = extract_renderable(Context(particles...))
-        #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
-        #@fact typeof(p1[:primitive]) --> Cube{Float32}
-        #@fact typeof(p2[:primitive]) --> GLNormalMesh
-
-        #@fact particles[1][:positions] --> a
-        #@fact p1[:positions] --> b
-        #@fact p2[:positions] --> a
-        #@fact p3[:positions] --> b
-
-        if has_opengl
-            context("viewing") do
-                gl_obj = view(visualize(particles), windows[3])
-                #@fact gpu_data(gl_obj[1][:positions]) --> a
-                #@fact typeof(gl_obj[1][:positions]) --> TextureBuffer
-                #@fact typeof(gl_obj[1][:vertices]) --> GLBuffer
-            end
-        end
-    end
-end
-
-
 typealias NColor{N, T} Colorant{T, N}
 fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)
 fillcolor{T <: NColor{3}}(::Type{T}) = T(0,1,0)
-facts("Images") do
+Base.rand(m::MersenneTwister, ::Type{U8}) = U8(rand(m, UInt8))
+Base.rand{T <: Colorant}(m::MersenneTwister, ::Type{T}) = T(ntuple(x->rand(m, eltype(T)), Val{length(T)})...)
+xy_data(x,y,i) = Float32(sin(x/i)*sin(y/i))
+generate_distfield(i) = Float32[xy_data(x,y,i)+0.5f0 for x=1:64, y=1:64]
+const dfdata = const_lift(generate_distfield, bounce(1f0:1f0:10f0))
+facts("Image Like") do
     arrays = map(C-> C[fillcolor(C) for x=1:42,y=1:27] ,(RGBA{U8}, RGBA{Float32}, RGB{U8}, BGRA{U8}, BGR{Float32}))
     loaded_imgs = map(x->loadasset("test_images", x), readdir(assetpath("test_images")))
+    intensities = GLIntensity[(sin(x/7)*cos(y/20))/sqrt(x) for x=1:50,y=1:50]
+    intensities_s = const_lift(i->GLIntensity[(sin(x/i)*cos(y/(i/2f0)))/sqrt(x) for x=1:50,y=1:50], bounce(10f0:0.1f0:30f0))
+
+
+
     context("viewable creation") do
-        x = Any[arrays..., loaded_imgs...]
+        x = Any[arrays..., loaded_imgs..., intensities, intensities_s, loadasset("kittens-look.gif")]
         images = convert(Vector{Context}, map(visualize, x))
+        push!(images, visualize(dfdata, :distancefield))
         if has_opengl
             images = visualize(images, direction=1, gap=Vec3f0(5))
             context("viewing") do
@@ -109,6 +112,85 @@ facts("Images") do
         end
     end
 end
+
+function interpolate(a,b,t)
+    [ae+((be-ae)*t) for (ae, be) in zip(a,b)]
+end
+facts("sprite particles") do
+
+    context("on a 2D plane") do
+        prima = SimpleRectangle(0f0,-0.5f0,1f0,1f0)
+        primb = HyperSphere(Point2f0(0), 30f0)
+        primc = HyperSphere(Point2f0(0), 60f0)
+
+        a = rand(Point2f0, 10).*200f0
+        b = rand(10f0:0.01f0:200f0, 10)
+        interpolated = foldp((b,b,b), bounce(1f0:0.01f0:10f0)) do v0_v1_ip, td
+            v0,v1,ip = v0_v1_ip
+            pol = td%1
+            if isapprox(pol,0.0)
+                v0 = v1
+                v1 = map(x-> rand(linspace(-x, 200f0-x, 100)), v0)
+            end
+            v0,v1,interpolate(v0,v1,pol)
+        end
+        b_sig = map(last, interpolated)
+        c     = rand(Vec2f0, 5,5)
+        c_sig = map(i->Vec2f0[(sin(x/i), cos(y/(i/2f0))) for x=1:5, y=1:5], bounce(1f0:0.05f0:5f0))
+        a_vis = visualize(a, scale=Vec2f0(30))
+        gpu_pos = a_vis.children[][:position]
+
+        context("viewable creation") do
+            particles = Context[
+                a_vis,
+                visualize((primb, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10)),
+                visualize((DISTANCEFIELD, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10), distancefield=dfdata),
+                visualize((primc, gpu_pos), image=play(loadasset("kittens-look.gif")), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)),
+                visualize(c, xyrange=((0,200),(0,200))),
+                visualize(c_sig, xyrange=((0,200),(0,200))),
+                visualize((prima,b), xyrange=((0,200),)),
+                visualize((prima, b_sig), color=Texture(GLVisualize.default(Vector{RGBA})), intensity=b_sig, color_norm=Vec2f0(10,200), xyrange=((0,200),))
+            ]
+            if has_opengl
+                context("viewing") do
+                    gl_obj = view(visualize(particles, direction=1), windows[3], method=:orthographic_pixel)
+                end
+            end
+        end
+    end
+    context("in 3D space") do
+        prima = centered(HyperRectangle{2, Float32})
+        primb = centered(HyperSphere{2, Float32})
+        a = rand(Point3f0, 20)
+        b = rand(Float32, 50,50)
+        c = rand(Vec3f0, 5,5)
+        d = rand(Vec3f0, 5,5,5)
+        context("viewable creation") do
+            particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in ((prima,a), (primb, b), c, d)]
+            p1,p2,p3 = extract_renderable(Context(particles...))
+            #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
+            #@fact typeof(p1[:primitive]) --> Cube{Float32}
+            #@fact typeof(p2[:primitive]) --> GLNormalMesh
+
+            #@fact particles[1][:positions] --> a
+            #@fact p1[:positions] --> b
+            #@fact p2[:positions] --> a
+            #@fact p3[:positions] --> b
+
+            if has_opengl
+                context("viewing") do
+                    gl_obj = view(visualize(particles), windows[4])
+                    #@fact gpu_data(gl_obj[1][:positions]) --> a
+                    #@fact typeof(gl_obj[1][:positions]) --> TextureBuffer
+                    #@fact typeof(gl_obj[1][:vertices]) --> GLBuffer
+                end
+            end
+        end
+    end
+end
+
+
+
 
 if has_opengl
     while isopen(window)

@@ -168,8 +168,17 @@ vec4 getindex(sampler3D tex, int index){
 vec3 _position(Grid1D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
     return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0,0);
 }
+vec3 _position(Grid1D grid, Nothing position_x, Nothing position_y, float position_z, int index){
+    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0,position_z);
+}
+vec3 _position(Grid1D grid, Nothing position_x, float position_y, Nothing position_z, int index){
+    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), position_y, 0);
+}
 vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
     return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0);
+}
+vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, float position_z, int index){
+    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), position_z);
 }
 vec3 _position(Grid3D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
     return stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum);
@@ -202,6 +211,12 @@ vec3 _position(vec2 position, Nothing position_x, Nothing position_y, Nothing po
 vec3 _scale(vec3  scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){return scale;}
 vec3 _scale(vec2  scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){return vec3(scale,1);}
 vec3 _scale(float scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){return vec3(scale);}
+vec3 _scale(Nothing  scale, float scale_x, float scale_y, float scale_z, int index){
+    return vec3(scale_x, scale_y, scale_z);
+}
+vec3 _scale(vec2  scale, float scale_x, float scale_y, float scale_z, int index){
+    return vec3(scale_x, scale_y, scale_z);
+}
 vec3 _scale(vec3  scale, float scale_x, float scale_y, float scale_z, int index){
     return vec3(scale_x, scale_y, scale_z);
 }
@@ -209,11 +224,12 @@ vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing scale_y, Nothing scale
     return getindex(scale, index).xyz;
 }
 vec3 _scale(vec3 scale, float scale_x, float scale_y, samplerBuffer scale_z, int index){
-    return vec3(0.001, 0.1, getindex(scale_z, index).x);
+    return vec3(scale_x, scale_y, getindex(scale_z, index).x);
 }
 vec3 _scale(vec3 scale, float scale_x, samplerBuffer scale_y, float scale_z, int index){
     return vec3(scale_x, getindex(scale_y, index).x, scale_z);
 }
+
 
 vec4 color_lookup(float intensity, vec4 color, vec2 norm){
     return color;

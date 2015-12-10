@@ -18,16 +18,6 @@ function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, da
     data
 end
 
-function _default{T<:VolumeElTypes, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict)
-    if haskey(img.properties, "pixelspacing")
-        spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
-        pdims   = Vec3f0(size(img))
-        dims    = pdims .* spacing
-        dims    = dims/maximum(dims)
-        data[:dimensions] = dims
-    end
-    _default(img.data, s, data)
-end
 
 
 _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin

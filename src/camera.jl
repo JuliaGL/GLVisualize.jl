@@ -101,11 +101,12 @@ function cubecamera(
         t = clamp(t, 0f0,1f0)
         slerp(inside_trans, outside_trans, t)
     end
-
-    ortho1 = visualize(SimpleRectangle(0f0,0f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
-    ortho2 = visualize(SimpleRectangle(5f0,5f0, 20f0, 20f0), thickness=1f0, style=Cint(OUTLINED), transparent_picking = true)
+    rect = SimpleRectangle(0f0,0f0, 20f0, 20f0)
+    positions = Signal(Point2f0[(0,0), (5,5)])
+    scale     = Signal(Vec2f0[(1,1), (1,1)])
+    ortho1 = visualize((rect, positions),scale=scale, stroke_width=1f0, transparent_picking = true)
     hovers_ortho = const_lift(h) do h
-        h[1] == ortho1.id || h[1] == ortho2.id
+        h[1] == ortho1.children[].id
     end
     c = const_lift(hovers_ortho) do ho
         ho && return RGBA(0.8f0, 0.8f0, 0.8f0, 0.8f0)
@@ -116,11 +117,16 @@ function cubecamera(
         v0
     end
 
-    ortho1[:stroke_color] = c
-    ortho2[:stroke_color] = c
-    ortho2[:model] = const_lift(isperspective) do isp
-        isp && return translationmatrix(Vec3f0(5,5,0))*scalematrix(Vec3f0(0.8))
-        scalematrix(Vec3f0(1.0))
+    ortho1.children[][:stroke_color] = c
+    const_lift(isperspective) do isp
+        if isp
+            push!(scale, Vec2f0[(1,1), (0.8,0.8)])
+            push!(positions, Point2f0[(0,0), (10,10)])
+        else
+            push!(scale, Vec2f0[(1,1), (1,1)])
+            push!(positions, Point2f0[(0,0), (10,10)])
+        end
+        nothing
     end
     mprojection = const_lift(isperspective) do isp
         isp && return GLAbstraction.PERSPECTIVE
@@ -152,12 +158,11 @@ function cubecamera(
     )
     robj = visualize(p, model=model, preferred_camera=:cube_cam)
     start_colors = p.attributes
-    color_tex    = robj[:attributes]
+    color_tex    = robj.children[][:attributes]
     preserve(const_lift(cubeside_color, id, h, Signal(start_colors), Signal(color_tex)))
 
-    push!(id, robj.id)
+    push!(id, robj.children[].id)
     view(robj, cubescreen);
     view(ortho1, cubescreen, method=:fixed_pixel)
-    view(ortho2, cubescreen, method=:fixed_pixel)
 	window
 end

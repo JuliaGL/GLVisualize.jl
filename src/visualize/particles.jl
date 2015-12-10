@@ -1,21 +1,23 @@
 typealias Primitives{N} Union{GeometryPrimitive{N}, AbstractMesh}
 typealias Primitives3D  Primitives{3}
-typealias ExtPrimitives Union{Primitives, Char, AbstractString}
+typealias Sprites Union{GeometryPrimitive{2}, Shape, Char}
+
+typealias ExtPrimitives Union{Primitives, Sprites}
 
 _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{2, Float32}), main), s, data)
-_default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{3, Float32}), main), s, data)
+_default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((HyperCube(Vec3f0(-0.5,-0.5,0),Vec3f0(1)), main), s, data)
 _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
 
 function create_minmax{T<:Vec,N}(x::Array{T,N})
     _norm = map(norm, x)
     Vec2f0(minimum(_norm), maximum(_norm))
 end
-const ARROW = '\U21E8'
+const ARROW = '\U2B06'
 
 _default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict) = _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
 _default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default((ARROW, main), s, data)
 
-function _default{P<:ExtPrimitives, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
+function _default{P<:Primitives3D, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
     data[:rotation] = const_lift(vec, main[2])
     get!(data, :color_norm) do
         const_lift(create_minmax, main[2])
@@ -23,16 +25,46 @@ function _default{P<:ExtPrimitives, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}},
     get!(data, :color, Texture(default(Vector{RGBA})))
     _default((main[1], Grid(main[2])), s, data)
 end
+function _default{P<:Sprites, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        rotation   = const_lift(vec, main[2])
+        color_norm = const_lift(create_minmax, main[2])
+        color      = Texture(default(Vector{RGBA}))
+        xyrange    = ((0,1),(0,1))
+    end
+    _default((main[1], Grid(value(main[2]), xyrange)), s, data)
+end
 
 function _default{N, P<:Primitives, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
-    grid = Grid(main[2])
+    grid = Grid(value(main[2]))
     @gen_defaults! data begin
         scale_z = const_lift(vec, main[2]) => TextureBuffer
         scale_x::Float32 = step(grid.dims[1])
-        scale_y::Float32 = N>=2 ? step(grid.dims[2]) : 1f0
+        scale_y::Float32 = N==1 ? 0.1f0 : step(grid.dims[2])
     end
     _default((main[1], grid), s, data)
 end
+function _default{N, P<:Sprites, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
+    grid = Grid(value(main[2]))
+    @gen_defaults! data begin
+        position_z = const_lift(vec, main[2]) => GLBuffer
+        scale = Vec2f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0)
+    end
+    _default((main[1], grid), s, data)
+end
+function _default{P<:Sprites, T<:AbstractFloat}(main::Tuple{P, VecTypes{T}}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        xyrange    = ((0,500),)
+    end
+    grid = Grid(value(main[2]), xyrange)
+    @gen_defaults! data begin
+        scale_x::Float32 = step(grid.dims[1])
+        scale_y          = const_lift(vec, main[2]) => GLBuffer
+        scale_z::Float32 = 1f0
+    end
+    _default((main[1], grid), s, data)
+end
+
 
 function ParticleBoundingBox(position,px,py,pz, scale,sx,sy,sz, primitive)
     position_it  = const_lift(PositionIterator, position, px, py, pz)
@@ -102,6 +134,7 @@ primitive_shape{T}(::HyperRectangle{2,T}) = RECTANGLE
 primitive_shape(x::Shape) = x
 
 primitive_scale(c::Circle) = Vec2f0(c.r)
+primitive_scale(r::HyperRectangle) = width(r)
 primitive_scale(r::SimpleRectangle) = Vec2f0(r.w, r.h)
 primitive_scale(r::Shape) = Vec2f0(40)
 primitive_scale(c::Char)  = get_font_scale!(c)
@@ -135,11 +168,11 @@ sprites(p, s, data) = @gen_defaults! data begin
     rotation            = nothing             => GLBuffer
     color               = default(RGBA, s)    => GLBuffer
     intensity           = nothing             => GLBuffer
-    color_norm          = nothing             => GLBuffer
+    color_norm          = nothing
     stroke_color        = default(RGBA, s, 2) => GLBuffer
     glow_color          = default(RGBA, s, 3) => GLBuffer
 
-    stroke_width        = 2f0
+    stroke_width        = 0f0
     glow_width          = 0f0
     uv_offset_width     = primitive_uv_offset_width(p[1]) => GLBuffer
 

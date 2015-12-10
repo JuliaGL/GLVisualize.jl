@@ -28,7 +28,15 @@ function Grid{T, N}(a::Array{T, N})
 		linspace(0, s[i], size(a, i))
 	end)
 end
+Grid{T, N, X, N2}(a::Array{T, N}, ranges::NTuple{N2, NTuple{2, X}}) = error("
+Dimension Missmatch. Supply ranges with $N values. Given: $ranges
+")
 
+function Grid{T, N, X}(a::Array{T, N}, ranges::NTuple{N, NTuple{2, X}})
+	Grid(ntuple(Val{N}) do i
+		linspace(first(ranges[i]), last(ranges[i]), size(a, i))
+	end)
+end
 Base.length(p::Grid) = prod(map(length, p.dims))
 GLAbstraction.isa_gl_struct(x::Grid) = true
 GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"
@@ -66,21 +74,27 @@ end
 
 to_cpu_mem(x) = x
 to_cpu_mem(x::GPUArray) = gpu_data(x)
-call{T <: XYZIterator}(::Type{T}, p, x, y, z) =
-    const_lift(T, map(to_cpu_mem, (p,x,y,z))...)
+
 
 to3dims{T}(x::Vec{3,T}) = x
 to3dims{T}(x::Vec{2,T}) = Vec{3,T}(x, 1)
 to3dims{T}(x::Point{3,T}) = x
 to3dims{T}(x::Point{2,T}) = Point{3,T}(x, 0)
+function call{T <: XYZIterator}(::Type{T}, args...)
+    cpu = map(to_cpu_mem, args)
+    T{map(typeof, cpu)...}(cpu...)
+end
 
+typealias ScaleTypes Union{Vector, Vec, AbstractFloat, Void, Grid}
+typealias PositionTypes Union{Vector, Point, AbstractFloat, Void, Grid}
 
-immutable ScaleIterator{S, SX, SY, SZ} <: XYZIterator
+immutable ScaleIterator{S<:ScaleTypes, SX<:ScaleTypes, SY<:ScaleTypes, SZ<:ScaleTypes} <: XYZIterator
     scale::S
     x::SX
     y::SY
     z::SZ
 end
+
 is_scalar{S, SX, SY, SZ}(::ScaleIterator{S, SX, SY, SZ}) = !any(x->isa(x,Vector), (S, SX, SY, SZ))
 
 get_scale(x, i) = x
@@ -93,12 +107,14 @@ getindex{S<:Vec,X,Y,Z}(x::ScaleIterator{S,X,Y,Z}, i)            = Vec(get_scale(
 
 
 
-immutable PositionIterator{P, PX, PY, PZ} <: XYZIterator
+immutable PositionIterator{P<:PositionTypes, PX<:PositionTypes, PY<:PositionTypes, PZ<:PositionTypes} <: XYZIterator
     position::P
     x::PX
     y::PY
     z::PZ
 end
+
+
 get_pos(x, i) = x
 get_pos(x::Array, i) = x[i]
 get_pos(x::Void, i) = 1
@@ -112,7 +128,8 @@ getindex{X,Y,Z}(x::PositionIterator{Void,X,Y,Z}, i)              = Point(get_pos
 immutable Intensity{N, T} <: FixedVector{N, T}
 	_::NTuple{N, T}
 end
-export Intensity
+typealias GLIntensity Intensity{1, Float32}
+export Intensity,GLIntensity
 
 
 immutable GLVisualizeShader <: AbstractLazyShader
