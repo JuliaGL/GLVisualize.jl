@@ -1,31 +1,32 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
-struct SimpleRectangle
-{
-    vec2 origin;
-    vec2 width;
+struct Grid2D{
+    vec2 minimum;
+    vec2 maximum;
+    ivec2 dims;
 };
+struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
+    bool _; //empty structs are not allowed
+} nothing;
 
 in vec2 vertices;
 
+uniform Grid2D position;
 uniform vec3 light[4];
 uniform sampler1D color;
 uniform vec2 color_norm;
 
 uniform sampler2D z;
-uniform sampler2D normal;
 
-uniform vec2 grid_min;
-uniform vec2 grid_max;
 
 uniform vec3 scale;
 
 uniform mat4 view, model, projection;
 
-void render(vec3 vertices, vec3 normal, vec4 color, mat4 viewmodel, mat4 projection, vec3 light[4]);
+void render(vec3 vertices, vec3 normal, mat4 viewmodel, mat4 projection, vec3 light[4]);
 ivec2 ind2sub(ivec2 dim, int linearindex);
 vec2 linear_index(ivec2 dims, int index, vec2 offset);
-vec3 position(SimpleRectangle rectangle, ivec2 dims, int index);
+vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index);
 vec4 linear_texture(sampler2D tex, int index, vec2 offset);
 vec4 color_lookup(float intensity, sampler1D color, vec2 norm);
 
@@ -35,12 +36,12 @@ bool isinbounds(vec2 uv)
 	return (uv.x <= 1.0 && uv.y <= 1.0 && uv.x >= 0.0 && uv.y >= 0.0);
 }
 vec3 getnormal(sampler2D zvalues, vec2 uv)
-{   
+{
     float weps = 1.0/textureSize(zvalues,0).x;
     float heps = 1.0/textureSize(zvalues,0).y;
 
     vec3 result = vec3(0);
-    
+
     vec3 s0 = vec3(uv, texture(zvalues, uv).x);
 
     vec2 off1 = uv + vec2(-weps,0);
@@ -76,17 +77,17 @@ vec3 getnormal(sampler2D zvalues, vec2 uv)
 
 uniform uint objectid;
 flat out uvec2 o_id;
+out vec4 o_color;
 
 void main()
 {
+    int index       = gl_InstanceID;
 	ivec2 dims 		= textureSize(z, 0);
-	vec3 pos 		= position(SimpleRectangle(grid_min, grid_max), dims, gl_InstanceID);
-	float intensity = linear_texture(z, gl_InstanceID, vertices).x;
-	pos += vec3(vertices*scale.xy, scale.z*intensity);
-	o_id                = uvec2(objectid, gl_InstanceID+1);
-	vec4 instance_color = color_lookup(intensity, color, color_norm);
-	vec3 normalvec 		= getnormal(z, linear_index(dims, gl_InstanceID, vertices));
-	render(pos, normalvec, instance_color, view * model, projection, light);
+	vec3 pos 		= _position(position, nothing, nothing, nothing, index);
+	float intensity = linear_texture(z, index, vertices).x;
+	pos            += vec3(vertices*scale.xy, scale.z*intensity);
+	o_color         = color_lookup(intensity, color, color_norm);
+	vec3 normalvec 	= getnormal(z, linear_index(dims, index, vertices));
+    o_id            = uvec2(objectid, index+1);
+	render(pos, normalvec, view * model, projection, light);
 }
-
-
