@@ -105,7 +105,7 @@ function meshparticle(p, s, data)
         rotation         = nothing    => TextureBuffer
         intensity        = nothing    => TextureBuffer
         color_norm       = nothing
-        instances        = position
+        instances        = length(position)
         boundingbox      = ParticleBoundingBox(
             position, position_x, position_y, position_z,
             scale, scale_x, scale_y, scale_z,
@@ -121,7 +121,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     intensity    = nothing                   => GLBuffer
     color_norm   = nothing                   => Vec2f0
     point_size   = 2f0
-    boundingbox  = ParticleBoundingBox(position, scale, SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
+    boundingbox  = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
     #prerender    = +((glPointSize, point_size),)
     shader       = GLVisualizeShader("dots.vert", "dots.frag")
     gl_primitive = GL_POINTS
