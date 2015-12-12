@@ -10,6 +10,7 @@ layout(triangle_strip, max_vertices = 9) out;
 in vec4 g_color[];
 in float g_lastlen[];
 flat in uvec2 g_id[];
+flat in uint g_joint_type[];
 //in float g_thickness[];
 
 out vec4 f_color;
@@ -63,7 +64,7 @@ void main(void)
 
     float thickness_aa = thickness + 2;
 
-    
+
     // perform naive culling
     //vec2 area = resolution * 1.2;
     //if( p1.x < -area.x || p1.x > area.x ) return;
@@ -104,7 +105,7 @@ void main(void)
         emit_vertex(p0 + thickness_aa * n0, vec2(xstart, start), 1);
         emit_vertex(p0 - thickness_aa * n0, vec2(xstart, end), 1);
     }
-    
+
 
     if( dot( v0, v1 ) < -MITER_LIMIT ) {
         miter_a = n1;
@@ -131,10 +132,9 @@ void main(void)
     }
 
     // generate the triangle strip
-    
+
     emit_vertex(p1 + length_a * miter_a, vec2( 0, 0 ), 1);
     emit_vertex(p1 - length_a * miter_a, vec2( 0, 1 ), 1);
-
 
     emit_vertex(p2 + length_b * miter_b, vec2( 0, 0 ), 2);
     emit_vertex(p2 - length_b * miter_b, vec2( 0, 1 ), 2);
@@ -145,6 +145,3 @@ void main(void)
         emit_vertex(p3 - thickness_aa * n2, vec2(xend, end), 1);
     }
 }
-
-
-

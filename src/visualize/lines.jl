@@ -15,7 +15,6 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
         stroke_color        = default(RGBA, s, 2)    => GLBuffer
         thickness           = 2f0
         shape               = RECTANGLE
-        style               = FILLED
         transparent_picking = false
         preferred_camera    = :orthographic_pixel
         max_primitives      = length(position)-4
@@ -23,7 +22,7 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
         shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
-    if data[:dotted]
+    if dotted
         @gen_defaults! data begin
             lastlen   = const_lift(lastlen, x) => GLBuffer
             maxlength = const_lift(last, ll)
