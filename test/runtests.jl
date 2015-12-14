@@ -164,7 +164,7 @@ facts("sprite particles") do
                 visualize((primb, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10)),
                 visualize((DISTANCEFIELD, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10), distancefield=dfdata),
                 visualize((primc, cat_positions), image=play(loadasset("kittens-look.gif")), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)),
-                visualize(c, xyrange=((0,200),(0,200))),
+                visualize(('↺', c), xyrange=((0,200),(0,200))),
                 visualize(c_sig, xyrange=((0,200),(0,200))),
                 visualize((prima,b), xyrange=((0,200),)),
                 visualize((prima, b_sig), color=Texture(GLVisualize.default(Vector{RGBA})), intensity=b_sig, color_norm=Vec2f0(10,200), xyrange=((0,200),))
@@ -177,14 +177,19 @@ facts("sprite particles") do
         end
     end
     context("in 3D space") do
-        prima = centered(HyperRectangle{2, Float32})
-        primb = centered(HyperSphere{2, Float32})
+        prima = HyperRectangle{2, Float32}(Vec2f0(-0.1),Vec2f0(0.1))
+        primb = Circle(Point2f0(0), 0.1f0)
         a = rand(Point3f0, 20)
         b = rand(Float32, 50,50)
         c = rand(Vec3f0, 5,5)
         d = rand(Vec3f0, 5,5,5)
         context("viewable creation") do
-            particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in ((prima,a), (primb, b), c, d)]
+            particles = [
+                visualize((prima,a))
+                visualize((primb,b))
+                visualize(c, scale=Vec3f0(0.1))
+                visualize(d, scale=Vec3f0(0.1))
+            ]
             p1,p2,p3 = extract_renderable(Context(particles...))
             #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
             #@fact typeof(p1[:primitive]) --> Cube{Float32}

@@ -1,6 +1,6 @@
 using GLVisualize, Colors, ModernGL, GeometryTypes, GLAbstraction, GLWindow, FileIO
 w,r = glscreen()
-v, colortex, debugger = vizzedit(map(RGBA{U8}, colormap("blues", 7)), w)
+v, colortex = vizzedit(map(RGBA{U8}, colormap("blues", 7)), w)
 
 function screen(robj, w)
 	bb = boundingbox(robj)

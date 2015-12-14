@@ -28,7 +28,7 @@ float rectangle(vec2 uv)
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y))));
 }
 float circle(vec2 uv){
-    return (1-length(uv-0.5))-0.5; 
+    return (1-length(uv-0.5))-0.5;
 }
 float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
 {
@@ -41,19 +41,18 @@ out vec4 fragment_color;
 
 void main(){
     if(dotted){
-        vec2 uv = vec2(fract(f_uv.x), f_uv.y); 
+        vec2 uv = vec2(fract(f_uv.x), f_uv.y);
         float signed_distance;
-        if(shape == CIRCLE)
+        if(true)
             signed_distance = circle(uv);
         else if(shape == ROUNDED_RECTANGLE)
             signed_distance = rounded_rectangle(uv, vec2(0.2), vec2(0.8));
         else if(shape == RECTANGLE)
             signed_distance = rectangle(uv);
-        float inside     = aastep(0.01, 120.0, signed_distance);
+        float inside     = aastep(0.0, 120.0, signed_distance);
         fragment_color   = vec4(f_color.rgb, f_color.a*inside);
     }else{
         fragment_color   = vec4(f_color.rgb, f_color.a*aastep(0.2, 0.8, f_uv.y));
     }
     fragment_groupid = f_id;
 }
-

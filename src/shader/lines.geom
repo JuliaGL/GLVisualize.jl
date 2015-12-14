@@ -5,12 +5,11 @@
 {{GLSL_EXTENSIONS}}
 
 layout(lines_adjacency) in;
-layout(triangle_strip, max_vertices = 9) out;
+layout(triangle_strip, max_vertices = 12) out;
 
 in vec4 g_color[];
 in float g_lastlen[];
-flat in uvec2 g_id[];
-flat in uint g_joint_type[];
+in uvec2 g_id[];
 //in float g_thickness[];
 
 out vec4 f_color;
@@ -62,7 +61,7 @@ void main(void)
     vec2 p2 = screen_space( gl_in[2].gl_Position ); // end of current segment, start of next segment
     vec2 p3 = screen_space( gl_in[3].gl_Position ); // end of next segment
 
-    float thickness_aa = thickness + 2;
+    float thickness_aa = thickness+2;
 
 
     // perform naive culling
@@ -90,8 +89,8 @@ void main(void)
     float length_a = thickness_aa / dot( miter_a, n1 );
     float length_b = thickness_aa / dot( miter_b, n1 );
 
-    float start = 0.0 - (AA_THICKNESS/thickness_aa);
-    float end   = 1.0 + (AA_THICKNESS/thickness_aa);
+    float start = 0.0;
+    float end   = 1.0;
     float xstart, xend;
     if(!dotted){
         xstart  = 1;
@@ -100,35 +99,63 @@ void main(void)
         xstart  = (g_lastlen[1])/thickness_aa;
         xend    = (g_lastlen[2])/thickness_aa;
     }
-    if(gl_PrimitiveIDIn == 0) //first primitive
-    {
-        emit_vertex(p0 + thickness_aa * n0, vec2(xstart, start), 1);
-        emit_vertex(p0 - thickness_aa * n0, vec2(xstart, end), 1);
-    }
+    /*
+    over 90
+         v0
+        /
+      /
+    . ------> v1
+    under 90
+    v
+     \
+      \
+       . ------> v1
+    */
+    bool over_90_deg = dot( v0, v1 ) < -MITER_LIMIT;
+    /*
+             n1
+    gap true  :  gap false
+        v0    :
+    . ------> :
+    */
+    bool gap = dot( v0, n1 ) > 0;
 
 
-    if( dot( v0, v1 ) < -MITER_LIMIT ) {
+    if(over_90_deg) {
+        // close the gap
+        if(gap){
+            if (gl_PrimitiveIDIn == 0){
+                emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
+                emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
+                emit_vertex(p1 + thickness_aa * n1, vec2(1, 1), 1);
+            }
+            emit_vertex(p1 + thickness_aa * n0, vec2(xstart, start), 1);
+            emit_vertex(p1 + thickness_aa * n1, vec2(xstart, start), 1);
+            emit_vertex(p1,                     vec2(0, 0.5), 1);
+            EndPrimitive();
+        }else{
+            if (gl_PrimitiveIDIn == 0){
+                emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
+                emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
+                emit_vertex(p1 + length_a * miter_a, vec2(1, 0), 1);
+            }
+            emit_vertex(p1 - thickness_aa * n0, vec2(xstart, 1), 1);
+            emit_vertex(p1,                     vec2(0, 0.5), 1);
+            emit_vertex(p1 - thickness_aa * n1, vec2(xstart, 1), 1);
+            EndPrimitive();
+        }
         miter_a = n1;
         length_a = thickness_aa;
-
-        // close the gap
-        if( dot( v0, n1 ) > 0 ) {
-            emit_vertex(p1 + thickness_aa * n0, vec2(xstart, start), 1);
-            emit_vertex(p1 + thickness_aa * n1, vec2(xstart, end), 1);
-            emit_vertex(p1, vec2(xstart, end), 1);
-            EndPrimitive();
-        }
-        else {
-            emit_vertex(p1 - thickness_aa * n1, vec2(xstart, end), 1);
-            emit_vertex(p1 - thickness_aa * n0, vec2(xstart, end), 1);
-            emit_vertex(p1, vec2( 0, 0.5 ), 1);
-            EndPrimitive();
-        }
+    }else if(gl_PrimitiveIDIn == 0){
+        emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
+        emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
     }
 
+    vec2 nc = n2;
     if( dot( v1, v2 ) < -MITER_LIMIT ) {
         miter_b = n1;
         length_b = thickness_aa;
+        nc = -n2;
     }
 
     // generate the triangle strip
@@ -141,7 +168,7 @@ void main(void)
 
     if(gl_PrimitiveIDIn == max_primitives) //last primtive
     {
-        emit_vertex(p3 + thickness_aa * n2, vec2(xend, start), 1);
-        emit_vertex(p3 - thickness_aa * n2, vec2(xend, end), 1);
+        emit_vertex(p3 + (thickness_aa) * nc, vec2(0, 0), 3);
+        emit_vertex(p3 - (thickness_aa) * nc, vec2(0, 1), 3);
     }
 }

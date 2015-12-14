@@ -11,6 +11,7 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
     @gen_defaults! data begin
         dotted              = false
         vertex              = position               => GLBuffer
+        jointype            = Cuint(0)               => GLBuffer
         color               = default(RGBA, s, 1)    => GLBuffer
         stroke_color        = default(RGBA, s, 2)    => GLBuffer
         thickness           = 2f0
@@ -19,6 +20,7 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
         preferred_camera    = :orthographic_pixel
         max_primitives      = length(value(position))-4
         boundingbox         = GLBoundingBox(value(position))
+        indices             = nothing => indexbuffer
         shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
