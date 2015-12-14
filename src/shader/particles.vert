@@ -68,14 +68,17 @@ void rotate(vec3          vectors, in vec3 vertices, in vec3 normal, int index);
 vec4 _color(vec4          color, Nothing       intensity, Nothing color_norm, int index);
 vec4 _color(samplerBuffer color, Nothing       intensity, Nothing color_norm, int index);
 vec4 _color(sampler1D     color, samplerBuffer intensity, vec2    color_norm, int index);
-float get_intensity(samplerBuffer rotation, int index){
+float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
     return length(texelFetch(rotation, index).xyz);
 }
-float get_intensity(Nothing rotation, int index){return 0.0;}
+float get_intensity(Nothing rotation, Nothing position_z, int index){return -1.0;}
+float get_intensity(Nothing rotation, samplerBuffer position_z, int index){
+    return texelFetch(position_z, index).x;
+}
 
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
-    float _intensity = get_intensity(rotation, index);
+    float _intensity = get_intensity(rotation, scale_z, index);
     return color_lookup(_intensity, color, color_norm);
 }
 

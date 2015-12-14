@@ -127,7 +127,7 @@ function glscreen(;name="GLVisualize",
     global FONT_EXTENDS      = Dict{Int, FontExtent}()
     global ID_TO_CHAR        = Dict{Int, Char}()
     glClearColor(1,1,1,1)
-    map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
+    #@time map_fonts('\u0000':'\u00ff') # insert ascii chars, to make sure that the mapping for at least ascii characters is correct
     renderloop_fun(renderloop_callback=()->nothing) = renderloop(screen, selectionquery, selection, postprocess_robj, renderloop_callback)
     screen, renderloop_fun
 end
@@ -139,13 +139,14 @@ function renderloop(screen, selectionquery, selection, postprocess_robj, renderl
     objectid_buffer = screen.inputs[:framebuffer]
     while screen.inputs[:open].value
         renderloop_inner(screen, framebuffer, selectionquery, selection, postprocess_robj)
-        renderloop_callback()
+        #renderloop_callback()
     end
     GLFW.Terminate()
     FreeTypeAbstraction_done()
     GLAbstraction.empty_shader_cache!()
 end
 function renderloop_inner(screen, framebuffer, selectionquery, selection, postprocess_robj)
+    yield()
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.render_framebuffer)
     glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
@@ -154,13 +155,13 @@ function renderloop_inner(screen, framebuffer, selectionquery, selection, postpr
     render(screen)
     yield()
     #Read all the selection queries
-    update_selectionqueries(selectionquery, framebuffer.objectid, selection, screen.area.value)
-    yield()
+    #update_selectionqueries(selectionquery, framebuffer.objectid, selection, screen.area.value)
     glDisable(GL_SCISSOR_TEST)
     glBindFramebuffer(GL_FRAMEBUFFER, 0)
     glViewport(screen.area.value)
     glClear(GL_COLOR_BUFFER_BIT)
     render(postprocess_robj)
+    yield()
     GLFW.SwapBuffers(screen.nativewindow)
     GLFW.PollEvents()
     yield()
@@ -169,11 +170,12 @@ end
 function update_selectionqueries(selectionquery, objectid_buffer, selection, area)
     if !isempty(selectionquery)
         glReadBuffer(GL_COLOR_ATTACHMENT1)
-        for (key, value) in selectionquery
-            if value.x > 0 && value.y > 0 && value.w <= area.w && value.h <= area.h
-                data = Array(Vec{2, UInt16}, value.w, value.h)
-                glReadPixels(value.x, value.y, value.w, value.h, objectid_buffer.format, objectid_buffer.pixeltype, data)
-                push!(selection[key], convert(Matrix{Vec{2, Int}}, data))
+        for (key, rect) in selectionquery
+            if rect.x > 0 && rect.y > 0 && rect.w <= area.w && rect.h <= area.h
+                data = Array(Vec{2, UInt16}, rect.w, rect.h)
+                glReadPixels(rect.x, rect.y, rect.w, rect.h, objectid_buffer.format, objectid_buffer.pixeltype, data)
+                val = convert(Matrix{Vec{2, Int}}, data)
+                (value(selection[key]) != val) && push!(selection[key], val)
             end
         end
     end
@@ -236,11 +238,11 @@ function to_arrow_symbol(button_set)
 end
 
 function add_complex_signals(screen, selection)
-    const mouse_hover   = const_lift(first, selection[:mouse_hover])
+    mouse_hover = const_lift(first, selection[:mouse_hover])
 
-    mousedragdiff_id    = mousedragdiff_objectid(screen.inputs, mouse_hover)
-    selection           = foldp(drag2selectionrange, 0:0, mousedragdiff_id)
-    arrow_navigation    = const_lift(to_arrow_symbol, screen.inputs[:buttonspressed])
+    mousedragdiff_id = mousedragdiff_objectid(screen.inputs, mouse_hover)
+    selection        = foldp(drag2selectionrange, 0:0, mousedragdiff_id)
+    arrow_navigation = const_lift(to_arrow_symbol, screen.inputs[:buttonspressed])
 
     screen.inputs[:mouse_hover]             = mouse_hover
     screen.inputs[:mousedragdiff_objectid]  = mousedragdiff_id

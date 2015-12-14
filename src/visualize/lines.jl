@@ -17,8 +17,8 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
         shape               = RECTANGLE
         transparent_picking = false
         preferred_camera    = :orthographic_pixel
-        max_primitives      = length(position)-4
-        boundingbox         = GLBoundingBox(position)
+        max_primitives      = length(value(position))-4
+        boundingbox         = GLBoundingBox(value(position))
         shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end

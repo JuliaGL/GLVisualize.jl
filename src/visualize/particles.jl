@@ -133,11 +133,17 @@ primitive_shape(::SimpleRectangle) = RECTANGLE
 primitive_shape{T}(::HyperRectangle{2,T}) = RECTANGLE
 primitive_shape(x::Shape) = x
 
-primitive_scale(c::Circle) = Vec2f0(c.r)
-primitive_scale(r::HyperRectangle) = width(r)
-primitive_scale(r::SimpleRectangle) = Vec2f0(r.w, r.h)
+primitive_scale(c::Circle) = Vec(Vec2f0(c.center) + c.r)
+primitive_scale(r::HyperRectangle) = Vec(maximum(r))
+primitive_scale(r::SimpleRectangle) = Vec(maximum(r))
 primitive_scale(r::Shape) = Vec2f0(40)
-primitive_scale(c::Char)  = get_font_scale!(c)
+primitive_scale(c::Char)  = Vec(get_font_scale!(c))
+
+primitive_offset(c::Circle) = Vec2f0(c.center)-c.r
+primitive_offset(r::HyperRectangle) = Vec2f0(r.minimum)
+primitive_offset(r::SimpleRectangle) = Vec2f0(r.x, r.y)
+primitive_offset(r::Shape) = Vec2f0(0)
+primitive_offset(c::Char)  = Vec2f0(0)
 
 
 primitive_uv_offset_width(c::Char) = get_uv_offset_width!(c)
@@ -164,7 +170,7 @@ sprites(p, s, data) = @gen_defaults! data begin
     scale_x             = nothing               => GLBuffer
     scale_y             = nothing               => GLBuffer
     scale_z             = nothing               => GLBuffer
-
+    offset              = primitive_offset(p[1])=> GLBuffer
     rotation            = nothing             => GLBuffer
     color               = default(RGBA, s)    => GLBuffer
     intensity           = nothing             => GLBuffer

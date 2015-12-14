@@ -70,3 +70,14 @@ function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Di
     end
     _default(img.data, s, data)
 end
+
+_default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
+    color                 = default(RGBA, s)
+    dimensions            = (120f0,120f0)
+    primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
+    preferred_camera      = :orthographic_pixel
+    boundingbox           = GLBoundingBox(primitive)
+    shader                = GLVisualizeShader("parametric.vert", "parametric.frag", view=Dict(
+         "function" => bytestring(func.source)
+     ))
+end

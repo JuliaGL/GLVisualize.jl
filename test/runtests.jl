@@ -10,7 +10,7 @@ try
     window, renderloop = glscreen()
     @async renderloop()
     has_opengl = true
-    WN = 4
+    WN = 6
     windows = ntuple(WN) do i
         a = map(window.area) do wa
             h = wa.h÷WN
@@ -63,7 +63,7 @@ facts("mesh particles") do
 
         rotation = -primb.normals
 
-        push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation, boundingbox=AABB(ps)))
+        push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation))
 
         #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
         #@fact typeof(p1[:primitive]) --> Cube{Float32}
@@ -97,11 +97,14 @@ facts("Image Like") do
     loaded_imgs = map(x->loadasset("test_images", x), readdir(assetpath("test_images")))
     intensities = GLIntensity[(sin(x/7)*cos(y/20))/sqrt(x) for x=1:50,y=1:50]
     intensities_s = const_lift(i->GLIntensity[(sin(x/i)*cos(y/(i/2f0)))/sqrt(x) for x=1:50,y=1:50], bounce(10f0:0.1f0:30f0))
-
-
+    parametric_func = frag"""
+       float function(float x) {
+       	 return 1.0*sin(1/tan(x));
+       }
+    """
 
     context("viewable creation") do
-        x = Any[arrays..., loaded_imgs..., intensities, intensities_s, loadasset("kittens-look.gif")]
+        x = Any[arrays..., loaded_imgs..., intensities, intensities_s, loadasset("kittens-look.gif"), parametric_func]
         images = convert(Vector{Context}, map(visualize, x))
         push!(images, visualize(dfdata, :distancefield))
         if has_opengl
@@ -121,7 +124,7 @@ facts("sprite particles") do
     context("on a 2D plane") do
         prima = SimpleRectangle(0f0,-0.5f0,1f0,1f0)
         primb = HyperSphere(Point2f0(0), 30f0)
-        primc = HyperSphere(Point2f0(0), 60f0)
+        primc = HyperSphere(Point2f0(0), 40f0)
 
         a = rand(Point2f0, 10).*200f0
         b = rand(10f0:0.01f0:200f0, 10)
@@ -140,12 +143,27 @@ facts("sprite particles") do
         a_vis = visualize(a, scale=Vec2f0(30))
         gpu_pos = a_vis.children[][:position]
 
+        dt   = 0.1f0
+        position_velocity = foldp((a, zeros(Float32, 10)), bounce(1:10)) do pos_velo, _
+            positions, velocity = pos_velo
+            for i in eachindex(positions)
+                pos,velo = positions[i], velocity[i]
+                positions[i] = Point2f0(pos[1], pos[2] + velo*dt)
+                if pos[2] <= 0f0
+                    velocity[i] = abs(velo)
+                else
+                    velocity[i] = velo - 9.8*dt
+                end
+            end
+            positions, velocity
+        end
+        cat_positions = map(first, position_velocity)
         context("viewable creation") do
             particles = Context[
                 a_vis,
                 visualize((primb, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10)),
                 visualize((DISTANCEFIELD, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10), distancefield=dfdata),
-                visualize((primc, gpu_pos), image=play(loadasset("kittens-look.gif")), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)),
+                visualize((primc, cat_positions), image=play(loadasset("kittens-look.gif")), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)),
                 visualize(c, xyrange=((0,200),(0,200))),
                 visualize(c_sig, xyrange=((0,200),(0,200))),
                 visualize((prima,b), xyrange=((0,200),)),
@@ -188,8 +206,78 @@ facts("sprite particles") do
         end
     end
 end
-
-
+function mgrid(dim1, dim2)
+    X = [i for i in dim1, j in dim2]
+    Y = [j for i in dim1, j in dim2]
+    return X,Y
+end
+function mesh_surface(N)
+    dphi, dtheta = pi/Float32(N), pi/Float32(N)
+    phi,theta = mgrid(0f0:dphi:(pi+dphi*1.5f0), 0f0:dtheta:(2f0*pi+dtheta*1.5f0));
+    m0 = 4f0; m1 = 3f0; m2 = 2f0; m3 = 3f0; m4 = 6f0; m5 = 2f0; m6 = 6f0; m7 = 4f0;
+    a = sin(m0*phi).^m1;
+    b = cos(m2*phi).^m3;
+    c = sin(m4*theta).^m5;
+    d = cos(m6*theta).^m7;
+    r = a + b + c + d;
+    x = r.*sin(phi).*cos(theta);
+    y = r.*cos(phi);
+    z = r.*sin(phi).*sin(theta);
+    x,y,z
+end
+function xy_data(x,y,i, N)
+	x = ((x/N)-0.5f0)*i
+	y = ((y/N)-0.5f0)*i
+	r = sqrt(x*x + y*y)
+	Float32(sin(r)/r)
+end
+generate_surf_data(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
+facts("Surfaces") do
+    context("viewable creation") do
+        x = Any[mesh_surface(50), generate_surf_data(20f0, 128)]
+        surfs = Context[visualize(elem, :surface) for elem in x]
+        if has_opengl
+            suf_vizz = visualize(surfs, direction=1)
+            context("viewing") do
+                gl_obj = view(suf_vizz, windows[5])
+            end
+        end
+    end
+end
+function lines3Ddata(N, nloops)
+    # The scalar parameter for each line
+    TL = linspace(-2f0 * pi, 2f0 * pi, N)
+    # We create a list of positions and connections, each describing a line.
+    # We will collapse them in one array before plotting.
+    xyz         = Point3f0[]
+    colors      = RGBA{Float32}[]
+    # The index of the current point in the total amount of points
+    base_colors1 = distinguishable_colors(nloops, RGB{Float64}(1,0,0))
+    base_colors2 = distinguishable_colors(nloops, RGB{Float64}(1,1,0))
+    # Create each line one after the other in a loop
+    for i=1:nloops
+        append!(xyz, [Point3f0(sin(t), cos((2 + .02 * i) * t), cos((3 + .02 * i) * t)) for t in TL])
+        unique_colors = base_colors1[i]
+        hsv = HSV(unique_colors)
+        color_palette = map(x->RGBA{Float32}(x, 1.0), sequential_palette(hsv.h, N, s=hsv.s))
+        append!(colors, color_palette)
+    end
+    xyz, colors
+end
+facts("Lines") do
+    context("viewable creation") do
+        lines, colors = lines3Ddata(100, 10)
+        line_vizz = Context[
+            visualize(lines, :lines, color=colors)
+        ]
+        if has_opengl
+            suf_vizz = visualize(line_vizz, direction=1)
+            context("viewing") do
+                gl_obj = view(suf_vizz, windows[6])
+            end
+        end
+    end
+end
 
 
 if has_opengl

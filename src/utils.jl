@@ -63,16 +63,24 @@ function clicked(robj::RenderObject, button::MouseButton, window::Screen)
     leftclicked, clicked_on_obj
 end
 
+is_same_id(id, robj) = id[1] == robj.id
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
-function is_hovering(robj::RenderObject, window::Screen)
-    ishover = const_lift(window.inputs[:mouse_hover]) do mh
-        mh[1] == robj.id
-    end
-    droprepeats(ishover)
-end
+is_hovering(robj::RenderObject, window::Screen) =
+    droprepeats(const_lift(is_same_id, window.inputs[:mouse_hover], robj))
 
+function dragon_tmp(past, mh, mbp, mpos, robj, button, start_value)
+    diff, dragstart_index, was_clicked, dragstart_pos = past
+    over_obj = mh[1] == robj.id
+    is_clicked = mbp == Int[button]
+    if is_clicked && was_clicked # is draggin'
+        return (dragstart_pos-mpos, dragstart_index, true, dragstart_pos)
+    elseif over_obj && is_clicked && !was_clicked # drag started
+        return (Vec2f0(0), mh[2], true, mpos)
+    end
+    return start_value
+end
 
 """
 Returns a signal with the difference from dragstart and current mouse position,
@@ -81,18 +89,12 @@ and the index from the current ROBJ id.
 function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
     @materialize mouse_hover, mousebuttonspressed, mouseposition = window.inputs
     start_value = (Vec2f0(0), mouse_hover.value[2], false, Vec2f0(0))
-    tmp_signal = foldl(start_value, mouse_hover, mousebuttonspressed, mouseposition) do past, mh, mbp, mpos
-        diff, dragstart_index, was_clicked, dragstart_pos = past
-        over_obj = mh[1] == robj.id
-        is_clicked = mbp == Int[button]
-        if is_clicked && was_clicked # is draggin'
-            return (dragstart_pos-mpos, dragstart_index, true, dragstart_pos)
-        elseif over_obj && is_clicked && !was_clicked # drag started
-            return (Vec2f0(0), mh[2], true, mpos)
-        end
-        return start_value
-    end
-    const_lift(getindex, tmp_signal, 1:2)
+    tmp_signal = foldp(dragon_tmp,
+        start_value, mouse_hover,
+        mousebuttonspressed, mouseposition,
+        Signal(robj), Signal(button), Signal(start_value)
+    )
+    droprepeats(const_lift(getindex, tmp_signal, 1:2))
 end
 
 points2f0{T}(positions::Vector{T}, range::Range) = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]

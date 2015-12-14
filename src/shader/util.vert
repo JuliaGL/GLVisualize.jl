@@ -180,6 +180,7 @@ vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, Nothing posi
 vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, float position_z, int index){
     return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), position_z);
 }
+
 vec3 _position(Grid3D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
     return stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum);
 }

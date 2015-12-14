@@ -32,8 +32,7 @@ in vec2                 f_uv;
 
 
 
-out vec4  fragment_color;
-out uvec2 fragment_groupid;
+
 
 float aastep(float threshold1, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
@@ -97,6 +96,10 @@ float get_distancefield(sampler2D distancefield, vec2 uv){
 float get_distancefield(Nothing distancefield, vec2 uv){
     return 0.0;
 }
+
+out vec4  fragment_color;
+out uvec2 fragment_groupid;
+
 void main(){
 
     float signed_distance = 0.0;
@@ -113,7 +116,7 @@ void main(){
         signed_distance = triangle(f_uv);
 
     float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
-    float inside        = aastep(half_stroke, 100.0, signed_distance);
+    float inside        = aastep(0.0, 100.0, signed_distance);
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
     vec4 final_color    = vec4(f_color.rgb, inside);
 
@@ -123,4 +126,8 @@ void main(){
 
     fragment_color   = final_color;
     fragment_groupid = f_id;
+    if (fragment_color.a > 0.0)
+        gl_FragDepth = gl_FragCoord.z;
+    else
+        gl_FragDepth = 1.0;
 }

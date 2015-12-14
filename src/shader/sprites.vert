@@ -36,7 +36,7 @@ vec3 _position(vec2   position, Nothing position_x, Nothing position_y, Nothing 
 vec3 _position(vec3   position, Nothing position_x, Nothing position_y, Nothing position_z, int index);
 
 
-{{scale_type}} scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
+{{scale_type}}   scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
 {{scale_x_type}} scale_x;
 {{scale_y_type}} scale_y;
 {{scale_z_type}} scale_z;
@@ -46,6 +46,8 @@ vec3 _scale(vec2    scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, in
 vec3 _scale(Nothing scale, float   scale_x, float   scale_y, float   scale_z, int index);
 vec3 _scale(vec3    scale, float   scale_x, float   scale_y, float   scale_z, int index);
 vec3 _scale(vec2    scale, float   scale_x, float   scale_y, float   scale_z, int index);
+
+{{offset_type}} offset;
 
 {{rotation_type}}     rotation;
 vec3 _rotation(Nothing r){return vec3(0,0,3.1415926535897);}
@@ -57,15 +59,16 @@ vec3 _rotation(vec3 r){return r;}
 {{color_norm_type}}   color_norm;
 vec4 _color(vec4      color, Nothing intensity, Nothing color_norm, int index);
 vec4 _color(sampler1D color, float   intensity, vec2    color_norm, int index);
-float get_intensity(vec3 rotation, int index){return length(rotation);}
-float get_intensity(vec2 rotation, int index){return length(rotation);}
-float get_intensity(Nothing rotation, int index){return 0.5;}
+
+float get_intensity(vec3 rotation, Nothing position_z, int index){return length(rotation);}
+float get_intensity(vec2 rotation, Nothing position_z, int index){return length(rotation);}
+float get_intensity(Nothing rotation, float position_z, int index){return position_z;}
+float get_intensity(Nothing rotation, Nothing position_z, int index){return -1.;}
 
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
-    return color_lookup(get_intensity(rotation, index), color, color_norm);
+    return color_lookup(get_intensity(rotation, position_z, index), color, color_norm);
 }
-
 
 {{stroke_color_type}} stroke_color;
 {{glow_color_type}}   glow_color;
@@ -75,18 +78,20 @@ uniform uint objectid;
 out uvec2 g_id;
 out int   g_primitive_index;
 out vec3  g_position;
+out vec4  g_offset_width;
+out vec4  g_uv_offset_width;
 out vec3  g_rotation;
-out vec2  g_scale;
 out vec4  g_color;
 out vec4  g_stroke_color;
 out vec4  g_glow_color;
-out vec4  g_uv_offset_width;
+
 
 
 void main(){
 	g_primitive_index = gl_VertexID;
     g_position        = _position(position, position_x, position_y, position_z, g_primitive_index);
-    g_scale           = _scale(scale, scale_x, scale_y, scale_z, g_primitive_index).xy;
+    g_offset_width.xy = offset.xy;
+    g_offset_width.zw = _scale(scale, scale_x, scale_y, scale_z, g_primitive_index).xy;
     g_color           = _color(color, intensity, color_norm, g_primitive_index);
     g_rotation        = _rotation(rotation);
     g_uv_offset_width = uv_offset_width;
