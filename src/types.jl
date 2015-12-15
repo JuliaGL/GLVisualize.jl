@@ -1,17 +1,3 @@
-typealias TOrSignal{T} Union{Signal{T}, T}
-
-typealias ArrayOrSignal{T, N} TOrSignal{Array{T, N}}
-typealias VecOrSignal{T} 	ArrayOrSignal{T, 1}
-typealias MatOrSignal{T} 	ArrayOrSignal{T, 2}
-typealias VolumeOrSignal{T} ArrayOrSignal{T, 3}
-
-typealias ArrayTypes{T, N} Union{GPUArray{T, N}, ArrayOrSignal{T,N}}
-typealias VecTypes{T} 		ArrayTypes{T, 1}
-typealias MatTypes{T} 		ArrayTypes{T, 2}
-typealias VolumeTypes{T} 	ArrayTypes{T, 3}
-
-
-
 @enum Shape CIRCLE RECTANGLE ROUNDED_RECTANGLE DISTANCEFIELD TRIANGLE
 
 immutable Grid{N, T <: Range}
