@@ -5,7 +5,7 @@ _default{T <: Colorant, X}(main::Signal{Images.Image{T, 2, X}}, s::Style, d::Dic
 
 
 _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults! data begin
-    image                 = main
+    image                 = main => Texture
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...)
     boundingbox           = GLBoundingBox(primitive)
     preferred_camera      = :orthographic_pixel
@@ -14,8 +14,8 @@ end
 
 Base.extrema{T<:Intensity,N}(x::Array{T,N}) = Vec2f0(extrema(reinterpret(Float32,x)))
 _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
-    intensity             = main
-    color                 = default(Vector{RGBA{U8}},s)
+    intensity             = main => Texture
+    color                 = default(Vector{RGBA{U8}},s) => Texture
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0,0,size(value(main))...)
     color_norm	          = const_lift(extrema, main)
     boundingbox 	      = GLBoundingBox(primitive)
@@ -72,7 +72,7 @@ function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Di
 end
 
 _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
-    color                 = default(RGBA, s)
+    color                 = default(RGBA, s)  => Texture
     dimensions            = (120f0,120f0)
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
