@@ -1,10 +1,5 @@
 using Compose, Colors, GLAbstraction, Measures, GLVisualize, Reactive, GeometryTypes
-import Compose: GLVisualizeBackend
-
-
-
-
-
+using GLVisualize.ComposeBackend
 #Compose.hcenter
 #Compose.vtop
 
@@ -47,7 +42,7 @@ p = compose(context(),
 =#
 
 w,r = glscreen()
-img = GLVisualizeBackend(w)
+img = ComposeBackend.GLVisualizeBackend(w)
 p = plot([sin, cos], 0, 25)
 draw(img, p)
 r()

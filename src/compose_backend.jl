@@ -1,66 +1,69 @@
-using GLAbstraction, GLFW, GLWindow
+module ComposeBackend
+using GLAbstraction, GLFW, GLWindow, Measures, GLVisualize, GeometryTypes, Colors, Reactive
+importall Compose
+
 type GLVisualizePropertyState
     stroke::RGBA{Float32}
     fill::RGBA{Float32}
     stroke_dash::Array{Float32,1}
-    stroke_linecap::LineCap
-    stroke_linejoin::LineJoin
+    stroke_linecap::Compose.LineCap
+    stroke_linejoin::Compose.LineJoin
     visible::Bool
     linewidth::AbsoluteLength
     fontsize::AbsoluteLength
     font::AbstractString
-    clip::Nullable{ClipPrimitive}
+    clip::Nullable{Compose.ClipPrimitive}
 end
 type GLVisualizePropertyFrame
     # Vector properties in this frame.
-    vector_properties::Dict{Type, Property}
+    vector_properties::Dict{Type, Compose.Property}
 
     # True if this property frame has scalar properties. Scalar properties are
     # emitted as a group (<g> tag) that must be closed when the frame is popped.
     has_scalar_properties::Bool
 
     function GLVisualizePropertyFrame()
-        return new(Dict{Type, Property}(), false)
+        return new(Dict{Type, Compose.Property}(), false)
     end
 end
 
-type GLVisualizeBackend <: Backend
+type GLVisualizeBackend <: Compose.Backend
     screen
     stroke::RGBA{Float32}
     fill::RGBA{Float32}
     stroke_dash::Array{Float32,1}
-    stroke_linecap::LineCap
-    stroke_linejoin::LineJoin
+    stroke_linecap::Compose.LineCap
+    stroke_linejoin::Compose.LineJoin
     visible::Bool
     linewidth::AbsoluteLength
     fontsize::AbsoluteLength
     font::AbstractString
-    clip::Nullable{ClipPrimitive}
+    clip::Nullable{Compose.ClipPrimitive}
     ppmm::Vec2f0
 
     # Keep track of property
     state_stack::Vector{GLVisualizePropertyState}
     property_stack::Vector{GLVisualizePropertyFrame}
-    vector_properties::Dict{Type, Nullable{Property}}
+    vector_properties::Dict{Type, Nullable{Compose.Property}}
     function GLVisualizeBackend(screen)
         img = new()
         img.screen = screen
-        img.stroke = default_stroke_color == nothing ?
-                        RGBA{Float32}(0, 0, 0, 0) : convert(RGBA{Float32}, default_stroke_color)
-        img.fill   = default_fill_color == nothing ?
-                        RGBA{Float32}(0, 0, 0, 0) : convert(RGBA{Float32}, default_fill_color)
+        img.stroke = Compose.default_stroke_color == nothing ?
+                        RGBA{Float32}(0, 0, 0, 0) : convert(RGBA{Float32},  Compose.default_stroke_color)
+        img.fill   =  Compose.default_fill_color == nothing ?
+                        RGBA{Float32}(0, 0, 0, 0) : convert(RGBA{Float32},  Compose.default_fill_color)
         img.stroke_dash = []
-        img.stroke_linecap = LineCapButt()
-        img.stroke_linejoin = LineJoinMiter()
+        img.stroke_linecap = Compose.LineCapButt()
+        img.stroke_linejoin = Compose.LineJoinMiter()
         img.visible = true
-        img.linewidth = default_line_width
-        img.fontsize = default_font_size
-        img.font = default_font_family
-        img.clip = Nullable{ClipPrimitive}()
+        img.linewidth = Compose.default_line_width
+        img.fontsize = Compose.default_font_size
+        img.font = Compose.default_font_family
+        img.clip = Nullable{Compose.ClipPrimitive}()
 
         img.state_stack = Array(GLVisualizePropertyState, 0)
         img.property_stack = Array(GLVisualizePropertyFrame, 0)
-        img.vector_properties = Dict{Type, Nullable{Property}}()
+        img.vector_properties = Dict{Type, Nullable{Compose.Property}}()
 
         m = GLFW.GetPrimaryMonitor()
         props = GLWindow.MonitorProperties(m)
@@ -79,7 +82,7 @@ function Measures.height(img::GLVisualizeBackend)
     ((img.screen.inputs[:framebuffer_size].value[2]) / img.ppmm[2]) * mm
 end
 
-function root_box(img::GLVisualizeBackend)
+function Compose.root_box(img::GLVisualizeBackend)
     BoundingBox(Measures.width(img), Measures.height(img))
 end
 function absolute_native_units(img::GLVisualizeBackend, u::Float64)
@@ -89,26 +92,26 @@ function absolute_native_units{T}(img::GLVisualizeBackend, u::Length{:mm, T})
     Float32(img.ppmm[1] * u.value)
 end
 function absolute_native_units{T}(img::GLVisualizeBackend, u::Tuple{Length{:mm, T},Length{:mm, T}})
-    Point2f0(u[1].value, (width(img)-u[2]).value).*Point2f0(img.ppmm)
+    Point2f0(u[1].value, (Measures.width(img)-u[2]).value).*Point2f0(img.ppmm)
 end
 relative_native_units{T}(img::GLVisualizeBackend, u::Tuple{Length{:mm, T},Length{:mm, T}}) = Point2f0(u[1].value, u[2].value).*Point2f0(img.ppmm)
 
 export absolute_native_units
 
-function push_property_frame(img::GLVisualizeBackend, properties::Vector{Property})
+function Compose.push_property_frame(img::GLVisualizeBackend, properties::Vector{Compose.Property})
     if isempty(properties)
         return
     end
 
     frame = GLVisualizePropertyFrame()
     applied_properties = Set{Type}()
-    scalar_properties = Array(Property, 0)
+    scalar_properties = Array(Compose.Property, 0)
     for property in properties
-        if isscalar(property) && !(typeof(property) in applied_properties)
+        if Compose.isscalar(property) && !(typeof(property) in applied_properties)
             push!(scalar_properties, property)
             push!(applied_properties, typeof(property))
             frame.has_scalar_properties = true
-        elseif !isscalar(property)
+        elseif !Compose.isscalar(property)
             frame.vector_properties[typeof(property)] = property
             img.vector_properties[typeof(property)] = property
         end
@@ -124,7 +127,7 @@ function push_property_frame(img::GLVisualizeBackend, properties::Vector{Propert
     end
 end
 
-function pop_property_frame(img::GLVisualizeBackend)
+function Compose.pop_property_frame(img::GLVisualizeBackend)
     @assert !isempty(img.property_stack)
     frame = pop!(img.property_stack)
 
@@ -133,7 +136,7 @@ function pop_property_frame(img::GLVisualizeBackend)
     end
 
     for (propertytype, property) in frame.vector_properties
-        img.vector_properties[propertytype] = Nullable{Property}()
+        img.vector_properties[propertytype] = Nullable{Compose.Property}()
         for i in length(img.property_stack):-1:1
             if haskey(img.property_stack[i].vector_properties, propertytype)
                 img.vector_properties[propertytype] =
@@ -165,9 +168,9 @@ end
 function vector_properties_require_push_pop(img::GLVisualizeBackend)
     for (propertytype, property) in img.vector_properties
         propertytype
-        if in(propertytype, [Property{FontPrimitive},
-                             Property{FontSizePrimitive},
-                             Property{ClipPrimitive}])
+        if in(propertytype, [Compose.Property{Compose.FontPrimitive},
+                             Compose.Property{Compose.FontSizePrimitive},
+                             Compose.Property{Compose.ClipPrimitive}])
             return true
         end
     end
@@ -211,9 +214,9 @@ end
 function vector_properties_require_push_pop(img::GLVisualizeBackend)
     for (propertytype, property) in img.vector_properties
         propertytype
-        if in(propertytype, [Property{FontPrimitive},
-                             Property{FontSizePrimitive},
-                             Property{ClipPrimitive}])
+        if in(propertytype, [Compose.Property{Compose.FontPrimitive},
+                             Compose.Property{Compose.FontSizePrimitive},
+                             Compose.Property{Compose.ClipPrimitive}])
             return true
         end
     end
@@ -241,52 +244,52 @@ function pop_vector_properties(img::GLVisualizeBackend)
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::StrokePrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.StrokePrimitive)
     img.stroke = p.color
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::FillPrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.FillPrimitive)
     img.fill = p.color
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::FillOpacityPrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.FillOpacityPrimitive)
     img.fill = RGBA{Float32}(color(img.fill), p.value)
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::StrokeOpacityPrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.StrokeOpacityPrimitive)
     img.stroke = RGBA{Float32}(color(img.stroke), p.value)
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::StrokeDashPrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.StrokeDashPrimitive)
     img.stroke_dash = map(v -> absolute_native_units(img, v.value), p.value)
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::StrokeLineCapPrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.StrokeLineCapPrimitive)
     img.stroke_linecap = p.value
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::StrokeLineJoinPrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.StrokeLineJoinPrimitive)
     img.stroke_linejoin = p.value
 end
 
 
-function apply_property(img::GLVisualizeBackend, p::VisiblePrimitive)
+function apply_property(img::GLVisualizeBackend, p::Compose.VisiblePrimitive)
     img.visible = p.value
 end
 
 
-function apply_property(img::GLVisualizeBackend, property::LineWidthPrimitive)
+function apply_property(img::GLVisualizeBackend, property::Compose.LineWidthPrimitive)
     img.linewidth = property.value
 end
 
 
-function apply_property(img::GLVisualizeBackend, property::FontPrimitive)
+function apply_property(img::GLVisualizeBackend, property::Compose.FontPrimitive)
     img.font = property.family
     #=
     font_desc = ccall((:pango_layout_get_font_description, Cairo._jl_libpango),
@@ -305,7 +308,7 @@ function apply_property(img::GLVisualizeBackend, property::FontPrimitive)
 end
 
 
-function apply_property(img::GLVisualizeBackend, property::FontSizePrimitive)
+function apply_property(img::GLVisualizeBackend, property::Compose.FontSizePrimitive)
     img.fontsize = property.value
 
     #=
@@ -316,28 +319,24 @@ function apply_property(img::GLVisualizeBackend, property::FontSizePrimitive)
 end
 
 
-function apply_property(img::GLVisualizeBackend, property::ClipPrimitive)
+function apply_property(img::GLVisualizeBackend, property::Compose.ClipPrimitive)
     if isempty(property.points); return; end
 end
 
-finish(backend::GLVisualizeBackend) = nothing
+Compose.finish(backend::GLVisualizeBackend) = nothing
 
 Compose.iswithjs(img::GLVisualizeBackend) = false
 Compose.iswithousjs(img::GLVisualizeBackend) = true
 
 function Compose.draw{T <: Compose.CirclePrimitive}(img::GLVisualizeBackend, form::Compose.Form{T})
     r = form.primitives[1].radius
-    println("circle: ", img.fill)
     radius = absolute_native_units(img, r)
     positions = Point2f0[absolute_native_units(img, elem.center) for elem in form.primitives]
-    view(visualize(positions,
-    	scale=Vec2f0(2radius),
-    	shape=Cint(CIRCLE),
-    	style=Cint(FILLED),
+    view(visualize((Circle{Float32}(Point2f0(0), radius), positions),
     	color=img.fill,
     	stroke_color=img.stroke,
     	visible=img.visible
-    ), img.screen)
+    ), img.screen, method=:orthographic_pixel)
 end
 #=
 function Compose.draw{T <: Compose.RectanglePrimitive}(img::GLVisualizeBackend, form::Compose.Form{T})
@@ -357,11 +356,11 @@ end
 =#
 function Compose.draw{T}(img::GLVisualizeBackend, form::Compose.Form{T})
 
-	if Compose.vector_properties_require_push_pop(img)
+	if vector_properties_require_push_pop(img)
         for (idx, primitive) in enumerate(form.primitives)
-            Compose.push_vector_properties(img, idx)
+            push_vector_properties(img, idx)
             draw(img, primitive)
-            Compose.pop_vector_properties(img)
+            pop_vector_properties(img)
         end
     else
         for (idx, primitive) in enumerate(form.primitives)
@@ -373,17 +372,16 @@ function Compose.draw{T}(img::GLVisualizeBackend, form::Compose.Form{T})
                 if idx > length(primitives)
                     error("Vector form and vector property differ in length. Can't distribute.")
                 end
-                println(primitives[idx])
-                Compose.apply_property(img, primitives[idx])
+                apply_property(img, primitives[idx])
             end
             Compose.draw(img, primitive)
         end
     end
 end
-function Compose.draw(screen::GLVisualizeBackend, prim::Compose.LinePrimitive)
+function Compose.draw(img::GLVisualizeBackend, prim::Compose.LinePrimitive)
 	N = length(prim.points)
     N <= 1 && return
-    points = Point2f0[absolute_native_units(screen, p) for p in prim.points]
+    points = Point2f0[absolute_native_units(img, p) for p in prim.points]
     if N == 2
     	a,b = points
     	ab = b-a
@@ -392,8 +390,8 @@ function Compose.draw(screen::GLVisualizeBackend, prim::Compose.LinePrimitive)
     view(visualize(Signal(points), :lines,
     	color=img.stroke,
     	visible=img.visible,
-    	thickness=absolute_native_units(screen, img.linewidth)
-    ), screen.screen)
+    	thickness=absolute_native_units(img, img.linewidth)
+    ), img.screen, method=:orthographic_pixel)
 end
 
 
@@ -402,22 +400,17 @@ function Compose.draw(img::GLVisualizeBackend, form::Compose.FormBatch)
 end
 
 
-function Compose.draw(screen::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
-    println((prim.width, prim.height))
-    wh = Compose.relative_native_units(img, (prim.width, prim.height))
-    println("wh: ", wh)
-    xy = Compose.absolute_native_units(img, prim.corner)-Point2f0(0, wh[2])
+function Compose.draw(img::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
+    wh = relative_native_units(img, (prim.width, prim.height))
+    xy = absolute_native_units(img, prim.corner)-Point2f0(0, wh[2])
+    stroke_width = img.stroke.alpha > 0 ? 2f0 : 0f0
 
-
-    style = img.fill.alpha > 0 ? Cint(FILLED) : Cint(0)
-    style = img.stroke.alpha > 0 ? (style|Cint(OUTLINED)) : style
-
-    view(visualize(Rectangle{Float32}(xy..., wh...),
-    	style=style,
+    view(visualize((SimpleRectangle{Float32}(xy..., wh...), [Point2f0(0)] ),
     	color=img.fill,
     	stroke_color=img.stroke,
+        stroke_width=stroke_width,
     	visible=img.visible
-    ), img.screen)
+    ), img.screen, method=:orthographic_pixel)
 end
 
 
@@ -444,11 +437,11 @@ end
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.BitmapPrimitive)
     xyz = Vec3f0(prim.corner.x.abs, prim.corner.y.abs, 0)
     scale = Vec3f0(prim.width.abs, prim.height.abs, 1)
-    view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen)
+    view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen, method=:orthographic_pixel)
 end
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
-    Compose.pango_to_glvisualize(prim.value)
+    #Compose.pango_to_glvisualize(prim.value)
 	pos 	= absolute_native_units(img, prim.position)
 	s1 		= absolute_native_units(img, img.fontsize)/25f0
 	s 		= Vec3f0(s1, s1, 1)
@@ -478,5 +471,6 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
     transmat *= translationmatrix(Vec3f0(pos..., 0))
 
 	GLAbstraction.transformation(obj, transmat)
-	view(obj, img.screen)
+	view(obj, img.screen, method=:orthographic_pixel)
+end
 end

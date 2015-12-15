@@ -74,6 +74,8 @@ include(joinpath("visualize", "volume.jl"))
 
 include("camera.jl")
 export cubecamera
+include("compose_backend.jl")
+
 
 Base.precompile(glscreen, ())
 end # module

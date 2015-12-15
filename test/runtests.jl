@@ -143,7 +143,7 @@ facts("sprite particles") do
         a_vis = visualize(a, scale=Vec2f0(30))
         gpu_pos = a_vis.children[][:position]
 
-        dt   = 0.1f0
+        dt = 0.1f0
         position_velocity = foldp((a, zeros(Float32, 10)), bounce(1:10)) do pos_velo, _
             positions, velocity = pos_velo
             for i in eachindex(positions)
