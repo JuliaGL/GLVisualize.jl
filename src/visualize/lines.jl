@@ -6,21 +6,28 @@ function lastlen(points)
     end
     result
 end
+to_indices(x::TOrSignal{Int}) = x
+to_indices(x::VecOrSignal{UnitRange{Int}}) = x
+to_indices{I<:Integer}(x::VecOrSignal{I}) = indexbuffer(x)
+to_indices(x) = error(
+    "Not a valid index type: $x.
+    Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
+)
 
 function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Dict)
     @gen_defaults! data begin
         dotted              = false
-        vertex              = position               => GLBuffer
-        jointype            = Cuint(0)               => GLBuffer
-        color               = default(RGBA, s, 1)    => GLBuffer
-        stroke_color        = default(RGBA, s, 2)    => GLBuffer
+        vertex              = position            => GLBuffer
+        jointype            = Cuint(0)            => GLBuffer
+        color               = default(RGBA, s, 1) => GLBuffer
+        stroke_color        = default(RGBA, s, 2) => GLBuffer
         thickness           = 2f0
         shape               = RECTANGLE
         transparent_picking = false
         preferred_camera    = :orthographic_pixel
-        max_primitives      = length(value(position))-4
+        max_primitives      = length(value(position))
         boundingbox         = GLBoundingBox(value(position))
-        indices             = nothing => indexbuffer
+        indices             = -1 => to_indices
         shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
