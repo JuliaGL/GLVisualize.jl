@@ -12,10 +12,9 @@ function create_minmax{T<:Vec,N}(x::Array{T,N})
     _norm = map(norm, x)
     Vec2f0(minimum(_norm), maximum(_norm))
 end
-const ARROW = '\U2B06'
 
 _default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict) = _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
-_default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default((ARROW, main), s, data)
+_default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default(('⬆', main), s, data)
 
 function _default{P<:Primitives3D, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
     data[:rotation] = const_lift(vec, main[2])
