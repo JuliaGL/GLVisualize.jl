@@ -1,3 +1,6 @@
+using GLVisualize, GLAbstraction
+w,r = glscreen()
+
 # taken from http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html#mayavi.mlab.mesh
 dphi, dtheta = pi/250.0f0, pi/250.0f0
 function mgrid(dim1, dim2)
@@ -16,7 +19,6 @@ x = r.*sin(phi).*cos(theta)
 y = r.*cos(phi)
 z = r.*sin(phi).*sin(theta)
 
-using GLVisualize, GLAbstraction
-w,r = glscreen()
 view(visualize(x,y,z, :surface))
+
 r()
