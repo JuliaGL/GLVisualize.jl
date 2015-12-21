@@ -22,6 +22,10 @@ Pkg.checkout("Packing")
 Pkg.checkout("FreeType")
 ```
 
+<video autoplay loop>
+  <source src="http://img-9gag-fun.9cache.com/photo/aVPzymP_460sv.mp4" type="video/mp4">
+Your browser does not support the video tag.
+</video>
 
 Known problems:
 
