@@ -118,16 +118,16 @@ void main(){
     float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
     float inside        = aastep(0.0, 100.0, signed_distance);
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
-    vec4 final_color    = vec4(f_color.rgb, inside);
+    vec4 final_color    = vec4(1,1,1, 0);
 
     fill(f_color, image, f_uv, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
     glow(f_glow_color, signed_distance, outside, final_color);
 
     fragment_color   = final_color;
-    fragment_groupid = f_id;
+    fragment_groupid = f_id;/*
     if (fragment_color.a > 0.0)
         gl_FragDepth = gl_FragCoord.z;
     else
-        gl_FragDepth = 1.0;
+        gl_FragDepth = 1.0;*/
 }

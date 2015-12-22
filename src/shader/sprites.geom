@@ -4,6 +4,7 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
+uniform bool billboard;
 uniform float stroke_width;
 uniform float glow_width;
 uniform vec2 resolution;
@@ -64,8 +65,16 @@ vec4 _position(vec2 position, sampler2D heightfield, int index){
 
 void emit_vertex(vec2 vertex, vec2 uv)
 {
-    mat3 rot            = rotation_mat(g_rotation[0]);
-    vec4 final_position = vec4(g_position[0]+(rot*vec3(vertex, 0)), 1);
+    vec4 final_position;
+    if(billboard){
+        final_position = projectionview*model*vec4(g_position[0], 1);
+        gl_Position    = final_position + vec4((vertex / (resolution/1000.)), 0,0);
+    }else{
+        mat3 rot       = rotation_mat(g_rotation[0]);
+        final_position = vec4(g_position[0]+(rot*vec3(vertex, 0)), 1);
+        gl_Position    = projectionview*model*final_position;
+    }
+
     f_uv              = uv;
     f_primitive_index = g_primitive_index[0];
     f_color           = g_color[0];
@@ -73,7 +82,7 @@ void emit_vertex(vec2 vertex, vec2 uv)
     f_glow_color      = g_glow_color[0];
     f_scale           = g_offset_width[0].zw-g_offset_width[0].xy;
     f_id              = g_id[0];
-    gl_Position       = projectionview*model*final_position;
+
     EmitVertex();
 }
 
@@ -89,14 +98,10 @@ void main(void)
     // v1*      * v2
     vec4 o_w    = g_offset_width[0];
     vec4 uv_o_w = g_uv_offset_width[0];
-    float stroke_glow = (stroke_width+glow_width);
-    vec2 scale        = o_w.zw-o_w.xy;
-    vec2 stroke_glow_uv = stroke_glow/scale;
-
 
     emit_vertex(o_w.xy, uv_o_w.xw);
-    emit_vertex(o_w.xw, uv_o_w.xy);
-    emit_vertex(o_w.zy, uv_o_w.zw);
-    emit_vertex(o_w.zw, uv_o_w.zy);
+    emit_vertex(o_w.xw+vec2(0,20), uv_o_w.xy);
+    emit_vertex(o_w.zy+vec2(20,0), uv_o_w.zw);
+    emit_vertex(o_w.zw+20, uv_o_w.zy);
     EndPrimitive();
 }

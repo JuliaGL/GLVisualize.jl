@@ -1,5 +1,5 @@
 module ComposeBackend
-using GLAbstraction, GLFW, GLWindow, Measures, GLVisualize, GeometryTypes, Colors, Reactive
+using GLAbstraction, GLFW, GLWindow, Measures, GLVisualize, GeometryTypes, Colors, Reactive, ModernGL
 importall Compose
 
 type GLVisualizePropertyState
@@ -378,41 +378,121 @@ function Compose.draw{T}(img::GLVisualizeBackend, form::Compose.Form{T})
         end
     end
 end
+
+let positions   = 0,
+    colors      = 0,
+    thicknesses = 0,
+    indices     = 0,
+    last_length = 0,
+    robj        = 0,
+    line_segment_batch = 0,
+    line_segment       = Signal(LineSegment{Point2f0}[]),
+    line_segment_color = Signal(RGBA{Float32}[]),
+    line_segment_thickness = Signal(Float32[])
+
+function append_p{T}(x::Signal{Vector{T}}, init_val)
+    preserve(foldp((v0, x) -> vcat(v0, x), init_val, x))
+end
+function _add_line(points::Vector{Point2f0}, color, thickness)
+    c = fill(RGBA{Float32}(color), length(points))
+    if positions == 0
+        positions = GLBuffer(points)
+        colors    = GLBuffer(c)
+        indices   = UnitRange{Int}[1:length(points)]
+        robj      = visualize(positions, :lines, color=colors, thickness=thickness, indices=indices)
+        view(robj, method=:orthographic_pixel)
+    else
+        nl = (length(positions)+length(points),)
+        nr = range(last_length+1, length(points))
+        resize!(positions, nl)
+        resize!(colors, nl)
+        positions[nr] = points
+        colors[nr] = c
+        push!(indices, nr)
+    end
+    last_length += length(points)
+end
+ls = 0
+function _add_line(points::LineSegment{Point2f0}, color, thickness)
+    if line_segment_batch == 0
+        robj = visualize(append_p(line_segment, [points]),
+            color     = append_p(line_segment_color, fill(color, 2)),
+            thickness = append_p(line_segment_thickness, fill(thickness, 2))
+        )
+        view(robj, method=:orthographic_pixel)
+        line_segment_batch = robj
+    else
+        push!(line_segment, [points])
+        push!(line_segment_color, fill(color, 2))
+        push!(line_segment_thickness, fill(thickness, 2))
+    end
+end
+function add_line(points::Vector{Point2f0}, color, thickness)
+    N = length(points)
+    N <= 1 && return
+    if N == 2
+        _add_line(LineSegment{Point2f0}(points...), color, thickness)
+    elseif N == 3
+        error("Not implemented yet")
+    else
+        _add_line(points, color, thickness)
+    end
+end
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.LinePrimitive)
 	N = length(prim.points)
     N <= 1 && return
     points = Point2f0[absolute_native_units(img, p) for p in prim.points]
-    if N == 2
-    	a,b = points
-    	ab = b-a
-    	points = vcat(a-(ab*0.00001f0),a,b,b+(ab*0.00001f0))
-    end
-    view(visualize(Signal(points), :lines,
-    	color=img.stroke,
-    	visible=img.visible,
-    	thickness=absolute_native_units(img, img.linewidth)
-    ), img.screen, method=:orthographic_pixel)
+    add_line(points, img.stroke, absolute_native_units(img, img.linewidth))
 end
 
+end
 
 function Compose.draw(img::GLVisualizeBackend, form::Compose.FormBatch)
     println("FormBatch: ", form)
 end
 
+let positions    = 0,
+    scales       = 0,
+    fillcolors   = 0,
+    strokecolors = 0,
+    indices      = 0
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
     wh = relative_native_units(img, (prim.width, prim.height))
     xy = absolute_native_units(img, prim.corner)-Point2f0(0, wh[2])
-    stroke_width = img.stroke.alpha > 0 ? 2f0 : 0f0
-
-    view(visualize((SimpleRectangle{Float32}(xy..., wh...), [Point2f0(0)] ),
-    	color=img.fill,
-    	stroke_color=img.stroke,
-        stroke_width=stroke_width,
-    	visible=img.visible
-    ), img.screen, method=:orthographic_pixel)
+    stroke_width = img.stroke.alpha > 0 ? 5f0 : 0f0
+    fillcolor = img.fill
+    stroke_color = img.stroke
+    if positions == 0
+        positions = GLBuffer([xy])
+        scales    = GLBuffer([wh])
+        fillcolors = GLBuffer([fillcolor])
+        strokecolors = GLBuffer([stroke_color])
+        indices = UnitRange{Int}[1:1]
+        view(visualize((RECTANGLE, positions),
+        	color=fillcolors,
+            scale=scales,
+        	stroke_color=strokecolors,
+            stroke_width=stroke_width,
+            indices=indices
+        ), img.screen, method=:orthographic_pixel)
+    else
+        len = length(positions)
+        lastlen = last(indices[])
+        if len == lastlen
+            resize!(positions,    (len*2,))
+            resize!(scales,       (len*2,))
+            resize!(fillcolors,   (len*2,))
+            resize!(strokecolors, (len*2,))
+        end
+        positions[lastlen+1]    = xy
+        scales[lastlen+1]       = wh
+        fillcolors[lastlen+1]   = fillcolor
+        strokecolors[lastlen+1] = stroke_color
+        indices[1] = range(1, lastlen+1)
+    end
 end
-
+end
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.PolygonPrimitive)
 	println("PolygonPrimitive LOL")

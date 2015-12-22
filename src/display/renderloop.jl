@@ -50,12 +50,12 @@ end
 
 function postprocess(framebuffer::GLFramebuffer, screen::Screen)
     extract_renderable(assemble_shader(@gen_defaults! Dict{Symbol, Any}() begin
-        main = nothing
-        model = eye(Mat4f0)
+        main       = nothing
+        model      = eye(Mat4f0)
         resolution = const_lift(Vec2f0, screen.inputs[:framebuffer_size])
         u_texture0 = framebuffer.color
         primitive  = GLUVMesh2D(SimpleRectangle(-1f0,-1f0, 2f0, 2f0))
-        shader = GLVisualizeShader("fxaa.vert", "fxaa.frag", "fxaa_combine.frag")
+        shader     = GLVisualizeShader("fxaa.vert", "fxaa.frag", "fxaa_combine.frag")
     end))[]
 end
 

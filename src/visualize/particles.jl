@@ -29,7 +29,7 @@ function _default{P<:Sprites, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::St
         rotation   = const_lift(vec, main[2])
         color_norm = const_lift(create_minmax, main[2])
         color      = Texture(default(Vector{RGBA}))
-        xyrange    = ((0,1),(0,1))
+        xyrange    = ntuple(x->(0,1), N)
     end
     _default((main[1], Grid(value(main[2]), xyrange)), s, data)
 end
@@ -57,8 +57,8 @@ function _default{P<:Sprites, T<:AbstractFloat}(main::Tuple{P, VecTypes{T}}, s::
     end
     grid = Grid(value(main[2]), xyrange)
     @gen_defaults! data begin
-        scale_x::Float32 = step(grid.dims[1])
-        scale_y          = const_lift(vec, main[2]) => GLBuffer
+        scale_x::Float32 = step(grid.dims[1])/4f0
+        scale_y          = main[2] => GLBuffer
         scale_z::Float32 = 1f0
     end
     _default((main[1], grid), s, data)
@@ -104,7 +104,7 @@ function meshparticle(p, s, data)
         rotation         = nothing    => TextureBuffer
         intensity        = nothing    => TextureBuffer
         color_norm       = nothing
-        instances        = length(position)
+        instances        = const_lift(length, position)
         boundingbox      = ParticleBoundingBox(
             position, position_x, position_y, position_z,
             scale, scale_x, scale_y, scale_z,
@@ -184,7 +184,7 @@ sprites(p, s, data) = @gen_defaults! data begin
     image               = nothing => Texture
     distancefield       = primitive_distancefield(p[1]) => Texture
     transparent_picking = true
-
+    indices             = const_lift(length, p[2]) => to_indices
     boundingbox         = ParticleBoundingBox(
         position, position_x, position_y, position_z,
         scale, scale_x, scale_y, scale_z,
