@@ -100,8 +100,8 @@ void main(void)
     vec4 uv_o_w = g_uv_offset_width[0];
 
     emit_vertex(o_w.xy, uv_o_w.xw);
-    emit_vertex(o_w.xw+vec2(0,20), uv_o_w.xy);
-    emit_vertex(o_w.zy+vec2(20,0), uv_o_w.zw);
-    emit_vertex(o_w.zw+20, uv_o_w.zy);
+    emit_vertex(o_w.xw, uv_o_w.xy);
+    emit_vertex(o_w.zy, uv_o_w.zw);
+    emit_vertex(o_w.zw, uv_o_w.zy);
     EndPrimitive();
 }

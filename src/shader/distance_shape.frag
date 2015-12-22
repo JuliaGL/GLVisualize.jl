@@ -125,9 +125,9 @@ void main(){
     glow(f_glow_color, signed_distance, outside, final_color);
 
     fragment_color   = final_color;
-    fragment_groupid = f_id;/*
+    fragment_groupid = f_id;
     if (fragment_color.a > 0.0)
         gl_FragDepth = gl_FragCoord.z;
     else
-        gl_FragDepth = 1.0;*/
+        gl_FragDepth = 1.0;
 }
