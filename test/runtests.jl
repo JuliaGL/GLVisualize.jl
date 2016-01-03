@@ -6,6 +6,10 @@ using FactCheck
 has_opengl = false
 window = 0
 windows = 0
+
+# Allow window creation to fail, since there is enough to test even without
+# OpenGL being present. This is important for travis, since we don't have OpenGL
+# there
 try
     window, renderloop = glscreen()
     @async renderloop()
@@ -119,6 +123,21 @@ end
 function interpolate(a,b,t)
     [ae+((be-ae)*t) for (ae, be) in zip(a,b)]
 end
+
+function bounce_particles(pos_velo, _)
+    positions, velocity = pos_velo
+    dt = 0.1f0
+    @inbounds for i=1:length(positions)
+        pos,velo = positions[i], velocity[i]
+        positions[i] = Point2f0(pos[1], pos[2] + velo*dt)
+        if pos[2] <= 0f0
+            velocity[i] = abs(velo)
+        else
+            velocity[i] = velo - 9.8*dt
+        end
+    end
+    positions, velocity
+end
 facts("sprite particles") do
 
     context("on a 2D plane") do
@@ -143,31 +162,27 @@ facts("sprite particles") do
         a_vis = visualize(a, scale=Vec2f0(30))
         gpu_pos = a_vis.children[][:position]
 
-        dt = 0.1f0
-        position_velocity = foldp((a, zeros(Float32, 10)), bounce(1:10)) do pos_velo, _
-            positions, velocity = pos_velo
-            for i in eachindex(positions)
-                pos,velo = positions[i], velocity[i]
-                positions[i] = Point2f0(pos[1], pos[2] + velo*dt)
-                if pos[2] <= 0f0
-                    velocity[i] = abs(velo)
-                else
-                    velocity[i] = velo - 9.8*dt
-                end
-            end
-            positions, velocity
+
+        position_velocity = foldp(bounce_particles,
+            (a, zeros(Float32, 10)),
+            bounce(1:10)
+        )
+
+        circle_pos = Point2f0[(Point2f0(sin(i), cos(i))*50f0)+25f0 for i=linspace(0, 2pi, 20)]
+        rotation   = Vec2f0[normalize(Vec2f0(25)-Vec2f0(p)) for p in circle_pos]
+        scales     = map(bounce(0f0:0.1f0:1000f0)) do t
+            Vec2f0[Vec2f0(10, ((sin(i+t)+1)/2)*40) for i=linspace(0, 2pi, 20)]
         end
-        cat_positions = map(first, position_velocity)
         context("viewable creation") do
             particles = Context[
                 a_vis,
                 visualize((primb, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10)),
                 visualize((DISTANCEFIELD, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10), distancefield=dfdata),
-                visualize((primc, cat_positions), image=play(loadasset("kittens-look.gif")), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)),
+                visualize((primc, map(first, position_velocity)), image=loadasset("doge.png"), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1), boundingbox=AABB(Vec3f0(0), Vec3f0(300,300,0))),
                 visualize(('↺', c), xyrange=((0,200),(0,200))),
                 visualize(c_sig, xyrange=((0,200),(0,200))),
-                visualize((prima,b), xyrange=((0,200),)),
-                visualize((prima, b_sig), color=Texture(GLVisualize.default(Vector{RGBA})), intensity=b_sig, color_norm=Vec2f0(10,200), xyrange=((0,200),))
+                visualize((prima,b_sig), xyrange=((0,200),),intensity=b_sig, color_norm=Vec2f0(10,200), color=Texture(GLVisualize.default(Vector{RGBA}))),
+                visualize((CIRCLE, circle_pos), rotation=rotation, scale=scales)
             ]
             if has_opengl
                 context("viewing") do
@@ -186,9 +201,9 @@ facts("sprite particles") do
         context("viewable creation") do
             particles = [
                 visualize((prima,a))
-                visualize((primb,b))
+                visualize(('❄',a), scale=Vec2f0(0.1), billboard=true)
                 visualize(c, scale=Vec3f0(0.1))
-                visualize(d, scale=Vec3f0(0.1))
+                visualize(('➤', d), scale=Vec3f0(0.1))
             ]
             p1,p2,p3 = extract_renderable(Context(particles...))
             #@fact typeof(particles[1][:primitive]) --> Cube{Float32}

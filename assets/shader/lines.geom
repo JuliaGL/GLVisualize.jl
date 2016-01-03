@@ -35,7 +35,7 @@ void emit_vertex(vec2 position, vec2 uv, int index)
 {
     f_uv          = uv;
     f_color       = g_color[index];
-    gl_Position   = vec4(position / resolution, -gl_in[index].gl_Position.z, 1.0);
+    gl_Position   = vec4(position / resolution, gl_in[index].gl_Position.z/gl_in[index].gl_Position.w, 1.0);
     f_id          = g_id[index];
     EmitVertex();
 }
