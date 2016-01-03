@@ -1,5 +1,5 @@
 call(::Type{AABB}, a) = AABB{Float32}(a)
-call{T}(B::Type{AABB{T}}, a::Cube) = B(a.origin, a.origin+a.width)
+call{T}(B::Type{AABB{T}}, a::Cube) = B(minimum(a), maximum(a))
 call{T}(B::Type{AABB{T}}, a::AbstractMesh) = B(vertices(a))
 call{T}(B::Type{AABB{T}}, a::NativeMesh) = B(gpu_data(a.data[:vertices]))
 
@@ -9,12 +9,12 @@ function call{T}(B::Type{AABB{T}}, positions::PositionIterator, scale::ScaleIter
     _min = Vec{3, T}(typemax(T))
     for (p, s) in zip(positions, scale)
         p = Vec{3, T}(p)
-        s_min = Vec{3, T}(s) .* minimum(primitive)
-        s_max = Vec{3, T}(s) .* maximum(primitive)
+        s_min   = Vec{3, T}(s) .* minimum(primitive)
+        s_max   = Vec{3, T}(s) .* maximum(primitive)
         s_min_r = min(s_min, s_max)
         s_max_r = max(s_min, s_max)
-        _min = min(_min, p + s_min_r)
-        _max = max(_max, p + s_max_r)
+        _min    = min(_min, p + s_min_r)
+        _max    = max(_max, p + s_max_r)
     end
     B(_min, _max)
 end
