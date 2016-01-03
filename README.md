@@ -7,6 +7,11 @@ inconsistencies and missing documentations.
 A lot of things already work nicely, so besides missing documentations and a high probability that the API will change in the near future, there is no real reason why you shouldn't give it a try.
 You can look at `test/runtests.jl` and the `example` folder, to get a sense of how you can use GLVisualize.
 
+# Documentation
+
+There is only a [prototype](http://simondanisch.github.io/) available right now.
+
+
 # Installation
 
 Here is a script adding the packages and checking out the correct branches:
