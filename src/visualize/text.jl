@@ -181,27 +181,26 @@
 
 calc_position(glyphs::GPUVector, startposition=Vec2f0(0)) = calc_position(gpu_data(glyphs), startposition)
 function calc_position(glyphs, startposition=Vec2f0(0))
-	const PF16 = Point{2, Float16}
-    positions = fill(PF16(0.0), length(glyphs))
+    positions = fill(Point2f0(0.0), length(glyphs))
 	if !isempty(glyphs)
 	    global FONT_EXTENDS, ID_TO_CHAR
-	    last_pos  = PF16(startposition)
+	    last_pos  = Point2f0(startposition)
 	    lastglyph = first(glyphs)
 	    for (i,glyph) in enumerate(glyphs)
 	        extent = FONT_EXTENDS[glyph]
-	        bearing = PF16(extent.horizontal_bearing[1], -(extent.scale[2]-extent.horizontal_bearing[2]))
+	        bearing = Point2f0(extent.horizontal_bearing[1], -(extent.scale[2]-extent.horizontal_bearing[2]))
 	        if isnewline(lastglyph)
 	            if i<2
-	                last_pos = PF16(last_pos[1], last_pos[2]-extent.advance[2])
+	                last_pos = Point2f0(last_pos[1], last_pos[2]-extent.advance[2])
 	            else
-	                last_pos = PF16(first(positions)[1], positions[i-1][2]-extent.advance[2])
+	                last_pos = Point2f0(first(positions)[1], positions[i-1][2]-extent.advance[2])
 	            end
 	            positions[i] = last_pos
 	        else
-	            last_pos += PF16(extent.advance[1], 0)
+	            last_pos += Point2f0(extent.advance[1], 0)
 	            finalpos = last_pos
-	            #finalpos = PF16(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
-	            #(i>1) && (finalpos += PF16(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
+	            #finalpos = Point2f0(last_pos.x+extent.horizontal_bearing.x, last_pos.y-(extent.scale.y-extent.horizontal_bearing.y))
+	            #(i>1) && (finalpos += Point2f0(kerning(ID_TO_CHAR[lastglyph[1]], ID_TO_CHAR[glyph[1]], DEFAULT_FONT_FACE, 64f0)))
 	            positions[i] = finalpos + bearing
 	        end
 	        lastglyph = glyph

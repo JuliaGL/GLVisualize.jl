@@ -1,4 +1,4 @@
-dphi, dtheta = pi/50.0f0, pi/50.0f0
+dphi, dtheta = pi/200.0f0, pi/200.0f0
 function mgrid(dim1, dim2)
     X = [i for i in dim1, j in dim2]
     Y = [j for i in dim1, j in dim2]
@@ -15,7 +15,22 @@ x = r.*sin(phi).*cos(theta);
 y = r.*cos(phi);
 z = r.*sin(phi).*sin(theta);
 
-using GLVisualize, GLAbstraction
+using GLVisualize, GLAbstraction, GeometryTypes, Reactive
+
+
 w,r = glscreen()
-view(visualize((x,y,z), :surface))
-r()
+rotation_angle  = Signal(0f0)
+rotation 		= map(rotationmatrix_z, map(deg2rad, rotation_angle))
+
+view(visualize((x,y,z), :surface, model=const_lift(*, scalematrix(Vec3f0(0.5)), rotation)))
+@async r()
+sleep(2)
+i = 1
+for r=1:4:360
+	yield() # yield to render process
+	sleep(0.01)
+
+	screenshot(w, path=joinpath(homedir(), "Videos","circles", @sprintf("frame%03d.png", i)))
+    push!(rotation_angle, r) # rotate around camera y axis.
+	i += 1
+end

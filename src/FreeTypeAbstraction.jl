@@ -6,7 +6,9 @@ immutable FontExtent{T}
     advance             ::Vec{2, T}
     scale               ::Vec{2, T}
 end
-
+immutable FontFace
+    name::UTF8String
+end
 
 import Base: ./, .*
 

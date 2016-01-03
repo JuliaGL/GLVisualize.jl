@@ -24,7 +24,7 @@ function list_translation(lastposition, gap, direction, bb)
     directionmask     = unit(Vec3f0, abs(direction))
     alignmask         = abs(1-directionmask)
     move2align        = alignmask.*(lastposition-minimum(bb)) #zeros direction
-	move2nextposition = sign(direction)*(directionmask.*width(bb))*0.5f0
+	move2nextposition = sign(direction)*(directionmask.*widths(bb))*0.5f0
     nextpos           = lastposition + move2nextposition + (directionmask.*gap)
 	translationmatrix(lastposition+move2align),nextpos
 end

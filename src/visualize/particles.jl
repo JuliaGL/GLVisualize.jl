@@ -5,7 +5,7 @@ typealias Sprites Union{GeometryPrimitive{2}, Shape, Char}
 typealias ExtPrimitives Union{Primitives, Sprites}
 
 _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{2, Float32}), main), s, data)
-_default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((HyperCube(Vec3f0(-0.5,-0.5,0),Vec3f0(1)), main), s, data)
+_default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(0.5, 0.5, 1.0)), main), s, data)
 _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
 
 function create_minmax{T<:Vec,N}(x::Array{T,N})
@@ -139,7 +139,7 @@ primitive_scale(r::Shape) = Vec2f0(40)
 primitive_scale(c::Char)  = Vec(get_font_scale!(c))
 
 primitive_offset(c::Circle) = Vec2f0(c.center)-c.r
-primitive_offset(r::HyperRectangle) = Vec2f0(r.minimum)
+primitive_offset(r::HyperRectangle) = Vec2f0(minimum(r))
 primitive_offset(r::SimpleRectangle) = Vec2f0(r.x, r.y)
 primitive_offset(r::Shape) = Vec2f0(0)
 primitive_offset(c::Char)  = Vec2f0(0)
@@ -165,17 +165,17 @@ sprites(p, s, data) = @gen_defaults! data begin
     position_y          = nothing => GLBuffer
     position_z          = nothing => GLBuffer
 
-    scale               = primitive_scale(p[1]) => GLBuffer
-    scale_x             = nothing               => GLBuffer
-    scale_y             = nothing               => GLBuffer
-    scale_z             = nothing               => GLBuffer
-    offset              = primitive_offset(p[1])=> GLBuffer
-    rotation            = nothing             => GLBuffer
-    color               = default(RGBA, s)    => GLBuffer
-    intensity           = nothing             => GLBuffer
+    scale               = primitive_scale(p[1])  => GLBuffer
+    scale_x             = nothing                => GLBuffer
+    scale_y             = nothing                => GLBuffer
+    scale_z             = nothing                => GLBuffer
+    offset              = primitive_offset(p[1]) => GLBuffer
+    rotation            = nothing                => GLBuffer
+    color               = default(RGBA, s)       => GLBuffer
+    intensity           = nothing                => GLBuffer
     color_norm          = nothing
-    stroke_color        = default(RGBA, s, 2) => GLBuffer
-    glow_color          = default(RGBA, s, 3) => GLBuffer
+    stroke_color        = default(RGBA, s, 2)    => GLBuffer
+    glow_color          = default(RGBA, s, 3)    => GLBuffer
 
     stroke_width        = 0f0
     glow_width          = 0f0
@@ -183,7 +183,6 @@ sprites(p, s, data) = @gen_defaults! data begin
 
     image               = nothing => Texture
     distancefield       = primitive_distancefield(p[1]) => Texture
-    transparent_picking = true
     indices             = const_lift(length, p[2]) => to_indices
     boundingbox         = ParticleBoundingBox(
         position, position_x, position_y, position_z,
@@ -197,12 +196,12 @@ end
 
 
 function _default{T<:AbstractString}(main::Signal{T}, s::Style, data::Dict)
-    atlas       = get_texture_atlas()
-    char_id     = preserve(map(process_for_gl, main))
-    t_uv        = GLBuffer(Vec4f0[atlas.attributes[id+1] for id in char_id.value])
-    t_scale     = GLBuffer(Vec2f0[atlas.scale[id+1] for id in char_id.value])
-    position    = GLBuffer(map(Point2f0, calc_position(char_id.value)))
-    vals        = map(char_id) do cid
+    atlas    = get_texture_atlas()
+    char_id  = preserve(map(process_for_gl, main))
+    t_uv     = GLBuffer(Vec4f0[atlas.attributes[id+1] for id in char_id.value])
+    t_scale  = GLBuffer(Vec2f0[atlas.scale[id+1] for id in char_id.value])
+    position = GLBuffer(map(Point2f0, calc_position(char_id.value)))
+    vals     = map(char_id) do cid
         update!(t_uv    , Vec4f0[atlas.attributes[id+1] for id in cid])
         update!(t_scale , Vec2f0[atlas.scale[id+1] for id in cid])
         update!(position, map(Point2f0, calc_position(cid)))
@@ -219,17 +218,11 @@ function _default{T<:AbstractString}(main::Signal{T}, s::Style, data::Dict)
     _default((DISTANCEFIELD, position), s, data)
 end
 function _default{T<:AbstractString}(main::T, s::Style, data::Dict)
-    char_id     = process_for_gl(main)
-    atlas       = get_texture_atlas()
-    t_uv        = Vec4f0[begin
-        if id == Int(get_font!('\n'))
-            atlas.attributes[Int(get_font!(' '))+1]
-        else
-            atlas.attributes[id+1]
-        end
-    end for id in char_id]
-    t_scale     = Vec2f0[atlas.scale[id+1] for id in char_id]
-    position    = map(Point2f0, calc_position(char_id))
+    char_id  = process_for_gl(main)
+    atlas    = get_texture_atlas()
+    t_uv     = Vec4f0[atlas.attributes[id+1] for id in char_id]
+    t_scale  = Vec2f0[atlas.scale[id+1] for id in char_id]
+    position = map(Point2f0, calc_position(char_id))
     @gen_defaults! data begin
         scale           = t_scale   => GLBuffer
         uv_offset_width = t_uv      => GLBuffer

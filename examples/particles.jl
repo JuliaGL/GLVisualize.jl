@@ -1,48 +1,50 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
 w,r = glscreen()
+w.cameras[:perspective] = PerspectiveCamera(w.inputs, Vec3f0(3), Vec3f0(0))
 cat = GLNormalMesh(loadasset("cat.obj"))
-sphere = GLNormalMesh(Sphere{Float32}(Vec3f0(0), 1f0), 32)
+sphere = GLNormalMesh(Sphere{Float32}(Vec3f0(0), 1f0), 12)
 
 function scale_gen(v0, nv)
 	l = length(v0)
 	@inbounds for i=1:l
-		v0[i] = Vec3f0(1,1,sin((nv*l)/i))/7f0
+		v0[i] = Vec3f0(1,1,sin((nv*l)/i))/2
 	end
 	v0
 end
+i = 1
 function color_gen(v0, nv)
 	l = length(v0)
 	@inbounds for x=1:l
-		v0[x] = RGBA{U8}(x/l,nv,(sin(x/l/3)+1)/2.,1.)
+		v0[x] = RGBA{U8}(x/l,(cos(nv)+1)/2,(sin(x/l/3)+1)/2.,1.)
 	end
+
 	v0
 end
+const t      = Signal(0f0)
 ps 			 = sphere.vertices
 scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
-scale_signal = foldp(scale_gen, scale_start, bounce(0.1f0:0.01f0:1.0f0))
+scale_signal = foldp(scale_gen, scale_start, t)
 scale 		 = scale_signal
 
-color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), bounce(0.00f0:0.02f0:1.0f0))
+color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), t)
 color 		 = color_signal
 
 rotation = -sphere.normals
 
 a = visualize((cat, ps), scale=scale, color=color, rotation=rotation)
 
-cat_verts = vertices(cat)
-
-
-cat_verts_signal = foldp(copy(cat_verts), bounce(0.00f0:0.1f0:1.0f0)) do v0, ts
-    l = length(cat_verts)
-    @inbounds for i=1:l
-        catx,caty,catz = cat_verts[i]
-        x = sin(ts*catx)
-        y = cos(ts*caty)
-        v0[i] = cat_verts[i] + Point3f0(x,y,0)
-    end
-    v0
+view(a)
+@async r()
+yield()
+sleep(5)
+yield()
+N = 200
+i = 1
+for _t in linspace(0, 2pi, N)
+    yield()
+    sleep(0.1)
+    screenshot(w, path=joinpath(homedir(), "Videos","cats", @sprintf("frame%03d.png", i)))
+    i+=1
+    push!(t, _t)
 end
-b = visualize((GLNormalMesh(centered(Sphere)), cat_verts_signal), scale=Vec3f0(0.01))
-view(visualize([a,b], gap=Vec3f0(0)))
-r()

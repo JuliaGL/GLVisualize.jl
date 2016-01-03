@@ -28,7 +28,7 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, position)
         boundingbox         = GLBoundingBox(gvalue(position))
-        indices             = -1 => to_indices
+        indices             = const_lift(length, position) => to_indices
         shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end

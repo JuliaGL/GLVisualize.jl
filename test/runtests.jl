@@ -6,6 +6,7 @@ using FactCheck
 has_opengl = false
 window = 0
 windows = 0
+number_of_windows = 6
 
 # Allow window creation to fail, since there is enough to test even without
 # OpenGL being present. This is important for travis, since we don't have OpenGL
@@ -14,14 +15,6 @@ try
     window, renderloop = glscreen()
     @async renderloop()
     has_opengl = true
-    WN = 6
-    windows = ntuple(WN) do i
-        a = map(window.area) do wa
-            h = wa.h÷WN
-            SimpleRectangle(wa.x, (i-1)h, wa.w, h)
-        end
-        Screen(window, area=a)
-    end
 catch e
     warn(string(
         "you don't seem to have opengl. Tests will run without OpenGL.
@@ -30,6 +23,16 @@ catch e
         "\n", e
     ))
 end
+if has_opengl
+    windows = ntuple(number_of_windows) do i
+        a = map(window.area) do wa
+            h = wa.h÷number_of_windows
+            SimpleRectangle(wa.x, (i-1)h, wa.w, h)
+        end
+        Screen(window, area=a)
+    end
+end
+
 function scale_gen(v0, nv)
 	l = length(v0)
 	@inbounds for i=1:l
@@ -200,9 +203,9 @@ facts("sprite particles") do
         d = rand(Vec3f0, 5,5,5)
         context("viewable creation") do
             particles = [
-                visualize((prima,a))
-                visualize(('❄',a), scale=Vec2f0(0.1), billboard=true)
-                visualize(c, scale=Vec3f0(0.1))
+                visualize((prima,a)),
+                visualize(('❄', a), scale=Vec2f0(0.1), billboard=true),
+                visualize(c, scale=Vec3f0(0.1)),
                 visualize(('➤', d), scale=Vec3f0(0.1))
             ]
             p1,p2,p3 = extract_renderable(Context(particles...))
@@ -217,7 +220,7 @@ facts("sprite particles") do
 
             if has_opengl
                 context("viewing") do
-                    gl_obj = view(visualize(particles), windows[4])
+                    gl_obj = view(visualize(particles), windows[4], method=:perspective)
                     #@fact gpu_data(gl_obj[1][:positions]) --> a
                     #@fact typeof(gl_obj[1][:positions]) --> TextureBuffer
                     #@fact typeof(gl_obj[1][:vertices]) --> GLBuffer
@@ -269,8 +272,8 @@ function lines3Ddata(N, nloops)
     TL = linspace(-2f0 * pi, 2f0 * pi, N)
     # We create a list of positions and connections, each describing a line.
     # We will collapse them in one array before plotting.
-    xyz         = Point3f0[]
-    colors      = RGBA{Float32}[]
+    xyz    = Point3f0[]
+    colors = RGBA{Float32}[]
     # The index of the current point in the total amount of points
     base_colors1 = distinguishable_colors(nloops, RGB{Float64}(1,0,0))
     base_colors2 = distinguishable_colors(nloops, RGB{Float64}(1,1,0))
@@ -287,13 +290,11 @@ end
 facts("Lines") do
     context("viewable creation") do
         lines, colors = lines3Ddata(100, 10)
-        line_vizz = Context[
-            visualize(lines, :lines, color=colors)
-        ]
+        line_vizz = visualize(lines, :lines, color=colors)
         if has_opengl
-            suf_vizz = visualize(line_vizz, direction=1)
+            #suf_vizz = visualize(line_vizz, direction=1)
             context("viewing") do
-                gl_obj = view(suf_vizz, windows[6])
+                gl_obj = view(line_vizz, windows[6], method=:perspective)
             end
         end
     end

@@ -13,7 +13,7 @@ bb 				= boundingbox(robj).value
 bb_width 		= width(bb)
 lower_corner 	= minimum(bb)
 middle 			= lower_corner + (bb_width/2f0)
-lookatvec 		= minimum(bb) 
+lookatvec 		= minimum(bb)
 eyeposition 	= middle + (bb_width.*Vec3f0(2,2,0))
 
 view(robj, position = eyeposition, lookat=middle)
@@ -23,7 +23,7 @@ num_img = 1
 for i=1:4:360
 	yield() # yield to render process
 	sleep(0.01)
-	push!(rotation_angle, i) # rotate around camera y axis. 
+	push!(rotation_angle, i) # rotate around camera y axis.
 	screenshot(w, channel=:depth, path=joinpath("images", "image$num_img.png"))
 	num_img += 1
 end

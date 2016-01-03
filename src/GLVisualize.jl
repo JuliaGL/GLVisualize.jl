@@ -24,7 +24,11 @@ import Base: merge, convert, show
 
 
 shaderdir() = Pkg.dir("GLVisualize", "src", "shader")
-assetpath(folders...) = joinpath(dirname(@__FILE__), "..", "assets", folders...)
+function assetpath(folders...)
+    path = joinpath(dirname(@__FILE__), "..", "assets", folders...)
+    isfile(path) || isdir(path) || error("Could not locate file at $path")
+    path
+end
 loadasset(folders...) = load(assetpath(folders...))
 export assetpath, loadasset
 
@@ -47,10 +51,10 @@ export clicked, dragged_on, is_hovering
 export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 export OR, AND, isnotempty
 
-include(joinpath("display", "renderloop.jl"))
+include("renderloop.jl")
 
 
-include(joinpath("texture_atlas", 	"texture_atlas.jl"))
+include("texture_atlas.jl")
 export Sprite
 export GLSprite
 export SpriteStyle
@@ -61,7 +65,6 @@ include(joinpath("edit", "numbers.jl"))
 include(joinpath("edit", "line_edit.jl"))
 export vizzedit # edits some value, name should be changed in the future!
 
-include(joinpath("visualize", "text", "utils.jl"))
 include(joinpath("visualize", "lines.jl"))
 include(joinpath("visualize", "containers.jl"))
 include(joinpath("visualize", "image_like.jl"))

@@ -1,11 +1,13 @@
+const _default_attributes = Dict(
 
+)
 function default(main, s, data)
-    _default(
-    	main, s, merge(Dict(
-        :model      	  => eye(Mat4f0),
-        :light      	  => Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)],
-        :preferred_camera => :perspective
-    ), data))
+    data = _default(main, s, copy(data))
+    @gen_defaults! data begin # make sure every object has these!
+        model      	     = eye(Mat4f0)
+        light      	     = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
+        preferred_camera = :perspective
+    end
 end
 
 """
@@ -16,9 +18,7 @@ while the key word arguments just alter the parameters of one visualization.
 Always returns a context, which can be displayed on a window via view(::Context, [display]).
 """
 visualize(main, s::Symbol=:default; kw_args...) = visualize(main, Style{s}(), Dict{Symbol, Any}(kw_args))::Context
-function visualize(main, s::Style, data::Dict)
-	assemble_shader(default(main, s, data))::Context
-end
+visualize(main, s::Style, data::Dict) = assemble_shader(default(main, s, data))::Context
 visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
@@ -44,7 +44,7 @@ function view(
          error("Method $method not a known camera type")
 	end
 	merge!(robj.uniforms, collect(camera), Dict( # add a view display dependant values
-		:resolution => const_lift(Vec2f0, lift(x->Vec2f0(x.w,x.h) ,screen.area)),
+		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
 	push!(screen.renderlist, robj)

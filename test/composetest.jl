@@ -40,9 +40,43 @@ p = compose(context(),
         fill([LCHab(92, 10, 77), LCHab(68, 74, 192), LCHab(78, 84, 29)]),
         stroke([LCHab(5, 0, 77),LCHab(5, 77, 77),LCHab(50, 0, 8)]))
 =#
-
-w,r = glscreen()
+using DataFrames
+w,r = glscreen(debugging=true)
 img = ComposeBackend.GLVisualizeBackend(w)
-p = plot([sin, cos], 0, 25)
+# xs = 0:0.1:20
+#
+# df_cos = DataFrame(
+#     x=xs,
+#     y=cos(xs),
+#     ymin=cos(xs) .- 0.5,
+#     ymax=cos(xs) .+ 0.5,
+#     f="cos"
+# )
+#
+# df_sin = DataFrame(
+#     x=xs,
+#     y=sin(xs),
+#     ymin=sin(xs) .- 0.5,
+#     ymax=sin(xs) .+ 0.5,
+#     f="sin"
+# )
+#
+# df = vcat(df_cos, df_sin)
+#
+# p = plot(df, x=:x, y=:y, ymin=:ymin, ymax=:ymax, color=:f, Geom.line, Geom.ribbon)
+#
+# x1 = rand(40)
+# y1 = 4.*x1 .+ 2 .+randn(40)
+# x2 = rand(40)
+# y2 = -6.*x2 .+ 3 .+ randn(40)
+# x  = [x1;x2]
+# y  = [y1;y2]
+# col = [fill("Slope 4",40); fill("Slope -6",40)]
+# p = plot(x=x,y=y,colour=col, Geom.point, Geom.smooth(method=:lm))
+
+p = plot(x=1:100, y=2.^rand(100),
+     Scale.y_sqrt, Geom.point, Geom.smooth,
+     Guide.xlabel("Stimulus"), Guide.ylabel("Response"), Guide.title("Cat Training"))
+
 draw(img, p)
 r()

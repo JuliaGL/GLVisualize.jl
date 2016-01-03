@@ -527,7 +527,7 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
 	s 		= Vec3f0(s1, s1, 1)
 	obj 	= visualize(prim.value, model=scalematrix(s), color=img.fill)
 	bb 		= GLAbstraction.boundingbox(obj).value
-    w,h,_   = GeometryTypes.width(bb)
+    w,h,_   = widths(bb)
 	x,y,_ 	= minimum(bb)
     pos     -= Point2f0(x, y)
     transmat = eye(Mat{4,4,Float32})
