@@ -26,10 +26,10 @@ import Base: ./, .*
 )
 
 FontExtent(fontmetric::FreeType.FT_Glyph_Metrics, scale=64) = FontExtent(
-    div(Vec{2, Int}(fontmetric.vertBearingX, fontmetric.vertBearingY), scale),
-    div(Vec{2, Int}(fontmetric.horiBearingX, fontmetric.horiBearingY), scale),
-    div(Vec{2, Int}(fontmetric.horiAdvance, fontmetric.vertAdvance), scale),
-    div(Vec{2, Int}(fontmetric.width, fontmetric.height), scale)
+    Vec{2, Float64}(fontmetric.vertBearingX, fontmetric.vertBearingY) / scale,
+    Vec{2, Float64}(fontmetric.horiBearingX, fontmetric.horiBearingY) / scale,
+    Vec{2, Float64}(fontmetric.horiAdvance, fontmetric.vertAdvance) / scale,
+    Vec{2, Float64}(fontmetric.width, fontmetric.height) / scale
 )
 
 

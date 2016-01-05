@@ -136,7 +136,7 @@ primitive_scale(c::Circle) = Vec(Vec2f0(c.center) + c.r)
 primitive_scale(r::HyperRectangle) = Vec(maximum(r))
 primitive_scale(r::SimpleRectangle) = Vec(maximum(r))
 primitive_scale(r::Shape) = Vec2f0(40)
-primitive_scale(c::Char)  = Vec(get_font_scale!(c))
+primitive_scale(c::Char)  = Vec(glyph_scale!(c))
 
 primitive_offset(c::Circle) = Vec2f0(c.center)-c.r
 primitive_offset(r::HyperRectangle) = Vec2f0(minimum(r))
@@ -145,7 +145,7 @@ primitive_offset(r::Shape) = Vec2f0(0)
 primitive_offset(c::Char)  = Vec2f0(0)
 
 
-primitive_uv_offset_width(c::Char) = get_uv_offset_width!(c)
+primitive_uv_offset_width(c::Char) = glyph_uv_width!(c)
 primitive_uv_offset_width(x)       = Vec4f0(0,0,1,1)
 
 primitive_distancefield(x) = nothing
@@ -217,12 +217,12 @@ function _default{T<:AbstractString}(main::Signal{T}, s::Style, data::Dict)
     end
     _default((DISTANCEFIELD, position), s, data)
 end
-function _default{T<:AbstractString}(main::T, s::Style, data::Dict)
-    char_id  = process_for_gl(main)
+function _default(main::AbstractString, s::Style, data::Dict)
     atlas    = get_texture_atlas()
-    t_uv     = Vec4f0[atlas.attributes[id+1] for id in char_id]
-    t_scale  = Vec2f0[atlas.scale[id+1] for id in char_id]
-    position = map(Point2f0, calc_position(char_id))
+    font     = DEFAULT_FONT_FACE
+    t_uv     = Vec4f0[glyph_uv_width!(atlas, c, font) for c=main]
+    t_scale  = Vec2f0[glyph_scale!(atlas, c, font).*Vec2f0(0.5) for c=main]
+    position = calc_position(main, Point2f0(0), Vec2f0(0.5), font, atlas)
     @gen_defaults! data begin
         scale           = t_scale   => GLBuffer
         uv_offset_width = t_uv      => GLBuffer

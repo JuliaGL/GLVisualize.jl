@@ -43,6 +43,9 @@ end
 import Base: getindex, length, next, start, done
 
 
+iter_or_array(x) = repeated(x)
+iter_or_array(x::Array) = x
+
 # An iterator over XYZ scale or positions, minimizing the type explosion for
 # all the different types allowed for particle positions and scale
 abstract XYZIterator

@@ -30,6 +30,7 @@ type TextureAtlas
 	images 			::Texture{Float16, 2}
     attributes      ::Vector{Vec4f0}
 	scale 		    ::Vector{Vec2f0}
+    extent          ::Vector{FontExtent{Float64}}
 	# sprite_attributes layout
 	# can be compressed quite a bit more
 	# ID Vertex1     Vertex2     Vertex3     Vertex4
@@ -54,7 +55,8 @@ type TextureAtlas
 			1,
 			images,
 			Vec4f0[],
-            Vec2f0[]
+            Vec2f0[],
+            FontExtent{Float64}[]
 		)
 	end
 end
@@ -63,59 +65,66 @@ end
 
 begin #basically a singleton for the textureatlas
 const local TEXTURE_ATLAS = TextureAtlas[]
-get_texture_atlas() = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
+function get_texture_atlas()
+    fn = assetpath("fonts", "DejaVuSansMono.ttf")
+    global DEFAULT_FONT_FACE = newface(fn)
+    atlas = isempty(TEXTURE_ATLAS) ? push!(TEXTURE_ATLAS, TextureAtlas())[] : TEXTURE_ATLAS[] # initialize only on demand
+    for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
+        insert_glyph!(atlas, c, DEFAULT_FONT_FACE)
+    end
+    atlas
 end
-function get_uv_offset_width!(c::Char;
-        font          = DEFAULT_FONT_FACE,
-        texture_atlas = get_texture_atlas()
-    )
-    texture_atlas.attributes[get_font!(c, font, texture_atlas)+1]
-end
-
-function get_font_scale!(c::Char;
-        font          = DEFAULT_FONT_FACE,
-        texture_atlas = get_texture_atlas()
-    )
-    texture_atlas.scale[get_font!(c, font, texture_atlas)+1]
 end
 
-Base.get!(texture_atlas::TextureAtlas, glyph::Char, font) = get!(texture_atlas.mapping, (glyph, font)) do
-	uv, rect, extent, real_width = render(glyph, font, texture_atlas)
-	tex_size 			= Vec2f0(size(texture_atlas.images))
-	uv_start 			= Vec2f0(uv.x, uv.y)
-	uv_width 			= Vec2f0(uv.w, uv.h)
-	real_heightpx 		= real_width[2]
-	halfpadding 		= (uv_width - real_width) / 2f0
-	real_start 			= uv_start + halfpadding # include padding
-	relative_start 		= real_start ./ tex_size # use normalized texture coordinates
-	relative_width 		= (real_start+real_width) ./ tex_size
+function glyph_index!(atlas::TextureAtlas, c::Char, font)
+    if c < '\u00ff' && font == DEFAULT_FONT_FACE # characters up to '\u00ff'(255), are directly mapped for default font
+        Int(c)+1
+    else #others must be looked up, since they're inserted when used first
+        return insert_glyph!(atlas, c, font)
+    end
+end
+glyph_scale!(c::Char) = glyph_scale!(get_texture_atlas(), c, DEFAULT_FONT_FACE)
+glyph_uv_width!(c::Char) = glyph_uv_width!(get_texture_atlas(), c, DEFAULT_FONT_FACE)
 
-	bearing 			= extent.horizontal_bearing
-	uv_offset_width 	= Vec4f0(relative_start..., relative_width...)
-	i = texture_atlas.index
-	push!(texture_atlas.attributes, uv_offset_width)
-    push!(texture_atlas.scale, Vec2f0(real_width))
-	texture_atlas.index = i+1
-	i0 					= i-1# zero indexed for OpenGL and ascii compatibility
-	FONT_EXTENDS[i0] 	= extent # extends get saved for the attribute id
-	ID_TO_CHAR[i0] 		= glyph
-	return i0
+function glyph_uv_width!(atlas::TextureAtlas, c::Char, font)
+    atlas.attributes[glyph_index!(atlas, c, font)]
+end
+function glyph_scale!(atlas::TextureAtlas, c::Char, font)
+    atlas.scale[glyph_index!(atlas, c, font)]
+end
+function glyph_extent!(atlas::TextureAtlas, c::Char, font)
+    atlas.extent[glyph_index!(atlas, c, font)]
+end
+
+bearing(extent) = Point2f0(extent.horizontal_bearing[1], -(extent.scale[2]-extent.horizontal_bearing[2]))
+function glyph_bearing!{T}(atlas::TextureAtlas, c::Char, font, scale::T)
+    T(bearing(atlas.extent[glyph_index!(atlas, c, font)])) .* scale
+end
+function glyph_advance!{T}(atlas::TextureAtlas, c::Char, font, scale::T)
+    T(atlas.extent[glyph_index!(atlas, c, font)].advance) .* scale
 end
 
 
-Base.get!(texture_atlas::TextureAtlas, glyphs, font) =
-	map(glyph->get!(texture_atlas, glyph, font), collect(glyphs))
+insert_glyph!(atlas::TextureAtlas, glyph::Char, font) = get!(atlas.mapping, (glyph, font)) do
+	uv, rect, extent, width_nopadd = render(atlas, glyph, font)
+	tex_size 	    = Vec2f0(size(atlas.images))
+	uv_start 	    = Vec2f0(uv.x, uv.y)
+	uv_width 	    = Vec2f0(uv.w, uv.h)
+	real_heightpx   = width_nopadd[2]
+	halfpadding     = (uv_width - width_nopadd) / 2f0
+	real_start 	    = uv_start + halfpadding # include padding
+	relative_start  = real_start ./ tex_size # use normalized texture coordinates
+	relative_width  = (real_start+width_nopadd) ./ tex_size
 
-map_fonts(
-		text,
-		font 			= DEFAULT_FONT_FACE,
-        texture_atlas 	= get_texture_atlas()
-        ) = get!(texture_atlas, text, font)
-get_font!(char::Char,
-			font 			= DEFAULT_FONT_FACE,
-	        texture_atlas 	= get_texture_atlas()
-        ) = get!(texture_atlas, char, font)
-
+	bearing 	    = extent.horizontal_bearing
+	uv_offset_width = Vec4f0(relative_start..., relative_width...)
+	i               = atlas.index
+	push!(atlas.attributes, uv_offset_width)
+    push!(atlas.scale, Vec2f0(width_nopadd))
+	push!(atlas.extent, extent)
+    atlas.index = i+1
+    return i
+end
 
 function sdistancefield(img, min_size=32)
 	w, h = size(img)
@@ -126,11 +135,12 @@ function sdistancefield(img, min_size=32)
 	in_or_out = Bool[begin
 		x, y = i-halfpad, j-halfpad
 		if checkbounds(Bool, size(img), x,y)
-			img[x,y] >  0.5
+			img[x,y] >= 1.0
 		else
 			false
 		end
 	end for i=1:w, j=1:h]
+
 	sd = sdf(in_or_out)
 	for i=1:restrict_steps
 		w1, h1 = Images.restrict_size(w1), Images.restrict_size(h1)
@@ -143,19 +153,19 @@ function sdistancefield(img, min_size=32)
 	Float16[clamp(sd[i,j]/maxlen, -1, 1) for i=1:sw, j=1:sh], Vec2f0(w1, h1), (2^restrict_steps)
 end
 
-function GLAbstraction.render(glyph::Char, font, ta::TextureAtlas, face=DEFAULT_FONT_FACE)
+function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
 	#select_font_face(cc, font)
-	bitmap, extent = renderface(face, glyph, (128, 128))
-	sd, real_size, scaling_factor = sdistancefield(bitmap)
+	bitmap, extent = renderface(font, glyph, (128, 128))
+	sd, width_nopadd, scaling_factor = sdistancefield(bitmap)
 	if min(size(bitmap)...) > 0
-		s = real_size ./ Vec2f0(size(bitmap))
+		s = width_nopadd ./ Vec2f0(size(bitmap))
 		extent = extent .* s
 	else
 		extent = extent ./ Vec2f0(2^2)
 	end
 	rect = SimpleRectangle(0, 0, size(sd)...)
-    uv   = push!(ta.rectangle_packer, rect).area #find out where to place the rectangle
-    uv == nothing && error("texture atlas is too small.") #TODO resize surface
-    ta.images[uv] = sd
-    uv, rect, extent, real_size
+    uv   = push!(atlas.rectangle_packer, rect).area #find out where to place the rectangle
+    uv == nothing && error("texture atlas is too small. Resizing not implemented yet. Please file an issue at GLVisualize if you encounter this") #TODO resize surface
+    atlas.images[uv] = sd
+    uv, rect, extent, width_nopadd
 end

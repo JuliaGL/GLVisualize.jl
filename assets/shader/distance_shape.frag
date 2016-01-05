@@ -116,7 +116,7 @@ void main(){
         signed_distance = triangle(f_uv);
 
     float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
-    float inside        = aastep(0.0, 100.0, signed_distance);
+    float inside        = aastep(-0.0, 100.0, signed_distance);
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
     vec4 final_color    = vec4(1,1,1, 0);
 
@@ -126,6 +126,7 @@ void main(){
 
     fragment_color   = final_color;
     fragment_groupid = f_id;
+
     if (fragment_color.a >= 0.8)
         gl_FragDepth = gl_FragCoord.z;
     else
