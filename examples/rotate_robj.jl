@@ -10,7 +10,7 @@ final_rotation 	= map(*, start_rotation, rotation)
 robj 			= visualize(mesh, model=final_rotation)
 
 bb 				= boundingbox(robj).value
-bb_width 		= width(bb)
+bb_width 		= widths(bb)
 lower_corner 	= minimum(bb)
 middle 			= lower_corner + (bb_width/2f0)
 lookatvec 		= minimum(bb) 

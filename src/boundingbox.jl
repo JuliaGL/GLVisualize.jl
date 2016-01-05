@@ -9,18 +9,10 @@ call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 
 
-particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
+particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = glboundingbox(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
 
 Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Texture{Point{3, T2}, 1}, scale::Texture{Vec{3, T3}, 1}, primitive_bb) = AABB{T}(gpu_data(positions), gpu_data(scale), primitive_bb)
 Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Texture{Point{3, T2}, 1}, scale::Vec{3, T3}, primitive_bb) = AABB{T}(gpu_data(positions), scale, primitive_bb)
-
-
-
-function call{T}(Type{AABB{T}}, p::Particles)
-    primitive_bb = AABB{Float32}(p.primitive)
-    AABB{T}(p.positions, p.scale, primitive_bb)
-end
-
 
 
 
@@ -30,7 +22,7 @@ function call{T, T2, T3, N}(::Type{AABB{T}}, positions::Vector{Point{N, T2}}, sc
     pmax = max(primitive_scaled_min, primitive_scaled_max)
     pmin = min(primitive_scaled_min, primitive_scaled_max)
     main_bb = AABB{T}(positions)
-    AABB{T}(minimum(main_bb) + pmin, maximum(main_bb) + pmax)
+    glboundingbox(minimum(main_bb) + pmin, maximum(main_bb) + pmax)
 end
 function call{T, T2, T3, N}(::Type{AABB{T}}, positions::Vector{Point{N, T2}}, scale::Vector{Vec{N, T3}}, primitive_bb)
     _max = Vec{N, T}(typemin(T))
@@ -44,5 +36,5 @@ function call{T, T2, T3, N}(::Type{AABB{T}}, positions::Vector{Point{N, T2}}, sc
         _min = min(_min, p + s_min_r)
         _max = max(_max, p + s_max_r)
     end
-    AABB{T}(_min, _max)
+    glboundingbox(_min, _max)
 end

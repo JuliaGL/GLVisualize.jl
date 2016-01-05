@@ -1,5 +1,5 @@
 visualize_default(vol::Union{Array{Float32, 3}, Texture{Float32, 3}}, ::Style{:volume2}, kw_args=Dict()) = Dict(
-    :hull                   => GLPlainMesh(Cube(Vec3(0), Vec3(1))),
+    :hull                   => GLPlainMesh(AABB{Float32}(Vec3f0(0), Vec3f0(1))),
     :u_shape                => Vec3(size(vol)...),
     :light_position         => Vec3(0.25, 1.0, 3.0),
     :color                  => RGBA{U8}[RGBA{U8}(1,0,0,1), RGBA{U8}(1,1,0,1), RGBA{U8}(0,1,0,1), RGBA{U8}(0,1,1,1), RGBA{U8}(0,0,1,1)],

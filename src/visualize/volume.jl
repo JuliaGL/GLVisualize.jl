@@ -20,7 +20,7 @@ function visualize_default{T <: Union{Colorant, AbstractFloat}}(vol::Union{Array
     dims = get(kw_args, :dimensions, Vec3f0(1,1,1))
     Dict(
         :dimensions       => dims,
-        :hull             => GLUVWMesh(Cube{Float32}(Vec3f0(0), dims)),
+        :hull             => GLUVWMesh(AABB{Float32}(Vec3f0(0), dims)),
         :light_position   => Vec3f0(0.25, 1.0, 3.0),
         :color            => default(Vector{RGBA}, s),
         :light_intensity  => Vec3f0(15.0),

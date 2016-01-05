@@ -67,7 +67,7 @@ function visualize(
     robj = assemble_instanced(
         glyphs, data,
         "util.vert", "text.vert", "distance_shape.frag",
-        boundingbox=const_lift(*, model, AABB{Float32}(bb.minimum, Vec3f0(bb.maximum)+Vec3f0(extent.advance..., 0f0)))
+        boundingbox=const_lift(*, model, AABB{Float32}(minimum(bb), Vec3f0(maximum(bb))+Vec3f0(extent.advance..., 0f0)))
     )
     empty!(robj.prerenderfunctions)
     prerender!(robj,

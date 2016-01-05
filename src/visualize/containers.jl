@@ -14,7 +14,7 @@ function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, customizatio
 	for ind=1:length(grid)
 		robj 	= grid[ind]
 		bb_s 	= boundingbox(robj)
-		w 		= const_lift(width, bb_s)
+		w 		= const_lift(widths, bb_s)
 		model_scale = const_lift(max_xyz_inv, w, Vec{N, Int}(1)...)
 		robj[:model] = const_lift(grid_translation, scale, model_scale, bb_s, robj[:model], ind2sub(size(grid), ind)...) # update transformation matrix
 	end
@@ -26,7 +26,7 @@ visualize_default{T <: Composable}(::Vector{T}, ::Style, kw_args...) = Dict(
 )
 y_coord(x) = x[2]
 function list_translation(y_start, x_align, bb)
-	w = width(bb)[2]
+	w = widths(bb)[2]
 	x_move = x_align - minimum(bb)[1]
 	translationmatrix(Vec3f0(x_move, y_start-w, 0))
 end
@@ -40,7 +40,7 @@ function visualize{T <: Composable}(list::Vector{T}, s::Style, customizations=vi
 	for elem in list[2:end]
 		bb_s 		 = boundingbox(elem)
 		transformation(elem, preserve(const_lift(list_translation, y_start, x_align, bb_s)))
-		y_width 	 = const_lift(y_coord, const_lift(width, bb_s))
+		y_width 	 = const_lift(y_coord, const_lift(widths, bb_s))
 		y_start 	 = const_lift(-, y_start, const_lift(+, y_width, gap))
 	end
 	Context(list...)

@@ -41,13 +41,6 @@ AND(a,b) = a&&b
 OR(a,b) = a||b
 export OR
 
-call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
-call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
-
-
-
-call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
-call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
 
 function GLVisualizeShader(shaders...; attributes...)
     shaders = map(shader -> load(joinpath(shaderdir(), shader)), shaders)
@@ -57,10 +50,7 @@ function GLVisualizeShader(shaders...; attributes...)
     )
 end
 
-function default_boundingbox(main, model)
-    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    const_lift(*, model, AABB{Float32}(main))
-end
+
 function assemble_std(main, dict, shaders...; boundingbox=default_boundingbox(main, get(dict, :model, eye(Mat{4,4,Float32}))), primitive=GL_TRIANGLES)
     program = GLVisualizeShader(shaders..., attributes=dict)
     std_renderobject(dict, program, boundingbox, primitive, main)
@@ -91,8 +81,42 @@ function x_partition(area, percent)
 end
 
 
+glboundingbox(mini, maxi) = AABB{Float32}(Vec3f0(mini), Vec3f0(maxi)-Vec3f0(mini))
+function default_boundingbox(main, model)
+    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
+    const_lift(*, model, AABB{Float32}(main))
+end
+call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
+call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
 
-particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = AABB{T}(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
+call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
+call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
+Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Texture{Point{3, T2}, 1}, scale::Texture{Vec{3, T3}, 1}, primitive_bb) = AABB{T}(gpu_data(positions), gpu_data(scale), primitive_bb)
+Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Texture{Point{3, T2}, 1}, scale::Vec{3, T3}, primitive_bb) = AABB{T}(gpu_data(positions), scale, primitive_bb)
+
+function Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Vector{Point{3, T2}}, scale::Vec{3, T3}, primitive_bb)
+    primitive_scaled_min = minimum(primitive_bb) .* scale
+    primitive_scaled_max = maximum(primitive_bb) .* scale
+    pmax = max(primitive_scaled_min, primitive_scaled_max)
+    pmin = min(primitive_scaled_min, primitive_scaled_max)
+    main_bb = AABB{T}(positions)
+    glboundingbox(minimum(main_bb) + pmin, maximum(main_bb) + pmax)
+end
+function Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Vector{Point{3, T2}}, scale::Vector{Vec{3, T3}}, primitive_bb)
+    _max = Vec{3, T}(typemin(T))
+    _min = Vec{3, T}(typemax(T))
+    for (p, s) in zip(positions, scale)
+        p = Vec{3, T}(p) 
+        s_min = Vec{3, T}(s) .* minimum(primitive_bb)
+        s_max = Vec{3, T}(s) .* maximum(primitive_bb)
+        s_min_r = min(s_min, s_max)
+        s_max_r = max(s_min, s_max)
+        _min = min(_min, p + s_min_r)
+        _max = max(_max, p + s_max_r)
+    end
+    glboundingbox(_min, _max)
+end
+particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = glboundingbox(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
 
 @enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
 

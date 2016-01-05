@@ -156,7 +156,7 @@ function image_test_data(N)
 	))
 end
 
-
+#=
 push!(TEST_DATA2D, image_test_data(20)...)
 let gif = load("doge.png").data, N = 512, particle_color = Texture(map(x->RGBA{U8}(x.r, x.g, x.b, 1.), colormap("Blues", N)))
 
@@ -183,7 +183,7 @@ push!(TEST_DATA2D, visualize(
 	texture_fill=Texture(gif), scale=Vec2f0(50)),
 )
 end
-
+=#
 curve_data(i) = Point2f0[Point2f0(sin(x/i)*250, x) for x=1:1024]
 push!(TEST_DATA2D, visualize(const_lift(curve_data, bounce(20f0:0.1f0:1024f0)), :lines))
 

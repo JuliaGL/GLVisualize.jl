@@ -9,8 +9,8 @@ function visualize(vectorfield::Texture{Vec{3, Float32}, 3}, s::Style, customiza
     @materialize! color, primitive, boundingbox = customizations
     data = merge(Dict(
         :vectorfield    => vectorfield,
-        :cube_min       => boundingbox.minimum,
-        :cube_max       => boundingbox.maximum,
+        :cube_min       => minimum(boundingbox),
+        :cube_max       => maximum(boundingbox),
         :color          => Texture(color),
     ), customizations, collect_for_gl(primitive))
     # Depending on what the is, additional values have to be calculated

@@ -1,4 +1,4 @@
-visualize_default(::AABB{Float32}, ::Style{:grid}, kw_args=Dict()) = Dict(
+svisualize_default(::AABB{Float32}, ::Style{:grid}, kw_args=Dict()) = Dict(
     :bg_colorc =>  RGBA{Float32}(0.8,0.8,0.8,1.0),
     :grid_color => RGBA{Float32}(0.9,0.9,0.9,1.0),
     :grid_thickness => Vec3f0(2), 
