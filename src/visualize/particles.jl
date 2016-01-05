@@ -195,40 +195,28 @@ sprites(p, s, data) = @gen_defaults! data begin
 end
 
 
-function _default{T<:AbstractString}(main::Signal{T}, s::Style, data::Dict)
-    atlas    = get_texture_atlas()
-    char_id  = preserve(map(process_for_gl, main))
-    t_uv     = GLBuffer(Vec4f0[atlas.attributes[id+1] for id in char_id.value])
-    t_scale  = GLBuffer(Vec2f0[atlas.scale[id+1] for id in char_id.value])
-    position = GLBuffer(map(Point2f0, calc_position(char_id.value)))
-    vals     = map(char_id) do cid
-        update!(t_uv    , Vec4f0[atlas.attributes[id+1] for id in cid])
-        update!(t_scale , Vec2f0[atlas.scale[id+1] for id in cid])
-        update!(position, map(Point2f0, calc_position(cid)))
-        nothing
-    end
-    preserve(vals)
+
+function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
+
     @gen_defaults! data begin
-        scale           = t_scale   => GLBuffer
-        uv_offset_width = t_uv      => GLBuffer
-        distancefield   = atlas.images
-        stroke_width    = 0f0
-        glow_width      = 0f0
+        scale          = Vec2f0(1)   => GLBuffer
+        start_position = Point2f0(0) => GLBuffer
+        atlas          = get_texture_atlas()
+        distancefield  = atlas.images
+        stroke_width   = 0f0
+        glow_width     = 0f0
+        font           = DEFAULT_FONT_FACE
     end
-    _default((DISTANCEFIELD, position), s, data)
-end
-function _default(main::AbstractString, s::Style, data::Dict)
-    atlas    = get_texture_atlas()
-    font     = DEFAULT_FONT_FACE
-    t_uv     = Vec4f0[glyph_uv_width!(atlas, c, font) for c=main]
-    t_scale  = Vec2f0[glyph_scale!(atlas, c, font).*Vec2f0(0.5) for c=main]
-    position = calc_position(main, Point2f0(0), Vec2f0(0.5), font, atlas)
-    @gen_defaults! data begin
-        scale           = t_scale   => GLBuffer
-        uv_offset_width = t_uv      => GLBuffer
-        distancefield   = atlas.images
-        stroke_width    = 0f0
-        glow_width      = 0f0
+
+    t_uv     = const_lift(main) do str
+        Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
     end
+    t_scale  = const_lift(main) do str
+        Vec2f0[glyph_scale!(atlas, c, font).*scale for c=str]
+    end
+    data[:scale]           = t_scale
+    data[:uv_offset_width] = t_uv
+    position = const_lift(calc_position, main, start_position, scale, font, atlas)
+
     _default((DISTANCEFIELD, position), s, data)
 end
