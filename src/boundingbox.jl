@@ -1,5 +1,7 @@
+AbsoluteRectangle{N,T}(mini::Vec{N,T}, maxi::Vec{N,T}) = HyperRectangle{N,T}(mini, maxi-mini)
+
 call(::Type{AABB}, a) = AABB{Float32}(a)
-call{T}(B::Type{AABB{T}}, a::Cube) = B(minimum(a), maximum(a))
+call{T}(B::Type{AABB{T}}, a::Cube) = B(origin(a), widths(a))
 call{T}(B::Type{AABB{T}}, a::AbstractMesh) = B(vertices(a))
 call{T}(B::Type{AABB{T}}, a::NativeMesh) = B(gpu_data(a.data[:vertices]))
 
@@ -16,7 +18,7 @@ function call{T}(B::Type{AABB{T}}, positions::PositionIterator, scale::ScaleIter
         _min    = min(_min, p + s_min_r)
         _max    = max(_max, p + s_max_r)
     end
-    B(_min, _max)
+    AbsoluteRectangle(_min, _max)
 end
 
 function Base.maximum(scale::ScaleIterator)
@@ -51,5 +53,5 @@ function call{T, P<:Grid}(B::Type{AABB{T}}, positions::PositionIterator{P}, scal
     pmax = maximum(primitive) .* smax
     _min = Vec3f0(map(first, grid.dims)..., ntuple(x->0f0, 3-N)...)
     _max = Vec3f0(map(last,  grid.dims)..., ntuple(x->0f0, 3-N)...)
-    return B(_min + pmin, _max + pmax)
+    return AbsoluteRectangle(_min + pmin, _max + pmax)
 end

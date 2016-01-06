@@ -6,7 +6,7 @@ end
 ndims{N,T}(::Grid{N,T}) = N
 
 Grid(ranges::Range...) = Grid(ranges)
-function Grid{T, N}(a::Array{T, N})
+function Grid{N, T}(a::Array{T, N})
 	s = Vec{N, Float32}(size(a))
 	smax = maximum(s)
 	s = s./smax
@@ -24,6 +24,13 @@ function Grid{T, N, X}(a::Array{T, N}, ranges::NTuple{N, NTuple{2, X}})
 	end)
 end
 Base.length(p::Grid) = prod(map(length, p.dims))
+Base.size(p::Grid) = map(length, p.dims)
+function Base.getindex{N,T}(p::Grid{N,T}, i)
+    inds = ind2sub(size(p), i)
+    Point{N, eltype(T)}(ntuple(Val{N}) do i
+        p.dims[i][inds[i]]
+    end)
+end
 GLAbstraction.isa_gl_struct(x::Grid) = true
 GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"
 function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N,T}, uniform_name::Symbol)
@@ -96,13 +103,13 @@ getindex{S<:Vec,X,Y,Z}(x::ScaleIterator{S,X,Y,Z}, i)            = Vec(get_scale(
 
 
 
+
 immutable PositionIterator{P<:PositionTypes, PX<:PositionTypes, PY<:PositionTypes, PZ<:PositionTypes} <: XYZIterator
     position::P
     x::PX
     y::PY
     z::PZ
 end
-
 
 get_pos(x, i) = x
 get_pos(x::Array, i) = x[i]
@@ -111,6 +118,11 @@ getindex{T<:Vector}(x::PositionIterator{T, Void, Void, Void}, i) = to3dims(get_p
 getindex{T<:Point}(x::PositionIterator{T, Void, Void, Void}, i)  = to3dims(x.position)
 getindex{S<:Point,X,Y,Z}(x::PositionIterator{S,X,Y,Z}, i)        = Point(get_pos(x.x,i), get_pos(x.y,i), get_pos(x.z,i))
 getindex{X,Y,Z}(x::PositionIterator{Void,X,Y,Z}, i)              = Point(get_pos(x.x,i), get_pos(x.y,i), get_pos(x.z,i))
+
+function getindex{T<:Grid{2}, Z}(x::PositionIterator{T,Void,Void,Z}, i)
+    xy = x.position[i]
+    Point{3, eltype(Z)}(xy, get_pos(x.z,i))
+end
 
 
 
