@@ -5,6 +5,8 @@ function volume_data(N)
 	max 	= maximum(volume)
 	min 	= minimum(volume)
 	volume 	= (volume .- min) ./ (max .- min)
+    println(typeof(volume))
+    volume
 end
 
 robj = visualize(volume_data(128))

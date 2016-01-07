@@ -35,7 +35,7 @@ function visualize{T <: Composable}(list::Vector{T}, s::Style, customizations=vi
     @materialize! gap = customizations
     elem 	= first(list)
     bb_s 	= boundingbox(elem)
-	y_start = const_lift(-, const_lift(y_coord, const_lift(getfield, bb_s, :minimum)), gap)
+	y_start = const_lift(-, const_lift(y_coord, const_lift(minimum, bb_s)), gap)
 	x_align = const_lift(first, const_lift(minimum, bb_s))
 	for elem in list[2:end]
 		bb_s 		 = boundingbox(elem)
