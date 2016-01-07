@@ -7,10 +7,9 @@ function volume_data(N)
 	volume 	= (volume .- min) ./ (max .- min)
 end
 
-robj = visualize(volume_data(128))
 view(visualize([
-	visualize(robj[:intensities], :iso),
-	robj
+	visualize(volume_data(128), :iso, isovalue=0.5),
+	visualize(volume_data(128))
 ]))
 
 r()

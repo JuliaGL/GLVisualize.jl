@@ -8,10 +8,6 @@ _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict) = _default((
 _default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(0.5, 0.5, 1.0)), main), s, data)
 _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
 
-function create_minmax{T<:Vec,N}(x::Array{T,N})
-    _norm = map(norm, x)
-    Vec2f0(minimum(_norm), maximum(_norm))
-end
 
 _default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict) = _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
 _default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default(('⬆', main), s, data)
@@ -19,7 +15,7 @@ _default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default(('⬆'
 function _default{P<:Primitives3D, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
     data[:rotation] = const_lift(vec, main[2])
     get!(data, :color_norm) do
-        const_lift(create_minmax, main[2])
+        const_lift(extrema2f0, main[2])
     end
     get!(data, :color, Texture(default(Vector{RGBA})))
     _default((main[1], Grid(main[2])), s, data)
@@ -27,7 +23,7 @@ end
 function _default{P<:Sprites, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
     @gen_defaults! data begin
         rotation   = const_lift(vec, main[2])
-        color_norm = const_lift(create_minmax, main[2])
+        color_norm = const_lift(extrema2f0, main[2])
         color      = Texture(default(Vector{RGBA}))
         xyrange    = ntuple(x->(0,1), N)
     end

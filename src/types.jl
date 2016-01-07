@@ -1,4 +1,5 @@
 @enum Shape CIRCLE RECTANGLE ROUNDED_RECTANGLE DISTANCEFIELD TRIANGLE
+@enum RaymarchAlgorithm IsoValue Absorption MaximumIntensityProjection
 
 immutable Grid{N, T <: Range}
     dims::NTuple{N, T}

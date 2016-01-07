@@ -1,6 +1,11 @@
 AbsoluteRectangle{N,T}(mini::Vec{N,T}, maxi::Vec{N,T}) = HyperRectangle{N,T}(mini, maxi-mini)
 
 call(::Type{AABB}, a) = AABB{Float32}(a)
+function call{T}(B::Type{AABB{T}}, a::Pyramid)
+    w,h = a.width/T(2), a.length
+    m = Vec{3,T}(a.middle)
+    B(m-Vec{3,T}(w,w,0), m+Vec{3,T}(w, w, h))
+end
 call{T}(B::Type{AABB{T}}, a::Cube) = B(origin(a), widths(a))
 call{T}(B::Type{AABB{T}}, a::AbstractMesh) = B(vertices(a))
 call{T}(B::Type{AABB{T}}, a::NativeMesh) = B(gpu_data(a.data[:vertices]))

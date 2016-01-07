@@ -1,6 +1,6 @@
 {{GLSL_VERSION}}
 
-out vec4 frag_color;
+out vec4 fragment_color;
 in vec3 frag_vertposition;
 
 uniform sampler3D intensities;
@@ -121,7 +121,7 @@ vec4 volume(vec3 front, vec3 dir, float stepsize)
         for (s; s < num_ligth_samples; ++s) {
             float ld = texture(intensities, lpos).x;
             Tl *= 1.0-absorption*stepsize*ld;
-            if (Tl <= 0.01) 
+            if (Tl <= 0.01)
             lpos += lightDir;
         }
 
@@ -140,7 +140,7 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     pos += stepsize_dir;//apply first, to padd
     vec4 difuse_color   = color_lookup(isovalue, color, color_norm);
 
-    for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir) 
+    for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir)
     {
         float density = texture(intensities, pos/dimensions).x;
         if (density <= 0.0)
@@ -163,13 +163,11 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
     vec3  stepsize_dir  = dir * stepsize;
     vec3  pos           = front;
     int   i             = 0;
-    pos += stepsize_dir;//apply first, to padd
+    //pos += stepsize_dir;//apply first, to padd
     float maximum        = 0.0;
-    for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir) 
+    for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir)
     {
         float density = texture(intensities, pos/dimensions).x;
-        if (density <= 0.0)
-            continue;
         if(maximum < density)
             maximum = density;
     }
@@ -177,11 +175,15 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 }
 void main()
 {
-    if(algorithm == 1)
-        frag_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
-    else if(algorithm == 2)
-        frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+    if(algorithm == 0)
+        fragment_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+    else if(algorithm == 1)
+        fragment_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else
-        frag_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
-}
+        fragment_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
 
+    if (fragment_color.a > 0.0)
+        gl_FragDepth = gl_FragCoord.z;
+    else
+        gl_FragDepth = 1.0;
+}

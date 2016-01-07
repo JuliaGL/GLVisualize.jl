@@ -23,6 +23,13 @@ function assemble_shader(data)
     else
         robj = std_renderobject(data, shader, bb, glp)
     end
+    for key in (:prerender, :postrender)
+        if haskey(data, key)
+            for elem in data[key]
+                robj.(symbol("$(key)functions"))[elem[1]] = length(elem)<2 ? () : elem[2:end]
+            end
+        end
+    end
     Context(robj)
 end
 
@@ -98,3 +105,11 @@ function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
 end
 
 points2f0{T}(positions::Vector{T}, range::Range) = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]
+
+extrema2f0{T<:Intensity,N}(x::Array{T,N}) = Vec2f0(extrema(reinterpret(Float32,x)))
+extrema2f0{T,N}(x::Array{T,N}) = Vec2f0(extrema(x))
+extrema2f0(x::GPUArray) = extrema2f0(gpu_data(x))
+function extrema2f0{T<:Vec,N}(x::Array{T,N})
+    _norm = map(norm, x)
+    Vec2f0(minimum(_norm), maximum(_norm))
+end

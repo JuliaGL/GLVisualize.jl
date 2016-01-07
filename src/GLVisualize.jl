@@ -23,7 +23,6 @@ typealias GLBoundingBox AABB{Float32}
 import Base: merge, convert, show
 
 
-shaderdir() = Pkg.dir("GLVisualize", "src", "shader")
 function assetpath(folders...)
     path = joinpath(dirname(@__FILE__), "..", "assets", folders...)
     isfile(path) || isdir(path) || error("Could not locate file at $path")
@@ -72,8 +71,6 @@ include(joinpath("visualize", "mesh.jl"))
 include(joinpath("visualize", "particles.jl"))
 include(joinpath("visualize", "surface.jl"))
 include(joinpath("visualize", "text.jl"))
-include(joinpath("visualize", "videos.jl"))
-include(joinpath("visualize", "volume.jl"))
 
 include("camera.jl")
 export cubecamera

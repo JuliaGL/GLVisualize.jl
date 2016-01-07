@@ -12,12 +12,11 @@ _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults!
     shader                = GLVisualizeShader("uv_vert.vert", "texture.frag")
 end
 
-Base.extrema{T<:Intensity,N}(x::Array{T,N}) = Vec2f0(extrema(reinterpret(Float32,x)))
 _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
     intensity             = main => Texture
     color                 = default(Vector{RGBA{U8}},s) => Texture
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0,0,size(value(main))...)
-    color_norm	          = const_lift(extrema, main)
+    color_norm	          = const_lift(extrema2f0, main)
     boundingbox 	      = GLBoundingBox(primitive)
     shader                = GLVisualizeShader("uv_vert.vert", "intensity.frag")
     preferred_camera      = :orthographic_pixel
@@ -80,4 +79,44 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     shader                = GLVisualizeShader("parametric.vert", "parametric.frag", view=Dict(
          "function" => bytestring(func.source)
      ))
+end
+
+
+#Volumes
+typealias VolumeElTypes Union{Colorant, AbstractFloat}
+
+const default_style = Style{:default}()
+
+function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::Dict)
+    data = @gen_defaults! data begin
+        isovalue  = 0.5f0
+        algorithm = IsoValue
+    end
+     _default(a, default_style, data)
+end
+
+function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict)
+    data = @gen_defaults! data begin
+        absorption = 1f0
+        algorithm  = Absorption
+    end
+    _default(a, default_style, data)
+end
+
+_default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
+    intensities      = main => Texture
+    dimensions       = Vec3f0(1)
+    hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
+    light_position   = Vec3f0(0.25, 1.0, 3.0)
+    light_intensity  = Vec3f0(15.0)
+
+    color            = default(Vector{RGBA}, s) => Texture
+    color_norm       = const_lift(extrema2f0, main)
+    algorithm        = MaximumIntensityProjection
+    boundingbox      = hull
+    shader           = GLVisualizeShader("util.vert", "volume.vert", "volume.frag")
+    prerender        = (
+        (glEnable,   GL_CULL_FACE),
+        (glCullFace, GL_FRONT),
+    )
 end
