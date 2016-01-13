@@ -1,6 +1,6 @@
 {{GLSL_VERSION}}
 
-out vec4 frag_color;
+out vec4 fragment_color;
 in vec3 frag_vertposition;
 
 uniform sampler3D intensities;
@@ -178,10 +178,15 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 void main()
 {
     if(algorithm == 1)
-        frag_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        fragment_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else if(algorithm == 2)
-        frag_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        fragment_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else
-        frag_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        fragment_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        
+    if (fragment_color.a > 0.0)
+        gl_FragDepth = gl_FragCoord.z;
+    else
+        gl_FragDepth = 1.0;
 }
 

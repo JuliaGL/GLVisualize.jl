@@ -20,6 +20,7 @@ view(robj, position = eyeposition, lookat=middle)
 
 @async r()
 num_img = 1
+isdir("images") || mkdir("images")
 for i=1:4:360
 	yield() # yield to render process
 	sleep(0.01)

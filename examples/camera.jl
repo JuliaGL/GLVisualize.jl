@@ -10,7 +10,7 @@ middle 			= lower_corner + (bb_width/2f0)
 lookatvec 		= minimum(bb) 
 eyeposition 	= middle + (bb_width.*Vec3f0(2,0,2))
 
-const option = 2
+const option = 1
 if option == 1
 	theta = map(every(0.1)) do _
 		Vec3f0(0,0.1,0) # add one degree on the camera y axis per 0.1 seconds

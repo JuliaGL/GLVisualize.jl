@@ -5,7 +5,7 @@ v, colortex = vizzedit(map(RGBA{U8}, colormap("blues", 7)), w)
 function screen(robj, w)
 	bb = boundingbox(robj)
 	area = const_lift(bb) do b
-		m = Vec{2,Int}(b.minimum)
+		m = Vec{2,Int}(minimum(b))
 		SimpleRectangle{Int}(m..., (Vec{2,Int}(maximum(b)+30)-m)...)
 	end
 	s = Screen(w, area=area)

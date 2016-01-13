@@ -1,5 +1,5 @@
 using GLVisualize, GLAbstraction
-w,r = glscreen()
+w,renderloop = glscreen()
 
 # taken from http://docs.enthought.com/mayavi/mayavi/auto/mlab_helper_functions.html#mayavi.mlab.mesh
 dphi, dtheta = pi/250.0f0, pi/250.0f0
@@ -21,4 +21,4 @@ z = r.*sin(phi).*sin(theta)
 
 view(visualize(x,y,z, :surface))
 
-r()
+renderloop()
