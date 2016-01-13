@@ -1,4 +1,15 @@
 using GeometryTypes, Quaternions, GLVisualize, Reactive, GLAbstraction
+
+function Quaternions.qrotation{T<:Real}(axis::Quaternion{T}, theta::T)
+    ax = FixedSizeArrays.Vec{3,T}(axis.v1, axis.v2, axis.v3)
+    qrotation(ax, theta)
+end
+
+function Quaternions.qrotation{T<:Real}(axis::Quaternion{T}, z::Quaternion{T}, theta::T)
+    q = qrotation(axis, theta)
+    q*z*conj(q)
+end
+
 function quaternion_belt_trick()
 
     rad1 = 1f0 # outer circle
