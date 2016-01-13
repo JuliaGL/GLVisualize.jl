@@ -25,6 +25,7 @@ Pkg.checkout("GLWindow")
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("Packing")
 Pkg.checkout("FreeType")
+Pkg.checkout("MeshIO")
 ```
 
 
