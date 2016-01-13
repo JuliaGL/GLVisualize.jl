@@ -287,6 +287,7 @@ function lines3Ddata(N, nloops)
     end
     xyz, colors
 end
+
 facts("Lines") do
     context("viewable creation") do
         lines, colors = lines3Ddata(100, 10)
