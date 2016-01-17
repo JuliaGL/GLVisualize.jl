@@ -133,7 +133,7 @@ end
 typealias GLIntensity Intensity{1, Float32}
 export Intensity,GLIntensity
 
-
+NOT(x) = !x
 immutable GLVisualizeShader <: AbstractLazyShader
     paths  ::Tuple
     kw_args::Vector
