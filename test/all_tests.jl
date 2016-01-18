@@ -160,10 +160,12 @@ push!(TEST_DATA2D, image_test_data(20)...)
 let gif = load("doge.png").data, N = 512, particle_color = texture_buffer(map(x->RGBA{U8}(x.r, x.g, x.b, 1.), colormap("Blues", N)))
 
 s = Vec2f0(15)
+function spiral(i, start_radius, offset)
+	Point2f0(sin(i), cos(i)) * (start_radius + ((i/2pi)*offset))
+end
 # 2D particles
-particle_data2D(i, N) = Point2f0[rand(Point2f0, -10f0:eps(Float32):10f0) for x=1:N]
-const p2ddata = foldp(+, Point2f0[rand(Point2f0, 0f0:eps(Float32):1000f0) for x=1:N],
-	const_lift(particle_data2D, bounce(1f0:1f0:50f0), N))
+particle_data2D(i, N) = Point2f0[spiral(i+x, 3, 10) for x=1:N]
+const p2ddata = const_lift(particle_data2D, bounce(0f0:0.1f0:30f0), N)
 particle_robj = visualize(p2ddata, scale=s)
 
 
