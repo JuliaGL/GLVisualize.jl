@@ -49,9 +49,9 @@ push!(TEST_DATA, particle_data(1024))
 particle_color_pulse(x) = RGBA(x, 0f0, 1f0-x, 1f0)
 push!(TEST_DATA,  visualize(
 	Point3f0[rand(Point3f0, 0f0:0.001f0:2f0) for i=1:1024],
-	primitive 	= GLNormalMesh("cat.obj"),
-	color 		= const_lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)),
-	scale 		= Vec3f0(0.2)
+    primitive = GLNormalMesh("cat.obj"),
+    color     = const_lift(particle_color_pulse, bounce(0f0:0.1f0:1f0)),
+	scale 	  = Vec3f0(0.2)
 ))
 
 println("sierpinski")
@@ -156,9 +156,8 @@ function image_test_data(N)
 	))
 end
 
-#=
 push!(TEST_DATA2D, image_test_data(20)...)
-let gif = load("doge.png").data, N = 512, particle_color = Texture(map(x->RGBA{U8}(x.r, x.g, x.b, 1.), colormap("Blues", N)))
+let gif = load("doge.png").data, N = 512, particle_color = texture_buffer(map(x->RGBA{U8}(x.r, x.g, x.b, 1.), colormap("Blues", N)))
 
 s = Vec2f0(15)
 # 2D particles
@@ -171,24 +170,21 @@ particle_robj = visualize(p2ddata, scale=s)
 
 
 push!(TEST_DATA2D, particle_robj)
-push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, color=particle_color, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
-push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED), shape=Cint(CIRCLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(OUTLINED), shape=Cint(ROUNDED_RECTANGLE)))
+push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, color=particle_color, style=Cint(FILLED), shape=Cint(CIRCLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED), shape=Cint(RECTANGLE)))
 push!(TEST_DATA2D, visualize(particle_robj[:positions], scale=s, style=Cint(FILLED)|Cint(FILLED)|Cint(GLOWING), shape=Cint(ROUNDED_RECTANGLE)))
-	
+
 push!(TEST_DATA2D, visualize(
-	particle_robj[:positions], 
-	style=Cint(FILLED)|Cint(FILLED)|Cint(TEXTURE_FILL), 
+	particle_robj[:positions],
+	style=Cint(FILLED)|Cint(TEXTURE_FILL),
 	shape=Cint(ROUNDED_RECTANGLE),
 	texture_fill=Texture(gif), scale=Vec2f0(50)),
 )
 end
-=#
 curve_data(i) = Point2f0[Point2f0(sin(x/i)*250, x) for x=1:1024]
 push!(TEST_DATA2D, visualize(const_lift(curve_data, bounce(20f0:0.1f0:1024f0)), :lines))
 
 # text
 include("utf8_example_text.jl")
 push!(TEST_DATA2D, visualize(utf8_example_text))
-
-
