@@ -22,7 +22,7 @@ Pkg.add("GLVisualize")
 
 
 Known problems:
-- On linux, particles don't seem to work whenever you don't pass `color=texture_buffer(Vector{RGBA{Float32}})` to the `visualize` keyword arguments. This is fixed on branch `next2`
+- On linux, particles don't seem to work whenever you don't pass `color=texture_buffer(Vector{RGBA{Float32}})` to the `visualize` keyword arguments (assigning every particle a seperate color). This is fixed on branch `next2`
 - On Mac OS, you need to make sure that Homebrew.jl works correctly, which was not the case on some tested machines (needed to checkout master and then rebuild)
 - GLFW needs `cmake` and `xorg-dev` `libglu1-mesa-dev` on linux (can be installed via `sudo apt-get install xorg-dev libglu1-mesa-dev`).
 - VideoIO and FreeType seem to be also problematic on some platforms. There isn't a fix for all situations. If these package fail, try `Pk.update();Pkg.build("FailedPackage")`.If this still fails, report an issue on Github!
