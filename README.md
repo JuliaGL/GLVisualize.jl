@@ -2,7 +2,7 @@
 
 GLVisualize is an interactive 2D/3D visualization library completely written in OpenGL and Julia.
 
-It is actively developed but it isn't officially released yet, since there are still quite a few 
+It is actively developed but it isn't officially released yet, since there are still quite a few
 inconsistencies and missing documentations.
 A lot of things already work nicely, so besides missing documentations and a high probability that the API will change in the near future, there is no real reason why you shouldn't give it a try.
 You can look at `test/runtests.jl` and the `example` folder, to get a sense of how you can use GLVisualize.
@@ -18,19 +18,11 @@ Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.checkout("Reactive")
-Pkg.checkout("GLVisualize")
-Pkg.checkout("GLAbstraction")
-Pkg.checkout("GLWindow")
-Pkg.checkout("GeometryTypes")
-Pkg.checkout("Packing")
-Pkg.checkout("FreeType")
-Pkg.checkout("MeshIO")
 ```
 
 
 Known problems:
-
+- On linux, particles don't seem to work whenever you don't pass `color=texture_buffer(Vector{RGBA{Float32}})` to the `visualize` keyword arguments. This is fixed on branch `next2`
 - On Mac OS, you need to make sure that Homebrew.jl works correctly, which was not the case on some tested machines (needed to checkout master and then rebuild)
 - GLFW needs `cmake` and `xorg-dev` `libglu1-mesa-dev` on linux (can be installed via `sudo apt-get install xorg-dev libglu1-mesa-dev`).
 - VideoIO and FreeType seem to be also problematic on some platforms. There isn't a fix for all situations. If these package fail, try `Pk.update();Pkg.build("FailedPackage")`.If this still fails, report an issue on Github!
