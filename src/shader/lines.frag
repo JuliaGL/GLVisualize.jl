@@ -55,5 +55,9 @@ void main(){
         fragment_color   = vec4(f_color.rgb, f_color.a*aastep(0.2, 0.8, f_uv.y));
     }
     fragment_groupid = f_id;
+    if (fragment_color.a > 0.0)
+        gl_FragDepth = gl_FragCoord.z;
+    else
+        gl_FragDepth = 1.0;
 }
 
