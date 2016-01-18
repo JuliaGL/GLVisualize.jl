@@ -1,3 +1,4 @@
+println("surface")
 function arbitrary_surface_data(N)
 	h = 1./N
 	r = h:h:1.
@@ -10,9 +11,33 @@ function arbitrary_surface_data(N)
 	visualize(x, y, z, :surface)
 end
 push!(TEST_DATA, arbitrary_surface_data(100))
+
+# surface plot
+function xy_data(x,y,i, N)
+	x = ((x/N)-0.5f0)*i
+	y = ((y/N)-0.5f0)*i
+	r = sqrt(x*x + y*y)
+	Float32(sin(r)/r)
+end
+generate(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
+
+function surface_data(N)
+	heightfield = const_lift(generate, bounce(1f0:200f0), N)
+	return visualize(heightfield, :surface, color_norm=Vec2f0(-0.21, 1.0))
+end
+
+a = colormap("RdBu")
+b = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), a)
+c = colormap("Blues")
+d = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), c)
+push!(TEST_DATA, visualize(generate(20f0, 128), :surface, color=b))
+push!(TEST_DATA, visualize(generate(25f0, 128), :surface, color=d))
+push!(TEST_DATA, surface_data(128))
+
 println("Barplot")
 # Barplot
 push!(TEST_DATA, visualize(Float32[(sin(i/10f0) + cos(j/2f0))/4f0 + 1f0 for i=1:50, j=1:50]))
+push!(TEST_DATA, visualize(const_lift(generate, bounce(5f0:200f0), 47), scale=Vec3f0(0.03, 0.03,1.0)))
 println("3d dot particles")
 
 # 3d dot particles
@@ -84,27 +109,7 @@ end
 push!(TEST_DATA, sierpinski_data(4))
 
 
-println("surface")
-# surface plot
-function xy_data(x,y,i, N)
-	x = ((x/N)-0.5f0)*i
-	y = ((y/N)-0.5f0)*i
-	r = sqrt(x*x + y*y)
-	Float32(sin(r)/r)
-end
-generate(i, N) = Float32[xy_data(Float32(x),Float32(y),Float32(i), N) for x=1:N, y=1:N]
 
-function surface_data(N)
-	heightfield = const_lift(generate, bounce(1f0:200f0), N)
-	return visualize(heightfield, :surface, color_norm=Vec2f0(-0.21, 1.0))
-end
-a = colormap("RdBu")
-b = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), a)
-c = colormap("Blues")
-d = map(x->RGBA{U8}(x.r, x.g, x.b, 1.), c)
-push!(TEST_DATA, visualize(generate(20f0, 128), :surface, color=b))
-push!(TEST_DATA, visualize(generate(25f0, 128), :surface, color=d))
-push!(TEST_DATA, surface_data(128))
 
 println("vectorfielddata")
 
@@ -148,15 +153,22 @@ push!(TEST_DATA2D, visualize(dfdata, :distancefield))
 
 
 function image_test_data(N)
-	test_image_dir = Pkg.dir("GLVisualize", "test", "test_images")
-	abs_paths = map(x->joinpath(test_image_dir, x), readdir(test_image_dir))
-	return map(visualize, (
-		RGBA{U8}[RGBA{U8}(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N],
-		#map(load, abs_paths)...
-	))
+    img = RGBA{U8}[RGBA{U8}(abs(sin(i)), abs(sin(j)), abs(cos(i)), abs(sin(j)*cos(i))) for i=1:0.1:N, j=1:0.1:N]
+	return visualize(img)
+end
+push!(TEST_DATA2D, image_test_data(20))
+
+test_image_dir = Pkg.dir("GLVisualize", "test", "test_images")
+abs_paths = map(x->joinpath(test_image_dir, x), readdir(test_image_dir))
+try
+    append!(TEST_DATA2D, map(visualize, map(load, abs_paths)))
+catch e
+    println("Seems like your image loading library doesn't work properly.")
+    println("If you don't need image IO support, you can ignore this. Error:")
+    println(e)
 end
 
-push!(TEST_DATA2D, image_test_data(20)...)
+
 let gif = load("doge.png").data, N = 512, particle_color = texture_buffer(map(x->RGBA{U8}(x.r, x.g, x.b, 1.), colormap("Blues", N)))
 
 s = Vec2f0(15)
