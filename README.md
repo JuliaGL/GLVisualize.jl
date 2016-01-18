@@ -28,5 +28,5 @@ Known problems:
 - VideoIO and FreeType seem to be also problematic on some platforms. There isn't a fix for all situations. If these package fail, try `Pk.update();Pkg.build("FailedPackage")`.If this still fails, report an issue on Github!
 
 Try `Pkg.test("GLVisualize")` to see if things work! If things are working, you should see (after some delay for compilation) an animation pop up in a window with a spiral of cubes moving over a background of several other images and visualizations. Something like this:
-![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/testimage.png?raw=true)
+![](https://github.com/JuliaGL/GLVisualize.jl/blob/master/docs/testsuite.gif?raw=true)
 Close the window when you tire of watching it, and you should see a "tests passed" message.
