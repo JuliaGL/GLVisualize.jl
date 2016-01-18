@@ -1,4 +1,4 @@
-julia 0.4-
+julia 0.4
 
 GLFW
 GLWindow
@@ -13,8 +13,6 @@ Quaternions
 Compat
 FixedPointNumbers
 FileIO
-FreeType
+Packing
 SignedDistanceFields
 Images
-Packing
-MeshIO
