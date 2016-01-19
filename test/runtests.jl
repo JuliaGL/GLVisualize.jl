@@ -12,8 +12,8 @@ number_of_windows = 6
 # OpenGL being present. This is important for travis, since we don't have OpenGL
 # there
 try
-    window, renderloop = glscreen()
-    @async renderloop()
+    window = glscreen()
+    @async GLWindow.renderloop(window)
     has_opengl = true
 catch e
     warn(string(
@@ -23,14 +23,12 @@ catch e
         "\n", e
     ))
 end
-if has_opengl
-    windows = ntuple(number_of_windows) do i
-        a = map(window.area) do wa
-            h = wa.h÷number_of_windows
-            SimpleRectangle(wa.x, (i-1)h, wa.w, h)
-        end
-        Screen(window, area=a)
+windows = ntuple(number_of_windows) do i
+    a = map(window.area) do wa
+        h = wa.h÷number_of_windows
+        SimpleRectangle(wa.x, (i-1)h, wa.w, h)
     end
+    Screen(window, area=a)
 end
 
 function scale_gen(v0, nv)

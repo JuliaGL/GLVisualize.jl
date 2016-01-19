@@ -146,11 +146,6 @@ end
 function selection_reset(cursor)
     push!(cursor)
 end
-const KEY_MAP = Dict(
-    "paste" => Signal([GLFW.KEY_LEFT_CONTROL, GLFW.KEY_V]),
-    "copy"  => Signal([GLFW.KEY_LEFT_CONTROL, GLFW.KEY_C]),
-    "cut"   => Signal([GLFW.KEY_LEFT_CONTROL, GLFW.KEY_X]),
-)
 
 function textedit_signals(inputs, background, text)
     @materialize unicodeinput, selection, buttonspressed, arrow_navigation, mousedragdiff_objectid = inputs
@@ -176,9 +171,9 @@ function textedit_signals(inputs, background, text)
     )
     preserve(const_lift(s->(text_edit.value.selection=s), selection)) # is there really no other way?!
 
-    strg_v          = const_lift(==, buttonspressed, KEY_MAP["paste"])
-    strg_c          = const_lift(==, buttonspressed, KEY_MAP["copy"])
-    strg_x          = const_lift(==, buttonspressed, KEY_MAP["cut"])
+    strg_v          = const_lift(==, buttonspressed, Config.shortcuts["paste"])
+    strg_c          = const_lift(==, buttonspressed, Config.shortcuts["copy"])
+    strg_x          = const_lift(==, buttonspressed, Config.shortcuts["cut"])
     enter_key       = const_lift(==, buttonspressed, [GLFW.KEY_ENTER])
     del             = const_lift(==, buttonspressed, [GLFW.KEY_BACKSPACE])
 

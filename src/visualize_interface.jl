@@ -1,6 +1,3 @@
-const _default_attributes = Dict(
-
-)
 function default(main, s, data)
     data = _default(main, s, copy(data))
     @gen_defaults! data begin # make sure every object has these!
@@ -23,8 +20,6 @@ visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
 
-
-
 function view(
 		robj::RenderObject, screen=ROOT_SCREEN;
 		method 	 = robj.uniforms[:preferred_camera],
@@ -43,7 +38,7 @@ function view(
 	else
          error("Method $method not a known camera type")
 	end
-	merge!(robj.uniforms, collect(camera), Dict( # add a view display dependant values
+	merge!(robj.uniforms, collect(camera), Dict( # add display dependant values
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
@@ -54,21 +49,3 @@ view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; kw_args...) = for robj in 
 	view(robj, screen; kw_args...)
 end
 view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c), screen; kw_args...)
-
-"""
-default returns common defaults for a certain style and datatype.
-This is convenient, to quickly switch out default styles.
-"""
-default{T}(::T, s::Style=Style{:default}()) = default(T, s)
-
-const color_defaults = RGBA{Float32}[
-	RGBA{Float32}(0.0f0,0.74736935f0,1.0f0,1.0f0),
-	RGBA{Float32}(0.78, 0.01, 0.93, 1.0),
-	RGBA{Float32}(0, 0, 0, 1.0),
-	RGBA{Float32}(0.78, 0.01, 0, 1.0)
-]
-function default{T <: Colorant}(::Type{T}, s::Style=Style{:default}(), index=1)
-    index>length(color_defaults) && error("There are only three color defaults.")
-    color_defaults[index]
-end
-default{T <: Colorant}(::Type{Vector{T}}, s::Style=Style{:default}()) = convert(Array{RGBA{U8}, 1}, map(x->RGBA{U8}(x, 1.0), colormap("Blues")))

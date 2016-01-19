@@ -36,6 +36,9 @@ include("FreeTypeAbstraction.jl")
 include("types.jl")
 export CIRCLE, RECTANGLE, ROUNDED_RECTANGLE, DISTANCEFIELD, TRIANGLE
 
+include("config.jl")
+using .Config
+import .Config: default
 
 include("boundingbox.jl")
 
@@ -79,4 +82,6 @@ include("compose_backend.jl")
 
 
 Base.precompile(glscreen, ())
+
+
 end # module
