@@ -55,7 +55,7 @@ function newface(facename, faceindex::Real=0, ftlib=FREE_FONT_LIBRARY)
 	face 	= (FT_Face)[C_NULL]
     err 	= FT_New_Face(ftlib[1], facename, Int32(faceindex), face)
     if err != 0
-        error("Couldn't load font $facename with error $err")
+        error("FreeType could not load font $facename with error $err")
         return face[1]
     end
     face
