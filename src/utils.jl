@@ -54,7 +54,6 @@ function x_partition(area, percent)
 end
 
 
-@enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
 
 """
 Returns two signals, one boolean signal if clicked over `robj` and another
