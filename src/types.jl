@@ -1,7 +1,6 @@
 @enum Shape CIRCLE RECTANGLE ROUNDED_RECTANGLE DISTANCEFIELD TRIANGLE
 @enum RaymarchAlgorithm IsoValue Absorption MaximumIntensityProjection
 @enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
-@enum MouseButton MOUSE_LEFT MOUSE_MIDDLE MOUSE_RIGHT
 
 immutable Grid{N, T <: Range}
     dims::NTuple{N, T}

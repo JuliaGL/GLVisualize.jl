@@ -35,6 +35,8 @@ include("FreeTypeAbstraction.jl")
 
 include("types.jl")
 export CIRCLE, RECTANGLE, ROUNDED_RECTANGLE, DISTANCEFIELD, TRIANGLE
+
+
 include("boundingbox.jl")
 
 include("visualize_interface.jl")
@@ -47,7 +49,6 @@ export y_partition
 export x_partition
 export loop, bounce
 export clicked, dragged_on, is_hovering
-export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 export OR, AND, isnotempty
 
 include("renderloop.jl")
