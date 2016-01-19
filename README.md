@@ -10,6 +10,7 @@ You can look at `test/runtests.jl` and the `example` folder, to get a sense of h
 # Documentation
 
 There is only a [prototype](http://simondanisch.github.io/) available right now.
+The examples are not guaranteed to be usable with the current version and rather give an outlook to the future API.
 
 
 # Installation
@@ -18,6 +19,7 @@ Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
+Pkg.checkout("Reactive")
 ```
 
 
