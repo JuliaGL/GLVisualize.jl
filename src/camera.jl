@@ -1,4 +1,3 @@
-@enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
 
 
 function get_cube_rotations(eyeposition, lookatv)

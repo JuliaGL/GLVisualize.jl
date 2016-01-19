@@ -1,5 +1,6 @@
 @enum Shape CIRCLE RECTANGLE ROUNDED_RECTANGLE DISTANCEFIELD TRIANGLE
 @enum RaymarchAlgorithm IsoValue Absorption MaximumIntensityProjection
+@enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
 
 immutable Grid{N, T <: Range}
     dims::NTuple{N, T}
@@ -141,7 +142,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
         paths = map(shader -> loadasset("shader", shader), paths)
         new(paths, vcat(kw_args, [
         	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
-    		(:updatewhile, ROOT_SCREEN.inputs[:open]),
+    		(:updatewhile, ROOT_SCREEN.inputs[:window_open]),
     		(:update_interval, 1.0),
         ]))
     end
