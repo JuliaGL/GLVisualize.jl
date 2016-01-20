@@ -299,7 +299,6 @@ facts("Lines") do
     end
 end
 
-
 if has_opengl
     while isopen(window)
         sleep(0.01)
