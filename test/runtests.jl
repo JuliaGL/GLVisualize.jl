@@ -273,8 +273,8 @@ function lines3Ddata(N, nloops)
     xyz    = Point3f0[]
     colors = RGBA{Float32}[]
     # The index of the current point in the total amount of points
-    base_colors1 = distinguishable_colors(nloops, RGB{Float64}(1,0,0))
-    base_colors2 = distinguishable_colors(nloops, RGB{Float64}(1,1,0))
+    base_colors1 = distinguishable_colors(nloops, RGB{Float32}(1,0,0))
+    base_colors2 = distinguishable_colors(nloops, RGB{Float32}(1,1,0))
     # Create each line one after the other in a loop
     for i=1:nloops
         append!(xyz, [Point3f0(sin(t), cos((2 + .02 * i) * t), cos((3 + .02 * i) * t)) for t in TL])
@@ -288,7 +288,7 @@ end
 
 facts("Lines") do
     context("viewable creation") do
-        lines, colors = lines3Ddata(100, 10)
+        lines, colors = lines3Ddata(200, 10)
         line_vizz = visualize(lines, :lines, color=colors)
         if has_opengl
             #suf_vizz = visualize(line_vizz, direction=1)
