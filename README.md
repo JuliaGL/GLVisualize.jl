@@ -19,7 +19,6 @@ Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.checkout("Reactive")
 ```
 
 
