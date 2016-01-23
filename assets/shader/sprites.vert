@@ -85,11 +85,20 @@ out vec4  g_color;
 out vec4  g_stroke_color;
 out vec4  g_glow_color;
 
-
+/* 
+ needed to trick intels faulty, aggressive optimizer.
+ It thinks, that grid is not used, if I'm only accessing
+ the local variable in the function... Access to global is needed
+ That the return is always 0 can't be inferred, though.
+ So we splice in a function (vec3 lol_intel()), that accesses the global and multiplies it
+ by 0.
+*/
+{{lol_intel}}
 
 void main(){
 	g_primitive_index = gl_VertexID;
     g_position        = _position(position, position_x, position_y, position_z, g_primitive_index);
+    g_position       += lol_intel();
     g_offset_width.xy = offset.xy;
     g_offset_width.zw = _scale(scale, scale_x, scale_y, scale_z, g_primitive_index).xy;
     g_color           = _color(color, intensity, color_norm, g_primitive_index);

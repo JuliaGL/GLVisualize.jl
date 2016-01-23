@@ -106,7 +106,10 @@ function meshparticle(p, s, data)
             scale, scale_x, scale_y, scale_z,
             primitive
         )
-        shader           = GLVisualizeShader("util.vert", "particles.vert", "standard.frag")
+        shader           = GLVisualizeShader(
+            "util.vert", "particles.vert", "standard.frag",
+            view=Dict("lol_intel"=>lol_intel(position))
+        )
     end
 end
 
@@ -186,7 +189,11 @@ sprites(p, s, data) = @gen_defaults! data begin
         SimpleRectangle{Float32}(0,0,1,1)
     )
     preferred_camera    = :orthographic_pixel
-    shader              = GLVisualizeShader("util.vert", "sprites.geom", "sprites.vert", "distance_shape.frag")
+    shader              = GLVisualizeShader(
+        "util.vert", "sprites.geom", 
+        "sprites.vert", "distance_shape.frag",
+        view=Dict("lol_intel"=>lol_intel(position))
+    )
     gl_primitive        = GL_POINTS
 end
 
@@ -215,4 +222,26 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
     position = const_lift(calc_position, main, start_position, scale, font, atlas)
 
     _default((DISTANCEFIELD, position), s, data)
+end
+
+
+function lol_intel(x)
+    """vec3 lol_intel(){
+        return vec3(0.0);
+    }""" 
+end
+function lol_intel(::Grid{1})
+    """vec3 lol_intel(){
+        return vec3((position.minimum+position.maximum+float(position.dims))*0.0);
+    }"""
+end
+function lol_intel(::Grid{2})
+    """vec3 lol_intel(){
+        return vec3((position.minimum+position.maximum+vec2(position.dims))*0.0, 0.0);
+    }"""
+end
+function lol_intel(::Grid{3})
+    """vec3 lol_intel(){
+        return vec3((position.minimum+position.maximum+vec3(position.dims))*0.0);
+    }"""
 end

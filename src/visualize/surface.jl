@@ -14,7 +14,7 @@ function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}},
     @gen_defaults! data begin
         position   = main[1]
         position_z = main[2] => Texture
-        scale      = Vec3f0(step(main[1].dims[1])*1.002, step(main[1].dims[2])*1.002, 1)
+        scale      = Vec3f0(step(main[1].dims[1]), step(main[1].dims[2]), 1)
     end
     surface(position_z, s, data)
 end
@@ -25,9 +25,9 @@ function surface(main, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
         scale      = nothing
         position   = nothing
-        position_x = nothing
-        position_y = nothing
-        position_z = nothing
+        position_x = nothing => Texture
+        position_y = nothing => Texture
+        position_z = nothing => Texture
         primitive::GLMesh2D = SimpleRectangle(0f0,0f0,1f0,1f0)
         color      = default(Vector{RGBA}, s) => Texture
         color_norm = const_lift(_extrema, main)
@@ -37,6 +37,9 @@ function surface(main, s::Style{:surface}, data::Dict)
             scale == Vec3f0(0)? Vec3f0(1):scale, nothing, nothing, nothing, #silly, I use scale == 0 to zero out vertex offset, but for bb calculation this doesn't work
             primitive
         )
-        shader     = GLVisualizeShader("util.vert", "surface.vert", "standard.frag")
+        shader     = GLVisualizeShader(
+            "util.vert", "surface.vert", "standard.frag",
+            view=Dict("lol_intel"=>lol_intel(position))
+        )
     end
 end

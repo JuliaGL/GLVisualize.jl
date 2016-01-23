@@ -165,24 +165,27 @@ vec4 getindex(sampler3D tex, int index){
 
 
 
-vec3 _position(Grid1D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0,0);
+vec3 _position(Grid1D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
+    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), 0,0);
 }
-vec3 _position(Grid1D grid, Nothing position_x, Nothing position_y, float position_z, int index){
-    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0,position_z);
+vec3 _position(Grid1D position, Nothing position_x, Nothing position_y, float position_z, int index){
+    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), 0,position_z);
 }
-vec3 _position(Grid1D grid, Nothing position_x, float position_y, Nothing position_z, int index){
-    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), position_y, 0);
+vec3 _position(Grid1D position, Nothing position_x, float position_y, Nothing position_z, int index){
+    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), position_y, 0);
 }
-vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), 0);
+vec3 _position(Grid2D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
+    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), 0);
 }
-vec3 _position(Grid2D grid, Nothing position_x, Nothing position_y, float position_z, int index){
-    return vec3(stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum), position_z);
+vec3 _position(Grid2D position, Nothing position_x, Nothing position_y, float position_z, int index){
+    ivec2 index2D = ind2sub(position.dims, index);
+    vec2 lin_index = vec2(index2D) / vec2(position.dims);
+    vec2 xy = position.minimum + (lin_index * (position.maximum - position.minimum)); //stretch
+    return vec3(xy, position_z);
 }
 
-vec3 _position(Grid3D grid, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return stretch(linear_index(grid.dims, index), grid.minimum, grid.maximum);
+vec3 _position(Grid3D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
+    return stretch(linear_index(position.dims, index), position.minimum, position.maximum);
 }
 
 vec3 _position(samplerBuffer position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
@@ -268,4 +271,50 @@ void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 ligh
     o_vertex                = -position_camspace.xyz;
     // screen space coordinates of the vertex
     gl_Position             = projection * position_camspace;
+}
+
+
+
+
+bool isinbounds(vec2 uv)
+{
+    return (uv.x <= 1.0 && uv.y <= 1.0 && uv.x >= 0.0 && uv.y >= 0.0);
+}
+vec3 getnormal(sampler2D zvalues, vec2 uv)
+{
+    float weps = 1.0/textureSize(zvalues,0).x;
+    float heps = 1.0/textureSize(zvalues,0).y;
+
+    vec3 result = vec3(0);
+
+    vec3 s0 = vec3(uv, texture(zvalues, uv).x);
+
+    vec2 off1 = uv + vec2(-weps,0);
+    vec2 off2 = uv + vec2(0, heps);
+    vec2 off3 = uv + vec2(weps, 0);
+    vec2 off4 = uv + vec2(0,-heps);
+    vec3 s1, s2, s3, s4;
+
+    s1 = vec3((off1), texture(zvalues, off1).x);
+    s2 = vec3((off2), texture(zvalues, off2).x);
+    s3 = vec3((off3), texture(zvalues, off3).x);
+    s4 = vec3((off4), texture(zvalues, off4).x);
+
+    if(isinbounds(off1) && isinbounds(off2))
+    {
+        result += cross(s2-s0, s1-s0);
+    }
+    if(isinbounds(off2) && isinbounds(off3))
+    {
+        result += cross(s3-s0, s2-s0);
+    }
+    if(isinbounds(off3) && isinbounds(off4))
+    {
+        result += cross(s4-s0, s3-s0);
+    }
+    if(isinbounds(off4) && isinbounds(off1))
+    {
+        result += cross(s1-s0, s4-s0);
+    }
+    return normalize(result); // normal should be zero, but needs to be here, because the dead-code elimanation of GLSL is overly enthusiastic
 }

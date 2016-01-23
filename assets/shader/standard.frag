@@ -35,7 +35,7 @@ void main(){
     vec3 light2 	= blinnphong(N, o_vertex, -L, o_color.rgb);
     fragment_color 	= vec4(light1+light2*0.4, o_color.a);
     //if(fragment_color.a > 0.0)
-        fragment_groupid = o_id;
+    fragment_groupid = o_id;
     if (fragment_color.a > 0.0)
         gl_FragDepth = gl_FragCoord.z;
     else

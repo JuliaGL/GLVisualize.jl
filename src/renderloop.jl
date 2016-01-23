@@ -5,7 +5,7 @@ function glscreen(name="GLVisualize")
     atexit(FreeTypeAbstraction_done)
 
 
-    screen = createwindow(name)
+    screen = createwindow(name, debugging=true)
     global ROOT_SCREEN  = screen
     global TIMER_SIGNAL = fpswhen(screen.inputs[:window_open], 60.0)
 
