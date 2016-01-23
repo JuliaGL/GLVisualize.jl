@@ -179,7 +179,7 @@ facts("sprite particles") do
                 a_vis,
                 visualize((primb, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10)),
                 visualize((DISTANCEFIELD, gpu_pos), stroke_width=4f0, stroke_color=rand(RGBA{Float32}, 10), color=rand(RGBA{Float32}, 10), distancefield=dfdata),
-                visualize((primc, map(first, position_velocity)), image=loadasset("doge.png"), stroke_width=1f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1), boundingbox=AABB(Vec3f0(0), Vec3f0(300,300,0))),
+                visualize((primc, map(first, position_velocity)), image=loadasset("doge.png"), stroke_width=3f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1), boundingbox=AABB(Vec3f0(0), Vec3f0(300,300,0))),
                 visualize(('↺', c), xyrange=((0,200),(0,200))),
                 visualize(c_sig, xyrange=((0,200),(0,200))),
                 visualize((prima,b_sig), xyrange=((0,200),),intensity=b_sig, color_norm=Vec2f0(10,200), color=Texture(GLVisualize.default(Vector{RGBA}))),
