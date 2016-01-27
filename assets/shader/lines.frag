@@ -54,7 +54,7 @@ void main(){
     }else{
         fragment_color   = vec4(f_color.rgb, f_color.a*aastep(0.2, 0.8, f_uv.y));
     }
-    if (fragment_color.a >= 0.8)
+    if (fragment_color.a > 0.5)
         gl_FragDepth = gl_FragCoord.z;
     else
         gl_FragDepth = 1.0;

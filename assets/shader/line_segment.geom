@@ -1,6 +1,3 @@
-// ------------------ Geometry Shader --------------------------------
-// This version of the line shader simply cuts off the corners and
-// draws the line with no overdraw on neighboring segments at all
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
 
@@ -24,13 +21,14 @@ flat out uvec2 f_id;
 
 vec2 screen_space(vec4 vertex)
 {
-    return vec2( vertex.xy / vertex.w ) * resolution;
+    return vec2(vertex.xy / vertex.w)*resolution;
 }
 void emit_vertex(vec2 position, vec2 uv, int index)
 {
+    vec4 inpos    = gl_in[index].gl_Position;
     f_uv          = uv;
     f_color       = g_color[index];
-    gl_Position   = vec4(position / resolution, gl_in[index].gl_Position.z/gl_in[index].gl_Position.w, 1.0);
+    gl_Position   = vec4((position/resolution)*inpos.w, inpos.z, inpos.w);
     f_id          = g_id[index];
     EmitVertex();
 }
@@ -41,11 +39,11 @@ uniform int max_primtives;
 void main(void)
 {
     // get the four vertices passed to the shader:
-    vec2 p0 = screen_space( gl_in[0].gl_Position ); // start of previous segment
-    vec2 p1 = screen_space( gl_in[1].gl_Position ); // end of previous segment, start of current segment
+    vec2 p0 = screen_space(gl_in[0].gl_Position); // start of previous segment
+    vec2 p1 = screen_space(gl_in[1].gl_Position); // end of previous segment, start of current segment
 
-    float thickness_aa0 = g_thickness[0]+AA_THICKNESS;
-    float thickness_aa1 = g_thickness[1]+AA_THICKNESS;
+    float thickness_aa0 = (g_thickness[0]+AA_THICKNESS);
+    float thickness_aa1 = (g_thickness[1]+AA_THICKNESS);
     // determine the direction of each of the 3 segments (previous, current, next)
     vec2 v0 = normalize(p1 - p0);
     float segment_lengths = length(v0);

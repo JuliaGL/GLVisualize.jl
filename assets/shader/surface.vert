@@ -1,10 +1,14 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
+
 struct Grid2D{
     vec2 minimum;
     vec2 maximum;
     ivec2 dims;
+    vec2 multiplicator;
+
 };
+
 struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
     bool _; //empty structs are not allowed
 } nothing;
@@ -44,7 +48,7 @@ Nothing _position_interpolated(Nothing position, vec2 offset, int index){
     return nothing;
 }
 
-/* 
+/*
  needed to trick intels faulty, aggressive optimizer.
  It thinks, that grid is not used, if I'm only accessing
  the local variable in the function... Access to global is needed

@@ -18,19 +18,16 @@ z = r.*sin(phi).*sin(theta);
 using GLVisualize, GLAbstraction, GeometryTypes, Reactive
 
 
-w,r = glscreen()
+w = glscreen()
 rotation_angle  = Signal(0f0)
 rotation 		= map(rotationmatrix_z, map(deg2rad, rotation_angle))
+robj = visualize((x,y,z), :surface)
+view(robj)
+bb = value(boundingbox(robj))
+println("maximum ", map(maximum, (x,y,z)))
+println("minimum ", map(minimum, (x,y,z)))
 
-view(visualize((x,y,z), :surface, model=const_lift(*, scalematrix(Vec3f0(0.5)), rotation)))
-@async r()
-sleep(2)
-i = 1
-for r=1:4:360
-	yield() # yield to render process
-	sleep(0.01)
+println("maximum ", maximum(bb))
+println("minimum ", minimum(bb))
 
-	screenshot(w, path=joinpath(homedir(), "Videos","circles", @sprintf("frame%03d.png", i)))
-    push!(rotation_angle, r) # rotate around camera y axis.
-	i += 1
-end
+GLWindow.renderloop(w)

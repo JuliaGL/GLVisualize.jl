@@ -1,7 +1,6 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
-w,r = glscreen()
-w.cameras[:perspective] = PerspectiveCamera(w.inputs, Vec3f0(3), Vec3f0(0))
+w = glscreen()
 cat = GLNormalMesh(loadasset("cat.obj"))
 sphere = GLNormalMesh(Sphere{Float32}(Vec3f0(0), 1f0), 12)
 
@@ -12,7 +11,6 @@ function scale_gen(v0, nv)
 	end
 	v0
 end
-i = 1
 function color_gen(v0, nv)
 	l = length(v0)
 	@inbounds for x=1:l
@@ -21,7 +19,7 @@ function color_gen(v0, nv)
 
 	v0
 end
-const t      = Signal(0f0)
+const t      = bounce(0.5f0:0.01f0:(pi*1.0f0))
 ps 			 = sphere.vertices
 scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
 scale_signal = foldp(scale_gen, scale_start, t)
@@ -34,17 +32,23 @@ rotation = -sphere.normals
 
 a = visualize((cat, ps), scale=scale, color=color, rotation=rotation)
 
+
 view(a)
-@async r()
-yield()
-sleep(5)
-yield()
-N = 200
-i = 1
-for _t in linspace(0, 2pi, N)
-    yield()
-    sleep(0.1)
-    screenshot(w, path=joinpath(homedir(), "Videos","cats", @sprintf("frame%03d.png", i)))
-    i+=1
-    push!(t, _t)
-end
+view(visualize(boundingbox(a), :lines, model=a.children[][:model]), method=:perspective)
+
+axis_points = Point3f0[
+    (0,0,0), (6,0,0),
+    (0,0,0), (0,6,0),
+    (0,0,0), (0,0,6),
+]
+const C = RGBA{Float32}
+axis_color = C[
+    C(1,0,0,1), C(1,0,0,1),
+    C(0,1,0,1), C(0,1,0,1),
+    C(0,0,1,1), C(0,0,1,1),
+]
+view(visualize(axis_points, :linesegment, color=axis_color), method=:perspective)
+
+
+
+GLWindow.renderloop(w)

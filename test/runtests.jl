@@ -23,6 +23,18 @@ catch e
         "\n", e
     ))
 end
+
+function view_boundingboxes(w, camera)
+    bbs = []
+    for robj in w.renderlist
+        bb = boundingbox(robj)
+        push!(bbs, visualize(value(bb), :lines, model=robj[:model]))
+    end
+    for elem in bbs
+        view(elem, w, method=camera)
+    end
+end
+
 windows = ntuple(number_of_windows) do i
     a = map(window.area) do wa
         h = wa.h÷number_of_windows
@@ -41,12 +53,12 @@ end
 function color_gen(v0, nv)
 	l = length(v0)
 	@inbounds for x=1:l
-		v0[x] = RGBA{U8}(x/l,nv,(sin(x/l/3)+1)/2.,1.)
+		v0[x] = RGBA{U8}(x/l,(sin(nv)+1)/2,(sin(x/l/3)+1)/2.,1.)
 	end
 	v0
 end
-facts("mesh particles") do
-    prima = centered(Cube)
+function tests()
+    prima = centered(HyperRectangle)
     primb = GLNormalMesh(centered(Sphere), 8)
     cat   = GLNormalMesh(loadasset("cat.obj"))
     a = rand(Point2f0, 20)
@@ -55,40 +67,30 @@ facts("mesh particles") do
     d = rand(Float32, 10,10)
     e = rand(Vec3f0, 5,5,5)
 
-    context("viewable creation") do
+    lastpos = Vec3f0(0)
+    particles = [
+        visualize(elem, scale=Vec3f0(0.03))
+        for elem in (b, (prima, a), (primb, b), (primb, c), d)
+    ]
 
-        particles = [visualize(elem, scale=Vec3f0(0.03)) for elem in (b, (prima, a), (primb, b), (primb, c), d, e)]
+    ps 			 = primb.vertices
+    time         = bounce(Float32(pi):0.01f0:(pi*2.0f0))
+    scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
+    scale_signal = foldp(scale_gen, scale_start, time)
+    scale 		 = scale_signal
+    color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), time)
+    color 		 = color_signal
+    rotation     = -primb.normals
 
-        ps 			 = primb.vertices
-        scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
-        scale_signal = foldp(scale_gen, scale_start, bounce(0.1f0:0.01f0:1.0f0))
-        scale 		 = scale_signal
-        color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), bounce(0.00f0:0.02f0:1.0f0))
-        color 		 = color_signal
+    push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation))
+    push!(particles, visualize(e, scale=Vec3f0(0.3)))
 
-        rotation = -primb.normals
-
-        push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation))
-
-        #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
-        #@fact typeof(p1[:primitive]) --> Cube{Float32}
-        #@fact typeof(p2[:primitive]) --> GLNormalMesh
-
-        #@fact particles[1][:positions] --> a
-        #@fact p1[:positions] --> b
-        #@fact p2[:positions] --> a
-        #@fact p3[:positions] --> b
-
-        if has_opengl
-            context("viewing") do
-                gl_obj = view(visualize(particles), windows[1])
-                #@fact gpu_data(gl_obj[1][:positions]) --> a
-                #@fact typeof(gl_obj[1][:positions]) --> TextureBuffer
-                #@fact typeof(gl_obj[1][:vertices]) --> GLBuffer
-            end
-        end
+    if has_opengl
+        view(visualize(particles), windows[1])
+        view_boundingboxes(windows[1], :perspective)
     end
 end
+tests()
 typealias NColor{N, T} Colorant{T, N}
 fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)
 fillcolor{T <: NColor{3}}(::Type{T}) = T(0,1,0)
@@ -116,6 +118,8 @@ facts("Image Like") do
             images = visualize(images, direction=1, gap=Vec3f0(5))
             context("viewing") do
                 gl_obj = view(images, windows[2], method = :orthographic_pixel)
+                view_boundingboxes(windows[2], :orthographic_pixel)
+
             end
         end
     end
@@ -188,6 +192,7 @@ facts("sprite particles") do
             if has_opengl
                 context("viewing") do
                     gl_obj = view(visualize(particles, direction=1), windows[3], method=:orthographic_pixel)
+                    view_boundingboxes(windows[3], :orthographic_pixel)
                 end
             end
         end
@@ -219,9 +224,7 @@ facts("sprite particles") do
             if has_opengl
                 context("viewing") do
                     gl_obj = view(visualize(particles), windows[4], method=:perspective)
-                    #@fact gpu_data(gl_obj[1][:positions]) --> a
-                    #@fact typeof(gl_obj[1][:positions]) --> TextureBuffer
-                    #@fact typeof(gl_obj[1][:vertices]) --> GLBuffer
+                    view_boundingboxes(windows[4], :perspective)
                 end
             end
         end
@@ -261,6 +264,7 @@ facts("Surfaces") do
             suf_vizz = visualize(surfs, direction=1)
             context("viewing") do
                 gl_obj = view(suf_vizz, windows[5])
+                view_boundingboxes(windows[5], :perspective)
             end
         end
     end
@@ -294,6 +298,7 @@ facts("Lines") do
             #suf_vizz = visualize(line_vizz, direction=1)
             context("viewing") do
                 gl_obj = view(line_vizz, windows[6], method=:perspective)
+                view_boundingboxes(windows[6], :perspective)
             end
         end
     end

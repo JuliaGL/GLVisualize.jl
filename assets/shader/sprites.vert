@@ -8,16 +8,20 @@ struct Grid1D{
     float minimum;
     float maximum;
     int dims;
+    float multiplicator;
 };
 struct Grid2D{
     vec2 minimum;
     vec2 maximum;
     ivec2 dims;
+    vec2 multiplicator;
+
 };
 struct Grid3D{
     vec3 minimum;
     vec3 maximum;
     ivec3 dims;
+    vec3 multiplicator;
 };
 
 {{uv_offset_width_type}} uv_offset_width;
@@ -50,7 +54,7 @@ vec3 _scale(vec2    scale, float   scale_x, float   scale_y, float   scale_z, in
 {{offset_type}} offset;
 
 {{rotation_type}}     rotation;
-vec3 _rotation(Nothing r){return vec3(0,0,3.1415926535897);}
+vec3 _rotation(Nothing r){return vec3(0,0,1);}
 vec3 _rotation(vec2 r){return vec3(r, 3.1415926535897);}
 vec3 _rotation(vec3 r){return r;}
 
@@ -85,7 +89,7 @@ out vec4  g_color;
 out vec4  g_stroke_color;
 out vec4  g_glow_color;
 
-/* 
+/*
  needed to trick intels faulty, aggressive optimizer.
  It thinks, that grid is not used, if I'm only accessing
  the local variable in the function... Access to global is needed

@@ -8,16 +8,20 @@ struct Grid1D{
     float minimum;
     float maximum;
     int dims;
+    float multiplicator;
 };
 struct Grid2D{
     vec2 minimum;
     vec2 maximum;
     ivec2 dims;
+    vec2 multiplicator;
+
 };
 struct Grid3D{
     vec3 minimum;
     vec3 maximum;
     ivec3 dims;
+    vec3 multiplicator;
 };
 
 in vec3 vertices;
@@ -54,12 +58,13 @@ vec3 _scale(vec3          scale, Nothing scale_x, Nothing       scale_y, Nothing
 vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
 vec3 _scale(vec3          scale, float   scale_x, samplerBuffer scale_y, float         scale_z, int index);
 vec3 _scale(vec3          scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
+vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
 
 
 {{rotation_type}}   rotation;
-void rotate(Nothing       vectors, int index, in vec3 vertices, in vec3 normal);
+void rotate(Nothing       vectors, int index, inout vec3 vertices, inout vec3 normal);
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N);
-void rotate(vec3          vectors, in vec3 vertices, in vec3 normal, int index);
+void rotate(vec3          vectors, int index, inout vec3 vertices, inout vec3 normal);
 
 
 {{color_type}}      color;
@@ -71,11 +76,14 @@ vec4 _color(sampler1D     color, samplerBuffer intensity, vec2    color_norm, in
 float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
     return length(texelFetch(rotation, index).xyz);
 }
+float get_intensity(vec3 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(Nothing rotation, Nothing position_z, int index){return -1.0;}
 float get_intensity(Nothing rotation, samplerBuffer position_z, int index){
     return texelFetch(position_z, index).x;
 }
-
+float get_intensity(vec3 rotation, samplerBuffer position_z, int index){
+    return texelFetch(position_z, index).x;
+}
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
     float _intensity = get_intensity(rotation, scale_z, index);
@@ -85,7 +93,7 @@ vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
 void render(vec3 vertices, vec3 normals, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
 
-/* 
+/*
  needed to trick intels faulty, aggressive optimizer.
  It thinks, that grid is not used, if I'm only accessing
  the local variable in the function... Access to global is needed

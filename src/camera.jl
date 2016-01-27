@@ -1,5 +1,3 @@
-
-
 function get_cube_rotations(eyeposition, lookatv)
 
 	dir 		 = eyeposition-lookatv
@@ -14,20 +12,20 @@ function get_cube_rotations(eyeposition, lookatv)
     x_180   	 = Quaternions.qrotation(Vec3f0(1,0,0), deg2rad(180f0))
     z_180   	 = Quaternions.qrotation(Vec3f0(0,0,1), deg2rad(180f0))
 
-    top     = to_y 		* to_z
-    bottom  = x_180 	* top
-    front   = to_y 		* toxyplane
-    back    = z_180 	* front
-    left 	= to_x 		* toxyplane
-    right  	= z_180 	* left
+    top     = to_y  * to_z
+    bottom  = x_180 * top
+    front   = to_y  * toxyplane
+    back    = z_180 * front
+    left 	= to_x  * toxyplane
+    right  	= z_180 * left
 
 	top, bottom, front, back, right, left
 end
 
 
 function cubeside_const_lift(_, id, top, bottom, front, back, left, right, h)
-    index = h.value[2]
-    if h.value[1] == id && index >= 1 && index <= 6
+    h_id, h_index = value(h)
+    if h_id == id && h_index >= 1 && h_index <= 6
         side =  CubeSides(h.value[2]-1)
         side == TOP     && return top
         side == BOTTOM  && return bottom
@@ -71,39 +69,46 @@ Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2
 
 function cubecamera(
 		window;
-		cube_area 	 = Signal(SimpleRectangle(0,0,150,150)),
-		eyeposition  = Vec3f0(2),
-    	lookatv 	 = Vec3f0(0),
-        trans        = Signal(Vec3f0(0)),
-        theta        = Signal(Vec3f0(0))
+		cube_area 	= Signal(SimpleRectangle(0,0,150,150)),
+		eyeposition = Vec3f0(2),
+    	lookatv 	= Vec3f0(0),
+        trans       = Signal(Vec3f0(0)),
+        theta       = Signal(Vec3f0(0))
 	)
     const T = Float32
-    @materialize mousebuttonspressed, window_size, mouseposition, buttonspressed = window.inputs
-
-    dd = doubleclick(window.inputs[:mousebuttonspressed], 0.2)
-    h = window.inputs[:mouse_hover]
-    id = Signal(4)
-    should_reset = filter(x->h.value[1] == id.value, false, dd)
-
+    @materialize mouse_buttons_pressed, mouseposition, buttons_pressed = window.inputs
+    dd = doubleclick(mouse_buttons_pressed, 0.3)
+    h = GLWindow.mouse2id(window)
+    id = Signal(3)
+    should_reset = filter(false, dd) do _
+        x = value(h).id == value(id)
+    end
     p = colored_cube()
-    resetto         = const_lift(cubeside_const_lift, should_reset, id, get_cube_rotations(eyeposition, value(lookatv))..., Signal(h))
-    inside_trans    = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
-    outside_trans   = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
-    cube_rotation   = const_lift(cube_area, mouseposition) do ca, mp
+    resetto = preserve(const_lift(cubeside_const_lift,
+        should_reset, id,
+        get_cube_rotations(eyeposition, value(lookatv))...,
+        Signal(h)
+    ))
+    inside_trans  = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
+    outside_trans = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
+    cube_rotation = const_lift(cube_area, mouseposition) do ca, mp
         m = minimum(ca)
         max_dist = norm(maximum(ca) - m)
         mindist = max_dist *0.9f0
         maxdist = max_dist *1.5f0
-        m, mp = Point{2, Float32}(m), Point{2, Float32}(mp)
+        m, mp = Point2f0(m), Point2f0(mp)
         t = norm(m-mp)
         t = Float32((t-mindist)/(maxdist-mindist))
         t = clamp(t, 0f0,1f0)
         slerp(inside_trans, outside_trans, t)
     end
-    rect = SimpleRectangle(0f0,0f0, 20f0, 20f0)
+    rect      = SimpleRectangle(0f0, 0f0, 20f0, 20f0)
     positions = Signal(Point2f0[(0,0), (5,5)])
-    scale     = Signal(Vec2f0[(1,1), (1,1)])
-    ortho1 = visualize((rect, positions),scale=scale, stroke_width=1f0, transparent_picking = true)
+    scale     = Signal(Vec2f0[(20,20), (20,20)])
+    ortho1    = visualize(
+        (rect, positions), color= RGBA{Float32}(0,0,0,0),
+        scale=scale, stroke_width=1.5f0, transparent_picking=true
+    )
     hovers_ortho = const_lift(h) do h
         h[1] == ortho1.children[].id
     end
@@ -111,18 +116,18 @@ function cubecamera(
         ho && return RGBA(0.8f0, 0.8f0, 0.8f0, 0.8f0)
         RGBA(0.5f0, 0.5f0, 0.5f0, 1f0)
     end
-    isperspective = foldp(true, mousebuttonspressed) do v0, clicked
-        clicked==[0] && hovers_ortho.value && return !v0
+    isperspective = foldp(true, mouse_buttons_pressed) do v0, clicked
+        clicked==Set([0]) && value(hovers_ortho) && return !v0
         v0
     end
 
     ortho1.children[][:stroke_color] = c
     const_lift(isperspective) do isp
         if isp
-            push!(scale, Vec2f0[(1,1), (0.8,0.8)])
+            push!(scale, Vec2f0[(20,20), (16,16)])
             push!(positions, Point2f0[(0,0), (10,10)])
         else
-            push!(scale, Vec2f0[(1,1), (1,1)])
+            push!(scale, Vec2f0[(20,20), (20,20)])
             push!(positions, Point2f0[(0,0), (10,10)])
         end
         nothing
@@ -131,15 +136,19 @@ function cubecamera(
         isp && return GLAbstraction.PERSPECTIVE
         GLAbstraction.ORTHOGRAPHIC
     end
-    use_cam = const_lift(buttonspressed) do b
-        b == [GLFW.KEY_LEFT_CONTROL]
+    left_ctrl = Set([GLFW.KEY_LEFT_CONTROL])
+    use_cam = const_lift(buttons_pressed) do b
+        b == left_ctrl
     end
-    theta, trans, zoom  = default_camera_control(window.inputs, theta=theta, trans=trans, filtersignal=use_cam)
-    far, near, fov      = Signal(100f0), Signal(1f0), Signal(43f0)
+    theta, trans = default_camera_control(
+        window.inputs, Signal(0.01f0), Signal(0.001f0),
+        use_cam
+    )
+    far, near, fov = Signal(100f0), Signal(1f0), Signal(43f0)
     main_cam = PerspectiveCamera(
-        window.area,eyeposition,lookatv,
-        theta,trans,zoom,fov,near,far,
-        mprojection,should_reset,resetto
+        window.area, eyeposition, lookatv,
+        theta ,trans, fov, near, far, Vec3f0(0,0,1),
+        mprojection, should_reset, resetto
     )
     window.cameras[:perspective] = main_cam
 
@@ -148,7 +157,7 @@ function cubecamera(
     model = const_lift(cube_rotation, const_lift(inv, rot)) do cr, r
         translationmatrix(Vec3f0(3,3,0)) * Mat{4,4,T}(cr) * translationmatrix(Vec3f0(-3,-3,0)) * Mat{4,4,T}(r)
     end
-    cubescreen = Screen(window, area=cube_area, transparent=Signal(true))
+    cubescreen = Screen(window, area=cube_area, color=RGBA{Float32}(0,0,0,0))
     cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,
         nearclip=near,
@@ -159,7 +168,7 @@ function cubecamera(
     start_colors = p.attributes
     color_tex    = robj.children[][:attributes]
     preserve(const_lift(cubeside_color, id, h, Signal(start_colors), Signal(color_tex)))
-
+    preserve(id)
     push!(id, robj.children[].id)
     view(robj, cubescreen);
     view(ortho1, cubescreen, method=:fixed_pixel)

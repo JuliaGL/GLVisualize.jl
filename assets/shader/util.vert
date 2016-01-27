@@ -7,16 +7,20 @@ struct Grid1D{
     float minimum;
     float maximum;
     int dims;
+    float multiplicator;
 };
 struct Grid2D{
     vec2 minimum;
     vec2 maximum;
     ivec2 dims;
+    vec2 multiplicator;
+
 };
 struct Grid3D{
     vec3 minimum;
     vec3 maximum;
     ivec3 dims;
+    vec3 multiplicator;
 };
 struct Light{
     vec3 diffuse;
@@ -92,14 +96,17 @@ mat4 rotation_mat(vec3 direction){
 
     return rot;
 }
-void rotate(Nothing r, int index, in vec3 vertices, in vec3 normal){} // no-op
-void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N){
-    vec3 r = texelFetch(vectors, index).xyz;
-    mat4 rot = rotation_mat(r);
+void rotate(Nothing r, int index, inout vec3 V, inout vec3 N){} // no-op
+void rotate(vec3 direction, int index, inout vec3 V, inout vec3 N){
+    mat4 rot = rotation_mat(direction);
     V = vec3(rot*vec4(V, 1));
     N = normalize(vec3(rot*vec4(N, 1)));
 }
-void rotate(vec3 direction, in vec3 vertices, in vec3 normal, int index){}
+void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N){
+    vec3 r = texelFetch(vectors, index).xyz;
+    rotate(r, index, V, N);
+}
+
 
 
 mat4 translate_scale(vec3 xyz, vec3 scale){
@@ -162,30 +169,66 @@ vec4 getindex(sampler3D tex, int index){
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
 
-
-
+float linspace(Grid1D grid, int i){
+    float len   = float(grid.dims);
+    float start = grid.minimum;
+    float stop  = grid.maximum;
+    float multi = grid.multiplicator;
+    return ((len-(i+1))*start + i*stop) * multi;
+}
+float linspace(Grid2D grid, int gi, int i){
+    float len   = float(grid.dims[gi]);
+    float start = grid.minimum[gi];
+    float stop  = grid.maximum[gi];
+    float multi = grid.multiplicator[gi];
+    return ((len-(i+1))*start + i*stop) * multi;
+}
+float linspace(Grid3D grid, int gi, int i){
+    float len   = float(grid.dims[gi]);
+    float start = grid.minimum[gi];
+    float stop  = grid.maximum[gi];
+    float multi = grid.multiplicator[gi];
+    return ((len-(i+1))*start + i*stop) * multi;
+}
+vec3 getindex(Grid1D grid, int i){
+    return vec3(linspace(grid, i), 0, 0);
+}
+vec3 getindex(Grid2D grid, int i){
+    ivec2 index2d = ind2sub(grid.dims, i);
+    return vec3(linspace(grid, 1, index2d.x), linspace(grid, 2, index2d.y), 0);
+}
+vec3 getindex(Grid3D grid, int i){
+    ivec3 index3d = ind2sub(grid.dims, i);
+    return vec3(
+        linspace(grid, 1, index3d.x),
+        linspace(grid, 2, index3d.y),
+        linspace(grid, 3, index3d.z)
+    );
+}
 
 vec3 _position(Grid1D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), 0,0);
+    return getindex(position, index);
 }
 vec3 _position(Grid1D position, Nothing position_x, Nothing position_y, float position_z, int index){
-    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), 0,position_z);
+    vec3 pos = getindex(position, index);
+    pos.z = position_z;
+    return pos;
 }
 vec3 _position(Grid1D position, Nothing position_x, float position_y, Nothing position_z, int index){
-    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), position_y, 0);
+    vec3 pos = getindex(position, index);
+    pos.y = position_y;
+    return pos;
 }
 vec3 _position(Grid2D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return vec3(stretch(linear_index(position.dims, index), position.minimum, position.maximum), 0);
+    return getindex(position, index);
 }
 vec3 _position(Grid2D position, Nothing position_x, Nothing position_y, float position_z, int index){
-    ivec2 index2D = ind2sub(position.dims, index);
-    vec2 lin_index = vec2(index2D) / vec2(position.dims);
-    vec2 xy = position.minimum + (lin_index * (position.maximum - position.minimum)); //stretch
-    return vec3(xy, position_z);
+    vec3 pos = getindex(position, index);
+    pos.z = position_z;
+    return pos;
 }
-
 vec3 _position(Grid3D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return stretch(linear_index(position.dims, index), position.minimum, position.maximum);
+    return getindex(position, index);
 }
 
 vec3 _position(samplerBuffer position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
@@ -228,6 +271,9 @@ vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing scale_y, Nothing scale
     return getindex(scale, index).xyz;
 }
 vec3 _scale(vec3 scale, float scale_x, float scale_y, samplerBuffer scale_z, int index){
+    return vec3(scale_x, scale_y, getindex(scale_z, index).x);
+}
+vec3 _scale(Nothing scale, float scale_x, float scale_y, samplerBuffer scale_z, int index){
     return vec3(scale_x, scale_y, getindex(scale_z, index).x);
 }
 vec3 _scale(vec3 scale, float scale_x, samplerBuffer scale_y, float scale_z, int index){

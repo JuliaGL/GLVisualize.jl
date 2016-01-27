@@ -11,52 +11,43 @@ call{T}(B::Type{AABB{T}}, a::AbstractMesh) = B(vertices(a))
 call{T}(B::Type{AABB{T}}, a::NativeMesh) = B(gpu_data(a.data[:vertices]))
 
 
-function call{T}(B::Type{AABB{T}}, positions::PositionIterator, scale::ScaleIterator, primitive::AABB{T})
-    _max = Vec{3, T}(typemin(T))
-    _min = Vec{3, T}(typemax(T))
-    for (p, s) in zip(positions, scale)
-        p = Vec{3, T}(p)
-        s_min   = Vec{3, T}(s) .* minimum(primitive)
-        s_max   = Vec{3, T}(s) .* maximum(primitive)
-        s_min_r = min(s_min, s_max)
-        s_max_r = max(s_min, s_max)
-        _min    = min(_min, p + s_min_r)
-        _max    = max(_max, p + s_max_r)
-    end
-    AbsoluteRectangle(_min, _max)
+function call{T}(
+        B::Type{AABB{T}},
+        positions, scale, rotation,
+        primitive::AABB{T}
+    )
+
+    ti = TransformationIterator(positions, scale, rotation)
+    B(ti, primitive)
+end
+function call{T}(B::Type{AABB{T}}, instances::Instances)
+    ti = TransformationIterator(instances)
+    B(ti, B(instances.primitive))
 end
 
-function Base.maximum(scale::ScaleIterator)
-    if is_scalar(scale)
-        return scale[1]
-    else
-        _max = Vec{3, T}(typemin(T))
-        for elem in scale
-            _max = max(elem, _max)
-        end
-        return _max
+function transform(translation, scale, rotation, points)
+    _max = Vec3f0(typemin(Float32))
+    _min = Vec3f0(typemax(Float32))
+    for p in points
+        x = scale.*Vec(p)
+        x = Vec3f0(rotation*Vec(x, 1f0))
+        x = Vec(translation)+x
+        _min = min(_min, x)
+        _max = max(_max, x)
     end
-end
-function Base.minimum(scale::ScaleIterator)
-    if is_scalar(scale)
-        return scale[1]
-    else
-        _min = Vec{3, T}(typemax(T))
-        for elem in scale
-            _min = min(elem, _min)
-        end
-        return _min
-    end
+    AABB{Float32}(_min, _max-_min)
 end
 
-function call{T, P<:Grid}(B::Type{AABB{T}}, positions::PositionIterator{P}, scale::ScaleIterator, primitive::AABB{T})
-    grid = positions.position
-    N    = ndims(grid)
-    smin = minimum(scale)
-    smax = maximum(scale)
-    pmin = minimum(primitive) .* smin
-    pmax = maximum(primitive) .* smax
-    _min = Vec3f0(map(first, grid.dims)..., ntuple(x->0f0, 3-N)...)
-    _max = Vec3f0(map(last,  grid.dims)..., ntuple(x->0f0, 3-N)...)
-    return AbsoluteRectangle(_min + pmin, _max + pmax)
+function call{T}(
+        B::Type{AABB{T}}, ti::TransformationIterator, primitive::AABB{T}
+    )
+    trans_scale_rot, state = next(ti, start(ti))
+    points = decompose(Point3f0, primitive)
+    bb = transform(trans_scale_rot..., points)
+    while !done(ti, state)
+        trans_scale_rot, state = next(ti, state)
+        translatet_bb = transform(trans_scale_rot..., points)
+        bb = union(bb, translatet_bb)
+    end
+    bb
 end

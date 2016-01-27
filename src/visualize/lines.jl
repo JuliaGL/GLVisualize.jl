@@ -54,7 +54,7 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
         transparent_picking = false
-        indices             = -1                  => to_indices
+        indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(value(positions))
         shader              = GLVisualizeShader("util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
@@ -76,4 +76,16 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     boundingbox             = GLBoundingBox(primitive)
     preferred_camera        = :orthographic_pixel
     shader                  = GLVisualizeShader("parametric.vert", "parametric.frag"; view = Dict("function" => bytestring(func.source)))
+end
+
+
+function _default{G<:GeometryPrimitive}(
+        geometry::TOrSignal{G}, s::style"lines", data::Dict
+    )
+    points = const_lift(geometry) do g
+         decompose(Point3f0, g)
+    end
+    indices = decompose(Face{2, GLuint, -1}, value(geometry))
+    data[:indices] = reinterpret(GLuint, indices)
+    _default(points, style"linesegment"(), data)
 end

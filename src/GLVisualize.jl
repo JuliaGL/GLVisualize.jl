@@ -16,12 +16,14 @@ using FixedPointNumbers
 using FileIO
 using Packing
 using SignedDistanceFields
+using StructsOfArrays
 import Images
 
 typealias GLBoundingBox AABB{Float32}
 
 import Base: merge, convert, show
 
+export renderloop
 
 function assetpath(folders...)
     path = joinpath(dirname(@__FILE__), "..", "assets", folders...)
