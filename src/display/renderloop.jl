@@ -281,14 +281,17 @@ function doubleclick(mouseclick, threshold)
 end
 
 
-function screenshot(window; path="screenshot.png", channel=:color)
+screenshot(window; path="screenshot.png", channel=:color) =
+   save(path, screenbuffer(window, channel=channel), true)
+
+function screenbuffer(window; channel=:color)
     fb = window.inputs[:framebuffer]
     channels = fieldnames(fb)[2:end]
     if channel in channels
         img = gpu_data(fb.(channel))[window.area.value]
-        save(path, rotl90(img), true)
+        return rotl90(img)
     else
         error("Channel $channel does not exist. Only these channels are available: $channels")
     end
 end
-export screenshot
+export screenshot, screenbuffer
