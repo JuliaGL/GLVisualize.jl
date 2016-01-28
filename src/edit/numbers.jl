@@ -13,7 +13,12 @@ function printforslider(x::FixedVector, numberwidth=5)
     end
     takebuf_string(io)
 end
-num2glstring(x, numberwidth) = GLVisualize.process_for_gl(printforslider(x, numberwidth))
+function num2glstring(x, numberwidth)
+    str   = printforslider(x, numberwidth)
+    atlas = get_texture_atlas()
+    font  = DEFAULT_FONT_FACE
+    Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
+end
 
 FixedSizeArrays.unit{T <: Real}(::Type{T}, _) = one(T)
 
@@ -43,23 +48,23 @@ end
 
 vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
 
-function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
+function vizzedit(range::Range, window, numberwidth=5; startvalue=middle(range))
     T = typeof(startvalue)
-    vizz                = visualize(printforslider(startvalue, numberwidth))
-    mbutton_clicked     = inputs[:mousebuttonspressed]
+    @materialize mouse_buttons_pressed, mouseposition = window.inputs
+    vizz              = visualize(printforslider(startvalue, numberwidth))
+    robj              = vizz.children[]
+    hovers_slider     = const_lift(is_same_id, mouse2id(window), robj)
+    hovers_slider     = filterwhen(hovers_slider, false, hovers_slider)
+    left_pressed      = const_lift(GLAbstraction.pressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
 
-    mousedown           = const_lift(isnotempty, mbutton_clicked)
-    mouse_add_drag_id   = foldp(
-        add_mouse_drags,
-        (zero(T), false, Vec2f0(0), 0, zero(T), 0),
-        mousedown, inputs[:mouseposition], inputs[:mouse_hover], Signal(Int(vizz.id)), Signal(numberwidth+1) #plus space
-    )
-    addition_vec = droprepeats(const_lift(first, mouse_add_drag_id))
+    addition_vec = droprepeats(GLAbstraction.dragged_diff(mouseposition, left_pressed, hovers_slider))
 
     ET      = eltype(T)
-    new_num = const_lift(slide, startvalue, addition_vec, range)
+    new_num = const_lift(slide, startvalue, map(last, addition_vec), range)
 
     new_num_gl = const_lift(num2glstring, new_num, numberwidth)
-    preserve(const_lift(update!, vizz[:glyphs], new_num_gl))
+    preserve(const_lift(robj[:uv_offset_width], new_num_gl) do uv_off_w, new_num
+        update!(uv_off_w, new_num)
+    end)
     return new_num, vizz
 end
