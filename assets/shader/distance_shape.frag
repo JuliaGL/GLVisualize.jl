@@ -1,4 +1,7 @@
 {{GLSL_VERSION}}
+{{GLSL_EXTENSIONS}}
+
+
 struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
     bool _; //empty structs are not allowed
 };
@@ -97,8 +100,19 @@ float get_distancefield(Nothing distancefield, vec2 uv){
     return 0.0;
 }
 
+
+layout (depth_greater) out float gl_FragDepth;
 out vec4  fragment_color;
 out uvec2 fragment_groupid;
+void write2framebuffer(vec4 color, uvec2 id){
+    fragment_color   = color;
+    fragment_groupid = id;
+    if (color.a > 0.5){
+        gl_FragDepth = gl_FragCoord.z;
+    }else{
+        gl_FragDepth = 1.0;
+    }
+}
 
 void main(){
 
@@ -118,17 +132,10 @@ void main(){
     float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
     float inside        = aastep(-0.0, 100.0, signed_distance);
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
-    vec4 final_color    = vec4(1,1,1, 0);
+    vec4 final_color    = vec4(1,1,1,0);
 
     fill(f_color, image, f_uv, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
     glow(f_glow_color, signed_distance, outside, final_color);
-
-    fragment_color   = final_color;
-    fragment_groupid = f_id;
-
-    if (fragment_color.a > 0.5)
-        gl_FragDepth = gl_FragCoord.z;
-    else
-        gl_FragDepth = 1.0;
+    write2framebuffer(final_color, f_id);
 }

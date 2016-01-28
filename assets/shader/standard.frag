@@ -22,22 +22,18 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
         spec_coeff = 0.0;
 
     // final lighting model
-    return  vec3(
-            vec3(0.1)  * vec3(0.3)  +
-            vec3(0.9)  * color * diff_coeff +
-            vec3(0.3) * spec_coeff);
+    return vec3(
+        vec3(0.1) * vec3(0.3)  +
+        vec3(0.9) * color * diff_coeff +
+        vec3(0.3) * spec_coeff
+    );
 }
 
 void main(){
-    vec3 L      	= normalize(o_lightdir);
-    vec3 N 			= normalize(o_normal);
-    vec3 light1 	= blinnphong(N, o_vertex, L, o_color.rgb);
-    vec3 light2 	= blinnphong(N, o_vertex, -L, o_color.rgb);
-    fragment_color 	= vec4(light1+light2*0.4, o_color.a);
-    //if(fragment_color.a > 0.0)
+    vec3 L      = normalize(o_lightdir);
+    vec3 N      = normalize(o_normal);
+    vec3 light1 = blinnphong(N, o_vertex, L, o_color.rgb);
+    vec3 light2 = blinnphong(N, o_vertex, -L, o_color.rgb);
+    fragment_color = vec4(light1+light2*0.4, o_color.a);
     fragment_groupid = o_id;
-    if (fragment_color.a > 0.0)
-        gl_FragDepth = gl_FragCoord.z;
-    else
-        gl_FragDepth = 1.0;
 }

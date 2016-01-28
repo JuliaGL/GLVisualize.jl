@@ -52,7 +52,7 @@ mat3 rotation_mat(vec3 direction){
     return rot;
 }
 
-uniform mat4 projectionview, model;
+uniform mat4 projectionview, projection, view, model;
 /*
 vec4 _position(vec2 position, Nothing heightfield, int index){
     return vec4(position, 0, 1);
@@ -68,7 +68,7 @@ void emit_vertex(vec2 vertex, vec2 uv)
     vec4 final_position;
     if(billboard){
         final_position = projectionview*model*vec4(g_position[0], 1);
-        gl_Position    = final_position + vec4((vertex / (resolution/1000.)), 0,0);
+        gl_Position    = final_position + (projection*vec4(vertex, 0, 0));
     }else{
         mat3 rot       = rotation_mat(g_rotation[0]);
         final_position = vec4(g_position[0]+(rot*vec3(vertex, 0)), 1);

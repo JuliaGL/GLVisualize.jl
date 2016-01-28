@@ -1,4 +1,5 @@
 {{GLSL_VERSION}}
+{{GLSL_EXTENSIONS}}
 
 out vec4 fragment_color;
 in vec3 frag_vertposition;
@@ -21,14 +22,14 @@ uniform float isovalue;
 uniform vec3 dimensions;
 uniform vec2 color_norm;
 
-const int view_samples = 512;
+const int view_samples = 128;
 const float max_distance = sqrt(1.0);
 
 const int num_samples = 256;
 const float step_size = max_distance/float(num_samples);
 const int num_ligth_samples = 16;
 const float lscale = max_distance / float(num_ligth_samples);
-const float density_factor =9;
+const float density_factor = 9;
 
 float _normalize(float val, float from, float to)
 {
@@ -173,17 +174,33 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
     }
     return color_lookup(maximum, color, color_norm);
 }
+
+uniform uint objectid;
+
+layout (depth_greater) out float gl_FragDepth;
+out vec4  fragment_color;
+out uvec2 fragment_groupid;
+
+void write2framebuffer(vec4 color, uvec2 id){
+    fragment_color   = color;
+    fragment_groupid = id;
+    if (color.a > 0.5){
+        gl_FragDepth = gl_FragCoord.z;
+    }else{
+        gl_FragDepth = 1.0;
+    }
+}
+
 void main()
 {
+    vec4 color;
     if(algorithm == 0)
-        fragment_color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        color = isosurface(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else if(algorithm == 1)
-        fragment_color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        color = volume(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
     else
-        fragment_color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
+        color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
 
-    if (fragment_color.a > 0.0)
-        gl_FragDepth = gl_FragCoord.z;
-    else
-        gl_FragDepth = 1.0;
+    write2framebuffer(color, uvec2(objectid, 0));
+
 }
