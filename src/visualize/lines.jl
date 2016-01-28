@@ -56,7 +56,7 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         transparent_picking = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
-        boundingbox         = GLBoundingBox(value(positions))
+        boundingbox         = GLBoundingBox(to_ram(value(positions)))
         shader              = GLVisualizeShader("util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
         gl_primitive        = GL_LINES
     end

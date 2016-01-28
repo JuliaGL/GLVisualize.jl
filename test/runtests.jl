@@ -13,7 +13,6 @@ number_of_windows = 6
 # there
 try
     window = glscreen()
-    @async GLWindow.renderloop(window)
     has_opengl = true
 catch e
     warn(string(
@@ -306,7 +305,6 @@ end
 
 if has_opengl
     while isopen(window)
-        sleep(0.01)
-        yield()
+        GLWindow.renderloop_inner(window)
     end
 end
