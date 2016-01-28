@@ -184,11 +184,21 @@ immutable GLVisualizeShader <: AbstractLazyShader
     paths  ::Tuple
     kw_args::Vector
     function GLVisualizeShader(paths...; kw_args...)
+        view = filter(kv->kv[1]==:view, kw_args)
+        if isempty(view)
+            view = Dict{ASCIIString, ASCIIString}()
+        else
+            view = view[1][2]
+        end
+        view = merge(view, Dict(
+            "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable"
+        ))
         paths = map(shader -> loadasset("shader", shader), paths)
         new(paths, vcat(kw_args, [
         	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
     		(:updatewhile, ROOT_SCREEN.inputs[:window_open]),
     		(:update_interval, 1.0),
+            (:view, view)
         ]))
     end
 end
