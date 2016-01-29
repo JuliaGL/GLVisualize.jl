@@ -117,7 +117,7 @@ function meshparticle(p, s, data)
         boundingbox      = const_lift(GLBoundingBox, inst)
         shader           = GLVisualizeShader(
             "util.vert", "particles.vert", "standard.frag",
-            view=Dict("lol_intel"=>lol_intel(position))
+            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, TextureBuffer))
         )
     end
 end
@@ -207,7 +207,7 @@ function sprites(p, s, data)
         shader              = GLVisualizeShader(
             "util.vert", "sprites.geom",
             "sprites.vert", "distance_shape.frag",
-            view=Dict("lol_intel"=>lol_intel(position))
+            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
         )
         gl_primitive        = GL_POINTS
     end
@@ -240,24 +240,3 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
     _default((DISTANCEFIELD, position), s, data)
 end
 
-
-function lol_intel(x)
-    """vec3 lol_intel(){
-        return vec3(0.0);
-    }"""
-end
-function lol_intel(::Grid{1})
-    """vec3 lol_intel(){
-        return vec3((position.minimum+position.maximum+float(position.dims))*0.0);
-    }"""
-end
-function lol_intel(::Grid{2})
-    """vec3 lol_intel(){
-        return vec3((position.minimum+position.maximum+vec2(position.dims))*0.0, 0.0);
-    }"""
-end
-function lol_intel(::Grid{3})
-    """vec3 lol_intel(){
-        return vec3((position.minimum+position.maximum+vec3(position.dims))*0.0);
-    }"""
-end

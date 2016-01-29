@@ -39,15 +39,9 @@ flat out uvec2 o_id;
 {{position_x_type}} position_x;
 {{position_y_type}} position_y;
 {{position_z_type}} position_z;
-//Assembling functions for creating the right position from the above inputs. They also indicate the type combinations allowed for the above inputs
-vec3 _position(samplerBuffer position, Nothing       position_x, float         position_y, float         position_z, int index);
-vec3 _position(samplerBuffer position, Nothing       position_x, Nothing       position_y, float         position_z, int index);
-vec3 _position(samplerBuffer position, Nothing       position_x, Nothing       position_y, Nothing       position_z, int index);
-vec3 _position(Nothing       position, samplerBuffer position_x, samplerBuffer position_y, samplerBuffer position_z, int index);
-vec3 _position(Grid1D        position, Nothing       position_x, Nothing       position_y, Nothing       position_z, int index);
-vec3 _position(Grid2D        position, Nothing       position_x, Nothing       position_y, Nothing       position_z, int index);
-vec3 _position(Grid3D        position, Nothing       position_x, Nothing       position_y, Nothing       position_z, int index);
 
+ivec2 ind2sub(ivec2 dim, int linearindex);
+ivec3 ind2sub(ivec3 dim, int linearindex);
 
 {{scale_type}}   scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
 {{scale_x_type}} scale_x;
@@ -93,25 +87,14 @@ vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
 void render(vec3 vertices, vec3 normals, mat4 viewmodel, mat4 projection, vec3 light[4]);
 
 
-/*
- needed to trick intels faulty, aggressive optimizer.
- It thinks, that grid is not used, if I'm only accessing
- the local variable in the function... Access to global is needed
- That the return is always 0 can't be inferred, though.
- So we splice in a function (vec3 lol_intel()), that accesses the global and multiplies it
- by 0.
-*/
-{{lol_intel}}
-
 
 void main(){
 	int index = gl_InstanceID;
     o_id      = uvec2(objectid, index+1);
     vec3 V    = vertices;
     vec3 N    = normals;
-
-	vec3 pos   = _position(position, position_x, position_y, position_z, index);
-    pos       += lol_intel();
+    vec3 pos;
+	{{position_calc}}
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
     o_color    = _color(color, intensity, color_norm, index);
 

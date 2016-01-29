@@ -170,39 +170,37 @@ vec4 getindex(sampler3D tex, int index){
 }
 
 float linspace(Grid1D grid, int i){
-    float len   = float(grid.dims);
-    float start = grid.minimum;
-    float stop  = grid.maximum;
-    float multi = grid.multiplicator;
-    return ((len-(i+1))*start + i*stop) * multi;
+    return ((float(grid.dims)-(i+1)) *
+        grid.minimum + i*grid.maximum) * 
+        grid.multiplicator;
 }
 float linspace(Grid2D grid, int gi, int i){
-    float len   = float(grid.dims[gi]);
-    float start = grid.minimum[gi];
-    float stop  = grid.maximum[gi];
-    float multi = grid.multiplicator[gi];
-    return ((len-(i+1))*start + i*stop) * multi;
+    return ((float(grid.dims[gi])-(i+1)) * 
+        grid.minimum[gi] + i*grid.maximum[gi]) * 
+        grid.multiplicator[gi];
 }
 float linspace(Grid3D grid, int gi, int i){
-    float len   = float(grid.dims[gi]);
-    float start = grid.minimum[gi];
-    float stop  = grid.maximum[gi];
-    float multi = grid.multiplicator[gi];
-    return ((len-(i+1))*start + i*stop) * multi;
+    return ((float(grid.dims[gi])-(i+1)) *
+        grid.minimum[gi] + i*grid.maximum[gi]) *
+        grid.multiplicator[gi];
 }
 vec3 getindex(Grid1D grid, int i){
     return vec3(linspace(grid, i), 0, 0);
 }
 vec3 getindex(Grid2D grid, int i){
     ivec2 index2d = ind2sub(grid.dims, i);
-    return vec3(linspace(grid, 1, index2d.x), linspace(grid, 2, index2d.y), 0);
+    return vec3(
+        linspace(grid, 0, index2d.x), 
+        linspace(grid, 1, index2d.y), 
+        0
+    );
 }
 vec3 getindex(Grid3D grid, int i){
     ivec3 index3d = ind2sub(grid.dims, i);
     return vec3(
-        linspace(grid, 1, index3d.x),
-        linspace(grid, 2, index3d.y),
-        linspace(grid, 3, index3d.z)
+        linspace(grid, 0, index3d.x),
+        linspace(grid, 1, index3d.y),
+        linspace(grid, 2, index3d.z)
     );
 }
 

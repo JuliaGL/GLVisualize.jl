@@ -17,17 +17,8 @@ z = r.*sin(phi).*sin(theta);
 
 using GLVisualize, GLAbstraction, GeometryTypes, Reactive
 
-
 w = glscreen()
-rotation_angle  = Signal(0f0)
-rotation 		= map(rotationmatrix_z, map(deg2rad, rotation_angle))
 robj = visualize((x,y,z), :surface)
 view(robj)
-bb = value(boundingbox(robj))
-println("maximum ", map(maximum, (x,y,z)))
-println("minimum ", map(minimum, (x,y,z)))
 
-println("maximum ", maximum(bb))
-println("minimum ", minimum(bb))
-
-GLWindow.renderloop(w)
+renderloop(w)
