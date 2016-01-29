@@ -26,7 +26,7 @@ mousedragg  = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
 
 # use mousedrag and mouseid + index to actually change the gpu array with the positions
 preserve(foldp((value(m2id)..., Point2f0(0)), mousedragg) do v0, dragg
-    if dragg == Vec2f0(0)
+    if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)
         id, index = value(m2id)
         if id==point_robj.id && length(gpu_position) >= index
             p0 = gpu_position[index]

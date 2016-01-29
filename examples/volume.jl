@@ -11,5 +11,4 @@ view(visualize([
 	visualize(volume_data(128), :iso, isovalue=0.5),
 	visualize(volume_data(128))
 ]))
-
-GLWindow.renderloop(w)
+renderloop(w)

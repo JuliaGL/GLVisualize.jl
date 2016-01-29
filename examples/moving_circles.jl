@@ -1,6 +1,6 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
-w,r = glscreen()
+w = glscreen()
 
 const t    = bounce(0f0:0.1f0:1000f0)
 radius     = 200f0
@@ -12,18 +12,4 @@ scales     = map(t) do t
 end
 a = visualize((CIRCLE, circle_pos), rotation=rotation, scale=scales, model=scalematrix(Vec3f0(0.03)))
 view(a)
-r()
-#=
-yield()
-sleep(2)
-yield()
-N = 200
-i = 1
-for _t in linspace(0, 2pi, N)
-    yield()
-    sleep(0.1)
-    screenshot(w, path=joinpath(homedir(), "Videos","circles", @sprintf("frame%03d.png", i)))
-    i+=1
-    push!(t, _t)
-end
-=#
+renderloop(w)

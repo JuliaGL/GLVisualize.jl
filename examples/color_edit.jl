@@ -1,5 +1,5 @@
 using GLVisualize, Colors, ModernGL, GeometryTypes, GLAbstraction, GLWindow, FileIO
-w,r = glscreen()
+w = glscreen()
 v, colortex = vizzedit(map(RGBA{U8}, colormap("blues", 7)), w)
 
 function screen(robj, w)
@@ -16,4 +16,4 @@ end
 
 screen(v, w)
 view(visualize(rand(Float32, 28,92), color=colortex, color_norm=Vec2f0(0,1)))
-r()
+renderloop()

@@ -1,7 +1,6 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
 
-out vec4 fragment_color;
 in vec3 frag_vertposition;
 
 uniform sampler3D intensities;

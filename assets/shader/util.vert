@@ -100,7 +100,7 @@ void rotate(Nothing r, int index, inout vec3 V, inout vec3 N){} // no-op
 void rotate(vec3 direction, int index, inout vec3 V, inout vec3 N){
     mat4 rot = rotation_mat(direction);
     V = vec3(rot*vec4(V, 1));
-    N = normalize(vec3(rot*vec4(N, 1)));
+    //N = normalize(vec3(rot*vec4(N, 0)));
 }
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N){
     vec3 r = texelFetch(vectors, index).xyz;
@@ -171,12 +171,12 @@ vec4 getindex(sampler3D tex, int index){
 
 float linspace(Grid1D grid, int i){
     return ((float(grid.dims)-(i+1)) *
-        grid.minimum + i*grid.maximum) * 
+        grid.minimum + i*grid.maximum) *
         grid.multiplicator;
 }
 float linspace(Grid2D grid, int gi, int i){
-    return ((float(grid.dims[gi])-(i+1)) * 
-        grid.minimum[gi] + i*grid.maximum[gi]) * 
+    return ((float(grid.dims[gi])-(i+1)) *
+        grid.minimum[gi] + i*grid.maximum[gi]) *
         grid.multiplicator[gi];
 }
 float linspace(Grid3D grid, int gi, int i){
@@ -190,8 +190,8 @@ vec3 getindex(Grid1D grid, int i){
 vec3 getindex(Grid2D grid, int i){
     ivec2 index2d = ind2sub(grid.dims, i);
     return vec3(
-        linspace(grid, 0, index2d.x), 
-        linspace(grid, 1, index2d.y), 
+        linspace(grid, 0, index2d.x),
+        linspace(grid, 1, index2d.y),
         0
     );
 }
@@ -306,15 +306,15 @@ out vec3 o_vertex;
 
 void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 light[4])
 {
-    vec4 position_camspace  = viewmodel * vec4(vertex,  1);
+    vec4 position_camspace = viewmodel * vec4(vertex,  1);
     // normal in world space
-    o_normal                = normal;
+    o_normal               = normal;
     // direction to light
-    o_lightdir              = normalize(light[3] - vertex);
+    o_lightdir             = normalize(light[3] - vertex);
     // direction to camera
-    o_vertex                = -position_camspace.xyz;
+    o_vertex               = -position_camspace.xyz;
     // screen space coordinates of the vertex
-    gl_Position             = projection * position_camspace;
+    gl_Position            = projection * position_camspace;
 }
 
 

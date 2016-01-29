@@ -1,5 +1,5 @@
 using GLVisualize, GeometryTypes
-w,r = glscreen()
+w = glscreen()
 #cubecamera(w)
 
 m = 512
@@ -19,5 +19,4 @@ for ei in eachindex(heightfield)
 end
 
 view(visualize(heightfield), method=:orthographic_pixel)
-r()
-
+renderloop(w)

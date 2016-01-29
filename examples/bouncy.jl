@@ -1,8 +1,8 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
-w,r = glscreen()
+w = glscreen()
 n = 50
-const t = Signal(0f0)
+t = bounce(0:10)
 
 const border = 50f0
 function bounce_particles(pos_velo, _)
@@ -27,18 +27,8 @@ position_velocity = foldp(bounce_particles,
 circle = HyperSphere(Point2f0(0), 20f0)
 vis = visualize((circle, map(first, position_velocity)),
     image=loadasset("doge.png"),
-    stroke_width=1f0,
+    stroke_width=2f0,
     stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)
 )
 view(vis, method=:orthographic_pixel)
-@async r()
-sleep(1)
-N = 200
-i = 1
-for _t in 1:N
-    yield()
-    sleep(0.1)
-    screenshot(w, path=joinpath(homedir(), "Videos","circles", @sprintf("frame%03d.png", i)))
-    i+=1
-    push!(t, _t)
-end
+renderloop(w)

@@ -51,20 +51,26 @@ vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(
 function vizzedit(range::Range, window, numberwidth=5; startvalue=middle(range))
     T = typeof(startvalue)
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
-    vizz              = visualize(printforslider(startvalue, numberwidth))
-    robj              = vizz.children[]
-    hovers_slider     = const_lift(is_same_id, mouse2id(window), robj)
-    hovers_slider     = filterwhen(hovers_slider, false, hovers_slider)
-    left_pressed      = const_lift(GLAbstraction.pressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
-
-    addition_vec = droprepeats(GLAbstraction.dragged_diff(mouseposition, left_pressed, hovers_slider))
-
-    ET      = eltype(T)
-    new_num = const_lift(slide, startvalue, map(last, addition_vec), range)
-
-    new_num_gl = const_lift(num2glstring, new_num, numberwidth)
-    preserve(const_lift(robj[:uv_offset_width], new_num_gl) do uv_off_w, new_num
-        update!(uv_off_w, new_num)
+    slider_value      = Signal(startvalue)
+    slider_value_str  = map(printforslider, slider_value)
+    vizz              = visualize(slider_value_str)
+    slider_robj       = vizz.children[]
+    # current tuple of renderobject id and index into the gpu array
+    m2id = GLWindow.mouse2id(window)
+    hovers_slider = const_lift(is_same_id, m2id, slider_robj)
+    # inputs are a dict, materialize gets the keys out of it (equivalent to mouseposition = w.inputs[:mouseposition])
+    # single left mousekey pressed (while no other mouse key is pressed)
+    key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
+    # dragg while key_pressed. Drag only starts if hovers_slider is true
+    mousedragg  = GLAbstraction.dragged(mouseposition, key_pressed, hovers_slider)
+    preserve(foldp(startvalue, droprepeats(mousedragg)) do v0, dragg
+        if dragg == Vec2f0(0) # just started draggin'
+            return value(slider_value)
+        end
+        push!(slider_value,
+            clamp(v0+(dragg[1]*step(range)), first(range), last(range))
+        )
+        v0
     end)
-    return new_num, vizz
+    return slider_value, vizz
 end

@@ -6,8 +6,8 @@ const yrange = linspace(0.03, 0.3, n)
 trange = linspace(0, 10pi, 200)
 
 function gen_points(t, y)
-    x = sin(t+(y*60*pi*y))*y*5
-    z = cos(t+(y*60*pi*y))*y*5
+    x = sin(t+(y*60*pi*y)+y)*y*5
+    z = cos((t+pi)+(y*60*pi*y)+y)*y*5
     Point3f0(x,y*60f0,z)
 end
 function gen_points(t)

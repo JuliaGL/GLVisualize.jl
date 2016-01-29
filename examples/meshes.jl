@@ -1,7 +1,7 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
-msh = GLNormalMesh(load("cat.obj"))
-w,r = glscreen()
+msh = GLNormalMesh(loadasset("cat.obj"))
+w = glscreen()
 
 view(visualize(msh))
 
-r()
+renderloop(w)

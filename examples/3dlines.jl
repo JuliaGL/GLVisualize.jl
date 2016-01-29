@@ -2,6 +2,7 @@ if !isdefined(:runtests)
     using GLAbstraction, Colors, GeometryTypes, GLVisualize, Reactive
     n = 400 # The number of points per line
     nloops = 20
+    w = glscreen()
 else
     n = 20
     nloops = 5
@@ -10,8 +11,8 @@ end
 TL = linspace(-2f0 * pi, 2f0 * pi, n)
 # We create a list of positions and connections, each describing a line.
 # We will collapse them in one array before plotting.
-xyz         = Point3f0[]
-s           = RGBA{Float32}[]
+xyz = Point3f0[]
+s   = RGBA{Float32}[]
 
 # The index of the current point in the total amount of points
 base_colors1 = distinguishable_colors(nloops, RGB{Float64}(1,0,0))
@@ -25,10 +26,7 @@ for i=1:nloops
     append!(s, color_palette)
 end
 
-w = glscreen()
-buff = GLBuffer(s)
-view(visualize(Signal(xyz), :lines, color=buff), method=:perspective)
-
+view(visualize(Signal(xyz), :lines, color=s), method=:perspective)
 
 if !isdefined(:runtests)
     renderloop(w)

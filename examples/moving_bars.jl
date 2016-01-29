@@ -1,8 +1,8 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, Reactive, FileIO
 
-w,r = glscreen()
+w = glscreen()
 
-const t    = Signal(0f0)
+t = bounce(0f0:0.1:10f0)
 prima = SimpleRectangle(0f0,-0.5f0,1f0,1f0)
 
 b = rand(10f0:0.01f0:200f0, 10)
@@ -22,17 +22,4 @@ end
 b_sig = map(last, interpolated)
 a = visualize((RECTANGLE, b_sig), xyrange=((0,600),),intensity=b_sig, color_norm=Vec2f0(-40,200), color=Texture(GLVisualize.default(Vector{RGBA})))
 view(a, method=:orthographic_pixel)
-@async r()
-for i=1:100
-    sleep(0.1)
-    yield()
-end
-N = 200
-i = 1
-for _t in 1f0:0.05f0:10f0
-    yield()
-    sleep(0.1)
-    screenshot(w, path=joinpath(homedir(), "Videos","circles", @sprintf("frame%03d.png", i)))
-    i+=1
-    push!(t, _t)
-end
+renderloop(w)
