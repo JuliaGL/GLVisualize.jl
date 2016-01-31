@@ -323,6 +323,7 @@ function apply_property(img::GLVisualizeBackend, property::Compose.ClipPrimitive
     if isempty(property.points); return; end
 end
 
+Compose.isfinished(backend::GLVisualizeBackend) = false
 Compose.finish(backend::GLVisualizeBackend) = nothing
 
 Compose.iswithjs(img::GLVisualizeBackend) = false

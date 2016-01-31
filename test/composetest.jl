@@ -41,7 +41,7 @@ p = compose(context(),
         stroke([LCHab(5, 0, 77),LCHab(5, 77, 77),LCHab(50, 0, 8)]))
 =#
 using DataFrames
-w,r = glscreen(debugging=true)
+w = glscreen()
 img = ComposeBackend.GLVisualizeBackend(w)
 # xs = 0:0.1:20
 #
@@ -74,9 +74,10 @@ img = ComposeBackend.GLVisualizeBackend(w)
 # col = [fill("Slope 4",40); fill("Slope -6",40)]
 # p = plot(x=x,y=y,colour=col, Geom.point, Geom.smooth(method=:lm))
 
-p = plot(x=1:100, y=2.^rand(100),
-     Scale.y_sqrt, Geom.point, Geom.smooth,
-     Guide.xlabel("Stimulus"), Guide.ylabel("Response"), Guide.title("Cat Training"))
+p = compose(context(),
+        rectangle([0.25, 0.5, 0.75], [0.25, 0.5, 0.75], [0.1], [0.1]),
+        fill([LCHab(92, 10, 77), LCHab(68, 74, 192), LCHab(78, 84, 29)]),
+        stroke([LCHab(5, 0, 77),LCHab(5, 77, 77),LCHab(50, 0, 8)]))
 
 draw(img, p)
-r()
+renderloop(w)
