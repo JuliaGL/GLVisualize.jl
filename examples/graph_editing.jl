@@ -1,8 +1,11 @@
 using GeometryTypes, GLVisualize, GLAbstraction, Reactive
 w = glscreen()
 n = 50
-a = rand(Point2f0, 50)*1000f0
+n_connections = 100
+srand(10)
+a = rand(Point2f0, n)*1000f0
 points = visualize((Circle(Point2f0(0), 15f0), a))
+
 const point_robj = points.children[] # temporary way of getting the render object. Shouldn't stay like this
  # best way to get the gpu object. One could also start by creating a gpu array oneself.
  # this is a bit tricky, since not there are three different types.
@@ -10,7 +13,7 @@ const point_robj = points.children[] # temporary way of getting the render objec
 const gpu_position = point_robj[:position]
 # now the lines and points share the same gpu object
 # for linesegments, you can pass indices, which needs to be of some 32bit int type
-lines  = visualize(gpu_position, :linesegment, indices=rand(Cuint(1):Cuint(n), 100))
+lines  = visualize(gpu_position, :linesegment, indices=rand(1:n, n_connections))
 
 # current tuple of renderobject id and index into the gpu array
 const m2id = GLWindow.mouse2id(w)
