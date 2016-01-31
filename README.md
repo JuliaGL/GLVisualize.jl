@@ -2,7 +2,7 @@
 
 GLVisualize is an interactive 2D/3D visualization library completely written in OpenLG and Julia.
 
-It is actively developped but it isn't officially released yet, since there are still quite a few 
+It is actively developped but it isn't officially released yet, since there are still quite a few
 inconsistencies and missing documentations.
 A lot of things already work nicely, so besides missing documentations and a high probability that the API will change in the near future, there is no real reason why you shouldn't give it a try.
 You can look at `test/runtests.jl` and the `example` folder, to get a sense of how you can use GLVisualize.
@@ -13,13 +13,13 @@ Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.checkout("Reactive")
-Pkg.checkout("GLVisualize")
-Pkg.checkout("GLAbstraction")
-Pkg.checkout("GLWindow")
-Pkg.checkout("GeometryTypes")
-Pkg.checkout("Packing")
-Pkg.checkout("FreeType")
+Pkg.clone("https://github.com/simondanisch/StructsOfArrays.jl") #my experimental fork, might change
+Pkg.checkout("StructsOfArrays", "sd/fsa_structs")
+Pkg.checkout("GLAbstraction", "sd/next²")
+Pkg.checkout("GLVisualize", "next2")
+Pkg.checkout("GLWindow", "sd/rebuild")
+Pkg.checkout("GeometryTypes", "sd/boundingbox")
+Pkg.checkout("FixedSizeArrays", "master")
 ```
 
 
