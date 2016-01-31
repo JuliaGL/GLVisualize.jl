@@ -118,12 +118,12 @@ function transformation_convert{T1<:FixedVector,T2<:FixedVector}(
 end
 
 function transformation_convert{T1,T2,N1,N2}(
-        PT::Type{Point{N1, T1}}, scalar::Point{N2,T2}
+        PT::Type{Point{N1, T1}}, scalar::FixedVector{N2,T2}
     )
     PT(scalar, ntuple(FixedSizeArrays.ConstFunctor(T1(0)), Val{N1-N2})...)
 end
 function transformation_convert{T1,T2,N1,N2}(
-        VT::Type{Vec{N1, T1}}, scalar::Vec{N2, T2}
+        VT::Type{Vec{N1, T1}}, scalar::FixedVector{N2, T2}
     )
     VT(scalar, ntuple(FixedSizeArrays.ConstFunctor(T1(1)), Val{N1-N2})...)
 end
