@@ -20,7 +20,16 @@ function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatT
 end
 
 
-_default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict) = _default((Grid(value(main), ((-1f0, 1f0), (-1f0, 1f0))), main), s, data)
+function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
+    @gen_defaults! data begin
+        grid_start = (-1f0, -1f0)
+        grid_size = (2f0, 2f0)
+    end
+    x,y = grid_start
+    w,h = grid_size
+    grid = ((x, x+w), (y, y+h))
+    _default((Grid(value(main), grid), main), s, data)
+end
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
         position    = main[1]
@@ -68,7 +77,7 @@ end
 function glsllinspace(grid::Grid{1}, gi, index)
     """
     (((float(position.dims)-($(index)+1)) *
-        position.minimum + $(index)*position.maximum) * 
+        position.minimum + $(index)*position.maximum) *
         position.multiplicator)
     """
 end
@@ -80,7 +89,7 @@ function grid_pos(grid::Grid{2})
 end
 function grid_pos(grid::Grid{3})
     "vec3(
-        $(glsllinspace(grid, 0, "index2D.x")), 
+        $(glsllinspace(grid, 0, "index2D.x")),
         $(glsllinspace(grid, 1, "index2D.y")),
         $(glsllinspace(grid, 2, "index2D.z"))
     )"
@@ -105,8 +114,8 @@ function position_calc{T<:AbstractFloat}(
     vec2 normalized_index = vec2(index2D) / vec2(dims);
     vec2 offsetted_index = normalized_index + (offset/vec2(dims));
     pos = vec3(
-        texture(position_x, offsetted_index).x, 
-        texture(position_y, offsetted_index).x, 
+        texture(position_x, offsetted_index).x,
+        texture(position_y, offsetted_index).x,
         texture(position_z, offsetted_index).x
     );
 """

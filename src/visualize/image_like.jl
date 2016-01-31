@@ -15,7 +15,9 @@ end
 _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
     intensity             = main => Texture
     color                 = default(Vector{RGBA{U8}},s) => Texture
-    primitive::GLUVMesh2D = SimpleRectangle{Float32}(0,0,size(value(main))...)
+    grid_size             = size(value(main))
+    grid_start            = (0, 0)
+    primitive::GLUVMesh2D = SimpleRectangle{Float32}(grid_start..., grid_size...)
     color_norm	          = const_lift(extrema2f0, main)
     boundingbox 	      = GLBoundingBox(primitive)
     shader                = GLVisualizeShader("uv_vert.vert", "intensity.frag")
