@@ -1,65 +1,124 @@
-typealias Primitives{N} Union{GeometryPrimitive{N}, AbstractMesh}
-typealias Primitives3D  Primitives{3}
-typealias Sprites Union{GeometryPrimitive{2}, Shape, Char}
+#=
+A lot of visualization forms in GLVisualize are realised in the form of instanced
+particles. This is because they can be handled very efficiently by OpenGL.
+There are quite a few different ways to feed instances with different attributes.
+The main constructor for particles is a tuple of (Primitive, Position), whereas
+position can come in all forms and shapes. You can leave away the primitive.
+In that case, GLVisualize will fill in some default that is anticipated to make
+the most sense for the datatype.
+=#
 
-typealias ExtPrimitives Union{Primitives, Sprites}
+#3D primitives
+typealias Primitives3D  AbstractGeometry{3}
+#2D primitives AKA sprites, since they are shapes mapped onto a 2D rectangle
+typealias Sprites Union{AbstractGeometry{2}, Shape, Char}
 
-_default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{2, Float32}), main), s, data)
-_default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(1.0)), main), s, data)
-_default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
 
 
-_default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict) = _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
-_default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict) = _default(('⬆', main), s, data)
-
-function _default{P<:Primitives3D, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
-    data[:rotation] = const_lift(vec, main[2])
-    get!(data, :color_norm) do
-        const_lift(extrema2f0, main[2])
-    end
-    get!(data, :color, Texture(default(Vector{RGBA})))
-    _default((main[1], Grid(main[2])), s, data)
+"""
+Vectors of floats are treated as barplots, so they get a HyperRectangle as
+default primitive.
+"""
+function _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict)
+    _default((centered(HyperRectangle{2, Float32}), main), s, data)
 end
-function _default{P<:Sprites, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict)
+"""
+Matrices of floats are represented as 3D barplots with cubes as primitive
+"""
+function _default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict)
+    _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(1.0)), main), s, data)
+end
+"""
+Vectors of n-dimensional points get ndimensional rectangles as default
+primitives. (Particles)
+"""
+function _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)
+    _default((centered(HyperRectangle{N, Float32}), main), s, data)
+end
+
+"""
+3D matrices of vectors are 3D vector field with a pyramid (arrow) like default
+primitive.
+"""
+function _default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict)
+    _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
+end
+"""
+2D matrices of vectors are 2D vector field with a an unicode arrow as the default
+primitive.
+"""
+function _default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict)
+    _default(('⬆', main), s, data)
+end
+
+"""
+Vectors with `Vec` as element type are treated as vectors of rotations.
+The position is assumed to be implicitely on the grid the vector defines (1D,2D,3D grid)
+"""
+function _default{P<:AbstractGeometry, T<:Vec, N}(
+        main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict
+    )
+    primitive, rotation = main
     @gen_defaults! data begin
-        rotation   = const_lift(vec, main[2])
-        color_norm = const_lift(extrema2f0, main[2])
-        color      = Texture(default(Vector{RGBA}))
-        xyrange    = ntuple(x->(0,1), N)
+        color_norm = const_lift(extrema2f0, rotation)
+        rotation   = const_lift(vec, rotation)
+        color_map  = default(Vector{RGBA})
+        grid_dims  = ntuple(i->linspace(0f0, 1f0, size(rotation,i)), N)
     end
-    _default((main[1], Grid(value(main[2]), xyrange)), s, data)
+    _default((primitive, Grid(rotation, grid_dims)), s, data)
 end
 
-function _default{N, P<:Primitives, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
-    grid = Grid(value(main[2]))
+function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
+        main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict
+    )
+    primitive, heightfield_s = main
+    heightfield = value(heightfield_s)
+    @gen_defaults! data begin
+        grid_dims = ntuple(i->linspace(0f0, 1f0, size(heightfield, i)), N)
+    end
+    grid = Grid(heightfield, grid_dims)
     @gen_defaults! data begin
         scale            = nothing
         scale_x::Float32 = step(grid.dims[1])
         scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
-        scale_z = const_lift(vec, main[2]) => TextureBuffer
+        scale_z = const_lift(vec, heightfield_s)
     end
-    _default((main[1], grid), s, data)
+    _default((primitive, grid), s, data)
 end
-function _default{N, P<:Sprites, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
-    grid = Grid(value(main[2]))
+function _default{P<:Sprites, T<:AbstractFloat, N}(
+        main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict
+    )
+    primitive, heightfield_s = main
+    heightfield = value(heightfield_s)
     @gen_defaults! data begin
-        position_z = const_lift(vec, main[2]) => GLBuffer
-        scale = Vec2f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0)
+        grid_dims = ntuple(i->linspace(0f0, 1f0, size(heightfield, i)), N)
     end
-    _default((main[1], grid), s, data)
+    grid = Grid(heightfield, grid_dims)
+    @gen_defaults! data begin
+        position_z = const_lift(vec, heightfield_s)
+        scale      = Vec2f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0)
+    end
+    _default((primitive, grid), s, data)
 end
-function _default{P<:Sprites, T<:AbstractFloat}(main::Tuple{P, VecTypes{T}}, s::Style, data::Dict)
+"""
+Sprites primitives with a vector of floats are treated as something barplot like
+"""
+function _default{P<:Sprites, T<:AbstractFloat}(
+        main::Tuple{P, VecTypes{T}}, s::Style, data::Dict
+    )
+    primitive, heightfield_s = main
+    heightfield = value(heightfield_s)
     @gen_defaults! data begin
-        xyrange    = ((0,500),)
+        grid_dims = ntuple(i->linspace(0f0, 1f0, size(heightfield, i)), N)
     end
-    grid = Grid(value(main[2]), xyrange)
+    grid = Grid(heightfield, grid_dims)
     @gen_defaults! data begin
         scale            = nothing
         scale_x::Float32 = step(grid.dims[1])
-        scale_y          = main[2] => GLBuffer
+        scale_y          = heightfield_s
         scale_z::Float32 = 1f0
     end
-    _default((main[1], grid), s, data)
+    _default((primitive, grid), s, data)
 end
 
 to_ram(x) = x
@@ -239,4 +298,3 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
 
     _default((DISTANCEFIELD, position), s, data)
 end
-
