@@ -12,7 +12,7 @@ for h in mini:0.2f0:maxi
     c = contour(xrange, yrange, z, h)
     for elem in c.lines
         points = map(elem.vertices) do p
-            Point3f0(p, h+0.0001f0)
+            Point3f0(p, h)
         end
         view(visualize(points, :lines), method=:perspective)
         view(visualize(elem.vertices, :lines, model=translationmatrix(Vec3f0(0,11,0))), method=:perspective)
@@ -24,13 +24,11 @@ view(visualize(
     model=translationmatrix(trans)
 ))
 
-
 trans += Vec3f0(0,11,0)
 
 view(visualize(
     reinterpret(Intensity{1,Float32}, z), grid_start=(-5,-5), grid_size=(10, 10),
     model=translationmatrix(trans)
-
 ), method=:perspective)
 
 
