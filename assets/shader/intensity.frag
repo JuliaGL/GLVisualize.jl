@@ -23,10 +23,9 @@ float aastep(float threshold1, float threshold2, float value) {
 void main(){
 	float i = float(getindex(intensity, o_uv).x);
 	vec4 stroke_color = vec4(1,1,1,1);
-	float lines = i*10*M_PI;
+	float lines = i*M_PI;
 	lines = abs(sin(lines));
-	lines = aastep(0.5, 0.6, lines);
+	lines = aastep(0.4, 0.7, lines);
 
 	fragment_color  = mix(color_lookup(i, color, color_norm), stroke_color, lines);
 }
- 
