@@ -121,23 +121,6 @@ function _default{P<:Sprites, T<:AbstractFloat}(
     _default((primitive, grid), s, data)
 end
 
-to_ram(x) = x
-to_ram(x::GPUArray) = gpu_data(x)
-
-function _Instances(position,px,py,pz, scale,sx,sy,sz, rotation, primitive)
-    args = (position,px,py,pz, scale,sx,sy,sz, rotation, primitive)
-    args = map(to_ram, args)
-    p = const_lift(ArrayOrStructOfArray, Point3f0, args[1:4]...)
-    s = const_lift(ArrayOrStructOfArray, Vec3f0, args[5:8]...)
-    r = const_lift(ArrayOrStructOfArray, Vec3f0, args[9])
-    const_lift(Instances, args[10], p, s, r)
-end
-function _Instances(position, scale, rotation, primitive)
-    p = const_lift(ArrayOrStructOfArray, Point3f0, position)
-    s = const_lift(ArrayOrStructOfArray, Vec3f0, scale)
-    r = const_lift(ArrayOrStructOfArray, Vec3f0, rotation)
-    const_lift(Instances, primitive, p, s, r)
-end
 
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to meshparticle

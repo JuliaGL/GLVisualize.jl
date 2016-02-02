@@ -71,13 +71,43 @@ to_cpu_mem(x::GPUArray) = gpu_data(x)
 typealias ScaleTypes Union{Vector, Vec, AbstractFloat, Void, Grid}
 typealias PositionTypes Union{Vector, Point, AbstractFloat, Void, Grid}
 
-
-immutable Instances
-    primitive
-    translation
-    scale
-    rotation
+type ScalarRepeat{T}
+    scalar::T
 end
+Base.ndims(::ScalarRepeat) = 1
+Base.getindex(s::ScalarRepeat, i...) = s.scalar
+#should setindex! really be allowed? It will set the index for the whole row...
+Base.setindex!{T}(s::ScalarRepeat{T}, value, i...) = (s.scalar = T(value))
+Base.eltype{T}(::ScalarRepeat{T}) = T
+
+Base.start(::ScalarRepeat) = 1
+Base.next(sr::ScalarRepeat, i) = sr.scalar, i+1
+Base.done(sr::ScalarRepeat, i) = false
+
+immutable Instance{P,T,S,R}
+    primitive::P
+    translation::T
+    scale::S
+    rotation::R
+end
+
+
+
+function Instances(position,px,py,pz, scale,sx,sy,sz, rotation, primitive)
+    args = (position,px,py,pz, scale,sx,sy,sz, rotation, primitive)
+    args = map(to_cpu_mem, args)
+    p = const_lift(ArrayOrStructOfArray, Point3f0, args[1:4]...)
+    s = const_lift(ArrayOrStructOfArray, Vec3f0, args[5:8]...)
+    r = const_lift(ArrayOrStructOfArray, Vec3f0, args[9])
+    const_lift(Instances, args[10], p, s, r)
+end
+function _Instances(position, scale, rotation, primitive)
+    p = const_lift(ArrayOrStructOfArray, Point3f0, position)
+    s = const_lift(ArrayOrStructOfArray, Vec3f0, scale)
+    r = const_lift(ArrayOrStructOfArray, Vec3f0, rotation)
+    const_lift(Instances, primitive, p, s, r)
+end
+
 immutable GridZRepeat{G,T,N} <: AbstractArray{Point{3,T}, N}
     grid::G
     z::Array{T, N}
@@ -86,6 +116,10 @@ Base.size(g::GridZRepeat) = size(g.z)
 Base.size(g::GridZRepeat, i) = size(g.z, i)
 Base.linearindexing{T<:GridZRepeat}(::Type{T}) = Base.LinearFast()
 Base.getindex{G,T}(g::GridZRepeat{G,T}, i) = Point{3, T}(g.grid[i], g.z[i])
+
+
+
+
 
 
 function ArrayOrStructOfArray{T}(::Type{T}, array::Void, a, elements...)
