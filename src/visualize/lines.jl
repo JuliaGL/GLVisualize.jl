@@ -8,7 +8,10 @@ function lastlen(points)
 end
 to_indices(x::TOrSignal{Int}) = x
 to_indices(x::VecOrSignal{UnitRange{Int}}) = x
+#if integer, we transform it to 0 based indices
 to_indices{I<:Integer}(x::Vector{I}) = indexbuffer(map(i-> Cuint(i-1), x))
+#if already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
+to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
 to_indices(x) = error(
     "Not a valid index type: $x.
     Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
