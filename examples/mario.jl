@@ -71,7 +71,7 @@ function arrows2vec(direction)
 end
 
 # Put everything together
-arrows 			= sampleon(bounce(1:10), GLVisualize.ROOT_SCREEN.inputs[:arrow_navigation])
+arrows 			= sampleon(bounce(1:10), w.inputs[:arrow_navigation])
 keys 			= const_lift(arrows2vec, arrows)
 mario_signal 	= const_lift(update, 8.0, keys, Mario(0.0, 0.0, 0.0, 0.0, :right))
 image_stream 	= const_lift(mario2image, mario_signal)

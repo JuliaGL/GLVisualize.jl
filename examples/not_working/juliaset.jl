@@ -23,8 +23,6 @@ end
 x,y = meshgrid(-1.5f0:0.5f0:500f0, -1f0:1f0:500f0)
 x *= 1im
 y *= 1im
-println(size(x))
-println(size(y))
 z = x + 1im * y
 
 const julia = zeros(Float32, size(z))
@@ -41,8 +39,8 @@ map!(julia ) do val
 	val / maxval
 end
 using GLVisualize
-w,r =glscreen()
+w =glscreen()
 # Display it
 view(visualize(julia))
 
-r()
+renderloop(w)
