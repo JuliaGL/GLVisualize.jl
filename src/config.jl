@@ -1,3 +1,7 @@
+"""
+Module to keep global configs
+Should become customizable at some point!
+"""
 module Config
 
 using Reactive, GeometryTypes, Colors, GLFW, GLWindow, GLAbstraction

@@ -1,27 +1,3 @@
-immutable Sprite{N, T} <: FixedVector{N, T}
-	#attribute_id::T # lookup attribute_id for attribute texture
-	_::NTuple{N, T}
-end
-immutable SpriteStyle{N, T} <: FixedVector{N, T}
-	#color_id::T # lookup attribute_id for attribute texture
-	#technique::T
-	_::NTuple{N, T}
-end
-
-
-immutable SpriteAttribute{N, T} <: FixedVector{N, T}
-	_::NTuple{N, T}
-	#u::T
-	#v::T
-	#x_scale::T
-	#y_scale::T
-end
-
-
-typealias GLSpriteAttribute SpriteAttribute{4, Float16}
-typealias GLSprite Sprite{1, UInt32}
-typealias GLSpriteStyle SpriteStyle{2, UInt16}
-const GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE
 
 type TextureAtlas
 	rectangle_packer::RectanglePacker
@@ -31,23 +7,10 @@ type TextureAtlas
     attributes      ::Vector{Vec4f0}
 	scale 		    ::Vector{Vec2f0}
     extent          ::Vector{FontExtent{Float64}}
-	# sprite_attributes layout
-	# can be compressed quite a bit more
-	# ID Vertex1     Vertex2     Vertex3     Vertex4
-	# 0  [u,v,xs,ys] [u,v,xs,ys] [u,v,xs,ys] [u,v,xs,ys] # uv -> rectangular section in TextureAtlas
-	# 1  ...
-	# .
-	# .
-	# .
+
 	function TextureAtlas(initial_size=(4096, 4096))
-        #@time( (data = open(joinpath(dirname(@__FILE__), "texture_atlas.bin")) do io
-        #    deserialize(io)
-        #end))
-		#images = Texture(data, minfilter=:linear, magfilter=:linear)
+
 		images = Texture(fill(Float16(0.0), initial_size...), minfilter=:linear, magfilter=:linear)
-		#glBindTexture(GL_TEXTURE_2D, images.id)
-		#glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 16)
-		#glBindTexture(GL_TEXTURE_2D, 0)
 
 		new(
 			RectanglePacker(SimpleRectangle(0, 0, initial_size...)),

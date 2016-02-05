@@ -1,4 +1,5 @@
 module StructsOfArrays
+
 export StructOfArrays, ScalarRepeat
 
 immutable StructOfArrays{T,N,U<:Tuple} <: AbstractArray{T,N}

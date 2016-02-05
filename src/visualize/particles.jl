@@ -186,7 +186,7 @@ function sprites(p, s, data)
     inst = _Instances(
         position, position_x, position_y, position_z,
         scale, scale_x, scale_y, scale_z,
-        rotation, SimpleRectangle{Float32}(offset...,1,1)
+        rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
         color               = default(RGBA, s)       => GLBuffer
@@ -239,4 +239,3 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
 
     _default((DISTANCEFIELD, position), s, data)
 end
-

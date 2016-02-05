@@ -16,6 +16,7 @@ using FixedPointNumbers
 using FileIO
 using Packing
 using SignedDistanceFields
+using FreeType
 import Images
 
 typealias GLBoundingBox AABB{Float32}
@@ -33,8 +34,10 @@ loadasset(folders...) = load(assetpath(folders...))
 export assetpath, loadasset
 
 include("FreeTypeAbstraction.jl")
+using .FreeTypeAbstraction
+
 include("StructsOfArrays.jl")
-using StructsOfArrays
+using .StructsOfArrays
 
 include("types.jl")
 export CIRCLE, RECTANGLE, ROUNDED_RECTANGLE, DISTANCEFIELD, TRIANGLE

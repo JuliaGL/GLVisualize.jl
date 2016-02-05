@@ -1,43 +1,89 @@
-function plot(m)
-    srand(17)
-    x = Context[visualize(rand(Point2f0, 4)*150, :lines) for _=1:15]
-    view(visualize(x), method=:orthographic_pixel)
+using GLAbstraction, Colors, GeometryTypes, GLVisualize, Reactive
+using GLWindow, FileIO, ImageMagick, ModernGL
+
+"""
+This is the GLViualize Test suite.
+It tests all examples in the example folder and has the options to create
+docs from the examples.
+"""
+module Test
+    window = glscreen(debugging=true)
+    const runtests  = true
+    const make_docs = true
+    function create_video(frames, path, name)
+        for elem in frames
+            save(joinpath(path, "$name$frame.png"), elem, true)
+        end
+        println("created $name's png sequence successfully!")
+        cd(path)
+        run(pipeline(`png2yuv -I p -f 30 -b 1 -n $nframes -j $name%d.png`, "$name.yuv"))
+        run(
+            `vpxenc --good --cpu-used=0 --auto-alt-ref=1
+            --lag-in-frames=16 --end-usage=vbr --passes=2 --threads=2
+            --target-bitrate=3500 -o $name.webm $name.yuv`
+        )
+        println("created $name's video sequence successfully!")
+    end
+    function create_docs(name)
+        source_code = readall(open(Pkg.dir("GLVisualize", "examples", name)))
+        path = videopath(name)
+        """
+        <h1>$(ucfirst(name))</h1>
+        <video  width="480" height="300" autoplay loop>
+          <source src="$path">
+              Your browser does not support the video tag.
+        </video>
+
+        {% highlight julia %}
+        $(source_code)
+        {% endhighlight %}
+        """
+    end
+    function record_test(window, video_folder)
+        nframes = 360
+        frames = []
+        for frame in 1:nframes
+            push!(time, frame/nframes)
+            yield()
+            GLWindow.renderloop_inner(window)
+            buffer = screenbuffer(window)
+            push!(frames, buffer)
+        end
+        frames
+    end
+    function record_test_interactive(window, video_folder)
+        nframes = 360
+        frames = []
+        while isopen(window)
+            push!(time, frame/nframes)
+            yield()
+            GLWindow.renderloop_inner(window)
+            push!(frames, screenbuffer(window))
+        end
+        frames
+    end
+
 end
-function plot2()
-    points = [Point2f0(offset, sin(offset/80)*100) for offset=linspace(0,1000*50, 4*3*50)]
-    indices = Signal(UnitRange{Int}[1:4, 5:8, 9:12])
-    robj   = visualize(points, :lines, indices=indices)
-    #view(visualize((Circle(Point2f0(0), 5f0), points)), method=:orthographic_pixel)
-    view(robj, method=:orthographic_pixel)
-    robj, indices
-end
-function plot3(N)
-    points = LineSegment{Point2f0}[LineSegment{Point2f0}((Point2f0(sin(i), cos(i))*50) + 200, (Point2f0(sin(i), cos(i))*200) + 200) for i=linspace(0,2*pi, N)]
-    robj   = visualize(points)
-    view(robj, method=:orthographic_pixel)
-end
-using GLVisualize, GeometryTypes, Colors, GLAbstraction, ModernGL, Reactive
-w,r=glscreen(debugging=true)
-@async r()
-points = [Point2f0(offset, sin(offset/80)*100) for offset=linspace(0,1000, 4*3)]
-last_length = 0
-color = RGBA{U8}(1,0,0,1)
-c = fill(color, length(points))
-i = UnitRange{Int}[range(last_length+1, length(points))]
-#push!(thicknesses, fill(thickness, length(points)))
-positions = GLBuffer(fill(Point2f0(999999), 10_000))
-colors    = GLBuffer(fill(RGBA{U8}(0,0,0,0), 10_000))
-indices   = Signal(i)
-positions[1:length(points)] = points
-colors[1:length(points)] = c
-robj = visualize(positions, :lines, color=colors, thickness=2f0, indices=indices)
-view(robj, method=:orthographic_pixel)
-function add_plot(points, x)
-    global last_length, positions, colors, indices
-    c = fill(RGBA{U8}(x), length(points))
-    i = UnitRange{Int}[range(last_length+1, length(points))]
-    positions[i[]] = points
-    colors[i[]]    = c
-    push!(indices, [value(indices); i])
-    last_length += length(points)
+
+macro test_and_record(name)
+    modulename = symbol("Test$(ucfirst(name))")
+    esc(quote
+        module $modulename
+        using .Test
+        const runtests = true
+        const time     = Signal(0.0)
+
+        include(joinpath("..", "examples", "$name.jl"))
+        if make_docs
+            mktempdir("$name") do videofolder
+                if isdefined(:isinteractive)
+                    frames = record_test_interactive(window, videofolder)
+                else
+                    frames = record_test(window, videofolder)
+                end
+                create_video(frames, video_folder, name)
+                create_docs(name)
+            end
+        end
+    end)
 end

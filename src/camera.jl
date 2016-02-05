@@ -66,7 +66,9 @@ end
 
 Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2)))
 
-
+"""
+Creates a camera which is steered by a cube for `window`.
+"""
 function cubecamera(
 		window;
 		cube_area 	= Signal(SimpleRectangle(0,0,150,150)),

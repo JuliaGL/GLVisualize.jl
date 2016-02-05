@@ -1,4 +1,13 @@
-using FreeType
+module FreeTypeAbstraction
+
+using FreeType, GeometryTypes
+
+export newface
+export renderface
+export FontExtent
+export kerning
+
+
 immutable FontExtent{T}
     vertical_bearing    ::Vec{2, T}
     horizontal_bearing  ::Vec{2, T}
@@ -35,14 +44,14 @@ FontExtent(fontmetric::FreeType.FT_Glyph_Metrics, scale=64) = FontExtent(
 
 const FREE_FONT_LIBRARY = FT_Library[C_NULL]
 
-function FreeTypeAbstraction_init()
+function ft_init()
     global FREE_FONT_LIBRARY
     FREE_FONT_LIBRARY[1] != C_NULL && error("Freetype already initalized. init() called two times?")
     err = FT_Init_FreeType(FREE_FONT_LIBRARY)
     return err == 0
 end
 
-function FreeTypeAbstraction_done()
+function ft_done()
     global FREE_FONT_LIBRARY
     FREE_FONT_LIBRARY[1] == C_NULL && error("Library == CNULL. FreeTypeAbstraction.done() called before init(), or done called two times?")
     err = FT_Done_FreeType(FREE_FONT_LIBRARY[1])
@@ -120,11 +129,13 @@ function glyphbitmap(bmpRec::FreeType.FT_Bitmap)
     return bmp
 end
 
+"""
+Init and free c-lib
+"""
+function __init__()
+    ft_init()
+    atexit(ft_done)
+end
 
-#export init -> not exported, so call FreeFontAbstraction.init() /done()
-#export done
 
-export newface
-export renderface
-export FontExtent
-export kerning
+end

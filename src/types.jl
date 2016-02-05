@@ -61,9 +61,6 @@ end
 import Base: getindex, length, next, start, done
 
 
-iter_or_array(x) = repeated(x)
-iter_or_array(x::Array) = x
-
 
 to_cpu_mem(x) = x
 to_cpu_mem(x::GPUArray) = gpu_data(x)
@@ -159,7 +156,7 @@ function next(t::TransformationIterator, state)
     translation = transformation_convert(Point3f0, _translation)
     scale = transformation_convert(Vec3f0, _scale)
     rotation = transformation_convert(Vec3f0, _rotation)
-    v,u = FixedSizeArrays.normalize(rotation), Vec3f0(0,0,1)
+    u,v = FixedSizeArrays.normalize(rotation), Vec3f0(0,0,1)
     # Unfortunately, we have to check for when u == -v, as u + v
     # in this case will be (0, 0, 0), which cannot be normalized.
     T = Float32

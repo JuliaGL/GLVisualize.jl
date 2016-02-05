@@ -1,4 +1,4 @@
-using Contour, GLVisualize, GeometryTypes, GLAbstraction, Colors
+using Contour, GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
 xrange = -5f0:0.02f0:5f0
 yrange = -5f0:0.02f0:5f0
 
@@ -34,6 +34,13 @@ view(visualize(
     reinterpret(Intensity{1,Float32}, z), grid_start=(-5,-5), grid_size=(10, 10),
     model=translationmatrix(trans)
 ), method=:perspective)
-
-
-renderloop(w)
+frames = []
+while isopen(w)
+    GLWindow.renderloop_inner(w)
+    push!(frames, GLWindow.screenbuffer(w))
+end
+name = "contour"
+root_path = joinpath(homedir(), "gl_videos")
+for (i,elem) in enumerate(frames)
+    save(joinpath(root_path, "$name$i.png"), elem)
+end

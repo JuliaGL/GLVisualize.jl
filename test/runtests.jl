@@ -50,11 +50,11 @@ function scale_gen(v0, nv)
 	v0
 end
 function color_gen(v0, nv)
-	l = length(v0)
-	@inbounds for x=1:l
-		v0[x] = RGBA{U8}(x/l,(sin(nv)+1)/2,(sin(x/l/3)+1)/2.,1.)
-	end
-	v0
+    l = length(v0)
+    @inbounds for x=1:l
+        v0[x]=RGBA{U8}(x/l, (sin(nv)+1)/2, (sin(x/l/3)+1)/2.,1.)
+    end
+    v0
 end
 function tests()
     prima = centered(HyperRectangle)
