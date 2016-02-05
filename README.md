@@ -13,8 +13,6 @@ Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.clone("https://github.com/simondanisch/StructsOfArrays.jl") #my experimental fork, might change
-Pkg.checkout("StructsOfArrays", "sd/fsa_structs")
 Pkg.checkout("GLAbstraction", "sd/next²")
 Pkg.checkout("GLVisualize", "next2")
 Pkg.checkout("GLWindow", "sd/rebuild")
