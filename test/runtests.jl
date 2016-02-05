@@ -304,7 +304,5 @@ facts("Lines") do
 end
 
 if has_opengl
-    while isopen(window)
-        GLWindow.renderloop_inner(window)
-    end
+    renderloop(window)
 end

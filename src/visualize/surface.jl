@@ -65,7 +65,7 @@ function surface(main, s::Style{:surface}, data::Dict)
 end
 
 function position_calc(x...)
-    position_calc(filter(x->!isa(x, Void), x)...)
+    _position_calc(filter(x->!isa(x, Void), x)...)
 end
 function glsllinspace(position::Grid, gi, index)
     """
@@ -95,7 +95,7 @@ function grid_pos(grid::Grid{3})
     )"
 end
 
-function position_calc{T<:AbstractFloat}(
+function _position_calc{T<:AbstractFloat}(
         grid::Grid{2}, position_z::MatTypes{T}, target::Type{Texture}
     )
     """
@@ -106,7 +106,7 @@ function position_calc{T<:AbstractFloat}(
     """
 end
 
-function position_calc{T<:AbstractFloat}(
+function _position_calc{T<:AbstractFloat}(
         position_x::MatTypes{T}, position_y::MatTypes{T}, position_z::MatTypes{T}, target::Type{Texture}
     )
 """
@@ -121,22 +121,22 @@ function position_calc{T<:AbstractFloat}(
 """
 end
 
-function position_calc{T<:AbstractFloat}(
+function _position_calc{T<:AbstractFloat}(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{TextureBuffer}
     )
     "pos = vec3(texelFetch(position_x, index).x, position_y, position_z);"
 end
-function position_calc{T<:AbstractFloat}(
+function _position_calc{T<:AbstractFloat}(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{GLBuffer}
     )
     "pos = vec3(position_x, position_y, position_z);"
 end
-function position_calc{T<:FixedVector}(
+function _position_calc{T<:FixedVector}(
         position_xyz::VecTypes{T}, target::Type{TextureBuffer}
     )
     "pos = texelFetch(position, index).xyz;"
 end
-function position_calc{T<:FixedVector}(
+function _position_calc{T<:FixedVector}(
         position_xyz::VecTypes{T}, target::Type{GLBuffer}
     )
     len = length(T)
@@ -144,7 +144,7 @@ function position_calc{T<:FixedVector}(
     needs_comma = len != 3 ? ", " : ""
     "pos = vec3(position $needs_comma $filler);"
 end
-function position_calc{T<:AbstractFloat}(
+function _position_calc{T<:AbstractFloat}(
         position_x::VecTypes{T}, position_y::VecTypes{T}, position_z::VecTypes{T},
         target::Type{TextureBuffer}
     )
@@ -154,7 +154,7 @@ function position_calc{T<:AbstractFloat}(
         texelFetch(position_z, index).x
     );"
 end
-function position_calc{T<:AbstractFloat}(
+function _position_calc{T<:AbstractFloat}(
         position_x::VecTypes{T}, position_y::VecTypes{T}, position_z::VecTypes{T},
         target::Type{GLBuffer}
     )
@@ -164,14 +164,14 @@ function position_calc{T<:AbstractFloat}(
         position_z
     );"
 end
-function position_calc(
+function _position_calc(
         position::Grid{1}, target
     )
     "
     pos = vec3($(grid_pos(position)), 0, 0);
     "
 end
-function position_calc(
+function _position_calc(
         position::Grid{2}, target
     )
     "
@@ -179,7 +179,15 @@ function position_calc(
     pos = vec3($(grid_pos(position)), 0);
     "
 end
-function position_calc(
+function _position_calc{T}(
+        position::Grid{2}, ::VecTypes{T}, target::Type{GLBuffer}
+    )
+    "
+    ivec2 index2D = ind2sub(position.dims, index);
+    pos = vec3($(grid_pos(position)), position_z);
+    "
+end
+function _position_calc(
         position::Grid{3}, target
     )
     "
@@ -187,3 +195,4 @@ function position_calc(
     pos = $(grid_pos(position));
     "
 end
+

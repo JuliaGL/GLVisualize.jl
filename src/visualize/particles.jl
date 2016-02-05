@@ -44,7 +44,7 @@ function _default{N, P<:Sprites, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N
     grid = Grid(value(main[2]))
     @gen_defaults! data begin
         position_z = const_lift(vec, main[2]) => GLBuffer
-        scale = Vec2f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0)
+        scale = Vec3f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0, 1)
     end
     _default((main[1], grid), s, data)
 end
