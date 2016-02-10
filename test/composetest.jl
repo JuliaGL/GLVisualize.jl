@@ -20,25 +20,12 @@ p = plot(x=1:100, y=2.^rand(100),
 p = plot(x=rand(10), y=rand(10), Geom.point, Geom.line)
 
 
-using Distributions
-sds = [1, 1/2, 1/4, 1/8, 1/16, 1/32]
-n = 10
-ys = [mean(rand(Distributions.Normal(0, sd), n)) for sd in sds]
-ymins = ys .- (1.96 * sds / sqrt(n))
-ymaxs = ys .+ (1.96 * sds / sqrt(n))
-p = plot(x=1:length(sds), y=ys, ymin=ymins, ymax=ymaxs,
-     Geom.point, Geom.errorbar)
+
 =#
 
 #=
 
-p = compose(context(0.0mm, 0.0mm, 200mm, 200mm),
-        (context(), circle(), fill("bisque")),
-        (context(), rectangle(), fill("tomato")))
-p = compose(context(),
-        rectangle([0.25, 0.5, 0.75], [0.25, 0.5, 0.75], [0.1], [0.1]),
-        fill([LCHab(92, 10, 77), LCHab(68, 74, 192), LCHab(78, 84, 29)]),
-        stroke([LCHab(5, 0, 77),LCHab(5, 77, 77),LCHab(50, 0, 8)]))
+
 =#
 using DataFrames
 w = glscreen()
@@ -72,7 +59,7 @@ img = ComposeBackend.GLVisualizeBackend(w)
 # x  = [x1;x2]
 # y  = [y1;y2]
 # col = [fill("Slope 4",40); fill("Slope -6",40)]
-# p = plot(x=x,y=y,colour=col, Geom.point, Geom.smooth(method=:lm))
+# p = plot(x=x,y=y,colour=col, Geom.point, Geom.smooth(camera=:lm))
 
 p = compose(context(),
         rectangle([0.25, 0.5, 0.75], [0.25, 0.5, 0.75], [0.1], [0.1]),

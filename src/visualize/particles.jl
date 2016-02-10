@@ -235,7 +235,7 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
     end
     data[:scale]           = t_scale
     data[:uv_offset_width] = t_uv
-    position = const_lift(calc_position, main, start_position, scale, font, atlas)
-
-    _default((DISTANCEFIELD, position), s, data)
+    position_offset = const_lift(calc_position, main, start_position, scale, font, atlas)
+    data[:offset] = map(last, position_offset)
+    _default((DISTANCEFIELD, map(first, position_offset)), s, data)
 end

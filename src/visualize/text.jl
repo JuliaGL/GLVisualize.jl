@@ -1,26 +1,29 @@
+
+iter_or_array(x) = repeated(x)
+iter_or_array(x::Array) = x
+iter_or_array(x::Vector{Ptr{FreeType.FT_FaceRec}}) = repeated(x)
+
 function calc_position(last_pos, start_pos, atlas, glyph, font, scale)
     advance_x, advance_y = glyph_advance!(atlas, glyph, font, scale)
     if isnewline(glyph)
         return Point2f0(start_pos[1], last_pos[2]-advance_y)
     else
-        return last_pos +
-            Point2f0(glyph_bearing!(atlas, glyph, font, scale)) +
-            Point2f0(advance_x, 0)
+        return last_pos + Point2f0(advance_x, 0)
     end
 end
-iter_or_array(x) = repeated(x)
-iter_or_array(x::Array) = x
-iter_or_array(x::Vector{Ptr{FreeType.FT_FaceRec}}) = repeated(x)
 
 function calc_position(glyphs, start_pos, scales, fonts, atlas)
     positions = fill(Point2f0(0.0), length(glyphs))
+    bearing   = fill(Point2f0(0.0), length(glyphs))
     last_pos  = Point2f0(start_pos)
-    for (i, (glyph, scale, font)) in enumerate(zip(glyphs, iter_or_array(scales), iter_or_array(fonts)))
+    s, f = iter_or_array(scales), iter_or_array(fonts)
+    for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
         glyph == '\r' && continue # stupid windows!
         positions[i] = last_pos
-        last_pos = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
+        bearing[i]   = Point2f0(glyph_bearing!(atlas, glyph, font, scale))
+        last_pos     = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
     end
-    positions
+    positions, bearing
 end
 
 isnewline(x) = x == '\n'

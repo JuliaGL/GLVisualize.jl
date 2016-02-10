@@ -35,7 +35,7 @@ function mouse_color(pressed)
     end
 end
 
-function make_mouse(window)
+function add_mouse(window)
     N = 5
     points = fill(Point2f0(0), N)
 
@@ -55,10 +55,6 @@ function make_mouse(window)
         color=RGBA{Float32}(0,0,0,0), stroke_width=1f0,
         stroke_color=color, scale=scale, offset=offset,
         model=model_matrix
-    ), window, method=:fixed_pixel)
+    ), window, camera=:fixed_pixel)
 
 end
-
-w=glscreen()
-make_mouse(w)
-renderloop(w)

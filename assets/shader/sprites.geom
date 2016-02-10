@@ -98,6 +98,7 @@ void main(void)
     // v1*      * v2
     vec4 o_w    = g_offset_width[0];
     vec4 uv_o_w = g_uv_offset_width[0];
+    o_w.zw = o_w.xy + o_w.zw;
 
     emit_vertex(o_w.xy, uv_o_w.xw);
     emit_vertex(o_w.xw, uv_o_w.xy);

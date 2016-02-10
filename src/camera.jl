@@ -61,7 +61,7 @@ function colored_cube()
         (Quad(origin + xdir,   ydir, zdir), RGBA(0f0,0f0,1.0f0,1f0)), # Right
         (Quad(origin,          zdir, ydir), RGBA(0f0,0f0,0.5f0,1f0)), # Left
     ]
-    p = merge(map(GLNormalMesh, quads))
+    cube_steering = merge(map(GLNormalMesh, quads))
 end
 
 Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.h/T(2)))
@@ -85,7 +85,7 @@ function cubecamera(
     should_reset = filter(false, dd) do _
         x = value(h).id == value(id)
     end
-    p = colored_cube()
+    cube_steering = colored_cube()
     resetto = preserve(const_lift(cubeside_const_lift,
         should_reset, id,
         get_cube_rotations(eyeposition, value(lookatv))...,
@@ -166,13 +166,13 @@ function cubecamera(
         view=Signal(lookat(eyeposition, value(lookatv), Vec3f0(0,0,1))),
         projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
     )
-    robj = visualize(p, model=model, preferred_camera=:cube_cam)
-    start_colors = p.attributes
+    robj = visualize(cube_steering, model=model, preferred_camera=:cube_cam)
+    start_colors = cube_steering.attributes
     color_tex    = robj.children[][:attributes]
     preserve(const_lift(cubeside_color, id, h, Signal(start_colors), Signal(color_tex)))
     preserve(id)
     push!(id, robj.children[].id)
     view(robj, cubescreen);
-    view(ortho1, cubescreen, method=:fixed_pixel)
+    view(ortho1, cubescreen, camera=:fixed_pixel)
 	window
 end

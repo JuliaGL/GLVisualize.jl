@@ -24,6 +24,6 @@ end
 using GLVisualize
 w,r=glscreen()
 view(visualize(points))
-#view(visualize(Signal(points), :lines), method=:perspective)
+#view(visualize(Signal(points), :lines), camera=:perspective)
 
 r()

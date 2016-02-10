@@ -68,7 +68,6 @@ type GLVisualizeBackend <: Compose.Backend
         m = GLFW.GetPrimaryMonitor()
         props = GLWindow.MonitorProperties(m)
         img.ppmm = Vec2f0(props.dpi/25.4f0)
-        println(img.ppmm)
 
         img
     end
@@ -337,7 +336,7 @@ function Compose.draw{T <: Compose.CirclePrimitive}(img::GLVisualizeBackend, for
     	color=img.fill,
     	stroke_color=img.stroke,
     	visible=img.visible
-    ), img.screen, method=:orthographic_pixel)
+    ), img.screen, camera=:orthographic_pixel)
 end
 #=
 function Compose.draw{T <: Compose.RectanglePrimitive}(img::GLVisualizeBackend, form::Compose.Form{T})
@@ -401,7 +400,7 @@ function _add_line(points::Vector{Point2f0}, color, thickness)
         colors    = GLBuffer(c)
         indices   = UnitRange{Int}[1:length(points)]
         robj      = visualize(positions, :lines, color=colors, thickness=thickness, indices=indices)
-        view(robj, method=:orthographic_pixel)
+        view(robj, camera=:orthographic_pixel)
     else
         nl = (length(positions)+length(points),)
         nr = range(last_length+1, length(points))
@@ -420,7 +419,7 @@ function _add_line(points::LineSegment{Point2f0}, color, thickness)
             color     = append_p(line_segment_color, fill(color, 2)),
             thickness = append_p(line_segment_thickness, fill(thickness, 2))
         )
-        view(robj, method=:orthographic_pixel)
+        view(robj, camera=:orthographic_pixel)
         line_segment_batch = robj
     else
         push!(line_segment, [points])
@@ -476,7 +475,7 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
         	stroke_color=strokecolors,
             stroke_width=stroke_width,
             indices=indices
-        ), img.screen, method=:orthographic_pixel)
+        ), img.screen, camera=:orthographic_pixel)
     else
         len = length(positions)
         lastlen = last(indices[])
@@ -518,7 +517,7 @@ end
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.BitmapPrimitive)
     xyz = Vec3f0(prim.corner.x.abs, prim.corner.y.abs, 0)
     scale = Vec3f0(prim.width.abs, prim.height.abs, 1)
-    view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen, method=:orthographic_pixel)
+    view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen, camera=:orthographic_pixel)
 end
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
@@ -552,6 +551,6 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
     transmat *= translationmatrix(Vec3f0(pos..., 0))
 
 	GLAbstraction.transformation(obj, transmat)
-	view(obj, img.screen, method=:orthographic_pixel)
+	view(obj, img.screen, camera=:orthographic_pixel)
 end
 end

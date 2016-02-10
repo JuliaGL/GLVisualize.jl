@@ -22,24 +22,26 @@ visualize(c::Context) = c
 
 function view(
 		robj::RenderObject, screen=ROOT_SCREEN;
-		method = robj.uniforms[:preferred_camera],
+		camera = robj.uniforms[:preferred_camera],
 		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
-    if haskey(screen.cameras, method)
-        camera = screen.cameras[method]
-    elseif method == :perspective
-		camera = PerspectiveCamera(screen.inputs, position, lookat)
-	elseif method == :fixed_pixel
-		camera = DummyCamera(window_size=screen.area)
-	elseif method == :orthographic_pixel
-		camera = OrthographicPixelCamera(screen.inputs)
-	elseif method == :nothing
+    if isa(camera, Camera)
+    	real_camera = camera
+    elseif haskey(screen.cameras, camera)
+        real_camera = screen.cameras[camera]
+    elseif camera == :perspective
+		real_camera = PerspectiveCamera(screen.inputs, position, lookat)
+	elseif camera == :fixed_pixel
+		real_camera = DummyCamera(window_size=screen.area)
+	elseif camera == :orthographic_pixel
+		real_camera = OrthographicPixelCamera(screen.inputs)
+	elseif camera == :nothing
 		return push!(screen.renderlist, robj)
 	else
-         error("Method $method not a known camera type")
+         error("Method $camera not a known camera type")
 	end
-    screen.cameras[method] = camera
-	merge!(robj.uniforms, collect(camera), Dict( # add display dependant values
+    screen.cameras[camera] = real_camera
+	merge!(robj.uniforms, collect(real_camera), Dict( # add display dependant values
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
