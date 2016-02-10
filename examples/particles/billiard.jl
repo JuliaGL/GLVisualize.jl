@@ -3,9 +3,9 @@ For this example you need to checkout this package:
 Pkg.clone("https://github.com/dpsanders/BilliardModels.jl")
 Pkg.checkout("BilliardModels", "time_step")
 =#
+using GLAbstraction, MeshIO, Colors
+using GLVisualize, GeometryTypes, Reactive, ColorTypes
 if !isdefined(:runtests)
-	using GLAbstraction, MeshIO, Colors
-	using GLVisualize, GeometryTypes, Reactive, ColorTypes
 	window = glscreen()
 end
 const interactive_example = true
@@ -61,7 +61,7 @@ primitive 	    = Circle(Point2f0(0), 0.05f0)
 # we know that the particles will only be in this range
 boundingbox     = AABB{Float32}(Vec3f0(-pi), Vec3f0(2pi))
 particles = visualize(
-	(primitive, pointstream), 
+	(primitive, pointstream),
     color=colors, # set color array. This is per particle
     billboard=true, # set billboard to true, making the particles always face the camera
     boundingbox=Signal(boundingbox) # set boundingbox, to avoid bb re-calculation when particles update( is expensive)

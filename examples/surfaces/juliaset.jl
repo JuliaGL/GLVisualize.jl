@@ -1,5 +1,6 @@
+using GLVisualize, GLAbstraction
+
 if !isdefined(:runtests)
-    using GLVisualize, GLAbstraction
     window = glscreen()
     timesignal = loop(linspace(0f0,1f0,360))
 end
@@ -30,7 +31,7 @@ function juliadata(max_iterations, imgx, imgy)
 end
 
 let
-    
+
 rotation_angle = const_lift(*, timesignal, 2f0*pi)
 rotation = map(rotationmatrix_z, rotation_angle)
 
@@ -38,7 +39,7 @@ heightfield = juliadata(256, 700, 700)
 
 # visualize the heightfield as a surface
 vis = visualize(
-    heightfield, :surface, 
+    heightfield, :surface,
     model=rotation
 )
 

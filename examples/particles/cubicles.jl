@@ -1,6 +1,7 @@
+using GLVisualize, GeometryTypes, FileIO
+using GLAbstraction, Colors, Reactive
+
 if !isdefined(:runtests)
-	using GLVisualize, GeometryTypes, FileIO
-	using GLAbstraction, Colors, Reactive
 	window = glscreen()
 	timesignal = loop(0:0.1:1)
 end

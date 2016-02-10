@@ -1,5 +1,6 @@
+using Colors, GLVisualize
+
 if !isdefined(:runtests)
-    using Colors, GLVisualize
     window = glscreen()
 end
 const not_animated = true

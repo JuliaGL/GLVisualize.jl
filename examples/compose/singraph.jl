@@ -1,9 +1,10 @@
+using Colors, GLVisualize
+using Gadfly, GLVisualize.ComposeBackend
+
 if !isdefined(:runtests)
-    using Colors, GLVisualize
     window = glscreen()
 end
 const not_animated = true
-using Gadfly, GLVisualize.ComposeBackend
 
 gl_backend = ComposeBackend.GLVisualizeBackend(window)
 

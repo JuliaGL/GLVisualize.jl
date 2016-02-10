@@ -1,5 +1,6 @@
+using GLVisualize, GeometryTypes
+
 if !isdefined(:runtests)
-	using GLVisualize, GeometryTypes
 	window = glscreen()
 end
 

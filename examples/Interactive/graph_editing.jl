@@ -1,5 +1,6 @@
+using GeometryTypes, GLVisualize, GLAbstraction, Reactive, GLWindow, GLFW
+
 if !isdefined(:runtests)
-using GeometryTypes, GLVisualize, GLAbstraction, Reactive
 window = glscreen()
 end
 const interactive_example = true

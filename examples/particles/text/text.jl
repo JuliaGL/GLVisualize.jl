@@ -1,10 +1,11 @@
+using GLVisualize, GeometryTypes, Colors, GLAbstraction
+
 if !isdefined(:runtests)
-	using GLVisualize, GeometryTypes, Colors, GLAbstraction
 	window = glscreen()
 	timesignal = bounce(linspace(0,1,20))
 end
 
-# GLAbstraction.const_lift is defined as 
+# GLAbstraction.const_lift is defined as
 # const_lift(F, args...) = Reactive.map(F, map(Signal, args)...)
 # and allows to also use constant arguments without manually wrapping
 # them into signals
@@ -15,7 +16,7 @@ end
 # callback in a more traditional event system)
 s = map(π_signal) do t
 	"""The quick brown fox jumped over some lazy text sample.
-	He wasn't really into numbers, but it's really important to try 
+	He wasn't really into numbers, but it's really important to try
 	out number rendering: $(t).
 	This number goes from 0 to π in no time!
 	And then back to 0 again... Wow!

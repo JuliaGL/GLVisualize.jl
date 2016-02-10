@@ -1,7 +1,8 @@
+using Images, Colors, GeometryTypes
+using Reactive, FileIO, GLVisualize
+using GLAbstraction, GeometryTypes, GLWindow
+
 if !isdefined(:runtests)
-	using Images, Colors, GeometryTypes
-	using Reactive, FileIO, GLVisualize
-	using GLAbstraction, GeometryTypes, GLWindow
 	window = glscreen()
 end
 const record_interactive = true
@@ -38,7 +39,7 @@ view(image_renderable)
 vec2i(a,b,x...) = Vec{2,Int}(round(Int, a), round(Int, b))
 vec2i(vec::Vec) = vec2i(vec...)
 """
-creates a rectangle around `robj` 
+creates a rectangle around `robj`
 """
 function screen(robj)
 	bb = value(boundingbox(robj))

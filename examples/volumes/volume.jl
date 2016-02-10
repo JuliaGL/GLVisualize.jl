@@ -1,5 +1,6 @@
+using GLVisualize, GLWindow
+
 if !isdefined(:runtests)
-	using GLVisualize, GLWindow
 	window = glscreen()
 	timesignal = bounce(linspace(0f0,1f0,360))
 end

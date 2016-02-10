@@ -1,5 +1,6 @@
+using Contour, GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
+
 if !isdefined(:runtests)
-    using Contour, GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
     window = glscreen()
     timesignal = bounce(linspace(0.0, 1.0, 360))
 end
@@ -25,7 +26,7 @@ for h in mini:0.2f0:maxi
         end
         line_renderable = visualize(
             points, :lines,
-            color=height2color(h, mini, maxi), 
+            color=height2color(h, mini, maxi),
             model=rotation
         )
         view(line_renderable, window, camera=:perspective)

@@ -1,6 +1,7 @@
+using GLVisualize, GLAbstraction
+using FileIO, GeometryTypes, Reactive
+
 if !isdefined(:runtests)
-	using GLVisualize, GLAbstraction
-	using FileIO, GeometryTypes, Reactive
 	window = glscreen()
 	timesignal = loop(linspace(0f0,1f0,360))
 end

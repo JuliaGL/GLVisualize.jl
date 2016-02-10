@@ -1,10 +1,11 @@
+using GLVisualize.ComposeBackend, Gadfly, Distributions
+using Colors, GLVisualize
+
 if !isdefined(:runtests)
-    using Colors, GLVisualize
     window = glscreen()
 end
 
 const not_animated = true
-using GLVisualize.ComposeBackend, Gadfly, Distributions
 gl_backend = ComposeBackend.GLVisualizeBackend(window)
 
 sds = [1, 1/2, 1/4, 1/8, 1/16, 1/32]

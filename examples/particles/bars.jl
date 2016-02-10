@@ -1,5 +1,6 @@
+using GLVisualize
+
 if !isdefined(:runtests)
-	using GLVisualize
 	window = glscreen()
 end
 

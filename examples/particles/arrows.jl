@@ -1,5 +1,6 @@
+using GLVisualize, GeometryTypes, Reactive
+
 if !isdefined(:runtests)
-    using GLVisualize, GeometryTypes, Reactive
     window = glscreen()
     timesignal = bounce(linspace(0,1,360))
 end

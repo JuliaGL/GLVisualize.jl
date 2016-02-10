@@ -1,6 +1,7 @@
+using GeometryTypes, GLVisualize, GLAbstraction, ImageMagick
+using FileIO, ColorTypes, Reactive
+
 if !isdefined(:runtests)
-    using GeometryTypes, GLVisualize, GLAbstraction
-    using GeometryTypes, ImageMagick, FileIO, ColorTypes, Reactive
     window = glscreen()
 end
 

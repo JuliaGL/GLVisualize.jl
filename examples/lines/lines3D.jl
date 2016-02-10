@@ -1,5 +1,6 @@
+using GLAbstraction, Colors, GeometryTypes, GLVisualize, Reactive
+
 if !isdefined(:runtests) # We use the examples to generate docs and tests
-    using GLAbstraction, Colors, GeometryTypes, GLVisualize, Reactive
     window = glscreen()
     timesignal = bounce(linspace(0.0, 1.0, 360))
 end

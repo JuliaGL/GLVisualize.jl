@@ -1,6 +1,7 @@
+using GLVisualize, GeometryTypes, Colors
+using Reactive, GLAbstraction
+
 if !isdefined(:runtests)
-	using GLVisualize, GeometryTypes, Colors
-	using Reactive, GLAbstraction
 	window = glscreen()
 	timesignal = loop(linspace(0f0, 1f0, 360))
 end
@@ -16,11 +17,11 @@ color = map(large_sphere->RGBA{Float32}(large_sphere, 0.9f0), colormap("Blues", 
 color2 = map(large_sphere->RGBA{Float32}(large_sphere, 1f0), colormap("Blues", length(positions)))
 
 lines = visualize(
-	positions, :linesegment, thickness=0.5f0, 
+	positions, :linesegment, thickness=0.5f0,
 	color=color, indices=indices, model=rotation
 )
 spheres = visualize(
-	(Sphere{Float32}(Point3f0(0.0), 1f0), positions), 
+	(Sphere{Float32}(Point3f0(0.0), 1f0), positions),
 	color=color2, scale=Vec3f0(0.05), model=rotation
 )
 view(lines, window, camera=:perspective)

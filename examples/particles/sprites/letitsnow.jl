@@ -1,9 +1,10 @@
+using GLVisualize, GeometryTypes, Reactive, GLAbstraction
+
 if !isdefined(:runtests)
-    using GLVisualize, GeometryTypes, Reactive, GLAbstraction
     window = glscreen()
     timesignal = bounce(0f0:20f0)
 end
-let 
+let
 const S = -5f0
 const W = 10f0
 const N = 2000
@@ -30,7 +31,7 @@ particles = foldp(letitsnow, ps, timesignal)
 rotation_angle  = bounce(0f0:1f0:360f0)
 rotation 		= map(rotationmatrix_z, map(deg2rad, rotation_angle))
 snowflakes = visualize(
-    ('❄', particles), 
+    ('❄', particles),
     scale=Vec2f0(0.2), billboard=true, model=rotation
 )
 

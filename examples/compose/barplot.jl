@@ -1,10 +1,11 @@
+using Colors, GLVisualize
+using GLVisualize.ComposeBackend, Gadfly, DataFrames, RDatasets
+
 if !isdefined(:runtests)
-    using Colors, GLVisualize
     window = glscreen()
 end
 const not_animated = true
 
-using GLVisualize.ComposeBackend, Gadfly, DataFrames, RDatasets
 gl_backend = ComposeBackend.GLVisualizeBackend(window)
 
 p = plot(dataset("car", "SLID"), x="Wages", color="Language", Geom.histogram)

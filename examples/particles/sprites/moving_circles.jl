@@ -1,6 +1,8 @@
+using GLVisualize, GeometryTypes, GLAbstraction
+using Colors, Reactive, FileIO
+
 if !isdefined(:runtests)
-	using GLVisualize, GeometryTypes, GLAbstraction
-	using Colors, Reactive, FileIO
+
 	window = glscreen()
 	timesignal = bounce(linspace(0,1,100))
 end
@@ -15,8 +17,8 @@ scales     = map(t) do t
 end
 
 circles = visualize(
-	(CIRCLE, circle_pos), 
-	rotation=rotation, scale=scales, 
+	(CIRCLE, circle_pos),
+	rotation=rotation, scale=scales,
 )
 
 view(circles, window)

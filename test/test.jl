@@ -5,7 +5,7 @@ docs from the examples.
 =#
 module GLTest
 
-using GLAbstraction, GLWindow, GLVisualize 
+using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
 
 function record_test(window, timesignal, nframes=1)
@@ -50,7 +50,7 @@ function center_cam(camera::PerspectiveCamera, renderlist)
 end
 
 if isfile("working.jls")
-    working_list = open("working.jls") do io 
+    working_list = open("working.jls") do io
         deserialize(io)
     end
 else
@@ -85,7 +85,7 @@ function test_include(path, window)
         if !isempty(window.renderlist) || !isempty(window.children)
             frames = record_test(window, timesignal)
             println("recorded successfully: $name")
-            savepath = Pkg.dir("GLVisualize", "docs", "videos", "$name.png")
+            savepath = Pkg.dir("GLVisualize", "docs", "images", "$name.png")
             save(savepath, first(frames))
             println("saved!")
             push!(working_list, path)
