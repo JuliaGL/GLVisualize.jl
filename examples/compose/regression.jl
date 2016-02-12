@@ -3,10 +3,10 @@ using Colors, GLVisualize
 
 if !isdefined(:runtests)
     window = glscreen()
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 end
 
-const not_animated = true
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
+const static_example = true
 
 
 using Distributions
@@ -19,7 +19,7 @@ y  = [y1;y2]
 col = [fill("Slope 4",40); fill("Slope -6",40)]
 p = plot(x=x,y=y,colour=col, Geom.point, Geom.smooth(method=:lm))
 
-draw(gl_backend, p)
+draw(composebackend, p)
 
 if !isdefined(:runtests)
 	renderloop(window)

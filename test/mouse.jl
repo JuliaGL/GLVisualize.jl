@@ -1,15 +1,15 @@
-using GLVisualize, GLAbstraction, GeometryTypes, Reactive, Colors
+using GLVisualize, GLAbstraction, GeometryTypes, Reactive, Colors, GLFW
 function scaleoffset(v0, pressed)
     scale, offset = v0
     if isempty(pressed)
         for i in eachindex(scale)
-            scale[i] = Vec2f0(10)
+            scale[i] = Vec2f0(20)
             offset[i] = Vec2f0(-10)
         end
     else
         ls = linspace(1.0, 3.0, length(scale))
         for i in eachindex(scale)
-            scale[i] = Vec2f0(10*ls[i])
+            scale[i] = Vec2f0(20*ls[i])
             offset[i] = Vec2f0(-10*ls[i])
         end
     end
@@ -43,7 +43,7 @@ function add_mouse(window)
 
     model_matrix = map(mpos, mouseposition)
 
-    scales0 = fill(Vec2f0(10), N)
+    scales0 = fill(Vec2f0(20), N)
     offset0 = fill(Vec2f0(-10), N)
 
     scale_offset = foldp(scaleoffset, (scales0,offset0), mouse_buttons_pressed)
@@ -52,7 +52,7 @@ function add_mouse(window)
 
     view(visualize(
         (Circle(Point2f0(0), 20f0), points),
-        color=RGBA{Float32}(0,0,0,0), stroke_width=1f0,
+        color=RGBA{Float32}(0,0,0,0), stroke_width=2f0,
         stroke_color=color, scale=scale, offset=offset,
         model=model_matrix
     ), window, camera=:fixed_pixel)

@@ -7,8 +7,13 @@ module GLTest
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
+using GLVisualize.ComposeBackend
 
-function record_test(window, timesignal, nframes=1)
+include("videotool.jl")
+
+function record_test(window, timesignal, nframes=360)
+    push!(timesignal, 0f0)
+    yield()
     frames = []
     for frame in 1:nframes
         push!(timesignal, frame/nframes)
@@ -18,35 +23,80 @@ function record_test(window, timesignal, nframes=1)
     end
     frames
 end
+function record_test_static(window)
+    yield()
+    render_frame(window)
+    sleep(0.1)
+    yield()
+    render_frame(window)
+    yield()
+    render_frame(window)
+    return screenbuffer(window)
+end
 function record_test_interactive(window, timesignal)
     frames = []
     add_mouse(window)
-    start_time = time()
+    push!(timesignal, 0f0)
     for i=1:2 # warm up
         render_frame(window)
+        yield()
     end
+    start_time = time()
+
     while time()-start_time < 7.0
         push!(timesignal, (start_time-time())/3.0)
         yield()
         render_frame(window)
         yield()
         push!(frames, screenbuffer(window))
+        yield()
     end
     frames
 end
 function center_cam(camera, renderlist)
     #NOT IMPLEMENTED
+    #isn't really needed yet
 end
-sboundingbox(robj) = value(boundingbox(robj))
+
+"""
+get's the boundingbox of a render object.
+needs value, because boundingbox will always return a boundingbox signal
+"""
+signal_boundingbox(robj) = value(boundingbox(robj))
 
 function center_cam(camera::PerspectiveCamera, renderlist)
-    bb = mapreduce(sboundingbox, union, renderlist)
-    bb_width     = widths(bb)
+    robj1 = first(renderlist)
+    bb = value(robj1[:model])*signal_boundingbox(robj1)
+    for elem in renderlist[2:end]
+        bb = union(value(elem[:model])*signal_boundingbox(elem), bb)
+    end
+    width        = widths(bb)
+    half_width   = width/2f0
     lower_corner = minimum(bb)
-    middle       = lower_corner + (bb_width/2f0)
-    eyeposition  = middle + (norm(bb_width)*Vec3f0(1.5))
-    push!(camera.lookat_in, middle)
-    push!(camera.eyeposition_in, eyeposition)
+    middle       = maximum(bb) - half_width
+    println(value(camera.projectiontype))
+    if value(camera.projectiontype) == ORTHOGRAPHIC
+        area, fov, near, far = map(value,
+            (camera.window_size, camera.fov, camera.nearclip, camera.farclip)
+        )
+        h = Float32(tan(fov / 360.0 * pi) * near)
+        w_, h_, _ = half_width
+
+        zoom = min(h_,w_)/h
+        push!(camera.up, Vec3f0(0,1,0))
+        x,y,_ = middle
+        push!(camera.eyeposition, Vec3f0(x, y, zoom*1.2))
+        push!(camera.lookat, Vec3f0(x, y, 0))
+        push!(camera.farclip, zoom*2f0)
+
+    else
+        zoom = norm(half_width)
+        push!(camera.lookat, middle)
+        neweyepos = middle + (zoom*Vec3f0(1.3))
+        push!(camera.eyeposition, neweyepos)
+        push!(camera.up, Vec3f0(0,0,1))
+        push!(camera.farclip, zoom*50f0)
+    end
 end
 
 if isfile("working.jls")
@@ -62,7 +112,7 @@ end
  to avoid variable conflicts.
  this can be done only via eval.
 """
-function save_include(name::Symbol, include_path)
+function include_in_module(name::Symbol, include_path)
     eval(:(
         module $(name)
             using GLTest
@@ -70,6 +120,7 @@ function save_include(name::Symbol, include_path)
             const runtests   = true
             const window     = GLTest.window
             const timesignal = GLTest.timesignal
+            const composebackend = GLTest.composebackend
 
             include($include_path)
         end
@@ -80,13 +131,22 @@ function test_include(path, window)
         println("trying to render $path")
         name = ucfirst(basename(path)[1:end-3])
         # include the example file in it's own module
-        save_include(symbol(name), path)
+        test_module = include_in_module(symbol(name), path)
+        for (_, cam) in window.cameras
+            center_cam(cam, window.renderlist)
+        end
         # only when something was added to renderlist
         if !isempty(window.renderlist) || !isempty(window.children)
-            frames = record_test(window, timesignal)
+            if isdefined(test_module, :record_interactive)
+                frames = record_test_interactive(window, timesignal)
+            elseif isdefined(test_module, :static_example)
+                frames = record_test_static(window)
+            else
+                frames = record_test(window, timesignal)
+            end
             println("recorded successfully: $name")
-            savepath = Pkg.dir("GLVisualize", "docs", "images", "$name.png")
-            save(savepath, first(frames))
+            savepath = Pkg.dir("GLVisualize", "docs", "images")
+            create_video(frames, savepath, name)
             println("saved!")
             push!(working_list, path)
         end
@@ -100,11 +160,12 @@ function test_include(path, window)
 end
 
 function make_tests(path::AbstractString)
+    println(path)
     if isdir(path)
-        if basename(path) != "compose" && basename(path) != "not_working" && basename(path) != "camera"
+        if basename(path) != "interactive" && basename(path) != "not_working" && basename(path) != "camera"
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
-    elseif isfile(path) && endswith(path, ".jl") && !in(path, working_list)
+    elseif isfile(path) && endswith(path, ".jl")
         test_include(path, window)
     end
     nothing # ignore other cases
@@ -118,11 +179,13 @@ end
 include("mouse.jl")
 
 window = glscreen()
+composebackend = ComposeBackend.GLVisualizeBackend(window)
+
 const make_docs  = true
 const timesignal = Signal(0.0f0)
 srand(777) # set rand seed, to get the same results for tests that use rand
 
-make_tests(Pkg.dir("GLVisualize", "examples"))
+make_tests(Pkg.dir("GLVisualize", "examples", "particles", "bars.jl"))
 
 open("working.jls", "w") do io
     serialize(io, working_list)

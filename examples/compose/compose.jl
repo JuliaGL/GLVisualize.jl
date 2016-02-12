@@ -1,11 +1,11 @@
 using Colors, GLVisualize
+using GLVisualize.ComposeBackend, Compose
 
 if !isdefined(:runtests)
     window = glscreen()
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 end
-const not_animated = true
-using GLVisualize.ComposeBackend, Compose
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
+const static_example = true
 
 p = compose(context(0.0mm, 0.0mm, 200mm, 200mm),
     rectangle([0.25, 0.5, 0.75], [0.25, 0.5, 0.75], [0.1], [0.1]),
@@ -14,7 +14,7 @@ p = compose(context(0.0mm, 0.0mm, 200mm, 200mm),
     (context(), circle(), fill("bisque")),
     (context(), rectangle(), fill("tomato"))
 )
-draw(gl_backend, p)
+draw(composebackend, p)
 
 if !isdefined(:runtests)
 	renderloop(window)

@@ -4,8 +4,13 @@ typealias Sprites Union{GeometryPrimitive{2}, Shape, Char}
 
 typealias ExtPrimitives Union{Primitives, Sprites}
 
-_default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict) = _default((centered(HyperRectangle{2, Float32}), main), s, data)
+function _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict)
+    _default((centered(HyperRectangle{2, Float32}), main), s, data)
+end
 _default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict) = _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(1.0)), main), s, data)
+_default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
+
+
 _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)   = _default((centered(HyperRectangle{N, Float32}), main), s, data)
 
 
@@ -31,14 +36,21 @@ function _default{P<:Sprites, N, T<:Vec}(main::Tuple{P, ArrayTypes{T, N}}, s::St
 end
 
 function _default{N, P<:Primitives, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
-    grid = Grid(value(main[2]))
+    primitive, array_s = main
+    array = value(array_s)
+    @gen_defaults! data begin
+        xrange = linspace(0, 1, size(array,1))
+        yrange = linspace(0, 1, size(array,2))
+    end
+    @assert size(array) == (length(xrange), length(yrange)) "x and yrange need to be of same size as heightfield (not implemented)"
+    grid = Grid(xrange, yrange)
     @gen_defaults! data begin
         scale            = nothing
         scale_x::Float32 = step(grid.dims[1])
         scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
-        scale_z = const_lift(vec, main[2]) => TextureBuffer
+        scale_z = const_lift(vec, array_s) => TextureBuffer
     end
-    _default((main[1], grid), s, data)
+    _default((primitive, grid), s, data)
 end
 function _default{N, P<:Sprites, T<:AbstractFloat}(main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict)
     grid = Grid(value(main[2]))
@@ -140,17 +152,12 @@ primitive_shape(::SimpleRectangle) = RECTANGLE
 primitive_shape{T}(::HyperRectangle{2,T}) = RECTANGLE
 primitive_shape(x::Shape) = x
 
-primitive_scale(c::Circle) = Vec(Vec2f0(c.center) + c.r)
-primitive_scale(r::HyperRectangle) = Vec(maximum(r))
-
-primitive_scale(r::SimpleRectangle) = Vec(maximum(r))
-primitive_scale(r::Shape) = Vec2f0(40)
+primitive_scale(prim::GeometryPrimitive) = Vec2f0(widths(prim))
+primitive_scale(::Shape) = Vec2f0(40)
 primitive_scale(c::Char)  = Vec(glyph_scale!(c))
 
-primitive_offset(c::Circle) = Vec2f0(c.center)-c.r
-primitive_offset(r::HyperRectangle) = Vec2f0(minimum(r))
-primitive_offset(r::SimpleRectangle) = Vec2f0(r.x, r.y)
-primitive_offset(r::Shape) = Vec2f0(0)
+primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
+primitive_offset(::Shape) = Vec2f0(0)
 primitive_offset(c::Char)  = Vec2f0(0)
 
 

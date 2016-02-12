@@ -3,14 +3,14 @@ using GLVisualize.ComposeBackend, Gadfly, DataFrames, RDatasets
 
 if !isdefined(:runtests)
     window = glscreen()
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 end
-const not_animated = true
+const static_example = true
 
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
 
 p = plot(dataset("car", "SLID"), x="Wages", color="Language", Geom.histogram)
 
-draw(gl_backend, p)
+draw(composebackend, p)
 
 if !isdefined(:runtests)
 	renderloop(window)

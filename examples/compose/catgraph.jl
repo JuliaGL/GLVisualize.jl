@@ -1,18 +1,19 @@
 using Colors, GLVisualize
+using Gadfly, GLVisualize.ComposeBackend
 
 if !isdefined(:runtests)
     window = glscreen()
-end
-const not_animated = true
-using Gadfly, GLVisualize.ComposeBackend
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
+end
+const static_example = true
+
 
 p = plot(x=1:100, y=2.^rand(100),
      Scale.y_sqrt, Geom.point, Geom.smooth,
      Guide.xlabel("Stimulus"), Guide.ylabel("Response"), Guide.title("Cat Training"))
 
-draw(gl_backend, p)
+draw(composebackend, p)
 
 if !isdefined(:runtests)
 renderloop(window)

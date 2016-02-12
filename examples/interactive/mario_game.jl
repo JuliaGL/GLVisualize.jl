@@ -4,6 +4,7 @@ using FileIO, ColorTypes, Reactive
 if !isdefined(:runtests)
     window = glscreen()
 end
+const record_interactive = true
 
 type Mario{T}
     x 			::T
@@ -12,6 +13,8 @@ type Mario{T}
     vy 			::T
     direction 	::Symbol
 end
+
+
 
 gravity(dt, mario) = (mario.vy = (mario.y > 0.0 ? mario.vy - (dt/4.0) : 0.0); mario)
 
@@ -49,19 +52,27 @@ mario2model(mario) = translationmatrix(Vec3f0(mario.x, mario.y, 0f0))*scalematri
 const mario_images = Dict()
 
 
-play{T}(array::Array{T, 3}, slice) = array[:, :, slice]
-
-
-signify{T}(x::Array{T, 2}) = Signal(x)
-function signify{T}(x::Array{T, 3})
-	const_lift(play, x, loop(1:size(x, 3)))
+function play(x::Vector)
+	const_lift(getindex, x, loop(1:length(x)))
 end
 
+function read_sequence(path)
+    if isdir(path)
+        return map(load, sort(map(x->joinpath(path, x), readdir(path))))
+    else
+        return fill(load(path), 1)
+    end
+end
 
 for verb in ["jump", "walk", "stand"], dir in ["left", "right"]
-    img = loadasset("mario", verb, dir*".gif").data
-	gif = map(RGBA{U8}, img)
-	mario_images[verb*dir] = signify(gif)
+    pic = dir
+    if verb != "walk" # not a sequemce
+        pic *= ".png"
+    end
+    path = assetpath("mario", verb, pic)
+    sequence = read_sequence(path)
+	gif = map(img->map(RGBA{U8}, img), sequence)
+	mario_images[verb*dir] = play(gif)
 end
 function mario2image(mario, images=mario_images)
 	verb = mario.y > 0.0 ? "jump" : mario.vx != 0.0 ? "walk" : "stand"
@@ -84,7 +95,7 @@ modelmatrix 	= const_lift(mario2model, mario_signal)
 
 mario = visualize(image_stream, model=modelmatrix)
 
-view(mario, window)
+view(mario, window, camera=:fixed_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

@@ -3,7 +3,7 @@ using GeometryTypes, GLVisualize, GLAbstraction, Reactive, GLWindow, GLFW
 if !isdefined(:runtests)
 window = glscreen()
 end
-const interactive_example = true
+const record_interactive = true
 
 n = 50
 n_connections = 100

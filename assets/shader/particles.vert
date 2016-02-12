@@ -67,6 +67,7 @@ void rotate(vec3          vectors, int index, inout vec3 vertices, inout vec3 no
 vec4 _color(vec4          color, Nothing       intensity, Nothing color_norm, int index);
 vec4 _color(samplerBuffer color, Nothing       intensity, Nothing color_norm, int index);
 vec4 _color(sampler1D     color, samplerBuffer intensity, vec2    color_norm, int index);
+
 float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
     return length(texelFetch(rotation, index).xyz);
 }

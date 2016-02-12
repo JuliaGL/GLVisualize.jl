@@ -3,14 +3,14 @@ using Gadfly, GLVisualize.ComposeBackend
 
 if !isdefined(:runtests)
     window = glscreen()
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 end
-const not_animated = true
+const static_example = true
 
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
 
 p = plot([sin, cos], 0, 25)
 
-draw(gl_backend, p)
+draw(composebackend, p)
 if !isdefined(:runtests)
 renderloop(window)
 end

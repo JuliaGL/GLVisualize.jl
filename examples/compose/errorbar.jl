@@ -3,10 +3,10 @@ using Colors, GLVisualize
 
 if !isdefined(:runtests)
     window = glscreen()
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 end
 
-const not_animated = true
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
+const static_example = true
 
 sds = [1, 1/2, 1/4, 1/8, 1/16, 1/32]
 n = 10
@@ -17,7 +17,7 @@ ymaxs = ys .+ (1.96 * sds / sqrt(n))
 p = plot(x=1:length(sds), y=ys, ymin=ymins, ymax=ymaxs,
      Geom.point, Geom.errorbar)
 
-draw(gl_backend, p)
+draw(composebackend, p)
 
 if !isdefined(:runtests)
 	renderloop(window)

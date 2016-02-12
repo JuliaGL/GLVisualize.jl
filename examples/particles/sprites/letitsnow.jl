@@ -1,13 +1,13 @@
-using GLVisualize, GeometryTypes, Reactive, GLAbstraction
+using GLVisualize, GeometryTypes, Reactive, GLAbstraction, Colors
 
 if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(0f0:20f0)
 end
-let
+
 const S = -5f0
 const W = 10f0
-const N = 2000
+const N = 1000
 const ps = (rand(Point3f0, N)*W)+S
 const velocity = rand(Vec3f0, N)*0.01f0
 const gravity  = Vec3f0(0,0,-0.04)
@@ -27,17 +27,20 @@ function letitsnow(position, t)
     end
     position
 end
-particles = foldp(letitsnow, ps, timesignal)
+particles       = foldp(letitsnow, ps, timesignal)
 rotation_angle  = bounce(0f0:1f0:360f0)
 rotation 		= map(rotationmatrix_z, map(deg2rad, rotation_angle))
+color_ramp      = colormap("Blues", 50)
+colors          = RGBA{Float32}[color_ramp[rand(1:50)] for i=1:N]
+
 snowflakes = visualize(
     ('❄', particles),
-    scale=Vec2f0(0.2), billboard=true, model=rotation
+    color=colors,
+    scale=Vec2f0(0.6), billboard=true, model=rotation
 )
 
 view(snowflakes, window, camera=:perspective)
 
-end
 
 if !isdefined(:runtests)
     renderloop(window)

@@ -1,9 +1,12 @@
 export glscreen
 
-function glscreen(name="GLVisualize")
+function glscreen(name="GLVisualize";
+        resolution = GLWindow.standard_screen_resolution(),
+        debugging = false
+    )
 
 
-    screen = Screen(name, debugging=true)
+    screen = Screen(name, resolution=resolution, debugging=debugging)
     global ROOT_SCREEN  = screen
     global TIMER_SIGNAL = fpswhen(screen.inputs[:window_open], 60.0)
 

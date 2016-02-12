@@ -3,10 +3,10 @@ using DataFrames, Gadfly, GLVisualize.ComposeBackend
 
 if !isdefined(:runtests)
     window = glscreen()
+    composebackend = ComposeBackend.GLVisualizeBackend(window)
 end
-const not_animated = true
+const static_example = true
 
-gl_backend = ComposeBackend.GLVisualizeBackend(window)
 
 xs = 0:0.1:20
 
@@ -28,7 +28,7 @@ df = vcat(df_cos, df_sin)
 p = plot(df, x=:x, y=:y, ymin=:ymin, ymax=:ymax, color=:f, Geom.line, Geom.ribbon)
 
 
-draw(gl_backend, p)
+draw(composebackend, p)
 
 if !isdefined(:runtests)
 renderloop(window)
