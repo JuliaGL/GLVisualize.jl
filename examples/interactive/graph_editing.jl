@@ -50,8 +50,8 @@ preserve(foldp((value(m2id)..., Point2f0(0)), mousedragg) do v0, dragg
     return id, index, p0
 end)
 # view it!
-view(lines, window)
-view(points, window)
+view(lines, window, camera=:fixed_pixel)
+view(points, window, camera=:fixed_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

@@ -22,10 +22,12 @@ interpolated = foldp((positions,positions,positions), t) do v0_v1_ip, td
     v0, v1, interpolate(v0, v1, pol)
 end
 b_sig = map(last, interpolated)
-bars = visualize((RECTANGLE, b_sig),
-	xyrange=((0,600),),intensity=b_sig,
-	color_norm=Vec2f0(-40,200),
-	color=Texture(GLVisualize.default(Vector{RGBA}))
+bars = visualize(
+    (RECTANGLE, b_sig),
+    intensity=b_sig,
+    ranges=linspace(0,600, 10),
+    color_norm=Vec2f0(-40,200),
+    color_map=GLVisualize.default(Vector{RGBA})
 )
 view(bars, window, camera=:orthographic_pixel)
 

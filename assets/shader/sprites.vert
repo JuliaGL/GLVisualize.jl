@@ -53,19 +53,20 @@ vec3 _rotation(vec2 r){return vec3(r, 3.1415926535897);}
 vec3 _rotation(vec3 r){return r;}
 
 {{color_type}}        color;
+{{color_map_type}}    color_map;
 {{intensity_type}}    intensity;
 {{color_norm_type}}   color_norm;
-vec4 _color(vec4      color, Nothing intensity, Nothing color_norm, int index);
-vec4 _color(sampler1D color, float   intensity, vec2    color_norm, int index);
 
 float get_intensity(vec3 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(vec2 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(Nothing rotation, float position_z, int index){return position_z;}
 float get_intensity(vec3 rotation, float position_z, int index){return position_z;}
-
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
-vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
-    return color_lookup(get_intensity(rotation, position_z, index), color, color_norm);
+
+vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
+vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index);
+vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index){
+    return color_lookup(get_intensity(rotation, position_z, index), color_map, color_norm);
 }
 
 {{stroke_color_type}} stroke_color;
@@ -93,7 +94,7 @@ void main(){
     g_position        = pos;
     g_offset_width.xy = offset.xy;
     g_offset_width.zw = _scale(scale, scale_x, scale_y, scale_z, g_primitive_index).xy;
-    g_color           = _color(color, intensity, color_norm, g_primitive_index);
+    g_color           = _color(color, intensity, color_map, color_norm, g_primitive_index);
     g_rotation        = _rotation(rotation);
     g_uv_offset_width = uv_offset_width;
     g_stroke_color    = stroke_color;

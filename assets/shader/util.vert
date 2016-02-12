@@ -169,88 +169,6 @@ vec4 getindex(sampler3D tex, int index){
     return texelFetch(tex, ind2sub(textureSize(tex, 0), index), 0);
 }
 
-float linspace(Grid1D grid, int i){
-    return ((float(grid.dims)-(i+1)) *
-        grid.minimum + i*grid.maximum) *
-        grid.multiplicator;
-}
-float linspace(Grid2D grid, int gi, int i){
-    return ((float(grid.dims[gi])-(i+1)) *
-        grid.minimum[gi] + i*grid.maximum[gi]) *
-        grid.multiplicator[gi];
-}
-float linspace(Grid3D grid, int gi, int i){
-    return ((float(grid.dims[gi])-(i+1)) *
-        grid.minimum[gi] + i*grid.maximum[gi]) *
-        grid.multiplicator[gi];
-}
-vec3 getindex(Grid1D grid, int i){
-    return vec3(linspace(grid, i), 0, 0);
-}
-vec3 getindex(Grid2D grid, int i){
-    ivec2 index2d = ind2sub(grid.dims, i);
-    return vec3(
-        linspace(grid, 0, index2d.x),
-        linspace(grid, 1, index2d.y),
-        0
-    );
-}
-vec3 getindex(Grid3D grid, int i){
-    ivec3 index3d = ind2sub(grid.dims, i);
-    return vec3(
-        linspace(grid, 0, index3d.x),
-        linspace(grid, 1, index3d.y),
-        linspace(grid, 2, index3d.z)
-    );
-}
-
-vec3 _position(Grid1D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return getindex(position, index);
-}
-vec3 _position(Grid1D position, Nothing position_x, Nothing position_y, float position_z, int index){
-    vec3 pos = getindex(position, index);
-    pos.z = position_z;
-    return pos;
-}
-vec3 _position(Grid1D position, Nothing position_x, float position_y, Nothing position_z, int index){
-    vec3 pos = getindex(position, index);
-    pos.y = position_y;
-    return pos;
-}
-vec3 _position(Grid2D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return getindex(position, index);
-}
-vec3 _position(Grid2D position, Nothing position_x, Nothing position_y, float position_z, int index){
-    vec3 pos = getindex(position, index);
-    pos.z = position_z;
-    return pos;
-}
-vec3 _position(Grid3D position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return getindex(position, index);
-}
-
-vec3 _position(samplerBuffer position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return texelFetch(position, index).xyz;
-}
-vec3 _position(Nothing position, samplerBuffer position_x, samplerBuffer position_y, samplerBuffer position_z, int index){
-    return vec3(texelFetch(position_x, index).x, texelFetch(position_y, index).x, texelFetch(position_z, index).x);
-}
-vec3 _position(samplerBuffer position, Nothing position_x, Nothing position_y, float position_z, int index){
-    return vec3(texelFetch(position, index).xy, position_z);
-}
-vec3 _position(samplerBuffer position, Nothing position_x, float position_y, float position_z, int index){
-    return vec3(texelFetch(position, index).x, position_y, position_z);
-}
-vec3 _position(Nothing position, float position_x, float position_y, float position_z, int index){
-    return vec3(position_x, position_y, position_z);
-}
-vec3 _position(vec3 position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return position;
-}
-vec3 _position(vec2 position, Nothing position_x, Nothing position_y, Nothing position_z, int index){
-    return vec3(position,0);
-}
-
 
 
 vec3 _scale(vec3  scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){return scale;}
@@ -286,15 +204,15 @@ vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm){
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
 
-vec4 _color(vec4 color, Nothing intensity, Nothing color_norm, int index){return color;}
+vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index){return color;}
 vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_norm, int index){
     return texelFetch(color, index);
 }
-vec4 _color(sampler1D color, samplerBuffer intensity, vec2 color_norm, int index){
-    return color_lookup(texelFetch(intensity, index).x, color, color_norm);
+vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index){
+    return color_lookup(texelFetch(intensity, index).x, color_map, color_norm);
 }
-vec4 _color(sampler1D color, float intensity, vec2 color_norm, int index){
-    return color_lookup(intensity, color, color_norm);
+vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index){
+    return color_lookup(intensity, color_map, color_norm);
 }
 
 

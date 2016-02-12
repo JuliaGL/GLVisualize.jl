@@ -4,7 +4,7 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(linspace(0,1,50))
 end
-n = 50
+n = 30
 const border = 50f0
 function bounce_particles(pos_velo, _)
     positions, velocity = pos_velo
@@ -25,10 +25,10 @@ position_velocity = foldp(bounce_particles,
     (start_position, zeros(Float32, n)),
     timesignal
 )
-circle = HyperSphere(Point2f0(0), 20f0)
+circle = HyperSphere(Point2f0(0), 40f0)
 vis = visualize((circle, map(first, position_velocity)),
     image=loadasset("doge.png"),
-    stroke_width=2f0,
+    stroke_width=3f0,
     stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)
 )
 view(vis, window, camera=:orthographic_pixel)

@@ -62,11 +62,17 @@ void rotate(vec3          vectors, int index, inout vec3 vertices, inout vec3 no
 
 
 {{color_type}}      color;
+{{color_map_type}}  color_map;
 {{intensity_type}}  intensity;
 {{color_norm_type}} color_norm;
-vec4 _color(vec4          color, Nothing       intensity, Nothing color_norm, int index);
-vec4 _color(samplerBuffer color, Nothing       intensity, Nothing color_norm, int index);
-vec4 _color(sampler1D     color, samplerBuffer intensity, vec2    color_norm, int index);
+// constant color!
+vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
+// only a samplerBuffer, this means we have a color per particle
+vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
+// no color, but intensities a color map and color norm. Color will be based on intensity!
+vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index);
+// no color, no intensities a color map and color norm. Color will be based on z_position or rotation!
+vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index);
 
 float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
     return length(texelFetch(rotation, index).xyz);
@@ -80,9 +86,10 @@ float get_intensity(vec3 rotation, samplerBuffer position_z, int index){
     return texelFetch(position_z, index).x;
 }
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
-vec4 _color(sampler1D color, Nothing intensity, vec2 color_norm, int index){
+
+vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index){
     float _intensity = get_intensity(rotation, scale_z, index);
-    return color_lookup(_intensity, color, color_norm);
+    return color_lookup(_intensity, color_map, color_norm);
 }
 
 void render(vec3 vertices, vec3 normals, mat4 viewmodel, mat4 projection, vec3 light[4]);
@@ -97,7 +104,7 @@ void main(){
     vec3 pos;
 	{{position_calc}}
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
-    o_color    = _color(color, intensity, color_norm, index);
+    o_color    = _color(color, intensity, color_map, color_norm, index);
 
     V *= scale;
     rotate(rotation, index, V, N);

@@ -28,9 +28,9 @@ bars = visualize(
     heightfield,
     scale_x = 0.07,
     scale_y = 0.07,
-    color=Texture(map(RGBA{U8}, colormap("Blues"))),
+    color_map=map(RGBA{U8}, colormap("Blues")),
     color_norm=Vec2f0(0,1),
-    xrange=range, yrange=range,
+    ranges=(range, range),
     boundingbox=Signal(AABB{Float32}(mini, maxi))
 )
 view(bars, window)

@@ -96,13 +96,17 @@ void main(void)
     //    |  \ |
     //    |___\|
     // v1*      * v2
-    vec4 o_w    = g_offset_width[0];
+    vec4 o_w      = g_offset_width[0];
+    vec4 vertices = vec4(-0.5, -0.5, 0.5, 0.5);
     vec4 uv_o_w = g_uv_offset_width[0];
-    o_w.zw = o_w.xy + o_w.zw;
+    vertices.xy *= o_w.zw;
+    vertices.zw *= o_w.zw;
+    vertices.xy += o_w.xy;
+    vertices.zw += o_w.xy;
 
-    emit_vertex(o_w.xy, uv_o_w.xw);
-    emit_vertex(o_w.xw, uv_o_w.xy);
-    emit_vertex(o_w.zy, uv_o_w.zw);
-    emit_vertex(o_w.zw, uv_o_w.zy);
+    emit_vertex(vertices.xy, uv_o_w.xw);
+    emit_vertex(vertices.xw, uv_o_w.xy);
+    emit_vertex(vertices.zy, uv_o_w.zw);
+    emit_vertex(vertices.zw, uv_o_w.zy);
     EndPrimitive();
 }
