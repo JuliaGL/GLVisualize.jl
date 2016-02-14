@@ -208,6 +208,9 @@ vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm
 vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_norm, int index){
     return texelFetch(color, index);
 }
+vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index){
+    return texelFetch(color, index);
+}
 vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index){
     return color_lookup(texelFetch(intensity, index).x, color_map, color_norm);
 }
