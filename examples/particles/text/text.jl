@@ -35,7 +35,9 @@ I can't even...
 end
 
 # view and visualize it!
-view(visualize(s, scale=Vec2f0(1.5)), window)
+view(visualize(s,
+    model=translationmatrix(Vec3f0(0,600,0)) # move this up, since the text starts at 0 and goes down from there
+), window)
 
 if !isdefined(:runtests)
 	renderloop(window)

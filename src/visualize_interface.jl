@@ -34,32 +34,7 @@ function view(
 	elseif camera == :fixed_pixel
 		real_camera = DummyCamera(window_size=screen.area)
 	elseif camera == :orthographic_pixel
-        fov, near = 41f0, 1f0
-        theta, trans, up, fov_s, near_s = map(Signal,
-            (Vec3f0(0), Vec3f0(0), Vec3f0(0,1,0), fov, near)
-        )
-        area = value(screen.area)
-        h = Float32(tan(fov / 360.0 * pi) * near)
-        w_, h_ = area.w/2f0, area.h/2f0
-        zoom = min(h_,w_)/h
-        x, y = w_, h_
-        eyeposition = Signal(Vec3f0(x, y, zoom))
-        lookatvec   = Signal(Vec3f0(x, y, 0))
-        farclip     = Signal(zoom*2.0f0)
-
-        real_camera = PerspectiveCamera(
-            theta,
-            trans,
-            lookatvec,
-            eyeposition,
-            up,
-            screen.area,
-            fov_s, # Field of View
-            near_s,  # Min distance (clip distance)
-            farclip, # Max distance (clip distance)
-            Signal(GLAbstraction.ORTHOGRAPHIC)
-        )
-
+        real_camera = OrthographicPixelCamera(screen.inputs)
 	elseif camera == :nothing
 		return push!(screen.renderlist, robj)
 	else

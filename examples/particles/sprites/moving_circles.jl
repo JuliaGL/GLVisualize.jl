@@ -4,7 +4,7 @@ using Colors, Reactive, FileIO
 if !isdefined(:runtests)
 
 	window = glscreen()
-	timesignal = bounce(linspace(0,1,100))
+	timesignal = bounce(linspace(0f0,1f0,360))
 end
 t 		   = const_lift(*, timesignal, 10f0)
 radius     = 200f0

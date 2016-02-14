@@ -11,7 +11,7 @@ the most sense for the datatype.
 #3D primitives
 typealias Primitives3D  Union{AbstractGeometry{3}, AbstractMesh}
 #2D primitives AKA sprites, since they are shapes mapped onto a 2D rectangle
-typealias Sprites Union{AbstractGeometry{2}, Shape, Char}
+typealias Sprites Union{AbstractGeometry{2}, Shape, Char, Type}
 typealias AllPrimitives Union{AbstractGeometry, Shape, Char}
 
 
@@ -246,19 +246,18 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
 end
 
 primitive_shape(::Char) = DISTANCEFIELD
-primitive_shape(::Circle) = CIRCLE
-primitive_shape(::SimpleRectangle) = RECTANGLE
-primitive_shape{T}(::HyperRectangle{2,T}) = RECTANGLE
+primitive_shape{X}(x::X) = primitive_shape(X)
+primitive_shape{T<:Circle}(::Type{T}) = CIRCLE
+primitive_shape{T<:SimpleRectangle}(::Type{T}) = RECTANGLE
+primitive_shape{T<:HyperRectangle{2}}(::Type{T}) = RECTANGLE
 primitive_shape(x::Shape) = x
 
 primitive_scale(prim::GeometryPrimitive) = Vec2f0(widths(prim))
 primitive_scale(::Shape) = Vec2f0(40)
 primitive_scale(c::Char) = Vec(glyph_scale!(c))
 
-primitive_offset(prim::GeometryPrimitive) = Vec2f0(origin(prim))
-primitive_offset(::Shape) = Vec2f0(0)
-primitive_offset(c::Char) = Vec2f0(0)
-
+primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
+primitive_offset(x) = Vec2f0(0) # default offset
 
 primitive_uv_offset_width(c::Char) = glyph_uv_width!(c)
 primitive_uv_offset_width(x) = Vec4f0(0,0,1,1)
@@ -269,10 +268,10 @@ primitive_distancefield(::Char) = get_texture_atlas().images
 
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to sprites
-_default{Primitive<:Union{GeometryPrimitive{2}, Shape, Char}, P<:Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) =
+_default{Primitive<:Sprites, P<:Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) =
     sprites(p,s,data)
 
-_default{Primitive<:Union{GeometryPrimitive{2}, Shape, Char}, G<:Grid}(p::Tuple{Primitive, G}, s::Style, data::Dict) =
+_default{Primitive<:Sprites, G<:Grid}(p::Tuple{Primitive, G}, s::Style, data::Dict) =
     sprites(p,s,data)
 
 
@@ -337,24 +336,43 @@ texture coordinates in the texture atlas, widths and positions of the characters
 function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
 
     @gen_defaults! data begin
-        scale          = Vec2f0(1)
+        relative_scale = Vec2f0(1)
         start_position = Point2f0(0)
         atlas          = get_texture_atlas()
         distancefield  = atlas.images
         stroke_width   = 0f0
         glow_width     = 0f0
         font           = DEFAULT_FONT_FACE
+        position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
+        offset          = const_lift(calc_offset, main, relative_scale, font, atlas)
+        uv_offset_width = const_lift(main) do str
+            Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
+        end
+        scale           = const_lift(main, relative_scale) do str, s
+            Vec2f0[glyph_scale!(atlas, c, font).*s for c=str]
+        end
     end
 
-    t_uv     = const_lift(main) do str
+    _default((DISTANCEFIELD, position), s, data)
+end
+
+#=
+@gen_defaults! data begin
+    scale          = Vec2f0(1)
+    start_position = Point2f0(0)
+    atlas          = get_texture_atlas()
+    distancefield  = atlas.images
+    stroke_width   = 0f0
+    glow_width     = 0f0
+    font           = DEFAULT_FONT_FACE
+    uv_offset_width = const_lift(main) do str
         Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
     end
-    t_scale  = const_lift(main) do str
-        Vec2f0[glyph_scale!(atlas, c, font).*scale for c=str]
+    scale = const_lift(main, scale) do str, s
+        Vec2f0[glyph_scale!(atlas, c, font).*s for c=str]
     end
-    data[:scale]           = t_scale
-    data[:uv_offset_width] = t_uv
-    position_offset = const_lift(calc_position, main, start_position, scale, font, atlas)
-    data[:offset] = map(last, position_offset)
-    _default((DISTANCEFIELD, map(first, position_offset)), s, data)
+    position = const_lift(calc_position, main, start_position, scale, font, atlas)
+    offset = const_lift(calc_offset, main, start_position, scale, font, atlas)
 end
+_default((DISTANCEFIELD, position), s, data)
+=#

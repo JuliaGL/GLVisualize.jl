@@ -32,6 +32,7 @@ flat in vec4            f_glow_color;
 flat in uvec2           f_id;
 flat in int             f_primitive_index;
 in vec2                 f_uv;
+in vec2                 f_uv_offset;
 
 
 
@@ -121,7 +122,7 @@ void main(){
     if(shape == CIRCLE)
         signed_distance = circle(f_uv);
     else if(shape == DISTANCEFIELD)
-        signed_distance = get_distancefield(distancefield, f_uv);
+        signed_distance = get_distancefield(distancefield, f_uv_offset);
     else if(shape == ROUNDED_RECTANGLE)
         signed_distance = rounded_rectangle(f_uv, vec2(0.2), vec2(0.8));
     else if(shape == RECTANGLE)
@@ -134,7 +135,7 @@ void main(){
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
     vec4 final_color    = vec4(1,1,1,0);
 
-    fill(f_color, image, f_uv, inside, final_color);
+    fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
     glow(f_glow_color, signed_distance, outside, final_color);
     write2framebuffer(final_color, f_id);

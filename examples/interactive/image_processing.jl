@@ -33,7 +33,7 @@ startvalue = myfilter(img, value(slider_s))
 # Use Reactive.async_map, to filter the image without blocking the main process
 task, imgsig = async_map(myfilter, startvalue, Signal(img), slider_s)
 # visualize the image signal
-image_renderable = visualize(imgsig)
+image_renderable = visualize(imgsig, model=translationmatrix(Vec3f0(50,100,0)))
 view(image_renderable)
 
 vec2i(a,b,x...) = Vec{2,Int}(round(Int, a), round(Int, b))

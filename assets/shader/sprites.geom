@@ -26,6 +26,7 @@ flat out vec4 f_stroke_color;
 flat out vec4 f_glow_color;
 flat out uvec2 f_id;
 out vec2 f_uv;
+out vec2 f_uv_offset;
 
 const vec3 UP_VECTOR = vec3(0,0,1);
 mat3 rotation_mat(vec3 direction){
@@ -63,7 +64,7 @@ vec4 _position(vec2 position, sampler2D heightfield, int index){
 }
 */
 
-void emit_vertex(vec2 vertex, vec2 uv)
+void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
 {
     vec4 final_position;
     if(billboard){
@@ -76,11 +77,12 @@ void emit_vertex(vec2 vertex, vec2 uv)
     }
 
     f_uv              = uv;
+    f_uv_offset       = uv_offset;
     f_primitive_index = g_primitive_index[0];
     f_color           = g_color[0];
     f_stroke_color    = g_stroke_color[0];
     f_glow_color      = g_glow_color[0];
-    f_scale           = g_offset_width[0].zw-g_offset_width[0].xy;
+    f_scale           = g_offset_width[0].zw;
     f_id              = g_id[0];
 
     EmitVertex();
@@ -97,16 +99,16 @@ void main(void)
     //    |___\|
     // v1*      * v2
     vec4 o_w      = g_offset_width[0];
-    vec4 vertices = vec4(-0.5, -0.5, 0.5, 0.5);
+    vec4 vertices = vec4(0, 0, 1, 1); // use a 0 origin quad (x,y,w,h)
     vec4 uv_o_w = g_uv_offset_width[0];
-    vertices.xy *= o_w.zw;
+    vertices.xy *= o_w.zw; // scale
     vertices.zw *= o_w.zw;
-    vertices.xy += o_w.xy;
+    vertices.xy += o_w.xy; // offset
     vertices.zw += o_w.xy;
 
-    emit_vertex(vertices.xy, uv_o_w.xw);
-    emit_vertex(vertices.xw, uv_o_w.xy);
-    emit_vertex(vertices.zy, uv_o_w.zw);
-    emit_vertex(vertices.zw, uv_o_w.zy);
+    emit_vertex(vertices.xy, vec2(0,1), uv_o_w.xw);
+    emit_vertex(vertices.xw, vec2(0,0), uv_o_w.xy);
+    emit_vertex(vertices.zy, vec2(1,1), uv_o_w.zw);
+    emit_vertex(vertices.zw, vec2(1,0), uv_o_w.zy);
     EndPrimitive();
 }

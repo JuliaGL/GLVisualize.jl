@@ -14,16 +14,23 @@ end
 
 function calc_position(glyphs, start_pos, scales, fonts, atlas)
     positions = fill(Point2f0(0.0), length(glyphs))
-    bearing   = fill(Point2f0(0.0), length(glyphs))
     last_pos  = Point2f0(start_pos)
     s, f = iter_or_array(scales), iter_or_array(fonts)
     for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
         glyph == '\r' && continue # stupid windows!
         positions[i] = last_pos
-        bearing[i]   = Point2f0(glyph_bearing!(atlas, glyph, font, scale))
         last_pos     = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
     end
-    positions, bearing
+    positions
+end
+function calc_offset(glyphs, scales, fonts, atlas)
+    bearing   = fill(Point2f0(0.0), length(glyphs))
+    s, f = iter_or_array(scales), iter_or_array(fonts)
+    for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
+        glyph == '\r' && continue # stupid windows!
+        bearing[i] = Point2f0(glyph_bearing!(atlas, glyph, font, scale))
+    end
+    bearing # bearing is the glyph offset
 end
 
 isnewline(x) = x == '\n'
