@@ -72,7 +72,7 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
     primitive, rotation_s = main
     rotation_v = value(rotation_s)
     @gen_defaults! data begin
-        ranges     = ntuple(i->linspace(0f0, 1f0, size(rotation_v, i)), N)
+        ranges = ntuple(i->linspace(0f0, 1f0, size(rotation_v, i)), N)
     end
     grid = Grid(rotation_v, ranges)
 
@@ -87,6 +87,9 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
         glyphscale = primitive_scale(primitive)
         glyphscale /= max(glyphscale...)
         scalevec = scalevec.*glyphscale
+        @gen_defaults! data begin # for chars we need to make sure they're centered
+            offset = -scalevec/2f0
+        end
     end
     @gen_defaults! data begin
         color_norm = const_lift(extrema2f0, rotation_s)
