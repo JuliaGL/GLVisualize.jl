@@ -473,8 +473,31 @@ function gen_text(text, atlas, font, position, scale, offset)
     uvwidth = Vec4f0[GLVisualize.glyph_uv_width!(atlas, c, font) for c in text]
     pos, scale, off, uvwidth
 end
+
+
+function pango_parse_markup(text)
+    c_stripped_text = Array(Ptr{UInt8}, 1)
+    c_attr_list = Array(Ptr{Void}, 1)
+    ret = ccall((:pango_parse_markup, Compose.libpango),
+        Int32,
+        (Ptr{UInt8}, Int32, UInt32, Ptr{Ptr{Void}},
+        Ptr{Ptr{UInt8}}, Ptr{UInt32}, Ptr{Void}),
+        bytestring(text), -1, 0, c_attr_list, c_stripped_text,
+        C_NULL, C_NULL
+    )
+    if ret == 0
+        error("Could not parse pango markup.")
+    end
+    str = bytestring(c_stripped_text[1])
+
+    # TODO: do c_stripped_text and c_attr_list need to be freed?
+
+    return convert(Vector{UInt8}, str), c_attr_list[]
+end
+
+
 function parse_pango(text::AbstractString, scale)
-    text, c_attr_list = Compose.pango_parse_markup(text)
+    text, c_attr_list = pango_parse_markup(text)
     GLV = GLVisualize
 
     atlas          = GLV.get_texture_atlas()
@@ -489,10 +512,8 @@ function parse_pango(text::AbstractString, scale)
     scales          = Vec2f0[]
     offset          = Point2f0[]
     uv_offset_width = Vec4f0[]
-    textall = ""
     for (idx, attr) in Compose.unpack_pango_attr_list(c_attr_list)
         current_text = bytestring(text[last_idx:idx])
-        textall  *= current_text
         last_idx = idx+1
 
         sa, pos, oa, uvwidth = gen_text(current_text,
@@ -515,7 +536,6 @@ function parse_pango(text::AbstractString, scale)
     end
     if last_idx <= length(text)
         current_text = bytestring(text[last_idx:end])
-        textall  *= current_text
         sa, pos, oa, uvwidth = gen_text(current_text,
             atlas, font, last_position, last_scale.*scale, last_offset
         )
@@ -524,17 +544,17 @@ function parse_pango(text::AbstractString, scale)
         append!(offset, oa)
         append!(uv_offset_width, uvwidth)
     end
-
-    println(positions)
     positions, scales, offset, uv_offset_width
 end
+
+
 
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
 	pos 	= absolute_native_units(img, prim.position)
 	s1 		= absolute_native_units(img, img.fontsize)/25f0
 	s 		= Vec2f0(s1)
-    println(s)
+
     positions, scales, offset, uv_offset_width = parse_pango(prim.value, s)
 
 	obj 	= visualize(prim.value,
