@@ -2,7 +2,7 @@ using GLVisualize, GeometryTypes, GLAbstraction
 using Colors, Reactive, FileIO
 if !isdefined(:runtests)
 	window = glscreen()
-	timesignal = Signal(0f0)
+	timesignal = bounce(linspace(0f0, 1f0, 360))
 end
 
 cat    = GLNormalMesh(loadasset("cat.obj"))
