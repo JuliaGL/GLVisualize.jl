@@ -13,7 +13,7 @@ const interactive_example = true
 using BilliardModels
 
 # create the billiard table
-const table 		= Sinai_billiard(0.1)
+const table = Sinai_billiard(0.1)
 const max_particles = 8_000
 
 # function that steps through the simulation

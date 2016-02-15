@@ -153,7 +153,7 @@ function cubecamera(
         for i=1:3
             unitvec = unit(Vec3f0, i)
             if dot(neweyepos, unitvec) == 0f0 # find an orthogonal vector
-                push!(upvector, cross(unitvec, dir))
+                push!(upvector,unitvec)
             end
         end
     end)
