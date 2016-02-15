@@ -564,7 +564,8 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
         distancefield=atlas.images,
         scale=scales,
         offset=offset,
-        uv_offset_width=uv_offset_width
+        uv_offset_width=uv_offset_width,
+        color=img.fill
     );
 	bb 		= value(GLAbstraction.boundingbox(obj))
     w,h,_   = widths(bb)
