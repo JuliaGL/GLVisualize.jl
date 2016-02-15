@@ -468,10 +468,10 @@ end
 
 function gen_text(text, atlas, font, position, scale, offset)
     pos = GLVisualize.calc_position(text, position, scale, font, atlas)
-    scale = Vec2f0[GLVisualize.glyph_scale!(atlas, c, font).*scale for c in text]
+    s = Vec2f0[GLVisualize.glyph_scale!(atlas, c, font) .* scale for c in text]
     off = GLVisualize.calc_offset(text, scale, font, atlas) .+ Point2f0(0, offset)
     uvwidth = Vec4f0[GLVisualize.glyph_uv_width!(atlas, c, font) for c in text]
-    pos, scale, off, uvwidth
+    pos, s, off, uvwidth
 end
 
 
@@ -516,27 +516,31 @@ function parse_pango(text::AbstractString, scale)
         current_text = bytestring(text[last_idx:idx])
         last_idx = idx+1
 
-        sa, pos, oa, uvwidth = gen_text(current_text,
+        pos, sa, oa, uvwidth = gen_text(current_text,
             atlas, font, last_position, last_scale.*scale, last_offset
         )
         append!(scales, sa)
         append!(positions, pos)
         append!(offset, oa)
         append!(uv_offset_width, uvwidth)
-        last_position = last(positions)
+        last_position = GLVisualize.calc_position(
+            last(positions), Point2f0(0), atlas,
+            last(current_text), font, last_scale.*scale
+        )
 
         last_offset = 0.0
         if !(attr.rise === nothing)
-            last_offset = -((attr.rise / Compose.PANGO_SCALE))
+            last_offset = ((attr.rise / Compose.PANGO_SCALE))
         end
         last_scale = Vec2f0(1)
         if !(attr.scale === nothing)
             last_scale = Vec2f0(attr.scale)
         end
     end
+    last_scale = Vec2f0(1)
     if last_idx <= length(text)
         current_text = bytestring(text[last_idx:end])
-        sa, pos, oa, uvwidth = gen_text(current_text,
+        pos, sa, oa, uvwidth = gen_text(current_text,
             atlas, font, last_position, last_scale.*scale, last_offset
         )
         append!(scales, sa)
@@ -552,19 +556,17 @@ end
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
 	pos 	= absolute_native_units(img, prim.position)
-	s1 		= absolute_native_units(img, img.fontsize)/25f0
+	s1 		= absolute_native_units(img, img.fontsize)/20f0
 	s 		= Vec2f0(s1)
-
     positions, scales, offset, uv_offset_width = parse_pango(prim.value, s)
-
-	obj 	= visualize(prim.value,
-        position=positions,
+    atlas = GLVisualize.get_texture_atlas();
+	obj 	= visualize((DISTANCEFIELD, positions),
+        distancefield=atlas.images,
         scale=scales,
         offset=offset,
-        uv_offset_width=uv_offset_width,
-        color=img.fill
-    )
-	bb 		= GLAbstraction.boundingbox(obj).value
+        uv_offset_width=uv_offset_width
+    );
+	bb 		= value(GLAbstraction.boundingbox(obj))
     w,h,_   = widths(bb)
 	x,y,_ 	= minimum(bb)
     pos     -= Point2f0(x, y)
