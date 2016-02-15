@@ -55,7 +55,7 @@ textvizz = visualize(s,
     color=color,
     stroke_color=stroke_color,
     stroke_width = 1f0,
-    scale=scale
+    relative_scale=scale
 )
 
 view(textvizz, window)
