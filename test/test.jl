@@ -113,11 +113,12 @@ end
 function include_in_module(name::Symbol, include_path)
     eval(:(
         module $(name)
-            using GLTest
+            using GLTest, Reactive
 
             const runtests   = true
             const window     = GLTest.window
-            const timesignal = GLTest.timesignal
+            const timesignal = Signal(0.0f0)
+
             const composebackend = GLTest.composebackend
 
             include($include_path)
@@ -138,11 +139,11 @@ function test_include(path, window)
         # only when something was added to renderlist
         if !isempty(window.renderlist) || !isempty(window.children)
             if isdefined(test_module, :record_interactive)
-                frames = record_test_interactive(window, timesignal)
+                frames = record_test_interactive(window, test_module.timesignal)
             elseif isdefined(test_module, :static_example)
                 frames = record_test_static(window)
             else
-                frames = record_test(window, timesignal)
+                frames = record_test(window, test_module.timesignal)
             end
             println("recorded successfully: $name")
             savepath = Pkg.dir("GLVisualize", "docs", "images")
@@ -178,14 +179,13 @@ end
 
 include("mouse.jl")
 
-window = glscreen()
+window = glscreen(resolution=(1280, 900))
 composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
-const timesignal = Signal(0.0f0)
 srand(777) # set rand seed, to get the same results for tests that use rand
 
-make_tests(Pkg.dir("GLVisualize", "examples", "contourf.jl"))
+make_tests(Pkg.dir("GLVisualize", "examples", "particles", "text", "text_particle.jl"))
 
 open("working.jls", "w") do io
     serialize(io, working_list)
