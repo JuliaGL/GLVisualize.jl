@@ -118,7 +118,11 @@ end
 
 function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
 	#select_font_face(cc, font)
+    if glyph == '\n' # don't render  newline
+        glyph = ' '
+    end
 	bitmap, extent = renderface(font, glyph, (128, 128))
+
 	sd, width_nopadd, scaling_factor = sdistancefield(bitmap)
 	if min(size(bitmap)...) > 0
 		s = width_nopadd ./ Vec2f0(size(bitmap))
