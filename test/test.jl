@@ -7,7 +7,7 @@ module GLTest
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
-using GLVisualize.ComposeBackend
+#using GLVisualize.ComposeBackend
 
 include("videotool.jl")
 
@@ -128,7 +128,7 @@ end
 function test_include(path, window)
     try
         println("trying to render $path")
-        name = ucfirst(basename(path)[1:end-3])
+        name = basename(path)[1:end-3] # remove .jl
         # include the example file in it's own module
         test_module = include_in_module(symbol(name), path)
         for (camname, cam) in window.cameras
