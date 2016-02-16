@@ -7,7 +7,7 @@ module GLTest
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
-using GLVisualize.ComposeBackend
+#using GLVisualize.ComposeBackend
 
 include("videotool.jl")
 
@@ -127,7 +127,7 @@ end
 function test_include(path, window)
     try
         println("trying to render $path")
-        name = ucfirst(basename(path)[1:end-3])
+        name = basename(path)[1:end-3] # remove .jl
         # include the example file in it's own module
         test_module = include_in_module(symbol(name), path)
         for (camname, cam) in window.cameras
@@ -179,13 +179,12 @@ end
 include("mouse.jl")
 
 window = glscreen()
-composebackend = ComposeBackend.GLVisualizeBackend(window)
+composebackend = true#ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
 const timesignal = Signal(0.0f0)
-srand(777) # set rand seed, to get the same results for tests that use rand
-
-make_tests(Pkg.dir("GLVisualize", "examples", "contourf.jl"))
+srand(777) # set rand seed, to gett he same results for tests that use rand
+make_tests(Pkg.dir("GLVisualize", "examples", "sprites", "distancefield.jl"))
 
 open("working.jls", "w") do io
     serialize(io, working_list)
