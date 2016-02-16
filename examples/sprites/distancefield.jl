@@ -19,7 +19,7 @@ const n2 = 128
 # for every particle. How this is done can be seen in example
 # partices/sprites/image_texture_atlas.jl
 
-distancefield = map(timesignal) do t
+dfield = map(timesignal) do t
     tpi = (2pi*t)+0.2
     Float32[xy_data(x,y,tpi)+0.5f0 for x=1:n2, y=1:n2]
 end
@@ -31,7 +31,7 @@ distfield = visualize((DISTANCEFIELD, positions),
     scale=Vec2f0(120),
     stroke_color=rand(RGBA{Float32}, n1),
     color=rand(RGBA{Float32}, n1),
-    distancefield=distancefield
+    distancefield=dfield
 )
 view(distfield, window)
 
