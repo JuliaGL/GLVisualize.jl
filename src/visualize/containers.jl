@@ -1,6 +1,3 @@
-visualize_default{T <: Composable, N}(::Array{T, N}, ::Style, kw_args...) = Dict(
-
-)
 
 max_xyz_inv(width, xmask=0, ymask=0, zmask=0) = 1f0/max(width[1]*xmask, width[2]*ymask , width[3]*zmask)
 
@@ -8,12 +5,14 @@ function grid_translation(scale, model_scale, bb, model, i=1, j=1, k=1)
 	translationmatrix(Vec3f0(i-1, j-1, k-1).*scale)*scalematrix(model_scale*scale)*translationmatrix(-minimum(bb))*model
 end
 
-function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, customizations=visualize_default(grid, s))
-    @materialize! gap, model, scale = customizations
+function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        scale    = Vec3f0(1) #axis of 3D dimension, can be signed
+    end
 	for ind=1:length(grid)
-		robj 	= grid[ind]
+		robj 	= grid[ind].children[]
 		bb_s 	= boundingbox(robj)
-		w 		= const_lift(width, bb_s)
+		w 		= const_lift(widths, bb_s)
 		model_scale = const_lift(max_xyz_inv, w, Vec{N, Int}(1)...)
 		robj[:model] = const_lift(grid_translation, scale, model_scale, bb_s, robj[:model], ind2sub(size(grid), ind)...) # update transformation matrix
 	end

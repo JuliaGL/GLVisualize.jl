@@ -2,7 +2,7 @@ using GLVisualize, GeometryTypes, Reactive, GLAbstraction, Colors
 
 if !isdefined(:runtests)
     window = glscreen()
-    timesignal = bounce(0f0:20f0)
+    timesignal = loop(linspace(0f0,1f0, 360))
 end
 
 const S = -5f0
@@ -28,8 +28,7 @@ function letitsnow(position, t)
     position
 end
 particles       = foldp(letitsnow, ps, timesignal)
-rotation_angle  = bounce(0f0:1f0:360f0)
-rotation 		= map(rotationmatrix_z, map(deg2rad, rotation_angle))
+rotation 		= map(rotationmatrix_z, const_lift(*, timesignal, 2f0*pi))
 color_ramp      = colormap("Blues", 50)
 colors          = RGBA{Float32}[color_ramp[rand(1:50)] for i=1:N]
 

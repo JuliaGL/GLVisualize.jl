@@ -195,4 +195,3 @@ function _position_calc(
     pos = $(grid_pos(position));
     "
 end
-

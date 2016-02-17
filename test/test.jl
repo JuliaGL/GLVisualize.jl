@@ -7,7 +7,7 @@ module GLTest
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
-#using GLVisualize.ComposeBackend
+using GLVisualize.ComposeBackend
 
 include("videotool.jl")
 
@@ -147,7 +147,7 @@ function test_include(path, window)
             end
             println("recorded successfully: $name")
             savepath = Pkg.dir("GLVisualize", "docs", "images")
-            create_video(frames, savepath, name)
+            create_video(frames, name, savepath)
             println("saved!")
             push!(working_list, path)
         end
@@ -163,7 +163,10 @@ end
 function make_tests(path::AbstractString)
     println(path)
     if isdir(path)
-        if basename(path) != "not_working" && basename(path) != "camera"
+        if (basename(path) != "not_working" &&
+            basename(path) != "camera" &&
+            !in(basename(path), working_list) &&
+            basename(path) != "compose")
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
     elseif isfile(path) && endswith(path, ".jl")
@@ -179,13 +182,13 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(1280, 900))
+window = glscreen(resolution=(1920, 1080))
 composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
 srand(777) # set rand seed, to get the same results for tests that use rand
-
-make_tests(Pkg.dir("GLVisualize", "examples", "particles", "text", "text_particle.jl"))
+println(working_list)
+make_tests(Pkg.dir("GLVisualize", "examples"))
 
 open("working.jls", "w") do io
     serialize(io, working_list)
