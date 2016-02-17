@@ -10,7 +10,7 @@ function Quaternions.qrotation{T<:Real}(axis::Quaternion{T}, z::Quaternion{T}, t
     q*z*conj(q)
 end
 
-function quaternion_belt_trick()
+function quaternion_belt_trick(timesignal)
 
     rad1 = 1f0 # outer circle
     rad2 = 0.2f0 # inner circle
@@ -29,7 +29,7 @@ function quaternion_belt_trick()
     max_frames = 96
     dphi = 2*pi/(max_frames-1) # include both ends
 
-    u1234_s = foldp(u1234, bounce(1:max_frames)) do v0, _
+    u1234_s = foldp(u1234, timesignal) do v0, _
         qrotation(axis, v0, Float32(dphi))
     end
     xyz = const_lift(plot_belts, rxs, rys, rzs, u1234_s, center1, center2, rad1, rad2)
@@ -63,9 +63,10 @@ end
 
 if !isdefined(:runtests)
     window = glscreen()
+    timesignal = loop(linspace(0f0, 1f0, 360))
 end
 
-xyz = quaternion_belt_trick()
+xyz = quaternion_belt_trick(timesignal)
 view(visualize(xyz, :surface), window)
 
 if !isdefined(:runtests)
