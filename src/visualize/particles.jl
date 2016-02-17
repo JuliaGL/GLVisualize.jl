@@ -22,8 +22,10 @@ We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
 performance.
 """
-function _default{T, N}(main::GeometryPrimitive{T, N}, s::Style, data::Dict)
-    _default((main, [zero(Point{N, Float32})]), s, data)
+function _default{G<:GeometryPrimitive}(
+        geometry::TOrSignal{G}, s::Style, data::Dict
+    )
+    _default((main, zeros(Point{N, Float32}, 1)), s, data)
 end
 
 """

@@ -15,6 +15,12 @@ function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     end
 end
 
+function _default(mesh::GLNormalColorMesh, s::Style, data::Dict)
+    data[:color] = decompose(RGBA{Float32}, mesh)
+    println(GLNormalMesh(mesh))
+    _default(GLNormalMesh(mesh), s, data)
+end
+
 function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
     @gen_defaults! data begin
         primitive       = main
@@ -26,4 +32,3 @@ function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
         shader          = GLVisualizeShader("grid.vert", "grid.frag")
     end
 end
-
