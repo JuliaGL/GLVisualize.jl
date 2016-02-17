@@ -3,6 +3,7 @@ using GLVisualize, GeometryTypes, GLAbstraction, Colors
 if !isdefined(:runtests)
 	window = glscreen()
 end
+const static_example = true
 
 baselen = 0.4f0
 dirlen = 2f0
