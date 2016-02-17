@@ -88,7 +88,7 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
     if P <: Char # we need to preserve proportion of the glyph
         glyphscale = primitive_scale(primitive)
         glyphscale /= max(glyphscale...)
-        scalevec = scalevec.*glyphscale
+        scalevec = Vec2f0(scalevec).*glyphscale
         @gen_defaults! data begin # for chars we need to make sure they're centered
             offset = -scalevec/2f0
         end

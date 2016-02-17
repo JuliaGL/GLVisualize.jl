@@ -11,17 +11,9 @@ number_of_windows = 6
 # Allow window creation to fail, since there is enough to test even without
 # OpenGL being present. This is important for travis, since we don't have OpenGL
 # there
-try
-    window = glscreen()
-    has_opengl = true
-catch e
-    warn(string(
-        "you don't seem to have opengl. Tests will run without OpenGL.
-        If you're not in a VM and have a decent graphic card (> intel HD 3000),
-        update drivers and if it still doesn't work, report an issue on github:",
-        "\n", e
-    ))
-end
+window = glscreen()
+has_opengl = true
+
 
 function view_boundingboxes(w, camera)
     bbs = []
@@ -56,7 +48,6 @@ function color_gen(v0, nv)
     end
     v0
 end
-function tests()
     prima = centered(HyperRectangle)
     primb = GLNormalMesh(centered(Sphere), 8)
     cat   = GLNormalMesh(loadasset("cat.obj"))
@@ -88,8 +79,7 @@ function tests()
         view(visualize(particles), windows[1])
         view_boundingboxes(windows[1], :perspective)
     end
-end
-tests()
+
 typealias NColor{N, T} Colorant{T, N}
 fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)
 fillcolor{T <: NColor{3}}(::Type{T}) = T(0,1,0)
@@ -185,7 +175,7 @@ facts("sprite particles") do
                 visualize((primc, map(first, position_velocity)), image=loadasset("doge.png"), stroke_width=3f0, stroke_color=RGBA{Float32}(0.91,0.91,0.91,1), boundingbox=AABB(Vec3f0(0), Vec3f0(300,300,0))),
                 visualize(('↺', c), xyrange=((0,200),(0,200))),
                 visualize(c_sig, xyrange=((0,200),(0,200))),
-                visualize((prima,b_sig), xyrange=((0,200),),intensity=b_sig, color_norm=Vec2f0(10,200), color=Texture(GLVisualize.default(Vector{RGBA}))),
+                visualize((prima,b_sig), xyrange=((0,200),),intensity=b_sig, color_norm=Vec2f0(10,200), color_map=GLVisualize.default(Vector{RGBA})),
                 visualize((CIRCLE, circle_pos), rotation=rotation, scale=scales)
             ]
             if has_opengl
@@ -208,17 +198,8 @@ facts("sprite particles") do
                 visualize((prima,a)),
                 visualize(('❄', a), scale=Vec2f0(0.1), billboard=true),
                 visualize(c, scale=Vec3f0(0.1)),
-                visualize(('➤', d), scale=Vec3f0(0.1))
+                visualize(('➤', d), scale=Vec2f0(0.1))
             ]
-            p1,p2,p3 = extract_renderable(Context(particles...))
-            #@fact typeof(particles[1][:primitive]) --> Cube{Float32}
-            #@fact typeof(p1[:primitive]) --> Cube{Float32}
-            #@fact typeof(p2[:primitive]) --> GLNormalMesh
-
-            #@fact particles[1][:positions] --> a
-            #@fact p1[:positions] --> b
-            #@fact p2[:positions] --> a
-            #@fact p3[:positions] --> b
 
             if has_opengl
                 context("viewing") do
