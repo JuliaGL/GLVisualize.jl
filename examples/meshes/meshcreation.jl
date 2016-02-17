@@ -27,6 +27,7 @@ view(visualize(colored_mesh), window)
 # one could also create a GLNormalAttributeMesh manually:
 colors = RGBA{U8}[RGBA{U8}(rand(), rand(), rand(), 1.0) for i=1:50]
 sphere = Sphere{Float32}(Point3f0(0), 2f0)
+# decompose decomposes a mesh or geometry into the primitive of the first argument
 vertices = decompose(Point3f0, sphere)
 faces = decompose(GLTriangle, sphere)
 # assign every vertice a random index into the color array (0-based indexes)
