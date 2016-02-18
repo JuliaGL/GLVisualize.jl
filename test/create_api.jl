@@ -9,27 +9,30 @@ function write_docs(a, b, io)
     # ignore unimplemented types
     nothing
 end
-function write_docs(f::Function, fd::Docs.FuncDoc, io)
-    println(io, "`", f, "`")
+
+print_type(x::Function) = string(x.env.name)
+print_type(x::Symbol) = string(x)
+print_type(x::TypeName) = print_type(x.name)
+print_type(x) = print_type(x.name)
+print_type(x::Union) = "Union{$(join(map(print_type, x.types), " "))}"
+
+function write_docs(fun::Union{Function, DataType}, fd::Union{Docs.TypeDoc, Docs.FuncDoc}, io)
+    println(io, "## `", print_type(fun), "`")
     for (k,v) in fd.meta
-        println(io, "args: `(", join(map(x->"::$x", k.types), ", "), ")`")
+        println(io, "args: `(", join(map(x->"::$(print_type(x))", k.types), ", "), ")`")
+        println(io)
         writemime(io, MIME"text/markdown"(), v)
+        println(io)
+        println(io, "---")
         println(io)
     end
     println(io, "\n") # two newlines
 end
 
 
-function write_docs{T}(::Type{T}, td::Docs.TypeDoc, io)
-    println(io, "`", T, "`")
-    for (k,v) in td.meta
-        println(io, "args: `(", join(map(x->"::$x", k.types), ", "), ")`")
-        writemime(io, MIME"text/markdown"(), v)
-        println(io)
-    end
-    println(io, "\n") # two newlines
-end
-open("api.md", "w") do io
+const doc_root = "C:\\Users\\Sim\\GLVisualize\\docs"
+
+open(joinpath(doc_root, "api.md"), "w") do io
     for (k, v) in metadict
         write_docs(k, v, io)
     end
