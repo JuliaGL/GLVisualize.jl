@@ -1,7 +1,7 @@
 using GeometryTypes, Quaternions, GLVisualize, Reactive, GLAbstraction
 
 function Quaternions.qrotation{T<:Real}(axis::Quaternion{T}, theta::T)
-    ax = FixedSizeArrays.Vec{3,T}(axis.v1, axis.v2, axis.v3)
+    ax = Vec{3,T}(axis.v1, axis.v2, axis.v3)
     qrotation(ax, theta)
 end
 

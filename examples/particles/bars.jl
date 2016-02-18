@@ -24,7 +24,7 @@ end
 heightfield = map(contourdata, timesignal)
 mini = Vec3f0(first(range), first(range), minimum(value(heightfield)))
 maxi = Vec3f0(last(range), last(range), maximum(value(heightfield)))
-bars = visualize(
+barsvis = visualize(
     heightfield,
     scale_x = 0.07,
     scale_y = 0.07,
@@ -33,7 +33,7 @@ bars = visualize(
     ranges=(range, range),
     boundingbox=Signal(AABB{Float32}(mini, maxi))
 )
-view(bars, window)
+view(barsvis, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

@@ -48,37 +48,37 @@ function color_gen(v0, nv)
     end
     v0
 end
-    prima = centered(HyperRectangle)
-    primb = GLNormalMesh(centered(Sphere), 8)
-    cat   = GLNormalMesh(loadasset("cat.obj"))
-    a = rand(Point2f0, 20)
-    b = rand(Point3f0, 20)
-    c = collect(linspace(0.1f0,1.0f0,10f0))
-    d = rand(Float32, 10,10)
-    e = rand(Vec3f0, 5,5,5)
+prima = centered(HyperRectangle)
+primb = GLNormalMesh(centered(Sphere), 8)
+cat   = GLNormalMesh(loadasset("cat.obj"))
+a = rand(Point2f0, 20)
+b = rand(Point3f0, 20)
+c = collect(linspace(0.1f0,1.0f0,10f0))
+d = rand(Float32, 10,10)
+e = rand(Vec3f0, 5,5,5)
 
-    lastpos = Vec3f0(0)
-    particles = [
-        visualize(elem, scale=Vec3f0(0.03))
-        for elem in (b, (prima, a), (primb, b), (primb, c), d)
-    ]
+lastpos = Vec3f0(0)
+particles = [
+    visualize(elem, scale=Vec3f0(0.03))
+    for elem in (b, (prima, a), (primb, b), (primb, c), d)
+]
 
-    ps 			 = primb.vertices
-    time         = bounce(Float32(pi):0.01f0:(pi*2.0f0))
-    scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
-    scale_signal = foldp(scale_gen, scale_start, time)
-    scale 		 = scale_signal
-    color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), time)
-    color 		 = color_signal
-    rotation     = -primb.normals
+ps 			 = primb.vertices
+time         = bounce(Float32(pi):0.01f0:(pi*2.0f0))
+scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
+scale_signal = foldp(scale_gen, scale_start, time)
+scale 		 = scale_signal
+color_signal = foldp(color_gen, zeros(RGBA{U8}, length(ps)), time)
+color 		 = color_signal
+rotation     = -primb.normals
 
-    push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation))
-    push!(particles, visualize(e, scale=Vec3f0(0.3)))
+push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotation))
+push!(particles, visualize(e, scale=Vec3f0(0.3)))
 
-    if has_opengl
-        view(visualize(particles), windows[1])
-        view_boundingboxes(windows[1], :perspective)
-    end
+if has_opengl
+    view(visualize(particles), windows[1])
+    view_boundingboxes(windows[1], :perspective)
+end
 
 typealias NColor{N, T} Colorant{T, N}
 fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)
