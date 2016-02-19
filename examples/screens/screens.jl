@@ -1,9 +1,10 @@
-using GLVisualize, Reactive, GeometryTypes 
+using GLVisualize, Reactive, GeometryTypes
 using GLWindow, GLAbstraction
-	
+
 if !isdefined(:runtests)
 	window = glscreen()
 end
+const static_example = true
 
 """
 functions to halve some rectangle
@@ -14,13 +15,13 @@ xhalf2(r) = SimpleRectangle(r.w÷2, r.y, r.w÷2, r.h)
 # create first screen with window as the parent screen
 # and a different area.
 screen2D = Screen(
-	window, name=:screen2D, 
+	window, name=:screen2D,
 	area=const_lift(xhalf2, window.area)
 )
 # create second screen with window as the parent screen
 # and a different area.
 screen3D = Screen(
-	window, name=:screen3D, 
+	window, name=:screen3D,
 	area=const_lift(xhalf, window.area)
 )
 

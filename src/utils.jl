@@ -16,7 +16,11 @@ end
 function assemble_shader(data)
     shader = data[:shader]
     delete!(data, :shader)
-    bb  = get(data, :boundingbox, Signal(centered(AABB)))
+    default_bb = Signal(centered(AABB))
+    bb  = get(data, :boundingbox, default_bb)
+    if bb == nothing
+        bb = default_bb
+    end
     glp = get(data, :gl_primitive, GL_TRIANGLES)
     if haskey(data, :instances)
         robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
@@ -60,8 +64,8 @@ Returns two signals, one boolean signal if clicked over `robj` and another
 one that consists of the object clicked on and another argument indicating that it's the first click
 """
 function clicked(robj::RenderObject, button::MouseButton, window::Screen)
-    @materialize mouse_hover, mousebuttonspressed = window.inputs
-    leftclicked = const_lift(mouse_hover, mousebuttonspressed) do mh, mbp
+    @materialize mouse_hover, mouse_buttons_pressed = window.inputs
+    leftclicked = const_lift(mouse_hover, mouse_buttons_pressed) do mh, mbp
         mh[1] == robj.id && mbp == Int[button]
     end
     clicked_on_obj = keepwhen(leftclicked, false, leftclicked)
@@ -69,12 +73,12 @@ function clicked(robj::RenderObject, button::MouseButton, window::Screen)
     leftclicked, clicked_on_obj
 end
 
-is_same_id(id, robj) = id[1] == robj.id
+is_same_id(id, robj) = id.id == robj.id
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
 is_hovering(robj::RenderObject, window::Screen) =
-    droprepeats(const_lift(is_same_id, window.inputs[:mouse_hover], robj))
+    droprepeats(const_lift(is_same_id, mouse2id(window), robj))
 
 function dragon_tmp(past, mh, mbp, mpos, robj, button, start_value)
     diff, dragstart_index, was_clicked, dragstart_pos = past
@@ -93,14 +97,14 @@ Returns a signal with the difference from dragstart and current mouse position,
 and the index from the current ROBJ id.
 """
 function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
-    @materialize mouse_hover, mousebuttonspressed, mouseposition = window.inputs
-    start_value = (Vec2f0(0), mouse_hover.value[2], false, Vec2f0(0))
-    tmp_signal = foldp(dragon_tmp,
-        start_value, mouse_hover,
-        mousebuttonspressed, mouseposition,
-        Signal(robj), Signal(button), Signal(start_value)
-    )
-    droprepeats(const_lift(getindex, tmp_signal, 1:2))
+    @materialize mouse_buttons_pressed, mouseposition = window.inputs
+    mousehover = mouse2id(window)
+    mousedown = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
+    condition = const_lift(is_same_id, mousehover, robj)
+    dragg = GLAbstraction.dragged(mouseposition, mousedown, condition)
+    filterwhen(mousedown, (value(dragg), 0), map(dragg) do d
+        d, value(mousehover).index
+    end)
 end
 
 points2f0{T}(positions::Vector{T}, range::Range) = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]

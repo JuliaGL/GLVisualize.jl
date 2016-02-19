@@ -33,7 +33,7 @@ function edit_line(
         line, direction_restriction::Vec2f0, clampto, window;
         color=default(RGBA{Float32})
     )
-    @materialize mouse_hover = window.inputs
+    mouse_hover = mouse2id(window)
 	line_robj = visualize(line, :lines, color=color, thickness=10f0).children[]
 	point_gpu = line_robj[:vertex]
 	points 	  = visualize(
@@ -62,7 +62,7 @@ function gpu_diff_set!(gpu_object, index, value, direction_restriction, clampto)
 	if checkbounds(Bool, size(gpu_object), index)
         T = eltype(gpu_object)
         a = T(value.*direction_restriction)
-        np = gpu_object[index] - a
+        np = gpu_object[index] + a
 		gpu_object[index] = T(np[1], clamp(np[2], clampto...))
 	end
 	nothing

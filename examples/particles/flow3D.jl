@@ -2,7 +2,7 @@ using GLVisualize, GeometryTypes, Reactive
 
 if !isdefined(:runtests)
     window = glscreen()
-    timesignal = bounce(linspace(0,1,360))
+    timesignal = bounce(linspace(0f0,1f0,360))
 end
 N = 7
 # generate some rotations

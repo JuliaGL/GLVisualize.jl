@@ -164,9 +164,7 @@ function make_tests(path::AbstractString)
     println(path)
     if isdir(path)
         if (basename(path) != "not_working" &&
-            basename(path) != "camera" &&
-            !in(basename(path), working_list) &&
-            basename(path) != "compose")
+            !in(basename(path), working_list))
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
     elseif isfile(path) && endswith(path, ".jl")
@@ -187,8 +185,7 @@ composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
 srand(777) # set rand seed, to get the same results for tests that use rand
-println(working_list)
-make_tests(Pkg.dir("GLVisualize", "examples"))
+make_tests(Pkg.dir("GLVisualize", "examples", "volumes", "maximum_intensity_projection.jl"))
 
 open("working.jls", "w") do io
     serialize(io, working_list)

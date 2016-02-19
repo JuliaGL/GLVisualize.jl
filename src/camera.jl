@@ -170,7 +170,7 @@ function cubecamera(
         view=viewmatrix,
         projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
     )
-    robj = visualize(cube_steering, preferred_camera=:cube_cam)
+    robj = visualize(cube_steering, preferred_camera=:cube_cam, model=scalematrix(Vec3f0(0.5)))
     start_colors = cube_steering.attributes
     color_tex    = robj.children[][:attributes]
     preserve(const_lift(cubeside_color, id, mousehover, Signal(start_colors), Signal(color_tex)))

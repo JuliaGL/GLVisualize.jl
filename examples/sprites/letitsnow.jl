@@ -14,7 +14,7 @@ const gravity  = Vec3f0(0,0,-0.04)
 
 upper_bound(x) = x>S+W
 lower_bound(x) = x<S
-function letitsnow(position, t)
+function let_it_snow(position, t)
     @inbounds for i=1:length(ps)
         pos = Vec(position[i])
         p = Point3f0(pos+gravity+velocity[i])
@@ -27,7 +27,7 @@ function letitsnow(position, t)
     end
     position
 end
-particles       = foldp(letitsnow, ps, timesignal)
+particles       = foldp(let_it_snow, ps, timesignal)
 rotation 		= map(rotationmatrix_z, const_lift(*, timesignal, 2f0*pi))
 color_ramp      = colormap("Blues", 50)
 colors          = RGBA{Float32}[color_ramp[rand(1:50)] for i=1:N]

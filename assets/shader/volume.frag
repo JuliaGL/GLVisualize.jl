@@ -98,8 +98,8 @@ bool is_outside(vec3 position)
 
 vec4 volume(vec3 front, vec3 dir, float stepsize)
 {
-    vec3  stepsize_dir   = normalize(dir) * stepsize;
-    vec3  pos            = front;
+    vec3  stepsize_dir = normalize(dir) * stepsize;
+    vec3  pos          = front;
     float T = 1.0;
     vec3 Lo = vec3(0.0);
     int i = 0;
