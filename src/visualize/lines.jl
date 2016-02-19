@@ -1,4 +1,4 @@
-function lastlen(points)
+function sumlengths(points)
     result = zeros(eltype(points[1]), length(points))
     for i=1:length(points)
         i0 = max(i-1,1)
@@ -6,19 +6,26 @@ function lastlen(points)
     end
     result
 end
+
+"""
+Converts index arrays to the OpenGL equivalent.
+"""
 to_indices(x::TOrSignal{Int}) = x
 to_indices(x::VecOrSignal{UnitRange{Int}}) = x
-#if integer, we transform it to 0 based indices
+"""
+For integers, we transform it to 0 based indices
+"""
 to_indices{I<:Integer}(x::Vector{I}) = indexbuffer(map(i-> Cuint(i-1), x))
-#if already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
+"""
+If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
+"""
 to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
 to_indices(x) = error(
     "Not a valid index type: $x.
     Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
 )
-gvalue(x::Signal) = value(x)
-gvalue(x::GPUArray) = gpu_data(x)
-gvalue(x) = x
+
+
 function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Dict)
     @gen_defaults! data begin
         dotted              = false
@@ -30,14 +37,14 @@ function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Di
         transparent_picking = false
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, position)
-        boundingbox         = GLBoundingBox(gvalue(position))
+        boundingbox         = GLBoundingBox(to_cpu_mem(value(position)))
         indices             = const_lift(length, position) => to_indices
         shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
     if dotted
         @gen_defaults! data begin
-            lastlen   = const_lift(lastlen, position) => GLBuffer
+            lastlen   = const_lift(sumlengths, position) => GLBuffer
             maxlength = const_lift(last, ll)
         end
     end
@@ -72,22 +79,15 @@ function _default{T <: AbstractFloat}(positions::Vector{T}, range::Range, s::sty
     _default(points2f0(positions, range), s, data)
 end
 
-#Parametric rendering of arbitrary opengl functions
-_default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
-    primitive:: GLUVMesh2D  = SimpleRectangle{Float32}(0f0,0f0,1f0,1f0)
-    color                   = default(RGBA, s)
-    boundingbox             = GLBoundingBox(primitive)
-    preferred_camera        = :orthographic_pixel
-    shader                  = GLVisualizeShader("parametric.vert", "parametric.frag"; view = Dict("function" => bytestring(func.source)))
-end
 
 
 function _default{G<:GeometryPrimitive}(
         geometry::TOrSignal{G}, s::style"lines", data::Dict
     )
     points = const_lift(geometry) do g
-         decompose(Point3f0, g)
+         decompose(Point3f0, g) # get the point representation of the geometry
     end
+    # Get line index representation
     indices = decompose(Face{2, GLuint, -1}, value(geometry))
     data[:indices] = reinterpret(GLuint, indices)
     _default(points, style"linesegment"(), data)
