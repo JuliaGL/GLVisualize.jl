@@ -1,6 +1,7 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
 
+
 in vec3 frag_vertposition;
 
 uniform sampler3D intensities;
@@ -201,5 +202,6 @@ void main()
         color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
 
     write2framebuffer(color, uvec2(objectid, 0));
+
 
 }

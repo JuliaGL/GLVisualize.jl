@@ -19,7 +19,6 @@ function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatT
     surface(position_z, s, data)
 end
 
-
 function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
         grid_start = (-1f0, -1f0)
@@ -94,6 +93,7 @@ function grid_pos(grid::Grid{3})
         $(glsllinspace(grid, 2, "index2D.z"))
     )"
 end
+
 
 function _position_calc{T<:AbstractFloat}(
         grid::Grid{2}, position_z::MatTypes{T}, target::Type{Texture}

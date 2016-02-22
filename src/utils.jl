@@ -58,6 +58,14 @@ function x_partition(area, percent)
 end
 
 
+glboundingbox(mini, maxi) = AABB{Float32}(Vec3f0(mini), Vec3f0(maxi)-Vec3f0(mini))
+function default_boundingbox(main, model)
+    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
+    const_lift(*, model, AABB{Float32}(main))
+end
+call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
+call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
+
 
 """
 Returns two signals, one boolean signal if clicked over `robj` and another

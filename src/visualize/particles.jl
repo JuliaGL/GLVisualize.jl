@@ -16,7 +16,6 @@ typealias AllPrimitives Union{AbstractGeometry, Shape, Char}
 
 
 
-
 """
 We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
@@ -173,6 +172,7 @@ function _default{P<:Sprites, T<:AbstractFloat}(
     end
     _default((primitive, grid), s, data)
 end
+
 
 
 # There is currently no way to get the two following two signatures
@@ -360,24 +360,3 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
 
     _default((DISTANCEFIELD, position), s, data)
 end
-
-#=
-@gen_defaults! data begin
-    scale          = Vec2f0(1)
-    start_position = Point2f0(0)
-    atlas          = get_texture_atlas()
-    distancefield  = atlas.images
-    stroke_width   = 0f0
-    glow_width     = 0f0
-    font           = DEFAULT_FONT_FACE
-    uv_offset_width = const_lift(main) do str
-        Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
-    end
-    scale = const_lift(main, scale) do str, s
-        Vec2f0[glyph_scale!(atlas, c, font).*s for c=str]
-    end
-    position = const_lift(calc_position, main, start_position, scale, font, atlas)
-    offset = const_lift(calc_offset, main, start_position, scale, font, atlas)
-end
-_default((DISTANCEFIELD, position), s, data)
-=#
