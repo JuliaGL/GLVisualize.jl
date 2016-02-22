@@ -16,7 +16,7 @@ Pkg.add("GLVisualize")
 Pkg.checkout("GLAbstraction", "sd/next²")
 Pkg.checkout("GLVisualize", "next2")
 Pkg.checkout("GLWindow", "sd/rebuild")
-Pkg.checkout("GeometryTypes", "sd/boundingbox")
+Pkg.checkout("GeometryTypes")
 Pkg.checkout("FixedSizeArrays", "master")
 ```
 
