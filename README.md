@@ -14,8 +14,8 @@ Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.checkout("GLAbstraction", "sd/next²")
-Pkg.checkout("GLWindow", "sd/rebuild")
+Pkg.checkout("GLAbstraction")
+Pkg.checkout("GLWindow")
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("FixedSizeArrays")
 Pkg.checkout("MeshIO")
