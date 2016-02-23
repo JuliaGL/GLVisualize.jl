@@ -14,14 +14,18 @@ function create_video(frames::Vector, name, screencap_folder)
         println("created $name's png sequence successfully!")
         oldpath = pwd()
         cd(path)
-        run(pipeline(
-            `png2yuv -I p -f 30 -b 1 -n $len -j $name%d.png`,
-            "$(name).yuv"
-        ))
-        println("converted $(name)'s frames to yuv successfully")
-        run(
-            `vpxenc --good --cpu-used=0 --auto-alt-ref=1 --lag-in-frames=16 --end-usage=vbr --passes=1 --threads=4 --target-bitrate=3500 -o $(name).webm $(name).yuv`
-        )
+        mktemp(path) do io, path
+            # output stdout to tmpfile , since there is too much going on with it
+            run(pipeline(
+                `png2yuv -I p -f 30 -b 1 -n $len -j $name%d.png`,
+                stdout="$(name).yuv", stdin=io, stderr=io
+            ))
+            println("converted $(name)'s frames to yuv successfully")
+            run(pipeline(
+                `vpxenc --good --cpu-used=0 --auto-alt-ref=1 --lag-in-frames=16 --end-usage=vbr --passes=1 --threads=4 --target-bitrate=3500 -o $(name).webm $(name).yuv`,
+                stdout=io, stdin=io, stderr=io
+            ))
+        end
         println("created $name's video successfully!")
         targetpath = abspath(joinpath(screencap_folder, "$(name).webm"))
         sourcepath = abspath("$(name).webm")

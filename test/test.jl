@@ -11,7 +11,10 @@ using GLVisualize.ComposeBackend
 
 include("videotool.jl")
 
-function record_test(window, timesignal, nframes=360)
+const number_of_frames = 360
+const interactive_time = 7.0
+
+function record_test(window, timesignal, nframes=number_of_frames)
     push!(timesignal, 0f0)
     yield()
     render_frame(window) # make sure we start with a valid image
@@ -34,7 +37,7 @@ function record_test_static(window)
     render_frame(window)
     return screenbuffer(window)
 end
-function record_test_interactive(window, timesignal)
+function record_test_interactive(window, timesignal, total_time=interactive_time)
     frames = []
     add_mouse(window)
     push!(timesignal, 0f0)
@@ -44,7 +47,7 @@ function record_test_interactive(window, timesignal)
     end
     start_time = time()
 
-    while time()-start_time < 7.0
+    while time()-start_time < total_time
         push!(timesignal, (start_time-time())/3.0)
         render_frame(window)
         push!(frames, screenbuffer(window))
@@ -64,6 +67,11 @@ signal_boundingbox(robj) = value(boundingbox(robj))
 
 function center_cam(camera::PerspectiveCamera, renderlist)
     isempty(renderlist) && return nothing # nothing to do here
+    # reset camera
+    push!(camera.up, Vec3f0(0,0,1))
+    push!(camera.eyeposition, Vec3f0(3))
+    push!(camera.lookat, Vec3f0(0))
+
     robj1 = first(renderlist)
     bb = value(robj1[:model])*signal_boundingbox(robj1)
     for elem in renderlist[2:end]
@@ -148,11 +156,14 @@ function test_include(path, window)
             println("recorded successfully: $name")
             savepath = Pkg.dir("GLVisualize", "docs", "images")
             create_video(frames, name, savepath)
-            println("saved!")
             push!(working_list, path)
         end
     catch e
-        println(e)
+        println("################################################################")
+        bt = catch_backtrace()
+        ex = CapturedException(e, bt)
+        showerror(io, ex)
+        println("################################################################")
     finally
         empty!(window.children)
         empty!(window.renderlist)
@@ -161,10 +172,8 @@ function test_include(path, window)
 end
 
 function make_tests(path::AbstractString)
-    println(path)
     if isdir(path)
-        if (basename(path) != "not_working" &&
-            !in(basename(path), working_list))
+        if !in(path, working_list)
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
     elseif isfile(path) && endswith(path, ".jl")
@@ -180,12 +189,12 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(1920, 1080))
+window = glscreen(resolution=(256, 256))
 composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
 srand(777) # set rand seed, to get the same results for tests that use rand
-make_tests(Pkg.dir("GLVisualize", "examples", "volumes", "maximum_intensity_projection.jl"))
+make_tests(Pkg.dir("GLVisualize", "examples"))
 
 open("working.jls", "w") do io
     serialize(io, working_list)
