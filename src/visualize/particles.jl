@@ -115,7 +115,7 @@ function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
     @gen_defaults! data begin
         ranges = ntuple(i->linspace(0f0, 1f0, size(heightfield, i)), N)
     end
-    grid = Grid(ranges)
+    grid = Grid(heightfield, ranges)
     @gen_defaults! data begin
         scale            = nothing
         scale_x::Float32 = step(grid.dims[1])

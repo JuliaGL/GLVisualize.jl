@@ -124,7 +124,7 @@ function deletetext(text_selection)
 	nothing
 end
 export inserttext
-inserttext(_, text_selection) = inserttext(text_selection)
+
 function inserttext(text_selection, to_insert)
 	selection, text = text_selection.selection, text_selection.text
 	if first(selection) > 0 && first(selection) <= length(text)

@@ -146,21 +146,6 @@ function Compose.pop_property_frame(img::GLVisualizeBackend)
 end
 
 
-function restore_property_state(img::GLVisualizeBackend)
-    state = pop!(img.state_stack)
-    img.stroke = state.stroke
-    img.fill = state.fill
-    img.stroke_dash = state.stroke_dash
-    img.stroke_linecap = state.stroke_linecap
-    img.stroke_linejoin = state.stroke_linejoin
-    img.visible = state.visible
-    img.linewidth = state.linewidth
-    img.fontsize = state.fontsize
-    img.font = state.font
-    img.clip = state.clip
-end
-
-
 
 # Return true if the vector properties need to be pushed and popped, rather
 # than simply applied.
@@ -206,21 +191,6 @@ function restore_property_state(img::GLVisualizeBackend)
     img.clip = state.clip
 end
 
-
-
-# Return true if the vector properties need to be pushed and popped, rather
-# than simply applied.
-function vector_properties_require_push_pop(img::GLVisualizeBackend)
-    for (propertytype, property) in img.vector_properties
-        propertytype
-        if in(propertytype, [Compose.Property{Compose.FontPrimitive},
-                             Compose.Property{Compose.FontSizePrimitive},
-                             Compose.Property{Compose.ClipPrimitive}])
-            return true
-        end
-    end
-    return false
-end
 
 function push_vector_properties(img::GLVisualizeBackend, idx::Int)
     save_property_state(img)

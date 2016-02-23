@@ -7,7 +7,7 @@ function create_video(frames::Vector, name, screencap_folder)
     println("saving frames for $name")
     mktempdir() do path
         for (i,frame) in enumerate(frames)
-           save(joinpath(path, "$name$i.png"), frame, true)
+            save(joinpath(path, "$name$i.png"), frame, true)
         end
         len = length(frames)
         frames = [] # free frames...
