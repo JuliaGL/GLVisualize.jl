@@ -20,9 +20,9 @@ function vizzedit(x::RGBA, inputs)
 
   color = foldp(x, const_lift(/,slide_addition, 1000.0f0), mbutton_clicked) do v0, addition, mpress
     if length(mpress) == 1
-      if mpress == IntSet(1) # leftclick changes blue+trans
+      if mpress == Set{Int}(1) # leftclick changes blue+trans
         return RGBA{Float32}(v0.r, v0.g, cuttoff(v0.b-addition.x), cuttoff(v0.a-addition.y))
-      elseif mpress == IntSet(0)
+      elseif mpress == Set{Int}(0)
         return RGBA{Float32}(cuttoff(v0.r-addition.x), cuttoff(v0.g-addition.y), v0.b, v0.a)
       end
     end

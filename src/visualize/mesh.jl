@@ -1,32 +1,34 @@
-visualize_default(::AbstractMesh, ::Style, kw_args=Dict()) = Dict{Symbol, Any}()
-visualize_default(::GLNormalMesh, s::Style, kw_args=Dict()) = Dict{Symbol, Any}(
-    :color      => default(RGBA, s)
-)
-
-#visualize(mesh::Mesh, s::Style, customizations=visualize_default(mesh, s)) = visualize(convert(GLNormalMesh, mesh), s, customizations)
-
-function visualize(mesh::GLNormalMesh, s::Style, customizations=visualize_default(mesh, s))
-    data    = merge(collect_for_gl(mesh), customizations)
-    shader  = assemble_std(
-        mesh.vertices, data,
-        "util.vert", "standard.vert", "standard.frag"
-    )
+function _default{M<:GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        main 		= mesh
+        boundingbox = const_lift(GLBoundingBox, mesh)
+        shader 		= GLVisualizeShader("util.vert", "attribute_mesh.vert", "standard.frag")
+    end
 end
 
-function visualize(mesh::GLNormalAttributeMesh, s::Style, customizations=visualize_default(mesh, s))
-    data = merge(collect_for_gl(mesh), customizations)
-    assemble_std(
-        mesh.vertices, data,
-        "util.vert", "attribute_mesh.vert", "standard.frag",
-    )
+function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        main 		= mesh
+        color 		= default(RGBA{Float32}, s)
+        boundingbox = const_lift(GLBoundingBox, mesh)
+        shader 		= GLVisualizeShader("util.vert", "standard.vert", "standard.frag")
+    end
 end
 
+function _default(mesh::GLNormalColorMesh, s::Style, data::Dict)
+    data[:color] = decompose(RGBA{Float32}, mesh)
+    println(GLNormalMesh(mesh))
+    _default(GLNormalMesh(mesh), s, data)
+end
 
-
-function visualize(mesh::GLNormalUVMesh, s::Style, customizations=visualize_default(mesh, s))
-    data = merge(collect_for_gl(mesh), customizations)
-    assemble_std(
-        mesh.vertices, data,
-        "util.vert", "uv_normal.vert", "uv_normal.frag",
-    )
+function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
+    @gen_defaults! data begin
+        primitive       = main
+        color           = default(RGBA, s, 1)
+        bg_colorc       = default(RGBA, s, 2)
+        grid_thickness  = Vec3f0(2)
+        gridsteps       = Vec3f0(5)
+        boundingbox     = const_lift(GLBoundingBox, mesh)
+        shader          = GLVisualizeShader("grid.vert", "grid.frag")
+    end
 end

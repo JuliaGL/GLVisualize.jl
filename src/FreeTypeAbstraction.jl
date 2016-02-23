@@ -1,4 +1,13 @@
-using FreeType
+module FreeTypeAbstraction
+
+using FreeType, GeometryTypes
+
+export newface
+export renderface
+export FontExtent
+export kerning
+
+
 immutable FontExtent{T}
     vertical_bearing    ::Vec{2, T}
     horizontal_bearing  ::Vec{2, T}
@@ -6,7 +15,9 @@ immutable FontExtent{T}
     advance             ::Vec{2, T}
     scale               ::Vec{2, T}
 end
-
+immutable FontFace
+    name::UTF8String
+end
 
 import Base: ./, .*
 
@@ -24,23 +35,23 @@ import Base: ./, .*
 )
 
 FontExtent(fontmetric::FreeType.FT_Glyph_Metrics, scale=64) = FontExtent(
-    div(Vec{2, Int}(fontmetric.vertBearingX, fontmetric.vertBearingY), scale),
-    div(Vec{2, Int}(fontmetric.horiBearingX, fontmetric.horiBearingY), scale),
-    div(Vec{2, Int}(fontmetric.horiAdvance, fontmetric.vertAdvance), scale),
-    div(Vec{2, Int}(fontmetric.width, fontmetric.height), scale)
+    Vec{2, Float64}(fontmetric.vertBearingX, fontmetric.vertBearingY) / scale,
+    Vec{2, Float64}(fontmetric.horiBearingX, fontmetric.horiBearingY) / scale,
+    Vec{2, Float64}(fontmetric.horiAdvance, fontmetric.vertAdvance) / scale,
+    Vec{2, Float64}(fontmetric.width, fontmetric.height) / scale
 )
 
 
 const FREE_FONT_LIBRARY = FT_Library[C_NULL]
 
-function FreeTypeAbstraction_init()
+function ft_init()
     global FREE_FONT_LIBRARY
     FREE_FONT_LIBRARY[1] != C_NULL && error("Freetype already initalized. init() called two times?")
     err = FT_Init_FreeType(FREE_FONT_LIBRARY)
     return err == 0
 end
 
-function FreeTypeAbstraction_done()
+function ft_done()
     global FREE_FONT_LIBRARY
     FREE_FONT_LIBRARY[1] == C_NULL && error("Library == CNULL. FreeTypeAbstraction.done() called before init(), or done called two times?")
     err = FT_Done_FreeType(FREE_FONT_LIBRARY[1])
@@ -53,7 +64,7 @@ function newface(facename, faceindex::Real=0, ftlib=FREE_FONT_LIBRARY)
 	face 	= (FT_Face)[C_NULL]
     err 	= FT_New_Face(ftlib[1], facename, Int32(faceindex), face)
     if err != 0
-        error("Couldn't load font $facename with error $err")
+        error("FreeType could not load font $facename with error $err")
         return face[1]
     end
     face
@@ -118,11 +129,13 @@ function glyphbitmap(bmpRec::FreeType.FT_Bitmap)
     return bmp
 end
 
+"""
+Init and free c-lib
+"""
+function __init__()
+    ft_init()
+    atexit(ft_done)
+end
 
-#export init -> not exported, so call FreeFontAbstraction.init() /done()
-#export done
 
-export newface
-export renderface
-export FontExtent
-export kerning
+end

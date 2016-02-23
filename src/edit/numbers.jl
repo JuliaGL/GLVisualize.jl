@@ -13,7 +13,12 @@ function printforslider(x::FixedVector, numberwidth=5)
     end
     takebuf_string(io)
 end
-num2glstring(x, numberwidth) = GLVisualize.process_for_gl(printforslider(x, numberwidth))
+function num2glstring(x, numberwidth)
+    str   = printforslider(x, numberwidth)
+    atlas = get_texture_atlas()
+    font  = DEFAULT_FONT_FACE
+    Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
+end
 
 FixedSizeArrays.unit{T <: Real}(::Type{T}, _) = one(T)
 
@@ -43,23 +48,29 @@ end
 
 vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
 
-function vizzedit(range::Range, inputs, numberwidth=5; startvalue=middle(range))
+function vizzedit(range::Range, window, numberwidth=5; startvalue=middle(range))
     T = typeof(startvalue)
-    vizz                = visualize(printforslider(startvalue, numberwidth))
-    mbutton_clicked     = inputs[:mousebuttonspressed]
-
-    mousedown           = const_lift(isnotempty, mbutton_clicked)
-    mouse_add_drag_id   = foldp(
-        add_mouse_drags,
-        (zero(T), false, Vec2f0(0), 0, zero(T), 0),
-        mousedown, inputs[:mouseposition], inputs[:mouse_hover], Signal(Int(vizz.id)), Signal(numberwidth+1) #plus space
-    )
-    addition_vec = droprepeats(const_lift(first, mouse_add_drag_id))
-
-    ET      = eltype(T)
-    new_num = const_lift(slide, startvalue, addition_vec, range)
-
-    new_num_gl = const_lift(num2glstring, new_num, numberwidth)
-    preserve(const_lift(update!, vizz[:glyphs], new_num_gl))
-    return new_num, vizz
+    @materialize mouse_buttons_pressed, mouseposition = window.inputs
+    slider_value      = Signal(startvalue)
+    slider_value_str  = map(printforslider, slider_value)
+    vizz              = visualize(slider_value_str)
+    slider_robj       = vizz.children[]
+    # current tuple of renderobject id and index into the gpu array
+    m2id = GLWindow.mouse2id(window)
+    hovers_slider = const_lift(is_same_id, m2id, slider_robj)
+    # inputs are a dict, materialize gets the keys out of it (equivalent to mouseposition = w.inputs[:mouseposition])
+    # single left mousekey pressed (while no other mouse key is pressed)
+    key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
+    # dragg while key_pressed. Drag only starts if hovers_slider is true
+    mousedragg  = GLAbstraction.dragged(mouseposition, key_pressed, hovers_slider)
+    preserve(foldp(startvalue, droprepeats(mousedragg)) do v0, dragg
+        if dragg == Vec2f0(0) # just started draggin'
+            return value(slider_value)
+        end
+        push!(slider_value,
+            clamp(v0+(dragg[1]*step(range)), first(range), last(range))
+        )
+        v0
+    end)
+    return slider_value, vizz
 end

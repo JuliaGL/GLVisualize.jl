@@ -1,40 +1,53 @@
-# As long as we don't calculate bounding boxes on the gpu, this needs to do:
-Base.minimum(t::Texture) = minimum(gpu_data(t))
-Base.maximum(t::Texture) = maximum(gpu_data(t))
+AbsoluteRectangle{N,T}(mini::Vec{N,T}, maxi::Vec{N,T}) = HyperRectangle{N,T}(mini, maxi-mini)
 
-call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
-call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
-
-call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
-call(::Type{AABB}, a::GPUArray) = AABB(gpu_data(a))
-
-
-particle_grid_bb{T}(min_xy::Vec{2,T}, max_xy::Vec{2,T}, minmax_z::Vec{2,T}) = glboundingbox(Vec(min_xy..., minmax_z[1]), Vec(max_xy..., minmax_z[2]))
-
-Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Texture{Point{3, T2}, 1}, scale::Texture{Vec{3, T3}, 1}, primitive_bb) = AABB{T}(gpu_data(positions), gpu_data(scale), primitive_bb)
-Base.call{T, T2, T3}(::Type{AABB{T}}, positions::Texture{Point{3, T2}, 1}, scale::Vec{3, T3}, primitive_bb) = AABB{T}(gpu_data(positions), scale, primitive_bb)
-
-
-
-function call{T, T2, T3, N}(::Type{AABB{T}}, positions::Vector{Point{N, T2}}, scale::Vec{N, T3}, primitive_bb)
-    primitive_scaled_min = minimum(primitive_bb) .* scale
-    primitive_scaled_max = maximum(primitive_bb) .* scale
-    pmax = max(primitive_scaled_min, primitive_scaled_max)
-    pmin = min(primitive_scaled_min, primitive_scaled_max)
-    main_bb = AABB{T}(positions)
-    glboundingbox(minimum(main_bb) + pmin, maximum(main_bb) + pmax)
+call(::Type{AABB}, a) = AABB{Float32}(a)
+function call{T}(B::Type{AABB{T}}, a::Pyramid)
+    w,h = a.width/T(2), a.length
+    m = Vec{3,T}(a.middle)
+    B(m-Vec{3,T}(w,w,0), m+Vec{3,T}(w, w, h))
 end
-function call{T, T2, T3, N}(::Type{AABB{T}}, positions::Vector{Point{N, T2}}, scale::Vector{Vec{N, T3}}, primitive_bb)
-    _max = Vec{N, T}(typemin(T))
-    _min = Vec{N, T}(typemax(T))
-    for (p, s) in zip(positions, scale)
-        p = Vec{N, T}(p) 
-        s_min = Vec{N, T}(s) .* minimum(primitive_bb)
-        s_max = Vec{N, T}(s) .* maximum(primitive_bb)
-        s_min_r = min(s_min, s_max)
-        s_max_r = max(s_min, s_max)
-        _min = min(_min, p + s_min_r)
-        _max = max(_max, p + s_max_r)
+call{T}(B::Type{AABB{T}}, a::Cube) = B(origin(a), widths(a))
+call{T}(B::Type{AABB{T}}, a::AbstractMesh) = B(vertices(a))
+call{T}(B::Type{AABB{T}}, a::NativeMesh) = B(gpu_data(a.data[:vertices]))
+
+
+function call{T}(
+        B::Type{AABB{T}},
+        positions, scale, rotation,
+        primitive::AABB{T}
+    )
+
+    ti = TransformationIterator(positions, scale, rotation)
+    B(ti, primitive)
+end
+function call{T}(B::Type{AABB{T}}, instances::Instances)
+    ti = TransformationIterator(instances)
+    B(ti, B(instances.primitive))
+end
+
+function transform(translation, scale, rotation, points)
+    _max = Vec3f0(typemin(Float32))
+    _min = Vec3f0(typemax(Float32))
+    for p in points
+        x = scale.*Vec(p)
+        x = Vec3f0(rotation*Vec(x, 1f0))
+        x = Vec(translation)+x
+        _min = min(_min, x)
+        _max = max(_max, x)
     end
-    glboundingbox(_min, _max)
+    AABB{Float32}(_min, _max-_min)
+end
+
+function call{T}(
+        B::Type{AABB{T}}, ti::TransformationIterator, primitive::AABB{T}
+    )
+    trans_scale_rot, state = next(ti, start(ti))
+    points = decompose(Point3f0, primitive)
+    bb = transform(trans_scale_rot..., points)
+    while !done(ti, state)
+        trans_scale_rot, state = next(ti, state)
+        translatet_bb = transform(trans_scale_rot..., points)
+        bb = union(bb, translatet_bb)
+    end
+    bb
 end

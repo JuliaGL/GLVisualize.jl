@@ -16,36 +16,54 @@ using FixedPointNumbers
 using FileIO
 using Packing
 using SignedDistanceFields
+using FreeType
 import Images
 
+typealias GLBoundingBox AABB{Float32}
 
 import Base: merge, convert, show
 
+export renderloop
 
-shaderdir() = Pkg.dir("GLVisualize", "src", "shader")
+function assetpath(folders...)
+    path = joinpath(dirname(@__FILE__), "..", "assets", folders...)
+    isfile(path) || isdir(path) || error("Could not locate file at $path")
+    path
+end
+loadasset(folders...) = load(assetpath(folders...))
+export assetpath, loadasset
 
 include("FreeTypeAbstraction.jl")
+using .FreeTypeAbstraction
 
-include("utils.jl")
-export collect_for_gl
-export y_partition
-export x_partition
-export loop
-export bounce
-export clicked
-export dragged_on
-export is_hovering
-export MouseButton, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
+include("StructsOfArrays.jl")
+using .StructsOfArrays
 
-include(joinpath("display", "renderloop.jl"))
+include("types.jl")
+export CIRCLE, RECTANGLE, ROUNDED_RECTANGLE, DISTANCEFIELD, TRIANGLE
 
+include("config.jl")
+using .Config
+import .Config: default
+
+include("boundingbox.jl")
 
 include("visualize_interface.jl")
 export view #push renderobject into renderlist of the default screen, or supplied screen
 export visualize    # Visualize an object
 export visualize_default # get the default parameter for a visualization
 
-include(joinpath("texture_atlas", 	"texture_atlas.jl"))
+include("utils.jl")
+export y_partition
+export x_partition
+export loop, bounce
+export clicked, dragged_on, is_hovering
+export OR, AND, isnotempty
+
+include("renderloop.jl")
+
+
+include("texture_atlas.jl")
 export Sprite
 export GLSprite
 export SpriteStyle
@@ -56,29 +74,20 @@ include(joinpath("edit", "numbers.jl"))
 include(joinpath("edit", "line_edit.jl"))
 export vizzedit # edits some value, name should be changed in the future!
 
-include(joinpath("visualize", "shared.jl"))
-include(joinpath("visualize", "text", "utils.jl"))
 include(joinpath("visualize", "lines.jl"))
-include(joinpath("visualize", "2dparticles.jl"))
 include(joinpath("visualize", "containers.jl"))
-include(joinpath("visualize", "distancefields.jl"))
-include(joinpath("visualize", "dots.jl"))
-include(joinpath("visualize", "image.jl"))
+include(joinpath("visualize", "image_like.jl"))
 include(joinpath("visualize", "mesh.jl"))
-include(joinpath("visualize", "meshgrid.jl"))
 include(joinpath("visualize", "particles.jl"))
 include(joinpath("visualize", "surface.jl"))
 include(joinpath("visualize", "text.jl"))
-include(joinpath("visualize", "vectorfield.jl"))
-include(joinpath("visualize", "videos.jl"))
-include(joinpath("visualize", "volume.jl"))
-include(joinpath("visualize", "axis.jl"))
-include(joinpath("visualize", "colormap.jl"))
-include(joinpath("visualize", "parametric.jl"))
 
 include("camera.jl")
 export cubecamera
-export Shape, CIRCLE, RECTANGLE, DISTANCEFIELD, Technique, FILLED, OUTLINED, GLOWING, TEXTURE_FILL, ROUNDED_RECTANGLE, TRIANGLE
+include("compose_backend.jl")
+
 
 Base.precompile(glscreen, ())
+
+
 end # module

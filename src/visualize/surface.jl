@@ -1,74 +1,197 @@
-Base.minimum(t::Texture) = minimum(gpu_data(t))
-Base.maximum(t::Texture) = maximum(gpu_data(t))
 
-function visualize_default(grid::Union{Texture{Float32, 2}, Matrix{Float32}}, s::Style{:surface}, kw_args=Dict())
-    grid_min    = get(kw_args, :grid_min, Vec2f0(-1, -1))
-    grid_max    = get(kw_args, :grid_max, Vec2f0( 1,  1))
-    grid_length = grid_max - grid_min
-    scale = Vec3f0((1f0 ./[size(grid)...])..., 1f0)
-    Dict(
-        :primitive  => GLMesh2D(SimpleRectangle(0f0,0f0,1f0,1f0)),
-        :color      => default(Vector{RGBA},s),
-        :grid_min   => grid_min,
-        :grid_max   => grid_max,
-        :color_norm => Vec2f0(minimum(grid), maximum(grid)),
-        :scale      => scale .* Vec3f0(grid_length..., 1f0)
-    )
+function surfboundingbox(position_x, position_y, position_z)
+    arr = const_lift(StructOfArrays, Point3f0, position_x, position_y, position_z)
+    map(AABB{Float32}, arr)
+end
+function surfboundingbox(grid, position_z)
+    arr = const_lift(GridZRepeat, grid, position_z)
+    map(AABB{Float32}, arr)
+end
+
+function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatTypes{T}}, s::Style{:surface}, data::Dict)
+    @gen_defaults! data begin
+        position_x  = main[1] => Texture
+        position_y  = main[2] => Texture
+        position_z  = main[3] => Texture
+        boundingbox = surfboundingbox(position_x, position_y, position_z)
+        scale       = Vec3f0(0)
+    end
+    surface(position_z, s, data)
+end
+
+function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
+    @gen_defaults! data begin
+        grid_start = (-1f0, -1f0)
+        grid_size = (2f0, 2f0)
+    end
+    x,y = grid_start
+    w,h = grid_size
+    grid = ((x, x+w), (y, y+h))
+    _default((Grid(value(main), grid), main), s, data)
+end
+function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
+    @gen_defaults! data begin
+        position    = main[1]
+        position_z  = main[2] => Texture
+        boundingbox = surfboundingbox(position, position_z)
+        scale       = Vec3f0(step(main[1].dims[1]), step(main[1].dims[2]), 1)
+    end
+    surface(position_z, s, data)
+end
+_extrema(x::AABB) = Vec2f0(minimum(x)[3], maximum(x)[3])
+nothing_or_vec(x) = x
+nothing_or_vec(x::Array) = vec(x)
+function surface(main, s::Style{:surface}, data::Dict)
+    @gen_defaults! data begin
+        primitive::GLMesh2D = SimpleRectangle(0f0,0f0,1f0,1f0)
+        scale      = nothing
+        position   = nothing
+        position_x = nothing => Texture
+        position_y = nothing => Texture
+        position_z = nothing => Texture
+        boundingbox= nothing
+    end
+    @gen_defaults! data begin
+        color       = default(Vector{RGBA}, s) => Texture
+        color_norm  = const_lift(_extrema, boundingbox)
+        instances   = const_lift(length, main)
+
+        shader     = GLVisualizeShader(
+            "util.vert", "surface.vert", "standard.frag",
+            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
+        )
+    end
+end
+
+function position_calc(x...)
+    _position_calc(filter(x->!isa(x, Void), x)...)
+end
+function glsllinspace(position::Grid, gi, index)
+    """
+    (((float(position.dims[$gi])-($(index)+1)) *
+        position.minimum[$gi] + $(index)*position.maximum[$gi]) *
+        position.multiplicator[$gi])
+    """
+end
+function glsllinspace(grid::Grid{1}, gi, index)
+    """
+    (((float(position.dims)-($(index)+1)) *
+        position.minimum + $(index)*position.maximum) *
+        position.multiplicator)
+    """
+end
+function grid_pos(grid::Grid{1})
+    "$(glsllinspace(grid, 0, "index"))"
+end
+function grid_pos(grid::Grid{2})
+    "vec2($(glsllinspace(grid, 0, "index2D.x")), $(glsllinspace(grid, 1, "index2D.y")))"
+end
+function grid_pos(grid::Grid{3})
+    "vec3(
+        $(glsllinspace(grid, 0, "index2D.x")),
+        $(glsllinspace(grid, 1, "index2D.y")),
+        $(glsllinspace(grid, 2, "index2D.z"))
+    )"
 end
 
 
-function visualize(grid::Texture{Float32, 2}, s::Style{:surface}, customizations=visualize_default(grid, s))
-    @materialize! color, primitive = customizations
-    @materialize grid_min, grid_max, color_norm = customizations
-    data = merge(Dict(
-        :z              => grid,
-        :color          => Texture(color),
-    ), collect_for_gl(primitive), customizations)
-
-    bb = const_lift(particle_grid_bb, grid_min, grid_max, color_norm) # This is not accurate. color_norm doesn't need to reflect the real height. also it doesn't get recalculated when the texture changes.
-
-    assemble_instanced(
-        grid, data,
-        "util.vert", "surface.vert", "standard.frag",
-        boundingbox=bb
+function _position_calc{T<:AbstractFloat}(
+        grid::Grid{2}, position_z::MatTypes{T}, target::Type{Texture}
     )
+    """
+    ivec2 index2D = ind2sub(position.dims, index);
+    vec2 normalized_index = vec2(index2D) / vec2(position.dims);
+    float height = texture(position_z, normalized_index+(offset/vec2(position.dims))).x;
+    pos = vec3($(grid_pos(grid)), height);
+    """
 end
 
-
-#Surface from x,y,z matrices
-
-visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, style=:default; kw_args...) = visualize(x,y,z, Style{style}(), visualize_default(z, style, kw_args))
-visualize{T <: Signal{Matrix{Float32}}}(x::T, y::T, z::T, style=:default; kw_args...) = visualize(x,y,z, Style{style}(), visualize_default(value(z), style, kw_args))
-
-
-#Can't be handled by the @gen_visualize macro
-function visualize{T <: Signal{Matrix{Float32}}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_default(z.value, s))
-    xt, yt, zt = Texture(x.value), Texture(y.value), Texture(z.value)
-    preserve(const_lift(update!, xt, x))
-    preserve(const_lift(update!, yt, y))
-    preserve(const_lift(update!, yt, y))
-    visualize(xt, yt, zt, s, customizations)
-end
-visualize{T <: Matrix{Float32}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_default(z, s)) =
-    visualize(Texture(x),Texture(y), Texture(z), s, customizations)
-
-function visualize{T <: Texture{Float32, 2}}(x::T, y::T, z::T, s::Style{:surface}, customizations=visualize_default(z, s))
-    @materialize! color, primitive = customizations
-    data = merge(Dict(
-        :x              => x,
-        :y              => y,
-        :z              => z,
-        :color          => Texture(color)
-    ), collect_for_gl(primitive), customizations)
-
-    min_x, min_y, min_z = minimum(x), minimum(y), minimum(z)
-    max_x, max_y, max_z = maximum(x), maximum(y), maximum(z)
-
-    bb = const_lift(glboundingbox, Vec3f0(min_x, min_y, min_z), Vec3f0(max_x, max_y, max_z)) # This is not accurate as I'm not recalcuting the data when something updates
-
-    program = assemble_instanced(
-        x, data,
-        "util.vert", "surface2.vert", "standard.frag",
-        boundingbox=bb
+function _position_calc{T<:AbstractFloat}(
+        position_x::MatTypes{T}, position_y::MatTypes{T}, position_z::MatTypes{T}, target::Type{Texture}
     )
+"""
+    ivec2 index2D = ind2sub(dims, index);
+    vec2 normalized_index = vec2(index2D) / vec2(dims);
+    vec2 offsetted_index = normalized_index + (offset/vec2(dims));
+    pos = vec3(
+        texture(position_x, offsetted_index).x,
+        texture(position_y, offsetted_index).x,
+        texture(position_z, offsetted_index).x
+    );
+"""
+end
+
+function _position_calc{T<:AbstractFloat}(
+        position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{TextureBuffer}
+    )
+    "pos = vec3(texelFetch(position_x, index).x, position_y, position_z);"
+end
+function _position_calc{T<:AbstractFloat}(
+        position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{GLBuffer}
+    )
+    "pos = vec3(position_x, position_y, position_z);"
+end
+function _position_calc{T<:FixedVector}(
+        position_xyz::VecTypes{T}, target::Type{TextureBuffer}
+    )
+    "pos = texelFetch(position, index).xyz;"
+end
+function _position_calc{T<:FixedVector}(
+        position_xyz::VecTypes{T}, target::Type{GLBuffer}
+    )
+    len = length(T)
+    filler = join(ntuple(x->0, 3-len), ", ")
+    needs_comma = len != 3 ? ", " : ""
+    "pos = vec3(position $needs_comma $filler);"
+end
+function _position_calc{T<:AbstractFloat}(
+        position_x::VecTypes{T}, position_y::VecTypes{T}, position_z::VecTypes{T},
+        target::Type{TextureBuffer}
+    )
+    "pos = vec3(
+        texelFetch(position_x, index).x,
+        texelFetch(position_y, index).x,
+        texelFetch(position_z, index).x
+    );"
+end
+function _position_calc{T<:AbstractFloat}(
+        position_x::VecTypes{T}, position_y::VecTypes{T}, position_z::VecTypes{T},
+        target::Type{GLBuffer}
+    )
+    "pos = vec3(
+        position_x,
+        position_y,
+        position_z
+    );"
+end
+function _position_calc(
+        position::Grid{1}, target
+    )
+    "
+    pos = vec3($(grid_pos(position)), 0, 0);
+    "
+end
+function _position_calc(
+        position::Grid{2}, target
+    )
+    "
+    ivec2 index2D = ind2sub(position.dims, index);
+    pos = vec3($(grid_pos(position)), 0);
+    "
+end
+function _position_calc{T}(
+        position::Grid{2}, ::VecTypes{T}, target::Type{GLBuffer}
+    )
+    "
+    ivec2 index2D = ind2sub(position.dims, index);
+    pos = vec3($(grid_pos(position)), position_z);
+    "
+end
+function _position_calc(
+        position::Grid{3}, target
+    )
+    "
+    ivec3 index2D = ind2sub(position.dims, index);
+    pos = $(grid_pos(position));
+    "
 end
