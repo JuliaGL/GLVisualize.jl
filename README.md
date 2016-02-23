@@ -19,6 +19,7 @@ Pkg.checkout("GLWindow", "sd/rebuild")
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("FixedSizeArrays")
 Pkg.checkout("MeshIO")
+Pkg.checkout("ModernGL")
 ```
 
 
