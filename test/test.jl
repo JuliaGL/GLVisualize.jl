@@ -13,6 +13,8 @@ include("videotool.jl")
 
 const number_of_frames = 360
 const interactive_time = 7.0
+const screencast_folder = joinpath(homedir(), "glvisualize_screencast")
+!isdir(screencast_folder) && mkdir(screencast_folder)
 
 function record_test(window, timesignal, nframes=number_of_frames)
     push!(timesignal, 0f0)
@@ -154,16 +156,15 @@ function test_include(path, window)
                 frames = record_test(window, test_module.timesignal)
             end
             println("recorded successfully: $name")
-            savepath = Pkg.dir("GLVisualize", "docs", "images")
-            create_video(frames, name, savepath)
+            create_video(frames, name, screencast_folder)
             push!(working_list, path)
         end
     catch e
         println("################################################################")
         bt = catch_backtrace()
         ex = CapturedException(e, bt)
-        showerror(io, ex)
-        println("################################################################")
+        showerror(STDERR, ex)
+        println("\n################################################################")
     finally
         empty!(window.children)
         empty!(window.renderlist)
