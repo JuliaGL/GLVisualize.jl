@@ -31,7 +31,7 @@ const local TEXTURE_ATLAS = TextureAtlas[]
 function get_texture_atlas()
     not_initilized = isempty(TEXTURE_ATLAS)
     if not_initilized
-        fn = assetpath("fonts", "DejaVuSansMono.ttf")
+        fn = assetpath("fonts", "hack_regular.ttf")
         global DEFAULT_FONT_FACE = newface(fn)
         atlas = push!(TEXTURE_ATLAS, TextureAtlas())[] # initialize only on demand
         for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
