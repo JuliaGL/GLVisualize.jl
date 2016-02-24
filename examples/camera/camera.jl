@@ -91,23 +91,7 @@ camera_points = visualize(
 )
 camera_path_line = visualize(camera_path, :lines)
 
-"""
-Copy function for a context. We only need to copy the uniform dict
-"""
-function copy(c::GLAbstraction.Context)
-    a = c.children[]
-    uniforms = Dict{Symbol, Any}([k=>v for (k,v) in a.uniforms])
-    robj = RenderObject(
-        a.main,
-        uniforms,
-        a.vertexarray,
-        a.prerenderfunctions,
-        a.postrenderfunctions,
-        a.id,
-        a.boundingbox,
-    )
-    Context(robj)
-end
+
 
 # view everything on the appropriate screen.
 # we need to copy the cat, because view inserts the camera into the

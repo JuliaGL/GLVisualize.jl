@@ -1,18 +1,18 @@
-#=
+"""
 This is the GLViualize Test suite.
 It tests all examples in the example folder and has the options to create
 docs from the examples.
-=#
+"""
 module GLTest
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
-using GLVisualize.ComposeBackend
+#using GLVisualize.ComposeBackend
 
 include("videotool.jl")
 
-const number_of_frames = 360
-const interactive_time = 7.0
+const number_of_frames = 1
+const interactive_time = 0.1
 const screencast_folder = joinpath(homedir(), "glvisualize_screencast")
 !isdir(screencast_folder) && mkdir(screencast_folder)
 
@@ -129,7 +129,7 @@ function include_in_module(name::Symbol, include_path)
             const window     = GLTest.window
             const timesignal = Signal(0.0f0)
 
-            const composebackend = GLTest.composebackend
+           # const composebackend = GLTest.composebackend
 
             include($include_path)
         end
@@ -174,7 +174,7 @@ end
 
 function make_tests(path::AbstractString)
     if isdir(path)
-        if !in(path, working_list)
+        if !in(path, working_list) && basename(path) != "compose"
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
     elseif isfile(path) && endswith(path, ".jl")
@@ -191,7 +191,7 @@ end
 include("mouse.jl")
 
 window = glscreen(resolution=(256, 256))
-composebackend = ComposeBackend.GLVisualizeBackend(window)
+#composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
 srand(777) # set rand seed, to get the same results for tests that use rand

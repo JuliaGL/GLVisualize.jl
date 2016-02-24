@@ -45,7 +45,9 @@ function view(
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
-	push!(screen.renderlist, robj)
+	# only add to renderlist if not already in there
+	in(robj, screen.renderlist) || push!(screen.renderlist, robj)
+	nothing
 end
 
 view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; kw_args...) = for robj in robjs

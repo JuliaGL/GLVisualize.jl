@@ -11,7 +11,6 @@ function create_video(frames::Vector, name, screencap_folder)
         end
         len = length(frames)
         frames = [] # free frames...
-        println("created $name's png sequence successfully!")
         oldpath = pwd()
         cd(path)
         mktemp(path) do io, path
@@ -20,17 +19,14 @@ function create_video(frames::Vector, name, screencap_folder)
                 `png2yuv -I p -f 30 -b 1 -n $len -j $name%d.png`,
                 stdout="$(name).yuv", stdin=io, stderr=io
             ))
-            println("converted $(name)'s frames to yuv successfully")
             run(pipeline(
                 `vpxenc --good --cpu-used=0 --auto-alt-ref=1 --lag-in-frames=16 --end-usage=vbr --passes=1 --threads=4 --target-bitrate=3500 -o $(name).webm $(name).yuv`,
                 stdout=io, stdin=io, stderr=io
             ))
         end
-        println("created $name's video successfully!")
         targetpath = abspath(joinpath(screencap_folder, "$(name).webm"))
         sourcepath = abspath("$(name).webm")
-        run(`mv $sourcepath $targetpath`)
-        println("moved it!")
+        mv(sourcepath, targetpath)
         cd(oldpath)
     end
 end

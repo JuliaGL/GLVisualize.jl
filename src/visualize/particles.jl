@@ -221,9 +221,9 @@ function meshparticle(p, s, data)
              nothing
         end => TextureBuffer
 
-        instances        = const_lift(length, position)
-        boundingbox      = const_lift(GLBoundingBox, inst)
-        shader           = GLVisualizeShader(
+        instances   = const_lift(length, position)
+        boundingbox = const_lift(GLBoundingBox, inst)
+        shader      = GLVisualizeShader(
             "util.vert", "particles.vert", "standard.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, TextureBuffer))
         )
