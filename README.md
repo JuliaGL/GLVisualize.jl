@@ -10,18 +10,11 @@ Please visit [glvisualize.com](http://www.glvisualize.com/)
 
 # Installation
 
-Here is a script adding the packages and checking out the correct branches:
 
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.checkout("GLVisualize")
+# on 0.5 you also need:
 Pkg.checkout("Mustache")
-Pkg.checkout("GLAbstraction")
-Pkg.checkout("GLWindow")
-Pkg.checkout("GeometryTypes")
-Pkg.checkout("FixedSizeArrays")
-Pkg.checkout("MeshIO")
-Pkg.checkout("ModernGL")
 ```
 
 
