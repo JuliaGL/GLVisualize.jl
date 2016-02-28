@@ -234,9 +234,14 @@ immutable GLVisualizeShader <: AbstractLazyShader
         else
             view = view[1][2]
         end
-        view = merge(view, Dict(
-            "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable"
-        ))
+
+        @osx? nothing : begin
+            view = merge(view, Dict{ASCIIString, ASCIIString}(
+                "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
+                "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
+            ))
+        end
+
         paths = map(shader -> loadasset("shader", shader), paths)
         new(paths, vcat(kw_args, [
         	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),

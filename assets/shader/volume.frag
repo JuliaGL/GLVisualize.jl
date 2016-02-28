@@ -1,6 +1,6 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
-
+{{SUPPORTED_EXTENSIONS}}
 
 in vec3 frag_vertposition;
 
@@ -177,7 +177,9 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 
 uniform uint objectid;
 
-layout (depth_greater) out float gl_FragDepth;
+#ifndef DEPTH_LAYOUT
+    layout (depth_greater) out float gl_FragDepth;
+#endif
 out vec4  fragment_color;
 out uvec2 fragment_groupid;
 
