@@ -234,7 +234,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
         else
             view = view[1][2]
         end
-        view = merge(view, Dict(
+        view = merge(view, Dict{ASCIIString, ASCIIString}(
             "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable"
         ))
         paths = map(shader -> loadasset("shader", shader), paths)

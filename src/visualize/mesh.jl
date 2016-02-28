@@ -8,7 +8,7 @@ end
 
 function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
-        main 		= mesh
+        main 		= value(mesh)
         color 		= default(RGBA{Float32}, s)
         boundingbox = const_lift(GLBoundingBox, mesh)
         shader 		= GLVisualizeShader("util.vert", "standard.vert", "standard.frag")
