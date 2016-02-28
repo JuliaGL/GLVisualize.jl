@@ -234,8 +234,9 @@ immutable GLVisualizeShader <: AbstractLazyShader
         else
             view = view[1][2]
         end
-
-        @osx? nothing : begin
+        # TODO properly check what extensions are available
+        @osx? begin
+        end : begin
             view = merge(view, Dict{ASCIIString, ASCIIString}(
                 "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
                 "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"

@@ -177,7 +177,7 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 
 uniform uint objectid;
 
-#ifndef DEPTH_LAYOUT
+#ifdef DEPTH_LAYOUT
     layout (depth_greater) out float gl_FragDepth;
 #endif
 out vec4  fragment_color;

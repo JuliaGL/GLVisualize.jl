@@ -103,7 +103,7 @@ float get_distancefield(Nothing distancefield, vec2 uv){
 }
 
 
-#ifndef DEPTH_LAYOUT
+#ifdef DEPTH_LAYOUT
     layout (depth_greater) out float gl_FragDepth;
 #endif
 

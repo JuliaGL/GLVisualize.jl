@@ -37,7 +37,7 @@ float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
 
-#ifndef DEPTH_LAYOUT
+#ifdef DEPTH_LAYOUT
     layout (depth_greater) out float gl_FragDepth;
 #endif
 out vec4  fragment_color;
