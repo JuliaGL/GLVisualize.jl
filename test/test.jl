@@ -9,8 +9,6 @@ using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
 #using GLVisualize.ComposeBackend
 
-include("videotool.jl")
-
 const number_of_frames = 1
 const interactive_time = 0.1
 const screencast_folder = joinpath(homedir(), "glvisualize_screencast")
