@@ -1,5 +1,6 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
+{{SUPPORTED_EXTENSIONS}}
 
 
 struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
@@ -102,7 +103,10 @@ float get_distancefield(Nothing distancefield, vec2 uv){
 }
 
 
-layout (depth_greater) out float gl_FragDepth;
+#ifdef DEPTH_LAYOUT
+    layout (depth_greater) out float gl_FragDepth;
+#endif
+
 out vec4  fragment_color;
 out uvec2 fragment_groupid;
 void write2framebuffer(vec4 color, uvec2 id){
