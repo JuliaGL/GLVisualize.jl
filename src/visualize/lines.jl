@@ -81,7 +81,7 @@ end
 
 
 
-function _default{G<:GeometryPrimitive}(
+function _default{G<:GeometryPrimitive{3}}(
         geometry::TOrSignal{G}, s::style"lines", data::Dict
     )
     points = const_lift(geometry) do g
