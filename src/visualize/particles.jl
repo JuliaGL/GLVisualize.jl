@@ -15,16 +15,15 @@ typealias Sprites Union{AbstractGeometry{2}, Shape, Char, Type}
 typealias AllPrimitives Union{AbstractGeometry, Shape, Char}
 
 
-
 """
 We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
 performance.
 """
-function _default{G<:GeometryPrimitive}(
+function _default{G<:GeometryPrimitive{2}}(
         geometry::TOrSignal{G}, s::Style, data::Dict
     )
-    _default((main, zeros(Point{N, Float32}, 1)), s, data)
+    _default((main, zeros(Point{2, Float32}, 1)), s, data)
 end
 
 """
@@ -45,6 +44,9 @@ Vectors of n-dimensional points get ndimensional rectangles as default
 primitives. (Particles)
 """
 function _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        scale = N == 2 ? Vec2f0(30) : Vec3f0(0.03) # for 2D points we assume they're in pixels
+    end
     _default((centered(HyperRectangle{N, Float32}), main), s, data)
 end
 
@@ -121,9 +123,9 @@ function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
         scale_x::Float32 = step(grid.dims[1])
         scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
         scale_z = const_lift(vec, heightfield_s)
-        color_map  = default(Vector{RGBA})
         color = nothing
-        color_norm = const_lift(extrema2f0, heightfield_s)
+        color_map  = color == nothing ? default(Vector{RGBA}) : nothing
+        color_norm = color == nothing ? const_lift(extrema2f0, heightfield_s) : nothing
     end
     _default((primitive, grid), s, data)
 end

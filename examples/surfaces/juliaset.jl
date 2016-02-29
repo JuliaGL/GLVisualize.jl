@@ -30,7 +30,6 @@ function juliadata(max_iterations, imgx, imgy)
     heightfield
 end
 
-let
 
 rotation_angle = const_lift(*, timesignal, 2f0*pi)
 rotation = map(rotationmatrix_z, rotation_angle)
@@ -46,7 +45,6 @@ vis = visualize(
 # display it on the window
 view(vis, window)
 
-end
 
 if !isdefined(:runtests)
     renderloop(window) # render!

@@ -9,8 +9,6 @@ using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
 #using GLVisualize.ComposeBackend
 
-include("videotool.jl")
-
 const number_of_frames = 1
 const interactive_time = 0.1
 const screencast_folder = joinpath(homedir(), "glvisualize_screencast")
@@ -56,56 +54,7 @@ function record_test_interactive(window, timesignal, total_time=interactive_time
     end
     frames
 end
-function center_cam(camera, renderlist)
-    #NOT IMPLEMENTED
-    #isn't really needed yet
-end
 
-"""
-get's the boundingbox of a render object.
-needs value, because boundingbox will always return a boundingbox signal
-"""
-signal_boundingbox(robj) = value(boundingbox(robj))
-
-function center_cam(camera::PerspectiveCamera, renderlist)
-    isempty(renderlist) && return nothing # nothing to do here
-    # reset camera
-    push!(camera.up, Vec3f0(0,0,1))
-    push!(camera.eyeposition, Vec3f0(3))
-    push!(camera.lookat, Vec3f0(0))
-
-    robj1 = first(renderlist)
-    bb = value(robj1[:model])*signal_boundingbox(robj1)
-    for elem in renderlist[2:end]
-        bb = union(value(elem[:model])*signal_boundingbox(elem), bb)
-    end
-    width        = widths(bb)
-    half_width   = width/2f0
-    lower_corner = minimum(bb)
-    middle       = maximum(bb) - half_width
-    if value(camera.projectiontype) == ORTHOGRAPHIC
-        area, fov, near, far = map(value,
-            (camera.window_size, camera.fov, camera.nearclip, camera.farclip)
-        )
-        h = Float32(tan(fov / 360.0 * pi) * near)
-        w_, h_, _ = half_width
-
-        zoom = min(h_,w_)/h
-        push!(camera.up, Vec3f0(0,1,0))
-        x,y,_ = middle
-        push!(camera.eyeposition, Vec3f0(x, y, zoom*1.2))
-        push!(camera.lookat, Vec3f0(x, y, 0))
-        push!(camera.farclip, zoom*2f0)
-
-    else
-        zoom = norm(half_width)
-        push!(camera.lookat, middle)
-        neweyepos = middle + (zoom*Vec3f0(1.3))
-        push!(camera.eyeposition, neweyepos)
-        push!(camera.up, Vec3f0(0,0,1))
-        push!(camera.farclip, zoom*50f0)
-    end
-end
 
 if isfile("working.jls")
     working_list = open("working.jls") do io
@@ -144,7 +93,7 @@ function test_include(path, window)
         for (camname, cam) in window.cameras
             # don't center non standard cams
             !in(camname, (:perspective, :orthographic_pixel)) && continue
-            center_cam(cam, window.renderlist)
+            center!(cam, window.renderlist)
         end
         # only when something was added to renderlist
         if !isempty(window.renderlist) || !isempty(window.children)
@@ -156,7 +105,7 @@ function test_include(path, window)
                 frames = record_test(window, test_module.timesignal)
             end
             println("recorded successfully: $name")
-            create_video(frames, name, screencast_folder)
+            create_video(frames, name, screencast_folder, 2)
             push!(working_list, path)
         end
     catch e
@@ -190,7 +139,7 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(256, 256))
+window = glscreen(resolution=(800, 600))
 #composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true

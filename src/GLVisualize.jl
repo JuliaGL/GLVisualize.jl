@@ -86,6 +86,8 @@ include("camera.jl")
 export cubecamera
 include("compose_backend.jl")
 
+include("videotool.jl")
+export create_video
 
 Base.precompile(glscreen, ())
 

@@ -21,13 +21,10 @@ end
 
 function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        grid_start = (-1f0, -1f0)
-        grid_size = (2f0, 2f0)
+        ranges = ((-1f0, 1f0), (-1f0,1f0))
     end
-    x,y = grid_start
-    w,h = grid_size
-    grid = ((x, x+w), (y, y+h))
-    _default((Grid(value(main), grid), main), s, data)
+    delete!(data, :ranges) # no need to have them in the OpenGL data
+    _default((Grid(value(main), value(ranges)), main), s, data)
 end
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
@@ -52,9 +49,10 @@ function surface(main, s::Style{:surface}, data::Dict)
         boundingbox= nothing
     end
     @gen_defaults! data begin
-        color       = default(Vector{RGBA}, s) => Texture
-        color_norm  = const_lift(_extrema, boundingbox)
-        instances   = const_lift(length, main)
+        color      = nothing
+        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => Texture
+        color_norm = (color==nothing ? const_lift(_extrema, boundingbox) : nothing)
+        instances  = const_lift(length, main)
 
         shader     = GLVisualizeShader(
             "util.vert", "surface.vert", "standard.frag",

@@ -234,6 +234,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
         else
             view = view[1][2]
         end
+
         # TODO properly check what extensions are available
         @osx? begin
         end : begin

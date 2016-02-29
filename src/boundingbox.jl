@@ -29,9 +29,9 @@ function transform(translation, scale, rotation, points)
     _max = Vec3f0(typemin(Float32))
     _min = Vec3f0(typemax(Float32))
     for p in points
-        x = scale.*Vec(p)
-        x = Vec3f0(rotation*Vec(x, 1f0))
-        x = Vec(translation)+x
+        x = scale.*Vec3f0(p)
+        x = Vec3f0(rotation*Vec4f0(x, 1f0))
+        x = Vec3f0(translation)+x
         _min = min(_min, x)
         _max = max(_max, x)
     end
