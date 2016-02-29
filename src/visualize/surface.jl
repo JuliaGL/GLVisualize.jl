@@ -49,10 +49,10 @@ function surface(main, s::Style{:surface}, data::Dict)
         boundingbox= nothing
     end
     @gen_defaults! data begin
-        color       = nothing
-        color_map   = (color==nothing ? default(Vector{RGBA}, s) : nothing) => Texture
-        color_norm  = (color==nothing ? const_lift(_extrema, boundingbox) : nothing)
-        instances   = const_lift(length, main)
+        color      = nothing
+        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => Texture
+        color_norm = (color==nothing ? const_lift(_extrema, boundingbox) : nothing)
+        instances  = const_lift(length, main)
 
         shader     = GLVisualizeShader(
             "util.vert", "surface.vert", "standard.frag",

@@ -105,7 +105,7 @@ function test_include(path, window)
                 frames = record_test(window, test_module.timesignal)
             end
             println("recorded successfully: $name")
-            create_video(frames, name, screencast_folder)
+            create_video(frames, name, screencast_folder, 2)
             push!(working_list, path)
         end
     catch e
@@ -139,7 +139,7 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(256, 256))
+window = glscreen(resolution=(800, 600))
 #composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
