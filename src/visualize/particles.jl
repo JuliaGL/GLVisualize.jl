@@ -44,6 +44,9 @@ Vectors of n-dimensional points get ndimensional rectangles as default
 primitives. (Particles)
 """
 function _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        scale = N == 2 ? Vec2f0(30) : Vec3f0(0.03) # for 2D points we assume they're in pixels
+    end
     _default((centered(HyperRectangle{N, Float32}), main), s, data)
 end
 
