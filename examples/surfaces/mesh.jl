@@ -11,7 +11,6 @@ function mgrid(dim1, dim2)
     return X,Y
 end
 
-let
 
 rotation_angle = const_lift(*, timesignal, 2f0*pi)
 rotation = map(rotationmatrix_z, rotation_angle)
@@ -33,7 +32,6 @@ z = r.*sin(phi).*sin(theta);
 surface = visualize((x,y,z), :surface, model=rotation)
 view(surface, window)
 
-end
 
 if !isdefined(:runtests)
 	renderloop(window)

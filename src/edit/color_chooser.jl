@@ -3,7 +3,7 @@ function vizzedit{T<:RGBA}(color::Signal{T}, window)
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     color_button = visualize(
         (ROUNDED_RECTANGLE, zeros(Point2f0, 1)),
-        scale=Vec2f0(50),
+        scale=Vec2f0(30),
         color=color,
         stroke_width=1f0,
         stroke_color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0),

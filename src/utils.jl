@@ -18,7 +18,7 @@ function assemble_shader(data)
     delete!(data, :shader)
     default_bb = Signal(centered(AABB))
     bb  = get(data, :boundingbox, default_bb)
-    if bb == nothing
+    if bb == nothing || isa(bb, Signal{Void})
         bb = default_bb
     end
     glp = get(data, :gl_primitive, GL_TRIANGLES)

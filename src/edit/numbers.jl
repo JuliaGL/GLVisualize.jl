@@ -48,10 +48,22 @@ end
 
 vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
 
-function vizzedit(range::Range, window, numberwidth=5; startvalue=middle(range))
-    T = typeof(startvalue)
+function range_default{T<:AbstractFloat}(::Type{T})
+    T(-10):T(0.01):T(10)
+end
+function range_default{T<:Integer}(::Type{T})
+    T(-100):T(1):T(100)
+end
+
+function calc_val{T<:AbstractFloat}(sval::T, val, range)
+    clamp(sval+(val*step(range)), first(range), last(range))
+end
+function calc_val{T<:Integer}(sval::T, val, range)
+    clamp(sval+(round(T, val)*step(range)), first(range), last(range))
+end
+function vizzedit{T <: Union{FixedVector, Real}}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
-    slider_value      = Signal(startvalue)
+    startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)
     vizz              = visualize(slider_value_str)
     slider_robj       = vizz.children[]
@@ -67,9 +79,7 @@ function vizzedit(range::Range, window, numberwidth=5; startvalue=middle(range))
         if dragg == Vec2f0(0) # just started draggin'
             return value(slider_value)
         end
-        push!(slider_value,
-            clamp(v0+(dragg[1]*step(range)), first(range), last(range))
-        )
+        push!(slider_value, calc_val(v0, dragg[1], range))
         v0
     end)
     return slider_value, vizz

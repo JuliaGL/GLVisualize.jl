@@ -121,9 +121,9 @@ function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
         scale_x::Float32 = step(grid.dims[1])
         scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
         scale_z = const_lift(vec, heightfield_s)
-        color_map  = default(Vector{RGBA})
         color = nothing
-        color_norm = const_lift(extrema2f0, heightfield_s)
+        color_map  = color == nothing ? default(Vector{RGBA}) : nothing
+        color_norm = color == nothing ? const_lift(extrema2f0, heightfield_s) : nothing
     end
     _default((primitive, grid), s, data)
 end

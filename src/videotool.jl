@@ -3,12 +3,20 @@ Takes `frames`, which is supposed to be an array of images,
 saves them as png's at path and then creates an webm video
 from that with the name `name`
 """
-function create_video(frames::Vector, name, screencap_folder)
+function create_video(frames::Vector, name, screencap_folder, resample=nothing)
     println("saving frames for $name")
     mktempdir() do path
+        resolution = size(first(frames))
         for (i,frame) in enumerate(frames)
+            resolution != size(frame) && error(
+                "All frames must have same resolution. Found: $size(frame), expected: $(resolution)"
+            )
             save(joinpath(path, "$name$i.png"), frame, true)
         end
+        if resample != nothing
+            resolution = resample
+        end
+
         len = length(frames)
         frames = [] # free frames...
         oldpath = pwd()
@@ -20,7 +28,11 @@ function create_video(frames::Vector, name, screencap_folder)
                 stdout="$(name).yuv", stdin=io, stderr=io
             ))
             run(pipeline(
-                `vpxenc --good --cpu-used=0 --auto-alt-ref=1 --lag-in-frames=16 --end-usage=vbr --passes=1 --threads=4 --target-bitrate=3500 -o $(name).webm $(name).yuv`,
+                `vpxenc --good --cpu-used=0
+                    --auto-alt-ref=1 --lag-in-frames=16 --end-usage=vbr
+                    --passes=1 --threads=4 --target-bitrate=3500
+                    -w $(resolution[1]) -h $(resolution[2])
+                    -o $(name).webm $(name).yuv`,
                 stdout=io, stdin=io, stderr=io
             ))
         end
