@@ -21,13 +21,10 @@ end
 
 function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        grid_start = (-1f0, -1f0)
-        grid_size = (2f0, 2f0)
+        ranges = ((-1f0, -1f0), (1f0, 1f0))
     end
-    x,y = grid_start
-    w,h = grid_size
-    grid = ((x, x+w), (y, y+h))
-    _default((Grid(value(main), grid), main), s, data)
+    delete!(data, :ranges)
+    _default((Grid(value(main), value(ranges)), main), s, data)
 end
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
