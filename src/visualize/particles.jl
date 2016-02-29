@@ -15,16 +15,15 @@ typealias Sprites Union{AbstractGeometry{2}, Shape, Char, Type}
 typealias AllPrimitives Union{AbstractGeometry, Shape, Char}
 
 
-
 """
 We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
 performance.
 """
-function _default{G<:GeometryPrimitive}(
+function _default{G<:GeometryPrimitive{2}}(
         geometry::TOrSignal{G}, s::Style, data::Dict
     )
-    _default((main, zeros(Point{N, Float32}, 1)), s, data)
+    _default((main, zeros(Point{2, Float32}, 1)), s, data)
 end
 
 """
