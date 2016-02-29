@@ -1,5 +1,6 @@
 {{GLSL_VERSION}}
 {{GLSL_EXTENSIONS}}
+{{SUPPORTED_EXTENSIONS}}
 
 #define CIRCLE            0
 #define RECTANGLE         1
@@ -36,7 +37,9 @@ float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
 
-layout (depth_greater) out float gl_FragDepth;
+#ifdef DEPTH_LAYOUT
+    layout (depth_greater) out float gl_FragDepth;
+#endif
 out vec4  fragment_color;
 out uvec2 fragment_groupid;
 void write2framebuffer(vec4 color, uvec2 id){
