@@ -23,7 +23,7 @@ function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, dat
     @gen_defaults! data begin
         ranges = ((-1f0, 1f0), (-1f0,1f0))
     end
-    delete!(data, :ranges)
+    delete!(data, :ranges) # no need to have them in the OpenGL data
     _default((Grid(value(main), value(ranges)), main), s, data)
 end
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
