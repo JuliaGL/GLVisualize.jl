@@ -30,7 +30,7 @@ before_script:
   - sleep 3
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia -e 'Pkg.clone(pwd()); Pkg.test("GLVisualize")'
+    - julia -e 'Pkg.clone(pwd()); Pkg.build("GLVisualize"); Pkg.test("GLVisualize")'
 after_script:
   - "xpra stop :9"
   - "cat ~/.xpra/*"
