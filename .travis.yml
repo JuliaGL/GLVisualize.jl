@@ -10,15 +10,17 @@ addons:
     packages:
     - libgl1-mesa-dev
     - xserver-xorg-video-dummy
+    - xpra
     - cmake
     - libxxf86vm-dev
     sources:
     - kubuntu-backports
 before_script:
-  - "export DISPLAY=:99.0"
-  - "Xorg -noreset +extension GLX +extension RANDR +extension RENDER" # X virtual framebuffer
-
-
+  - "xpra --xvfb=\"Xorg +extension GLX -config `pwd`/test/dummy.xorg.conf -logfile ${HOME}/.xpra/xorg.log\"  start :9"
+  - "export DISPLAY=:9 glvisualize test"
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
     - xvfb-run julia -e 'Pkg.clone(pwd()); Pkg.test("GLVisualize")'
+after_script:
+  - "xpra stop :9"
+  - "cat ~/.xpra/*"
