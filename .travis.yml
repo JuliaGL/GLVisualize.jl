@@ -17,5 +17,9 @@ addons:
     - kubuntu-backports
 before_script:
   - "export DISPLAY=:99.0"
-  - "startx"
   - "sh -e /etc/init.d/xvfb start" # X virtual framebuffer
+
+
+script:
+    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - xvfb-run julia -e 'Pkg.clone(pwd()); Pkg.test("GLVisualize")'
