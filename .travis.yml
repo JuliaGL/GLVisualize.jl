@@ -8,16 +8,29 @@ notifications:
 addons:
   apt:
     packages:
-    - libgl1-mesa-dev
-    - xserver-xorg-video-dummy
-    - xpra
-    - cmake
-    - libxxf86vm-dev
+        - libxi-dev
+        - libxmu-dev
+        - xserver-xorg-video-dummy
+        - xpra
+        - xorg-dev
+        - libgl1-mesa-dev
+        - libxcursor-dev
+        - libpulse-dev
+        - libxinerama-dev
+        - libxrandr-dev
+        - libxv-dev
+        - libudev-dev
+        - mesa-utils
     sources:
-    - kubuntu-backports
+        - kubuntu-backports
 before_script:
   - "xpra --xvfb=\"Xorg +extension GLX +extension RANDR +extension RENDER -config `pwd`/test/dummy.xorg.conf -logfile ${HOME}/.xpra/xorg.log\"  start :9"
   - "export DISPLAY=:9 glvisualize test"
+  - "export LIBGL_ALWAYS_SOFTWARE=1"
+  - sleep 3
+script:
+    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+    - julia -e 'Pkg.clone(pwd()); Pkg.test("GLVisualize")'
 after_script:
   - "xpra stop :9"
   - "cat ~/.xpra/*"
