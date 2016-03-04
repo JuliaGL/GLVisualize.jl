@@ -17,4 +17,5 @@ addons:
     - kubuntu-backports
 before_script:
   - "export DISPLAY=:99.0"
+  - "startx"
   - "sh -e /etc/init.d/xvfb start" # X virtual framebuffer
