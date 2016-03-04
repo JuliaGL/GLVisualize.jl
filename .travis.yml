@@ -9,15 +9,14 @@ addons:
   apt:
     packages:
     - libgl1-mesa-dev
-    - xvfb
-    - xauth
+    - xserver-xorg-video-dummy
     - cmake
     - libxxf86vm-dev
     sources:
     - kubuntu-backports
 before_script:
   - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start" # X virtual framebuffer
+  - "Xorg -noreset +extension GLX +extension RANDR +extension RENDER" # X virtual framebuffer
 
 
 script:
