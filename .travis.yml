@@ -20,7 +20,7 @@ before_script:
   - "export DISPLAY=:9 glvisualize test"
 script:
     - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - xvfb-run julia -e 'Pkg.clone(pwd()); Pkg.test("GLVisualize")'
+    - julia -e 'Pkg.clone(pwd()); Pkg.test("GLVisualize")'
 after_script:
   - "xpra stop :9"
   - "cat ~/.xpra/*"
