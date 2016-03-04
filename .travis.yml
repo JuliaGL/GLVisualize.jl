@@ -21,6 +21,8 @@ addons:
         - libxv-dev
         - libudev-dev
         - mesa-utils
+        - cmake
+        - libxxf86vm-dev
     sources:
         - kubuntu-backports
 before_script:
