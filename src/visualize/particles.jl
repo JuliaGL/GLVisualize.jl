@@ -23,7 +23,7 @@ performance.
 function _default{G<:GeometryPrimitive{2}}(
         geometry::TOrSignal{G}, s::Style, data::Dict
     )
-    _default((main, zeros(Point{2, Float32}, 1)), s, data)
+    _default((geometry, zeros(Point{2, Float32}, 1)), s, data)
 end
 
 """
