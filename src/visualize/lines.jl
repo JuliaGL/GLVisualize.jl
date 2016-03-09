@@ -16,10 +16,17 @@ to_indices(x::VecOrSignal{UnitRange{Int}}) = x
 For integers, we transform it to 0 based indices
 """
 to_indices{I<:Integer}(x::Vector{I}) = indexbuffer(map(i-> Cuint(i-1), x))
+function to_indices{I<:Integer}(x::Signal{Vector{I}})
+    x = map(x-> map(i->Cuint(i-1),x), x)
+    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
+    preserve(const_lift(update!, gpu_mem, x))
+    gpu_mem
+end
 """
 If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
 """
 to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
+to_indices{I<:GLuint}(x::Signal{Vector{I}}) = indexbuffer(x)
 to_indices(x) = error(
     "Not a valid index type: $x.
     Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
