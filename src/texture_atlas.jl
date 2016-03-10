@@ -28,6 +28,7 @@ end
 
 begin #basically a singleton for the textureatlas
 const local TEXTURE_ATLAS = TextureAtlas[]
+reset_texture_atlas!() = empty!(TEXTURE_ATLAS)
 function get_texture_atlas()
     not_initilized = isempty(TEXTURE_ATLAS)
     if not_initilized

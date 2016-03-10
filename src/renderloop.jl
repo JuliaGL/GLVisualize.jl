@@ -11,7 +11,12 @@ function glscreen(name="GLVisualize";
     global TIMER_SIGNAL = fpswhen(screen.inputs[:window_open], 60.0)
 
     GLWindow.add_complex_signals!(screen) #add the drag events and such
-
+    preserve(map(screen.inputs[:window_open]) do open
+        if !open
+            reset_texture_atlas!()
+        end
+        nothing
+    end)
     screen
 end
 
