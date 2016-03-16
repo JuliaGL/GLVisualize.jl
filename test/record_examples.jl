@@ -56,13 +56,9 @@ function record_test_interactive(window, timesignal, total_time=interactive_time
 end
 
 
-if isfile("working.jls")
-    working_list = open("working.jls") do io
-        deserialize(io)
-    end
-else
-    working_list = []
-end
+
+non_working_list = []
+
 
 """
  include the example in it's own module
@@ -106,7 +102,6 @@ function test_include(path, window)
             end
             println("recorded successfully: $name")
             create_video(frames, name, screencast_folder, 1)
-            push!(working_list, path)
         end
     catch e
         println("################################################################")
@@ -115,6 +110,7 @@ function test_include(path, window)
         println("ERROR in $path")
         showerror(STDERR, ex)
         println("\n################################################################")
+        push!(non_working_list, path)
     finally
         empty!(window.children)
         empty!(window)
@@ -149,8 +145,12 @@ srand(777) # set rand seed, to get the same results for tests that use rand
 
 make_tests(Pkg.dir("GLVisualize", "examples"))
 
-open("working.jls", "w") do io
-    serialize(io, working_list)
+isfile("non_working.txt") && rm("non_working.txt")
+println(non_working_list)
+open("non_working.txt", "w") do io
+    for elem in non_working_list
+        println(io, elem)
+    end
 end
 
 end
