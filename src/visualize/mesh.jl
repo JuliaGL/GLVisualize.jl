@@ -14,10 +14,16 @@ function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
         shader 		= GLVisualizeShader("util.vert", "standard.vert", "standard.frag")
     end
 end
+function _default{M<:GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        main 		= value(mesh)
+        boundingbox = const_lift(GLBoundingBox, mesh)
+        shader 		= GLVisualizeShader("util.vert", "vertexcolor.vert", "standard.frag")
+    end
+end
 
 function _default(mesh::GLNormalColorMesh, s::Style, data::Dict)
     data[:color] = decompose(RGBA{Float32}, mesh)
-    println(GLNormalMesh(mesh))
     _default(GLNormalMesh(mesh), s, data)
 end
 

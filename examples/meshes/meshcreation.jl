@@ -26,17 +26,19 @@ colored_mesh = merge(meshes)
 view(visualize(colored_mesh), window)
 
 # one could also create a GLNormalAttributeMesh manually:
-colors = RGBA{U8}[RGBA{U8}(rand(), rand(), rand(), 1.0) for i=1:50]
 sphere = Sphere{Float32}(Point3f0(0), 2f0)
 # decompose decomposes a mesh or geometry into the primitive of the first argument
-vertices = decompose(Point3f0, sphere)
-faces = decompose(GLTriangle, sphere)
+vertices = decompose(Point3f0, sphere, 50)
+faces = decompose(GLTriangle, sphere, 50)
+
+# create a few colors, can be U8 or Float32
+colors = RGBA{U8}[RGBA{U8}(rand(), rand(), rand(), 1.) for i=1:5]
 # assign every vertice a random index into the color array (0-based indexes)
-attribute_ids = Float32[rand(0:49) for i=1:length(vertices)]
+attribute_id = rand(0f0:4f0, length(vertices))
 
 sphere_mesh = GLNormalAttributeMesh(
     vertices=vertices, faces=faces,
-    attributes=colors, attribute_id=attribute_ids
+    attributes=colors, attribute_id=attribute_id
 )
 
 # move the model a bit to the right
