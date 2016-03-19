@@ -16,6 +16,12 @@ Pkg.add("GLVisualize")
 # on 0.5 you also need:
 Pkg.checkout("Mustache")
 ```
+If you like to live on the edge, you can checkout master as well:
+```Julia
+Pkg.checkout("GLVisualize")
+Pkg.checkout("GLAbstraction")
+Pkg.checkout("GeometryTypes")
+```
 
 
 Known problems:
