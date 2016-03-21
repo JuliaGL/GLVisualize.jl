@@ -3,7 +3,7 @@ Takes `frames`, which is supposed to be an array of images,
 saves them as png's at path and then creates an webm video
 from that with the name `name`
 """
-function create_video(frames::Vector, name, screencap_folder, resample_steps=0)
+function create_video(frames::Vector, name, screencap_folder, resample_steps=0, remove_destination=true)
     println("saving frames for $name")
     mktempdir() do path
         frame1 = first(frames)
@@ -39,7 +39,7 @@ function create_video(frames::Vector, name, screencap_folder, resample_steps=0)
         end
         targetpath = abspath(joinpath(screencap_folder, "$(name).webm"))
         sourcepath = abspath("$(name).webm")
-        mv(sourcepath, targetpath)
+        mv(sourcepath, targetpath, remove_destination=remove_destination)
         cd(oldpath)
     end
 end
