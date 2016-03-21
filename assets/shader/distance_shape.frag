@@ -137,7 +137,7 @@ void main(){
     float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
     float inside        = aastep(-0.0, 100.0, signed_distance);
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
-    vec4 final_color    = vec4(1,1,1,0);
+    vec4 final_color    = vec4(f_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
