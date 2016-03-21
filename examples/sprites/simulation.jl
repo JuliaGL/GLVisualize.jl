@@ -7,7 +7,7 @@ using GLVisualize, GeometryTypes, Reactive, GLAbstraction, Colors, GLWindow, Mod
 Simulation function
 """
 function solve_particles(pos_vel_s)
-    dt = 1.0f0
+    dt = 1.5f0 # control simulation speed
 
     positions, velocity, s = pos_vel_s
     for i in eachindex(positions)
@@ -26,6 +26,7 @@ function solve_particles(pos_vel_s)
     end
     positions, velocity, s
 end
+
 """
 Clears the image of the window to `color`
 """
@@ -46,7 +47,7 @@ end
 This code should be executed only one time per julia session!!
 If you accidantly close the window, you can call this again.
 """
-function init(res=(800,600))
+function init(res=(800,800))
     # giving the window a transparent background color makes it transparent to
     # the previous frame. It's arguable, if that's really how things should be,
     # but that's how it currently works ;)
@@ -55,7 +56,8 @@ function init(res=(800,600))
     speed = Signal(1/30)
 
     @async while isopen(window)
-        push!(timesignal, value(timesignal)+0.01) # value doesn't matter
+        # timesignal update value (here 0.01) doesn't matter for particle simulation, but controls the color update speed
+        push!(timesignal, value(timesignal)+0.01)
         render_frame(window)
         sleep(value(speed))
     end
@@ -75,8 +77,9 @@ end
 
 function main(window, timesignal)
     res = widths(window)
-    const num = 1000
-
+    const num = 1000 # change the number of particles!
+    
+    # particle initial conditions. Experiment with different ideas here.
     x = Float32[(res[1]/2.0) + (res[2]/3.5) * sin(i*2*pi/num) for i=0:num-1]
     y = Float32[(res[2]/2.0) + (res[2]/3.5) * cos(i*2*pi/num) for i=0:num-1]
     s = (-1 + 2*rand(Float32,num))
