@@ -11,7 +11,7 @@ using FileIO, GeometryTypes, Reactive
 
 const number_of_frames = 1
 const interactive_time = 0.1
-const screencast_folder = joinpath(homedir(), "glvisualize_screencast")
+const screencast_folder = joinpath(homedir(), "glvisualize_screencast")#Pkg.dir("GLVisualizeDocs", "docs", "media")
 !isdir(screencast_folder) && mkdir(screencast_folder)
 
 function record_test(window, timesignal, nframes=number_of_frames)
@@ -105,7 +105,7 @@ function test_include(path, window)
                 frames = record_test(window, test_module.timesignal)
             end
             println("recorded successfully: $name")
-            create_video(frames, name, screencast_folder, 2)
+            create_video(frames, name, screencast_folder, 1)
             push!(working_list, path)
         end
     catch e
@@ -117,13 +117,14 @@ function test_include(path, window)
     finally
         empty!(window.children)
         empty!(window.renderlist)
+        window.color = RGBA{Float32}(1,1,1,1)
         #empty!(window.cameras)
     end
 end
 
 function make_tests(path::AbstractString)
     if isdir(path)
-        if !in(path, working_list) && basename(path) != "compose"
+        if basename(path) != "compose"
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
     elseif isfile(path) && endswith(path, ".jl")
@@ -139,7 +140,7 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(800, 600))
+window = glscreen(resolution=(255, 255))
 #composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
