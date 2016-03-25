@@ -54,18 +54,30 @@ function init(res=(800,600))
     timesignal = Signal(0.0)
     speed = Signal(1/30)
 
+    # this is equivalent to @async renderloop(window).
+    # but now you can do other stuff before an image is rendered
+    # the @async is used to make this non blocking for working in the REPL/Atom
     @async while isopen(window)
-        push!(timesignal, value(timesignal)+0.01) # value doesn't matter
+        push!(timesignal, value(timesignal)+0.01)
         render_frame(window)
         sleep(value(speed))
     end
 
+    # this registers a callback whenever a keybutton is clicked.
+    # We use Reactive signals, so every registered callback
+    # returns a new signal with the returnvalue of that callback. Since we don't
+    # use that signal, Reactive will try to garbage collect it, which is why we need
+    # to call preserve on it.
     preserve(map(window.inputs[:keyboard_buttons]) do kam
             key, action, mods = kam
             if key == GLFW.KEY_S
                 println("saving screenshot")
                 screenshot(window, path="screenshot.jpg")
             end
+            # make sure that this function doesn't return different types
+            # for the if branch.
+            # Reactive would try to convert them otherwise.
+            nothing
         end
     )
 
@@ -74,56 +86,78 @@ end
 
 
 function main(window, timesignal)
+    # get the resolution of the window
     res = widths(window)
-    const num = 1000
+    num = 1000
 
+    # use Float32 whenever possible to avoid conversions (GLVisualize can
+    # convert to appropriate type most of the time, though)
     x = Float32[(res[1]/2.0) + (res[2]/3.5) * sin(i*2*pi/num) for i=0:num-1]
     y = Float32[(res[2]/2.0) + (res[2]/3.5) * cos(i*2*pi/num) for i=0:num-1]
     s = (-1 + 2*rand(Float32,num))
 
+    # GeometryTypes.Point2f0 -> Point{2, Float32}
     start_position = Point2f0[Point2f0(xi,yi) for (xi,yi) in zip(x,y)]
-    # foldp calls solve_particles with the startvalue, v0, and the argument, timesignal, every time
-    # time signal updates. https://github.com/JuliaLang/Reactive.jl/blob/master/doc/index.md
-    # signature: foldp(function, startvalue, signals...), function will be called
-    # with f(starvalue, signals...)
-    position_velocity = foldp((v0,t) -> solve_particles(v0), (start_position, zeros(Float32,num), s), timesignal)
 
+
+    # Everything in GLVisualize gets animated with Reactive signals. So drawing a frame
+    # and animating some graphic is decoupled.
+    # for more infos, checkout Reactives documentation:
+    # https://github.com/JuliaLang/Reactive.jl/blob/master/doc/index.md
+    # In this case we use foldp to simulate the particles for every time step.
+    # signature: foldp(function, startvalue, signals...), function will be called
+    # with f(startvalue, signals...) every time timesignal updates.
+
+    position_velocity = foldp(
+        (v0, t) -> solve_particles(v0),
+        (start_position, zeros(Float32,num), s),
+        timesignal
+    )
+    # extract the position
+    position = map(first, position_velocity)
 
     # create a color signal that changes over time
+    # the color will update whenever timesignal updates
     color = map(timesignal) do t
         RGBA(1,1,(sin(t)+1.)/2., 0.05)
     end
 
-    circle = HyperSphere(Point2f0(0), 0.7f0)
+    circle = Circle(Point2f0(0), 0.7f0)
 
     # boundingbox is still a very expensive operation, so if you don't need it
     # you can simply set it to nothing.
-    vis = visualize(
-        (circle, map(first, position_velocity)),
+    # The signature for all kind of particles is:
+    # visualize((primitive, positions), keyword_arguments...)
+    viewable = visualize(
+        (circle, position),
         boundingbox=nothing,
         color=color
     )
+    # reset is basically the antagonist of view
     reset!(window) # when you reset the window here, you can call main multiple times
-    view(vis, window, camera=:fixed_pixel)
+
+    # view adds an (animated) viewable to the list of things that you want to see
+    # in `window`
+    view(viewable, window, camera=:fixed_pixel)
 end
 
 
-#workflow in Julia REPL or you can also just evaluate parts in Atom:
 #=
+workflow in Julia REPL or you can also just evaluate parts in Atom:
 include("simulation.jl")
 window, t, speed = init()
 main(window, t)
 #redefine main/solve_particles
 include("simulation.jl") # if you have the changes in the file
 main() # call again! If you only changed solve_particles, you don't even have to call main again
-push!(speed, 1/20) # change speed
+push!(speed, 1/20) # this is fully interactive so you can, e.g. change the speed
 =#
-# this is needed, because GLVisualizes records these examples automatically,
-# in this case, the recording code supplies window and timesignal
+
 if !isdefined(:runtests)
     window, timesignal, speed = init()
+else
+    # if we get the window from the example recorder, change color!
+    window.color = RGBA{Float32}(0,0,0,0)
 end
+
 main(window, timesignal)
-# when this gets created by runtests, the window won't have been created via init
-# so we need to change the color here
-window.color = RGBA(0,0,0,0)
