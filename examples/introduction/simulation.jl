@@ -40,7 +40,7 @@ Resets the state of a window
 """
 function reset!(window, color=RGB(0.2,0.2,0.2))
     clear_frame!(window, color)
-    empty!(window.renderlist) # removes all viewables that where added with `view`
+    empty!(window) # removes all viewables that where added with `view`
 end
 
 """
