@@ -314,8 +314,8 @@ function sprites(p, s, data)
         color_norm          = nothing
         color               = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
 
-        stroke_color        = default(RGBA, s, 2) => GLBuffer
-        glow_color          = default(RGBA, s, 3) => GLBuffer
+        glow_color          = RGBA{Float32}(0,0,0,0) => GLBuffer
+        stroke_color        = RGBA{Float32}(0,0,0,0) => GLBuffer
 
         stroke_width        = 0f0
         glow_width          = 0f0
