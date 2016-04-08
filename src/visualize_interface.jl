@@ -20,8 +20,8 @@ visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
 
-function view(
-		robj::RenderObject, screen=ROOT_SCREEN;
+function view{Pre}(
+		robj::RenderObject{Pre}, screen=ROOT_SCREEN;
 		camera = robj.uniforms[:preferred_camera],
 		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
@@ -45,12 +45,21 @@ function view(
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
-	# only add to renderlist if not already in there
-	in(robj, screen.renderlist) || push!(screen.renderlist, robj)
+    # find renderlist specialized to current prerender function
+    index = findfirst(screen.renderlist) do renderlist
+        prerendertype(eltype(renderlist)) == Pre
+    end
+    if index == 0
+        # add new specialised renderlist
+        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
+        index = length(screen.renderlist)
+    end
+    # only add to renderlist if not already in there
+	in(robj, screen.renderlist) || push!(screen.renderlist[index], robj)
 	nothing
 end
 
-view(robjs::Vector{RenderObject}, screen=ROOT_SCREEN; kw_args...) = for robj in robjs
+view(robjs::Vector, screen=ROOT_SCREEN; kw_args...) = for robj in robjs
 	view(robj, screen; kw_args...)
 end
 view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c), screen; kw_args...)

@@ -9,7 +9,6 @@ function glscreen(name="GLVisualize";
 
     screen = Screen(name, resolution=resolution, debugging=debugging, color=background)
     global ROOT_SCREEN  = screen
-    global TIMER_SIGNAL = fpswhen(screen.inputs[:window_open], 60.0)
 
     GLWindow.add_complex_signals!(screen) #add the drag events and such
     preserve(map(screen.inputs[:window_open]) do open
@@ -21,6 +20,22 @@ function glscreen(name="GLVisualize";
     screen
 end
 
+const timer_signal_dict = Dict{Int, WeakRef}()
+"""
+Creates a timer signal with `updates_per_second` while `window` is open.
+It's reusing timer signals with the same update rate and registering the updates
+with GLFW.
+"""
+function get_timer_signal(updates_per_second, window=ROOT_SCREEN)
+    signal = get!(timer_signal_dict, updates_per_second) do
+        # because this is a function, it'll only get executed if needed
+        WeakRef(fpswhen(window.inputs[:window_open], updates_per_second))
+    end.value
+    # since the renderloop nowadays only updates when something in GLFW happens,
+    # we need to register signals that produce events with GLFW.
+    preserve(map(x-> GLFW.PostEmptyEvent(), signal))
+    signal
+end
 
 function fold_loop(v0, _)
     val, range, index = v0
@@ -30,7 +45,7 @@ function fold_loop(v0, _)
     (val, range, index)
 end
 
-loop(range::Range; t=TIMER_SIGNAL) =
+loop(range::Range; t=get_timer_signal(60)) =
     map(first, foldp(fold_loop, (first(range), range, 1), t))
 
 
@@ -45,7 +60,7 @@ function fold_bounce(v0, _)
     (val, range, index, direction)
 end
 
-bounce{T}(range::Range{T}; t=TIMER_SIGNAL) =
+bounce{T}(range::Range{T}; t=get_timer_signal(60)) =
     map(first, foldp(fold_bounce, (first(range), range, 1, 1), t))
 
 

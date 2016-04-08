@@ -89,6 +89,7 @@ camera_points = visualize(
     (Circle(Point2f0(0), 0.03f0), camera_path),
     color=RGBA{Float32}((Vec3f0(0,206,209)/256)..., 1f0), billboard=true
 )
+
 camera_path_line = visualize(camera_path, :lines)
 
 
@@ -99,15 +100,10 @@ camera_path_line = visualize(camera_path, :lines)
 # Note, that this is a shallow copy, so the actual data won't be copied,
 # just the data structure that holds the camera
 view(copy(cat), camera_screen, camera=:perspective)
-
 view(copy(cat), scene_screen, camera=:perspective)
-
 view(visualize(cam), scene_screen, camera=:perspective)
-
 view(camera_points, scene_screen, camera=:perspective)
 view(camera_path_line, scene_screen, camera=:perspective)
-
-
 
 if !isdefined(:runtests)
 	renderloop(window)

@@ -46,12 +46,12 @@ function record_test_interactive(window, timesignal, total_time=interactive_time
         yield()
     end
     start_time = time()
-
     while time()-start_time < total_time
         push!(timesignal, (start_time-time())/3.0)
         render_frame(window)
         push!(frames, screenbuffer(window))
     end
+
     frames
 end
 
@@ -93,10 +93,10 @@ function test_include(path, window)
         for (camname, cam) in window.cameras
             # don't center non standard cams
             !in(camname, (:perspective, :orthographic_pixel)) && continue
-            center!(cam, window.renderlist)
+            center!(cam, renderlist(window))
         end
         # only when something was added to renderlist
-        if !isempty(window.renderlist) || !isempty(window.children)
+        if !isempty(renderlist(window)) || !isempty(window.children)
             if isdefined(test_module, :record_interactive)
                 frames = record_test_interactive(window, test_module.timesignal)
             elseif isdefined(test_module, :static_example)
@@ -112,11 +112,12 @@ function test_include(path, window)
         println("################################################################")
         bt = catch_backtrace()
         ex = CapturedException(e, bt)
+        println("ERROR in $path")
         showerror(STDERR, ex)
         println("\n################################################################")
     finally
         empty!(window.children)
-        empty!(window.renderlist)
+        empty!(window)
         window.color = RGBA{Float32}(1,1,1,1)
         #empty!(window.cameras)
     end
@@ -145,6 +146,7 @@ window = glscreen(resolution=(255, 255))
 
 const make_docs  = true
 srand(777) # set rand seed, to get the same results for tests that use rand
+
 make_tests(Pkg.dir("GLVisualize", "examples"))
 
 open("working.jls", "w") do io

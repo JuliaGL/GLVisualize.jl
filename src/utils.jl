@@ -27,13 +27,13 @@ function assemble_shader(data)
     else
         robj = std_renderobject(data, shader, bb, glp)
     end
-    for key in (:prerender, :postrender)
-        if haskey(data, key)
-            for elem in data[key]
-                robj.(symbol("$(key)functions"))[elem[1]] = length(elem)<2 ? () : elem[2:end]
-            end
-        end
-    end
+    # for key in (:prerender, :postrender)
+    #     if haskey(data, key)
+    #         for elem in data[key]
+    #             robj.(symbol("$(key)function"))[elem[1]] = length(elem)<2 ? () : elem[2:end]
+    #         end
+    #     end
+    # end
     Context(robj)
 end
 
