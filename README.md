@@ -21,6 +21,8 @@ If you like to live on the edge, you can checkout master as well:
 Pkg.checkout("GLVisualize")
 Pkg.checkout("GLAbstraction")
 Pkg.checkout("GeometryTypes")
+Pkg.checkout("GLWindow")
+# you also need to be on https://github.com/JuliaLang/Reactive.jl/pull/91
 ```
 
 
