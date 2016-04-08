@@ -19,6 +19,20 @@ visualize(main, s::Style, data::Dict) = assemble_shader(default(main, s, data)):
 visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
+function Base.push!{Pre}(screen::Screen, robj::RenderObject{Pre})
+    # find renderlist specialized to current prerender function
+    index = findfirst(screen.renderlist) do renderlist
+        prerendertype(eltype(renderlist)) == Pre
+    end
+    if index == 0
+        # add new specialised renderlist, if none found
+        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
+        index = length(screen.renderlist)
+    end
+    # only add to renderlist if not already in there
+    in(robj, screen.renderlist[index]) || push!(screen.renderlist[index], robj)
+    nothing
+end
 
 function view{Pre}(
 		robj::RenderObject{Pre}, screen=ROOT_SCREEN;
@@ -36,7 +50,8 @@ function view{Pre}(
 	elseif camera == :orthographic_pixel
         real_camera = OrthographicPixelCamera(screen.inputs)
 	elseif camera == :nothing
-		return push!(screen.renderlist, robj)
+        push!(screen, robj)
+		return nothing
 	else
          error("Method $camera not a known camera type")
 	end
@@ -45,17 +60,7 @@ function view{Pre}(
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
-    # find renderlist specialized to current prerender function
-    index = findfirst(screen.renderlist) do renderlist
-        prerendertype(eltype(renderlist)) == Pre
-    end
-    if index == 0
-        # add new specialised renderlist
-        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
-        index = length(screen.renderlist)
-    end
-    # only add to renderlist if not already in there
-	in(robj, screen.renderlist) || push!(screen.renderlist[index], robj)
+    push!(screen, robj)
 	nothing
 end
 
