@@ -84,7 +84,11 @@ include(joinpath("visualize", "text.jl"))
 
 include("camera.jl")
 export cubecamera
+
+# Compose/Gadfly only work for 0.4 right now
+if VERSION.minor == 4
 include("compose_backend.jl")
+end
 
 include("videotool.jl")
 export create_video
