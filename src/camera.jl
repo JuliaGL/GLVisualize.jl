@@ -162,7 +162,7 @@ function cubecamera(
     cubescreen = Screen(window, area=cube_area, color=RGBA{Float32}(0,0,0,0))
     viewmatrix = map(eyeposition, lookatvec) do eyepos, lvec
         dir = GeometryTypes.normalize(eyepos-lvec)
-        lookat(lvec+(dir*2), lvec, value(upvector))
+        lookat(dir*2, Vec3f0(0), value(upvector))
     end
     cubescreen.cameras[:cube_cam] = DummyCamera(
         farclip=far,
@@ -170,6 +170,7 @@ function cubecamera(
         view=viewmatrix,
         projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
     )
+    
     robj = visualize(cube_steering, preferred_camera=:cube_cam, model=scalematrix(Vec3f0(0.5)))
     start_colors = cube_steering.attributes
     color_tex    = robj.children[][:attributes]
