@@ -22,7 +22,7 @@ Pkg.checkout("GLVisualize")
 Pkg.checkout("GLAbstraction")
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("GLWindow")
-# you also need to be on https://github.com/JuliaLang/Reactive.jl/pull/91
+Pkg.checkout("Reactive")
 ```
 
 
