@@ -29,7 +29,8 @@ circle = HyperSphere(Point2f0(0), 40f0)
 vis = visualize((circle, map(first, position_velocity)),
     image=loadasset("doge.png"),
     stroke_width=3f0,
-    stroke_color=RGBA{Float32}(0.91,0.91,0.91,1)
+    stroke_color=RGBA{Float32}(0.91,0.91,0.91,1),
+    boundingbox = nothing
 )
 view(vis, window, camera=:orthographic_pixel)
 

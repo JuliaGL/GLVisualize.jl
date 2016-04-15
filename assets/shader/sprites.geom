@@ -101,14 +101,17 @@ void main(void)
     vec4 o_w      = g_offset_width[0];
     vec4 vertices = vec4(0, 0, 1, 1); // use a 0 origin quad (x,y,w,h)
     vec4 uv_o_w = g_uv_offset_width[0];
-    vertices.xy *= o_w.zw; // scale
-    vertices.zw *= o_w.zw;
+    float glow_stroke = glow_width+stroke_width;
+    vec2 uv_frame = -glow_stroke/o_w.zw;
+    vec2 uv_max = 1-uv_frame;
+    vertices.xy *= o_w.zw+glow_stroke; // scale
+    vertices.zw *= o_w.zw+glow_stroke;
     vertices.xy += o_w.xy; // offset
     vertices.zw += o_w.xy;
 
-    emit_vertex(vertices.xy, vec2(0,1), uv_o_w.xw);
-    emit_vertex(vertices.xw, vec2(0,0), uv_o_w.xy);
-    emit_vertex(vertices.zy, vec2(1,1), uv_o_w.zw);
-    emit_vertex(vertices.zw, vec2(1,0), uv_o_w.zy);
+    emit_vertex(vertices.xy, vec2(uv_frame.x,uv_max.y), uv_o_w.xw);
+    emit_vertex(vertices.xw, uv_frame, uv_o_w.xy);
+    emit_vertex(vertices.zy, uv_max, uv_o_w.zw);
+    emit_vertex(vertices.zw, vec2(uv_max.x, uv_frame.y), uv_o_w.zy);
     EndPrimitive();
 }

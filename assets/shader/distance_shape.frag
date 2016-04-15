@@ -90,8 +90,8 @@ void stroke(vec4 strokecolor, float signed_distance, float half_stroke, inout ve
 
 void glow(vec4 glowcolor, float signed_distance, float outside, inout vec4 color){
     if (glow_width > 0.0){
-        float alpha = 1-(outside*abs(clamp(signed_distance, -1, 0))*7); //TODO figure out better factor than 7
-        color = mix(color, vec4(glowcolor.rgb, alpha), outside);
+        float alpha = 1-(outside*abs(clamp(signed_distance, -1, 0))*20); //TODO figure out better factor than 7
+        color = mix(color, vec4(glowcolor.rgb, glowcolor.a*alpha), outside);
     }
 }
 
