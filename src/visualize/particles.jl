@@ -234,15 +234,15 @@ end
 
 """
 This is the most primitive particle system, which uses simple points as primitives.
-This is supposed to be very fast!
+This is supposed to be the fastest way of displaying particles!
 """
 _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_defaults! data begin
-    vertex       = position                  => GLBuffer
-    color_map    = nothing                   => Vec2f0
+    vertex       = position => GLBuffer
+    color_map    = nothing  => Vec2f0
     color        = (color_map == nothing ? default(RGBA{Float32}, s) : nothing) => GLBuffer
 
-    color_norm   = nothing                   => Vec2f0
-    intensity    = nothing                   => GLBuffer
+    color_norm   = nothing  => Vec2f0
+    intensity    = nothing  => GLBuffer
     point_size   = 2f0
     #boundingbox  = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
     prerender    = (
@@ -252,6 +252,9 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     gl_primitive = GL_POINTS
 end
 
+"""
+returns the Shape for the distancefield algorithm 
+"""
 primitive_shape(::Char) = DISTANCEFIELD
 primitive_shape{X}(x::X) = primitive_shape(X)
 primitive_shape{T<:Circle}(::Type{T}) = CIRCLE
@@ -259,16 +262,28 @@ primitive_shape{T<:SimpleRectangle}(::Type{T}) = RECTANGLE
 primitive_shape{T<:HyperRectangle{2}}(::Type{T}) = RECTANGLE
 primitive_shape(x::Shape) = x
 
+"""
+Extracts the scale from a primitive.
+"""
 primitive_scale(prim::GeometryPrimitive) = Vec2f0(widths(prim))
 primitive_scale(::Shape) = Vec2f0(40)
 primitive_scale(c::Char) = Vec(glyph_scale!(c))
 
+"""
+Extracts the offset from a primitive.
+"""
 primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
 primitive_offset(x) = Vec2f0(0) # default offset
 
+"""
+Extracts the uv offset and width from a primitive.
+"""
 primitive_uv_offset_width(c::Char) = glyph_uv_width!(c)
 primitive_uv_offset_width(x) = Vec4f0(0,0,1,1)
 
+"""
+Gets the texture atlas if primitive is a char.
+"""
 primitive_distancefield(x) = nothing
 primitive_distancefield(::Char) = get_texture_atlas().images
 
@@ -288,19 +303,19 @@ Sprites are anything like distance fields, images and simple geometries
 """
 function sprites(p, s, data)
     @gen_defaults! data begin
-        shape               = primitive_shape(p[1])
-        position            = p[2]    => GLBuffer
-        position_x          = nothing => GLBuffer
-        position_y          = nothing => GLBuffer
-        position_z          = nothing => GLBuffer
+        shape       = primitive_shape(p[1])
+        position    = p[2]    => GLBuffer
+        position_x  = nothing => GLBuffer
+        position_y  = nothing => GLBuffer
+        position_z  = nothing => GLBuffer
 
-        scale               = primitive_scale(p[1])  => GLBuffer
-        scale_x             = nothing                => GLBuffer
-        scale_y             = nothing                => GLBuffer
-        scale_z             = nothing                => GLBuffer
+        scale       = primitive_scale(p[1])  => GLBuffer
+        scale_x     = nothing                => GLBuffer
+        scale_y     = nothing                => GLBuffer
+        scale_z     = nothing                => GLBuffer
 
-        rotation            = Vec3f0(0,0,1)          => GLBuffer
-        offset              = primitive_offset(p[1]) => GLBuffer
+        rotation    = Vec3f0(0,0,1)          => GLBuffer
+        offset      = primitive_offset(p[1]) => GLBuffer
 
     end
     inst = _Instances(
