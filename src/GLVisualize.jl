@@ -17,6 +17,7 @@ using Packing
 using SignedDistanceFields
 using FreeType
 import Images
+using Base.Markdown
 
 typealias GLBoundingBox AABB{Float32}
 
@@ -93,7 +94,7 @@ end
 include("videotool.jl")
 export create_video
 
-Base.precompile(glscreen, ())
-
+include("documentation.jl")
+export get_docs
 
 end # module
