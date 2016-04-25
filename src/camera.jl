@@ -94,17 +94,17 @@ end
 """
 Creates a camera which is steered by a cube for `window`.
 """
-function cubecamera(
-		window;
-		cube_area 	= Signal(SimpleRectangle(0,0,150,150)),
-		eyeposition = Vec3f0(2),
-    	lookatv 	= Vec3f0(0),
-        trans       = Signal(Vec3f0(0)),
-        theta       = Signal(Vec3f0(0))
-	)
+    function cubecamera(
+        window;
+        eyeposition = Vec3f0(2),
+        lookatv = Vec3f0(0),
+        trans = Signal(Vec3f0(0)),
+        theta = Signal(Vec3f0(0)),
+        doubleclick_sensitivity = 0.3
+    )
     const T = Float32
     @materialize mouse_buttons_pressed, mouseposition, buttons_pressed = window.inputs
-    dd = doubleclick(mouse_buttons_pressed, 0.3)
+    dd = doubleclick(mouse_buttons_pressed, doubleclick_sensitivity)
     mousehover = GLWindow.mouse2id(window)
     id = Signal(3)
     should_reset = filter(false, dd) do _
@@ -118,17 +118,6 @@ function cubecamera(
     projectiontype, projectionbutton = projection_switch(20f0, mousehover, mouse_buttons_pressed)
     inside_trans  = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
     outside_trans = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
-    cube_rotation = const_lift(cube_area, mouseposition) do ca, mp
-        m = minimum(ca)
-        max_dist = norm(maximum(ca) - m)
-        mindist = max_dist *0.9f0
-        maxdist = max_dist *1.5f0
-        m, mp = Point2f0(m), Point2f0(mp)
-        t = norm(m-mp)
-        t = Float32((t-mindist)/(maxdist-mindist))
-        t = clamp(t, 0f0,1f0)
-        slerp(inside_trans, outside_trans, t)
-    end
 
     left_ctrl = Set([GLFW.KEY_LEFT_CONTROL])
     use_cam = const_lift(buttons_pressed) do b
@@ -157,27 +146,17 @@ function cubecamera(
             end
         end
     end)
-    window.cameras[:perspective] = main_cam
 
-    cubescreen = Screen(window, area=cube_area, color=RGBA{Float32}(0,0,0,0))
     viewmatrix = map(eyeposition, lookatvec) do eyepos, lvec
         dir = GeometryTypes.normalize(eyepos-lvec)
-        lookat(dir*2, Vec3f0(0), value(upvector))
+        inv(lookat(dir*2, Vec3f0(0), value(upvector)))
     end
-    cubescreen.cameras[:cube_cam] = DummyCamera(
-        farclip=far,
-        nearclip=near,
-        view=viewmatrix,
-        projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
-    )
-    
-    robj = visualize(cube_steering, preferred_camera=:cube_cam, model=scalematrix(Vec3f0(0.5)))
+
+    cube = visualize(cube_steering, preferred_camera=:cube_cam, model=viewmatrix)
     start_colors = cube_steering.attributes
-    color_tex    = robj.children[][:attributes]
+    color_tex = cube.children[][:attributes]
     preserve(const_lift(cubeside_color, id, mousehover, Signal(start_colors), Signal(color_tex)))
     preserve(id)
-    push!(id, robj.children[].id)
-    view(robj, cubescreen)
-    view(projectionbutton, cubescreen, camera=:fixed_pixel)
-	window
+    push!(id, cube.children[].id)
+    main_cam, projectionbutton, cube
 end
