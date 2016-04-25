@@ -87,3 +87,27 @@ function wireframe(
     data[:indices] = reinterpret(GLuint, indices)
     _default(points, style"linesegment"(), data)
 end
+
+
+immutable GridPreRender end
+
+function call(::GridPreRender)
+    glEnable(GL_DEPTH_TEST)
+    glDepthMask(GL_FALSE)
+    glDepthFunc(GL_LEQUAL)
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_BACK)
+    enabletransparency()
+end
+function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
+    @gen_defaults! data begin
+        primitive::GLPlainMesh = c
+        bg_colorc = RGBA{Float32}(0.8,0.8,0.8,1.0)
+        grid_color = RGBA{Float32}(0.9,0.9,0.9,1.0)
+        grid_thickness = Vec3f0(2)
+        gridsteps = Vec3f0(5)
+        shader = GLVisualizeShader("grid.vert", "grid.frag")
+        boundingbox = c
+        #prerender = GridPreRender()
+    end
+end

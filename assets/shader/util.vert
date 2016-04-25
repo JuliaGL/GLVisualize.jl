@@ -42,10 +42,10 @@ float stretch(float val, float from, float to){
 
 float _normalize(float val, float from, float to){return (val-from) / (to - from);}
 vec2 _normalize(vec2 val, vec2 from, vec2 to){
-    return (val-from) * (to - from);
+    return (val-from) / (to - from);
 }
 vec3 _normalize(vec3 val, vec3 from, vec3 to){
-    return (val-from) * (to - from);
+    return (val-from) / (to - from);
 }
 
 

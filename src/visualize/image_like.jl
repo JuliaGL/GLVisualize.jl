@@ -138,6 +138,14 @@ function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, da
     _default(a, default_style, data)
 end
 
+immutable VolumePrerender
+end
+function call(::VolumePrerender)
+    GLAbstraction.StandardPrerender()()
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_FRONT)
+end
+
 _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
     intensities      = main => Texture
     dimensions       = Vec3f0(1)
@@ -150,8 +158,5 @@ _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_de
     algorithm        = MaximumIntensityProjection
     boundingbox      = hull
     shader           = GLVisualizeShader("util.vert", "volume.vert", "volume.frag")
-    prerender        = (
-        (glEnable,   GL_CULL_FACE),
-        (glCullFace, GL_FRONT),
-    )
+    prerender        = VolumePrerender()
 end

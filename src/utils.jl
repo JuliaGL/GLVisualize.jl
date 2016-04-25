@@ -22,18 +22,15 @@ function assemble_shader(data)
         bb = default_bb
     end
     glp = get(data, :gl_primitive, GL_TRIANGLES)
+    pre = get(data, :prerender, GLAbstraction.StandardPrerender())
     if haskey(data, :instances)
-        robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
+        robj = instanced_renderobject(data, shader, bb, glp, data[:instances], pre=pre)
     else
-        robj = std_renderobject(data, shader, bb, glp)
+        robj = std_renderobject(data, shader, bb, glp, pre=pre)
     end
-    # for key in (:prerender, :postrender)
-    #     if haskey(data, key)
-    #         for elem in data[key]
-    #             robj.(symbol("$(key)function"))[elem[1]] = length(elem)<2 ? () : elem[2:end]
-    #         end
-    #     end
-    # end
+    if haskey(data, :postrender)
+        robj.postrenderfunction = data[:postrender]
+    end
     Context(robj)
 end
 
@@ -54,7 +51,7 @@ function x_partition(area, percent)
         (SimpleRectangle{Int}(r.x, r.y, round(Int, r.w*amount), r.h ),
             SimpleRectangle{Int}(round(Int, r.w*amount), r.y, round(Int, r.w*(1-amount)), r.h))
     end
-    return const_lift(first, p), const_lift(last, p)
+    return map(first, p), map(last, p)
 end
 
 
