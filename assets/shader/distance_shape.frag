@@ -135,12 +135,12 @@ void main(){
         signed_distance = triangle(f_uv);
 
     float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
-    float inside        = aastep(half_stroke, 100.0, signed_distance);
+    float inside        = aastep(0.1, 100.0, signed_distance);
     float outside       = abs(aastep(-100.0, 0.0, signed_distance));
     vec4 final_color    = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);
-    stroke(f_stroke_color, signed_distance, half_stroke, final_color);
+    stroke(f_stroke_color, signed_distance, 0.1, final_color);
     glow(f_glow_color, signed_distance, outside, final_color);
     write2framebuffer(final_color, f_id);
 }

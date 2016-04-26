@@ -44,11 +44,13 @@ function view{Pre}(
     elseif haskey(screen.cameras, camera)
         real_camera = screen.cameras[camera]
     elseif camera == :perspective
-		real_camera = PerspectiveCamera(screen.inputs, position, lookat)
+        inside = screen.inputs[:mouseinside]
+		real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep=inside)
 	elseif camera == :fixed_pixel
 		real_camera = DummyCamera(window_size=screen.area)
 	elseif camera == :orthographic_pixel
-        real_camera = OrthographicPixelCamera(screen.inputs)
+        inside = screen.inputs[:mouseinside]
+        real_camera = OrthographicPixelCamera(screen.inputs, keep=inside)
 	elseif camera == :nothing
         push!(screen, robj)
 		return nothing

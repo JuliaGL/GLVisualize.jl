@@ -100,7 +100,7 @@ void main(void)
     // v1*      * v2
     vec4 o_w      = g_offset_width[0];
     vec4 vertices = vec4(0, 0, 1, 1); // use a 0 origin quad (x,y,w,h)
-    vec4 uv_o_w = g_uv_offset_width[0];
+    vec4 uv_o_w   = g_uv_offset_width[0];
     float glow_stroke = glow_width+stroke_width;
     vec2 uv_frame = -glow_stroke/o_w.zw;
     vec2 uv_max = 1-uv_frame;

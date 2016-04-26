@@ -131,8 +131,8 @@ function cubecamera(
     end
 
     left_ctrl = Set([GLFW.KEY_LEFT_CONTROL])
-    use_cam = const_lift(buttons_pressed) do b
-        b == left_ctrl
+    use_cam = map(buttons_pressed, window.inputs[:mouseinside]) do b, mi
+        b == left_ctrl && mi
     end
     theta, trans = default_camera_control(
         window.inputs, Signal(0.02f0), Signal(0.01f0),
@@ -170,7 +170,7 @@ function cubecamera(
         view=viewmatrix,
         projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
     )
-    
+
     robj = visualize(cube_steering, preferred_camera=:cube_cam, model=scalematrix(Vec3f0(0.5)))
     start_colors = cube_steering.attributes
     color_tex    = robj.children[][:attributes]
