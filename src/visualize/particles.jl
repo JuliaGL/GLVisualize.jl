@@ -185,6 +185,20 @@ function _default{Pr <: Primitives3D, P <: Point}(
     meshparticle(p, s, data)
 end
 
+function _default{Pr <: Primitives3D, G <: Tuple}(
+        p::Tuple{Pr, G}, s::Style, data::Dict
+    )
+    @gen_defaults! data begin
+        primitive::GLNormalMesh = p[1]
+        position         = nothing => TextureBuffer
+        position_x       = p[2][1] => TextureBuffer
+        position_y       = p[2][2] => TextureBuffer
+        position_z       = length(p[2]) > 2 ? p[2][3] : 0f0 => TextureBuffer
+        instances        = const_lift(length, position_x)
+    end
+    meshparticle(p, s, data)
+end
+
 function _default{Pr <: Primitives3D, G <: Grid}(
         p::Tuple{Pr, G}, s::Style, data::Dict
     )
@@ -281,6 +295,18 @@ _default{Primitive<:Sprites, P<:Point}(p::Tuple{Primitive, VecTypes{P}}, s::Styl
 _default{Primitive<:Sprites, G<:Grid}(p::Tuple{Primitive, G}, s::Style, data::Dict) =
     sprites(p,s,data)
 
+function _default{Pr <: Sprites, G <: Tuple}(
+            p::Tuple{Pr, G}, s::Style, data::Dict
+        )
+        @gen_defaults! data begin
+            shape            = primitive_shape(p[1])
+            position         = nothing => GLBuffer
+            position_x       = p[2][1] => GLBuffer
+            position_y       = p[2][2] => GLBuffer
+            position_z       = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
+        end
+        sprites(p, s, data)
+    end
 
 """
 Main assemble functions for sprite particles.
