@@ -228,10 +228,10 @@ function meshparticle(p, s, data)
         rotation, primitive
     )
     @gen_defaults! data begin
-        color_map        = nothing => Texture
-        color_norm       = nothing
-        intensity        = nothing => TextureBuffer
-        color            = if color_map == nothing
+        color_map  = nothing => Texture
+        color_norm = nothing
+        intensity  = nothing => TextureBuffer
+        color      = if color_map == nothing
             default(RGBA{Float32}, s)
         else
              nothing
@@ -240,7 +240,7 @@ function meshparticle(p, s, data)
         instances   = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)
         shader      = GLVisualizeShader(
-            "util.vert", "particles.vert", "standard.frag",
+            "util.vert", "particles.vert", "fragment_output.frag", "standard.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, TextureBuffer))
         )
     end
@@ -267,7 +267,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
 end
 
 """
-returns the Shape for the distancefield algorithm 
+returns the Shape for the distancefield algorithm
 """
 primitive_shape(::Char) = DISTANCEFIELD
 primitive_shape{X}(x::X) = primitive_shape(X)

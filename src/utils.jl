@@ -12,7 +12,30 @@ function Base.split(condition::Function, associative::Associative)
     A, B
 end
 
+function isopaque(color::TransparentColor)
+    alpha(color) == 1.0
+end
+function isopaque(color::Color)
+    true
+end
+function isopaque{T<:Color}(color::AbstractArray{T})
+    true
+end
+function isopaque(color::AbstractArray)
+    all(isopaque, color)
+end
+# can't be dynamic for now!
+function isopaque(color::Signal)
+    isopaque(value(color))
+end
 
+function get_color(data)
+    color = get(data, :color, nothing)
+    color != nothing && return color
+    color = get(data, :color_map, nothing)
+    color != nothing && return color
+    RGBA{Float32}(0,0,0,1)
+end
 function assemble_shader(data)
     shader = data[:shader]
     delete!(data, :shader)
@@ -22,7 +45,9 @@ function assemble_shader(data)
         bb = default_bb
     end
     glp = get(data, :gl_primitive, GL_TRIANGLES)
-    pre = get(data, :prerender, GLAbstraction.StandardPrerender())
+    pre = get(data, :prerender, GLAbstraction.EmptyPrerender())
+    get!(data, :is_fully_opaque, isopaque(get_color(data)))
+
     if haskey(data, :instances)
         robj = instanced_renderobject(data, shader, bb, glp, data[:instances], pre=pre)
     else

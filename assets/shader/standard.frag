@@ -6,9 +6,6 @@ in vec3 o_vertex;
 in vec4 o_color;
 flat in uvec2 o_id;
 
-out vec4 fragment_color;
-out uvec2 fragment_groupid;
-
 
 vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
 {
@@ -29,11 +26,15 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
     );
 }
 
+void write2framebuffer(vec4 color, uvec2 id);
+
 void main(){
     vec3 L      = normalize(o_lightdir);
     vec3 N      = normalize(o_normal);
     vec3 light1 = blinnphong(N, o_vertex, L, o_color.rgb);
     vec3 light2 = blinnphong(N, o_vertex, -L, o_color.rgb);
-    fragment_color = vec4(light1+light2*0.4, o_color.a);
-    fragment_groupid = o_id;
+    write2framebuffer(
+        vec4(light1+light2*0.4, o_color.a),
+        o_id
+    );
 }

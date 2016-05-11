@@ -102,22 +102,7 @@ float get_distancefield(Nothing distancefield, vec2 uv){
     return 0.0;
 }
 
-
-#ifdef DEPTH_LAYOUT
-    layout (depth_greater) out float gl_FragDepth;
-#endif
-
-out vec4  fragment_color;
-out uvec2 fragment_groupid;
-void write2framebuffer(vec4 color, uvec2 id){
-    fragment_color   = color;
-    fragment_groupid = id;
-    if (color.a > 0.5){
-        gl_FragDepth = gl_FragCoord.z;
-    }else{
-        gl_FragDepth = 1.0;
-    }
-}
+void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
 
@@ -134,10 +119,10 @@ void main(){
     else if(shape == TRIANGLE)
         signed_distance = triangle(f_uv);
 
-    float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
-    float inside        = aastep(0.1, 100.0, signed_distance);
-    float outside       = abs(aastep(-100.0, 0.0, signed_distance));
-    vec4 final_color    = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
+    float half_stroke = (stroke_width) / max(f_scale.x, f_scale.y);
+    float inside = aastep(0.1, 100.0, signed_distance);
+    float outside = abs(aastep(-100.0, 0.0, signed_distance));
+    vec4 final_color = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, 0.1, final_color);

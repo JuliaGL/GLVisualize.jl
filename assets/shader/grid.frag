@@ -22,8 +22,7 @@ void main()
 {
  	vec3  v  		= (vec3(vposition.xyz) * gridsteps * M_PI) - 1.5;
     vec3  f  		= abs(sin(v));
-    vec3  g  		= aastep(vec3(0.999), f);
+    vec3  g  		= aastep(grid_thickness, f);
     float c  		= max(g.x, max(g.y, g.z));
-    fragment_color 	= vec4(0.8,0.8,0.8, c);
+    fragment_color 	= mix(bg_color, grid_color, c);
 }
-

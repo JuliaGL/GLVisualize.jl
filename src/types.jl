@@ -242,11 +242,16 @@ immutable GLVisualizeShader <: AbstractLazyShader
                 "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
             ))
         end
-
+        locations = [
+            (0, "opaque_color"),
+            (1, "sum_color"),
+            (2, "sum_weight"),
+            (3, "fragment_groupid"),
+        ]
         paths = map(shader -> loadasset("shader", shader), paths)
         new(paths, vcat(kw_args, [
-        	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
-    		(:updatewhile, ROOT_SCREEN.inputs[:window_open]),
+        	(:fragdatalocation, locations),
+    		(:updatewhile, current_screen().inputs[:window_open]),
     		(:update_interval, 1.0),
             (:view, view)
         ]))

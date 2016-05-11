@@ -45,7 +45,7 @@ out uvec2 fragment_groupid;
 void write2framebuffer(vec4 color, uvec2 id){
     fragment_color   = color;
     fragment_groupid = id;
-    if (color.a > 0.5){
+    if (color.a > 0.99){
         gl_FragDepth = gl_FragCoord.z;
     }else{
         gl_FragDepth = 1.0;

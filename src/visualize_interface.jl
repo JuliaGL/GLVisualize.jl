@@ -4,6 +4,7 @@ function default(main, s, data)
         model      	     = eye(Mat4f0)
         light      	     = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
         preferred_camera = :perspective
+        is_transparent_pass = Cint(false)
     end
 end
 
@@ -19,23 +20,21 @@ visualize(main, s::Style, data::Dict) = assemble_shader(default(main, s, data)):
 visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
-function Base.push!{Pre}(screen::Screen, robj::RenderObject{Pre})
-    # find renderlist specialized to current prerender function
-    index = findfirst(screen.renderlist) do renderlist
-        prerendertype(eltype(renderlist)) == Pre
-    end
-    if index == 0
-        # add new specialised renderlist, if none found
-        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
-        index = length(screen.renderlist)
-    end
+function Base.push!(screen::Screen, robj::RenderObject)
     # only add to renderlist if not already in there
-    in(robj, screen.renderlist[index]) || push!(screen.renderlist[index], robj)
+    if !(in(robj, screen.renderlist))
+        push!(screen.renderlist, robj)
+        if Bool(get(robj.uniforms, :is_fully_opaque, true))
+            push!(screen.opaque, length(screen.renderlist))
+        else
+            push!(screen.transparent, length(screen.renderlist))
+        end
+    end
     nothing
 end
 
-function view{Pre}(
-		robj::RenderObject{Pre}, screen=ROOT_SCREEN;
+function view(
+		robj::RenderObject, screen=current_screen();
 		camera = robj.uniforms[:preferred_camera],
 		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
@@ -66,7 +65,7 @@ function view{Pre}(
 	nothing
 end
 
-view(robjs::Vector, screen=ROOT_SCREEN; kw_args...) = for robj in robjs
+view(robjs::Vector, screen=current_screen(); kw_args...) = for robj in robjs
 	view(robj, screen; kw_args...)
 end
-view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c), screen; kw_args...)
+view(c::Composable, screen=current_screen(); kw_args...) = view(extract_renderable(c), screen; kw_args...)
