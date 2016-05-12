@@ -23,6 +23,9 @@ void write2framebuffer(vec4 color, uvec2 id){
         sum_color = vec4(color.rgb * color.a, color.a) * weight;
         sum_weight = vec4(color.a);
     }else{
+        if(color.a < 0.99){
+            discard;
+        }
         opaque_color = color;
         fragment_groupid = id;
     }
