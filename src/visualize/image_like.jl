@@ -11,7 +11,7 @@ _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults!
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...)
     boundingbox           = GLBoundingBox(primitive)
     preferred_camera      = :orthographic_pixel
-    shader                = GLVisualizeShader("uv_vert.vert", "texture.frag")
+    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
 end
 
 """
@@ -25,7 +25,7 @@ _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_default
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(grid_start..., grid_size...)
     color_norm	          = const_lift(extrema2f0, main)
     boundingbox 	      = GLBoundingBox(primitive)
-    shader                = GLVisualizeShader("uv_vert.vert", "intensity.frag")
+    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "intensity.frag")
     preferred_camera      = :orthographic_pixel
 end
 
@@ -111,7 +111,7 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
-    shader                = GLVisualizeShader("parametric.vert", "parametric.frag", view=Dict(
+    shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", view=Dict(
          "function" => Compat.String(func.source)
      ))
 end
@@ -157,6 +157,6 @@ _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_de
     color_norm       = const_lift(extrema2f0, main)
     algorithm        = MaximumIntensityProjection
     boundingbox      = hull
-    shader           = GLVisualizeShader("util.vert", "volume.vert", "volume.frag")
+    shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
     prerender        = VolumePrerender()
 end

@@ -28,7 +28,7 @@ function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, dat
 end
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        position    = main[1] =>" Position given as a `Grid{2}`. 
+        position    = main[1] =>" Position given as a `Grid{2}`.
         Can be constructed e.g. `Grid(linspace(0,2,N1), linspace(0,3, N2))`"
         position_z  = main[2] => (Texture, "height offset for the surface, must be `Matrix{Float}`")
         boundingbox = surfboundingbox(position, position_z)
@@ -51,7 +51,7 @@ function surface(main, s::Style{:surface}, data::Dict)
     end
     @gen_defaults! data begin
         color      = nothing => "must be single color value, must be nothing for color_map"
-        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => (Texture, 
+        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => (Texture,
         "must be `Vector{Color}`, `color` must be nothing")
         color_norm = (color==nothing ? const_lift(_extrema, boundingbox) : nothing) => begin
             "normalizes the heightvalues before looking up color in `color_map`."
@@ -59,7 +59,7 @@ function surface(main, s::Style{:surface}, data::Dict)
         instances  = const_lift(length, main) => "number of planes used to render the surface"
 
         shader     = GLVisualizeShader(
-            "util.vert", "surface.vert", "standard.frag",
+            "fragment_output.frag", "util.vert", "surface.vert", "standard.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
         )
     end

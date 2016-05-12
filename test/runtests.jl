@@ -17,11 +17,9 @@ has_opengl = true
 
 function view_boundingboxes(w, camera)
     bbs = []
-    for renderlist in w.renderlist
-        for robj in renderlist
-            bb = boundingbox(robj)
-            push!(bbs, visualize(value(bb), :lines, model=robj[:model]))
-        end
+    for robj in w.renderlist
+        bb = boundingbox(robj)
+        push!(bbs, visualize(value(bb), :lines, model=robj[:model]))
     end
     for elem in bbs
         view(elem, w, camera=camera)

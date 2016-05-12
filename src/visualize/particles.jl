@@ -262,7 +262,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     prerender    = (
         (glPointSize,   point_size),
     )
-    shader       = GLVisualizeShader("dots.vert", "dots.frag")
+    shader       = GLVisualizeShader("fragment_output.frag", "dots.vert", "dots.frag")
     gl_primitive = GL_POINTS
 end
 
@@ -367,8 +367,9 @@ function sprites(p, s, data)
         indices             = const_lift(length, p[2]) => to_indices
         boundingbox         = const_lift(GLBoundingBox, inst)
         preferred_camera    = :orthographic_pixel
+        is_fully_opaque     = false
         shader              = GLVisualizeShader(
-            "util.vert", "sprites.geom",
+            "fragment_output.frag", "util.vert", "sprites.geom",
             "sprites.vert", "distance_shape.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
         )

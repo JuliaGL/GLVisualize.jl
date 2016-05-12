@@ -1,6 +1,5 @@
 {{GLSL_VERSION}}
-{{GLSL_EXTENSIONS}}
-{{SUPPORTED_EXTENSIONS}}
+
 
 in vec3 frag_vertposition;
 
@@ -177,21 +176,9 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
 
 uniform uint objectid;
 
-#ifdef DEPTH_LAYOUT
-    layout (depth_greater) out float gl_FragDepth;
-#endif
-out vec4  fragment_color;
-out uvec2 fragment_groupid;
 
-void write2framebuffer(vec4 color, uvec2 id){
-    fragment_color   = color;
-    fragment_groupid = id;
-    if (color.a > 0.5){
-        gl_FragDepth = gl_FragCoord.z;
-    }else{
-        gl_FragDepth = 1.0;
-    }
-}
+
+void write2framebuffer(vec4 color, uvec2 id);
 
 void main()
 {
@@ -204,6 +191,5 @@ void main()
         color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
 
     write2framebuffer(color, uvec2(objectid, 0));
-
 
 }

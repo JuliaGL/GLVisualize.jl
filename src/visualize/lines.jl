@@ -20,11 +20,12 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         thickness           = 2f0
         shape               = RECTANGLE
         transparent_picking = false
+        is_fully_opaque     = false
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, p_vec)
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
         indices             = const_lift(length, p_vec) => to_indices
-        shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
+        shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
     if dotted
@@ -48,11 +49,12 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         color               = default(RGBA, s, 1) => GLBuffer
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
+        is_fully_opaque     = false
         transparent_picking = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
-        shader              = GLVisualizeShader("util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
+        shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
         gl_primitive        = GL_LINES
     end
 end
@@ -106,7 +108,7 @@ function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
         grid_color = RGBA{Float32}(0.8,0.8,0.8,1)
         grid_thickness = Vec3f0(0.999)
         gridsteps = Vec3f0(5)
-        shader = GLVisualizeShader("grid.vert", "grid.frag")
+        shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
         boundingbox = c
         prerender = GridPreRender()
     end

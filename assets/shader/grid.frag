@@ -18,11 +18,14 @@ float aastep(float threshold1,float value) {
 vec3 aastep(vec3 threshold, vec3 value) {
 	return vec3(aastep(threshold.x, value.x), aastep(threshold.y, value.y), aastep(threshold.z, value.z));
 }
+
+void write2framebuffer(vec4 color, uvec2 id);
+
 void main()
 {
  	vec3  v  		= (vec3(vposition.xyz) * gridsteps * M_PI) - 1.5;
     vec3  f  		= abs(sin(v));
     vec3  g  		= aastep(grid_thickness, f);
     float c  		= max(g.x, max(g.y, g.z));
-    fragment_color 	= mix(bg_color, grid_color, c);
+    write2framebuffer(mix(bg_color, grid_color, c), uvec2(0));
 }

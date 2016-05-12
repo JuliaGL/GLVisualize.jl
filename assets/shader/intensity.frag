@@ -1,7 +1,6 @@
 {{GLSL_VERSION}}
 
 in vec2 o_uv;
-out vec4 fragment_color;
 
 {{intensity_type}} intensity;
 uniform sampler1D color;
@@ -20,6 +19,10 @@ float aastep(float threshold1, float threshold2, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value)-smoothstep(threshold2-afwidth, threshold2+afwidth, value);
 }
+
+void write2framebuffer(vec4 color, uvec2 id);
+
+
 void main(){
 	float i = float(getindex(intensity, o_uv).x);
 	vec4 stroke_color = vec4(1,1,1,1);
@@ -27,5 +30,8 @@ void main(){
 	lines = abs(sin(lines));
 	lines = aastep(0.4, 0.7, lines);
 
-	fragment_color  = mix(color_lookup(i, color, color_norm), stroke_color, lines);
+    write2framebuffer(
+        mix(color_lookup(i, color, color_norm), stroke_color, lines),
+        uvec2(0)
+    );
 }

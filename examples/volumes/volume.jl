@@ -19,5 +19,3 @@ view(vol, window)
 if !isdefined(:runtests)
 	@async renderloop(window)
 end
-
-push!(timesignal, 0.5f0)

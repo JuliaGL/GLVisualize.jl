@@ -14,7 +14,12 @@ vec4 getindex(sampler1D image, vec2 uv){
 	return texture(image, uv.y);
 }
 
+
+void write2framebuffer(vec4 color, uvec2 id);
+
 void main(){
-	fragment_color   = getindex(image, o_uv);
-    fragment_groupid = o_objectid;
+    write2framebuffer(
+        getindex(image, o_uv),
+        o_objectid
+    );
 }
