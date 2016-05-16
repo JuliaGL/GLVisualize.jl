@@ -1,7 +1,7 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
 
 if !isdefined(:runtests)
-	window = glscreen()
+    window = glscreen()
 end
 const static_example = true
 
@@ -16,5 +16,5 @@ msh = GLNormalMesh(loadasset("cat.obj"))
 view(visualize(msh), window)
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end

@@ -9,8 +9,8 @@ using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
 #using GLVisualize.ComposeBackend
 
-const number_of_frames = 1
-const interactive_time = 0.1
+const number_of_frames = 360
+const interactive_time = 6.0
 const screencast_folder = joinpath(homedir(), "glvisualize_screencast")#Pkg.dir("GLVisualizeDocs", "docs", "media")
 !isdir(screencast_folder) && mkdir(screencast_folder)
 
@@ -137,7 +137,7 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(255, 255))
+window = glscreen(resolution=(600, 600))
 #composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true

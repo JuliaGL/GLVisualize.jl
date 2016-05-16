@@ -17,5 +17,5 @@ view(vol, window)
 
 
 if !isdefined(:runtests)
-	@async renderloop(window)
+	renderloop(window)
 end
