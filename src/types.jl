@@ -52,18 +52,18 @@ GLAbstraction.isa_gl_struct(x::Grid) = true
 GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"
 function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N,T}, uniform_name::Symbol)
     return Dict{Symbol, Any}(
-        symbol("$uniform_name.minimum") => Vec{N,Float32}(map(first, g.dims)),
-        symbol("$uniform_name.maximum") => Vec{N,Float32}(map(last, g.dims)),
-        symbol("$uniform_name.dims")    => Vec{N,Cint}(map(length, g.dims)),
-        symbol("$uniform_name.multiplicator") => Vec{N,Float32}(map(x->1/x.divisor, g.dims)),
+        Symbol("$uniform_name.minimum") => Vec{N,Float32}(map(first, g.dims)),
+        Symbol("$uniform_name.maximum") => Vec{N,Float32}(map(last, g.dims)),
+        Symbol("$uniform_name.dims")    => Vec{N,Cint}(map(length, g.dims)),
+        Symbol("$uniform_name.multiplicator") => Vec{N,Float32}(map(x->1/x.divisor, g.dims)),
     )
 end
 function GLAbstraction.gl_convert_struct{T}(g::Grid{1,T}, uniform_name::Symbol)
     return Dict{Symbol, Any}(
-        symbol("$uniform_name.minimum") => Float32(first(g.dims[1])),
-        symbol("$uniform_name.maximum") => Float32(last(g.dims[1])),
-        symbol("$uniform_name.dims")    => Cint(length(g.dims[1])),
-        symbol("$uniform_name.multiplicator") => Float32(1/g.dims[1].divisor),
+        Symbol("$uniform_name.minimum") => Float32(first(g.dims[1])),
+        Symbol("$uniform_name.maximum") => Float32(last(g.dims[1])),
+        Symbol("$uniform_name.dims")    => Cint(length(g.dims[1])),
+        Symbol("$uniform_name.multiplicator") => Float32(1/g.dims[1].divisor),
 
 
     )
@@ -230,7 +230,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
     function GLVisualizeShader(paths...; kw_args...)
         view = filter(kv->kv[1]==:view, kw_args)
         if isempty(view)
-            view = Dict{ASCIIString, ASCIIString}()
+            view = Dict{Compat.UTF8String, Compat.UTF8String}()
         else
             view = view[1][2]
         end
@@ -238,7 +238,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
         # TODO properly check what extensions are available
         @osx? begin
         end : begin
-            view = merge(view, Dict{ASCIIString, ASCIIString}(
+            view = merge(view, Dict{Compat.UTF8String, Compat.UTF8String}(
                 "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
                 "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
             ))

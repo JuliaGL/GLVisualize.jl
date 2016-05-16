@@ -1,6 +1,6 @@
 module FreeTypeAbstraction
 
-using FreeType, GeometryTypes
+using FreeType, GeometryTypes, Compat
 
 export newface
 export renderface
@@ -16,7 +16,7 @@ immutable FontExtent{T}
     scale               ::Vec{2, T}
 end
 immutable FontFace
-    name::UTF8String
+    name::Compat.UTF8String
 end
 
 import Base: ./, .*

@@ -1,6 +1,7 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
+__precompile__(true)
 module GLVisualize
 
+using Compat
 using GLFW
 using GLWindow
 using GLAbstraction

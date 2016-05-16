@@ -55,7 +55,7 @@ function view{Pre}(
 	else
          error("Method $camera not a known camera type")
 	end
-    screen.cameras[symbol(string(camera))] = real_camera
+    screen.cameras[Symbol(string(camera))] = real_camera
 	merge!(robj.uniforms, collect(real_camera), Dict( # add display dependant values
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
