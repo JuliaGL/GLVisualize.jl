@@ -67,14 +67,14 @@ function gpu_diff_set!(gpu_object, index, value, direction_restriction, clampto)
 	end
 	nothing
 end
-immutable ClampFunctor{T} <: Base.Func{3}
+immutable ClampFunctor{T}
     a::T
     b::T
 end
 Base.call(c::ClampFunctor, elem) = clamp(elem, c.a, c.b)
 Base.clamp(x::FixedVector, a, b) = map(ClampFunctor(a,b) , x)
 
-clampU8(x::RGBA) = RGBA{U8}(ntuple(i->clamp(x.(i), 0.,1.), Val{4})...)
+clampU8(x::RGBA) = RGBA{U8}(ntuple(i->clamp(getfield(x, i), 0.,1.), Val{4})...)
 channel_color(channel, value) = RGBA{Float32}(ntuple(i->i==channel ? value : 0.0f0, Val{3})..., 1f0)
 
 function edit_color(tex, buff, index_value, channel, maxval)
@@ -94,7 +94,7 @@ function vizzedit(colors::Vector{RGBA{U8}}, window)
     dir_restrict = Vec2f0(0,1)
     c = Context()
     for i=1:4
-        c_channel = points2f0(Float32[p.(i)*scale_factor for p in colors], range)
+        c_channel = points2f0(Float32[getfield(p, i)*scale_factor for p in colors], range)
         c_i, diff = edit_line(c_channel, dir_restrict, (0, scale_factor), window, color=channel_color(i, 0.8f0))
         #preserve(const_lift(edit_color, color_tex, colors, diff, i, Float32(scale_factor)))
         push!(c, c_i)
