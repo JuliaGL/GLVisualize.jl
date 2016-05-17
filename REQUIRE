@@ -10,7 +10,7 @@ ColorTypes
 Colors
 Reactive
 Quaternions
-Compat
+Compat 0.7.15
 FixedPointNumbers
 FileIO
 Packing
