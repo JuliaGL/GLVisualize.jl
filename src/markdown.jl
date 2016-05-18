@@ -1,85 +1,10 @@
-# This file is a part of Julia. License is MIT: http://julialang.org/license
-
-type Text
-    text
-    positions
-    colors
-    scales
-end
-length(rt::Text) = length(rt.text)
-function sizehint!(t:Text, size::Int)
-    for elem in (:text, :position, :colors, :scales, :fonts)
-        sizehint!(t.(elem), size)
-    end
-    nothing
-end
-type RichText
-    text::Text
-    inlined_objects::Vector
-    links::Vector
-    cursor
-end
-function sizehint!(t:RichText, size::Int)
-    sizehint!(t.text, size)
-    nothing
-end
-length(rt::RichtText) = length(rt.text)
-make_iter(x) = repeat(x)
-make_iter(x::AbstractArray) = x
-
-function get_iter(defaultfunc, dictlike, key)
-    make_iter(get(defaultfunc, dictlike, key))
-end
-
-"""
-Inserts text at [`position`] with `style` 
-"""
-function insert!(text::RichText, text2::AbstractString, position=text.cursor, style=EMPTY_STYLE)
-    positions = get_iter(()->positions(text, text2), style, positions)
-    colors    = get_iter(()->font_color(text),       style, colors)
-    fonts     = get_iter(()->font(text),             style, colors)
-    sizes     = get_iter(()->font_size(text),        style, colors)
-
-    sizehint!(text, length(text)+length(text2))
-    for elem in zip(text2, positions, colors, fonts, sizes)
-        push!(text.text, elem)
-    end
-end
-
-"""
-Inserts code with highlighting
-"""
-function insert!(text::RichText, code::Code, 
-        position=text.cursor, 
-        color_scheme=color_scheme(text, code)
-    )
-
-end
-
-"""
-Inlines any `object` in `area` at `position`.
-"""
-function insert!(text::RichText, object, position=text.cursor, area=nothing)
-
-end
-const RichtTextValues = FixedKeyDict{Tuple{
-    Val{:text}, Val{:positions}, Val{:colors}, Val{:scales}
-}}
-
-
-function push!(text::RichText, values::RichtTextValues)
-    for props in zip(text2, positions, colors, fonts, sizes)
-        push!(text, props)
-    end
-    nothing
-end
 
 type ColorScheme{Object}
     x::Dict
 end
 
 """
-Tree structure, to allow for hierarchical coloring. 
+Tree structure, to allow for hierarchical coloring.
 Each key holds either a key to a Color, or a new key into the Dict.
 Keys are symbols, so values must not be symbols, as they will then be used for lookup.
 """
