@@ -28,6 +28,7 @@ view(visualize(s,
 
 @async renderloop(window)
 
+
 rt = RichText(
     TextDefault,
     text,

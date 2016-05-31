@@ -1,5 +1,6 @@
 
 iter_or_array(x) = repeated(x)
+iter_or_array(x::Base.Repeated) = x
 iter_or_array(x::Array) = x
 iter_or_array(x::Vector{Ptr{FreeType.FT_FaceRec}}) = repeated(x)
 
@@ -11,7 +12,6 @@ function calc_position(last_pos, start_pos, atlas, glyph, font, scale)
         return last_pos + Point2f0(advance_x, 0)
     end
 end
-
 function calc_position(glyphs, start_pos, scales, fonts, atlas)
     positions = fill(Point2f0(0.0), length(glyphs))
     last_pos  = Point2f0(start_pos)
@@ -19,7 +19,7 @@ function calc_position(glyphs, start_pos, scales, fonts, atlas)
     for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
         glyph == '\r' && continue # stupid windows!
         positions[i] = last_pos
-        last_pos     = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
+        last_pos = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
     end
     positions
 end

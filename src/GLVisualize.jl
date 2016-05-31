@@ -1,7 +1,6 @@
 __precompile__(true)
 module GLVisualize
 
-using Compat
 using GLFW
 using GLWindow
 using GLAbstraction
@@ -12,7 +11,6 @@ using ColorTypes
 using Colors
 using Reactive
 using Quaternions
-using Compat
 using FixedPointNumbers
 using FileIO
 using Packing

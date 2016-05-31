@@ -230,15 +230,15 @@ immutable GLVisualizeShader <: AbstractLazyShader
     function GLVisualizeShader(paths...; kw_args...)
         view = filter(kv->kv[1]==:view, kw_args)
         if isempty(view)
-            view = Dict{Compat.UTF8String, Compat.UTF8String}()
+            view = Dict{String, String}()
         else
             view = view[1][2]
         end
 
         # TODO properly check what extensions are available
-        @osx? begin
+        @static is_apple() ? begin
         end : begin
-            view = merge(view, Dict{Compat.UTF8String, Compat.UTF8String}(
+            view = merge(view, Dict{String, String}(
                 "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
                 "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
             ))
