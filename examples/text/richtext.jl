@@ -4,14 +4,6 @@ using FixedSizeDictionaries
 
 window = glscreen()
 
-# GLAbstraction.const_lift is defined as
-# const_lift(F, args...) = Reactive.map(F, map(Signal, args)...)
-# and allows to also use constant arguments without manually wrapping
-# them into signals
-
-# Reactive.map takes a signal and transforms it by applying F into a new signal
-# it's similar to Base.map, just over the time dimension (like registering a
-# callback in a more traditional event system)
 s = """wooot"""
 dict = Dict()
 color = map(collect(s)) do char
@@ -29,15 +21,9 @@ view(visualize(s,
 @async renderloop(window)
 
 
-rt = RichText(
-    TextDefault,
-    text,
-    [],
-    [],
-    1:0
+rt = GLVisualize.RichText(
+    GLVisualize.Text(renderlist(window)[1])
 )
-rt.defaults = TextDefault
-resize!(rt, length(string(rand())))
 
 gap = 200
 for i=1:10

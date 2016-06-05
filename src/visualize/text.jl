@@ -29,7 +29,6 @@ function Base.resize!(t::Text, size::Int)
     for elem in (:positions, :colors, :scales, :uv_offset_width, :offsets, :rotations)
         field = getfield(t, elem)
         if isa(field, AbstractArray)
-            println(typeof(field))
             resize!(field, size)
         end
     end

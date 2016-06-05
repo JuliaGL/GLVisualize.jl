@@ -118,7 +118,7 @@ insert!(richtext, x, 0:1, Dict(
     :scale => Vec2f0(0.05),
     :rotation => Vec3f0(pi,0,4*pi)
 ))
-richtext.text.scales[1:end] = fill(Vec2f0(0), length(richtext))
+
 # #
 # #
 # # immutable Glyph{N,T,C<:Colorant}
