@@ -75,6 +75,7 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
     primitive, rotation_s = main
     rotation_v = value(rotation_s)
     @gen_defaults! data begin
+        color_norm = const_lift(extrema2f0, rotation_s)
         ranges = ntuple(i->linspace(0f0, 1f0, size(rotation_v, i)), N)
     end
     grid = Grid(rotation_v, ranges)
@@ -84,7 +85,7 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
     elseif N == 2
         scalevec = Vec2f0(step(grid.dims[1]), step(grid.dims[2]))
     else
-        scalevec = Vec3f0(ntuple(i->step(grid.dims[i]), 3))
+        scalevec = Vec3f0(ntuple(i->step(grid.dims[i]), 3)).*Vec3f0(0.4,0.4, 1/value(color_norm)[2]*4)
     end
     if P <: Char # we need to preserve proportion of the glyph
         glyphscale = primitive_scale(primitive)
@@ -95,7 +96,6 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
         end
     end
     @gen_defaults! data begin
-        color_norm = const_lift(extrema2f0, rotation_s)
         rotation   = const_lift(vec, rotation_s)
         color_map  = default(Vector{RGBA})
         scale      = scalevec
