@@ -59,6 +59,7 @@ export x_partition
 export loop, bounce
 export clicked, dragged_on, is_hovering
 export OR, AND, isnotempty
+export color_lookup
 
 include("renderloop.jl")
 

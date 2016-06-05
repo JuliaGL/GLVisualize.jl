@@ -124,3 +124,44 @@ function extrema2f0{T<:Vec,N}(x::Array{T,N})
     _norm = map(norm, x)
     Vec2f0(minimum(_norm), maximum(_norm))
 end
+
+"""
+Converts index arrays to the OpenGL equivalent.
+"""
+to_indices(x::TOrSignal{Int}) = x
+to_indices(x::VecOrSignal{UnitRange{Int}}) = x
+"""
+For integers, we transform it to 0 based indices
+"""
+to_indices{I<:Integer}(x::Vector{I}) = indexbuffer(map(i-> Cuint(i-1), x))
+function to_indices{I<:Integer}(x::Signal{Vector{I}})
+    x = map(x-> Cuint[i-1 for i=x], x)
+    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
+    preserve(const_lift(update!, gpu_mem, x))
+    gpu_mem
+end
+"""
+If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
+"""
+to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
+function to_indices{I<:GLuint}(x::Signal{Vector{I}})
+    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
+    preserve(const_lift(update!, gpu_mem, x))
+end
+to_indices(x) = error(
+    "Not a valid index type: $x.
+    Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
+)
+
+
+function mix_linearly{C<:Colorant}(a::C, b::C, s)
+    RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), 1.)
+end
+color_lookup(cmap, value, mi, ma) = color_lookup(cmap, value, (mi, ma))
+function color_lookup(cmap, value, color_norm)
+    mi,ma = color_norm
+    scaled = clamp((value-mi)/(ma-mi), 0, 1)
+    index = scaled * (length(cmap)-1)
+    i_a, i_b = floor(Int, index)+1, ceil(Int, index)+1
+    mix_linearly(cmap[i_a], cmap[i_b], scaled)
+end

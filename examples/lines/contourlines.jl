@@ -16,7 +16,6 @@ z = Float32[sin(1.3*x)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x) for x in xran
 mini = minimum(z)
 maxi = maximum(z)
 color_ramp = map(x->RGBA{Float32}(x, 1.0), colormap("Blues"))
-height2color(val, mini, maxi) = color_ramp[floor(Int, (((val-mini)/(maxi-mini))*(length(color_ramp)-1)))+1]
 
 for h in mini:0.2f0:maxi
     c = contour(xrange, yrange, z, h)
@@ -26,7 +25,7 @@ for h in mini:0.2f0:maxi
         end
         line_renderable = visualize(
             points, :lines,
-            color=height2color(h, mini, maxi),
+            color=color_lookup(color_ramp, h, mini, maxi),
             model=rotation
         )
         view(line_renderable, window, camera=:perspective)
