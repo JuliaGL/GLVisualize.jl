@@ -360,7 +360,7 @@ function textedit_signals(inputs, background, text)
 
     preserve(const_lift(update_positions, text_sig, Signal(text), Signal(background[:style_index])))
     preserve(foldp(visualize_selection, 0:0, selection,    Signal(background[:style_index])))
-    const_lift(utf8, text_sig), selection
+    const_lift(Compat.String, text_sig), selection
 end
 # # i must be a valid character index
 # function next_newline(text, i::Integer)
@@ -463,7 +463,7 @@ end
 # 		clipboard_data = clipboard()
 # 	catch e # clipboard throws error when there is no data (WTF)
 # 	end
-# 	return utf8(clipboard_data)
+# 	return Compat.String(clipboard_data)
 # end
 #
 # export clipboardpaste
@@ -473,9 +473,9 @@ end
 # 	isnewline(x[1]) && return '\n'
 # 	ID_TO_CHAR[x[1]]
 # end
-# function Base.utf8(v::GPUVector{GLSprite})
+# function Base.Compat.String(v::GPUVector{GLSprite})
 # 	data = gpu_data(v)
-# 	utf8(join(map(back2julia, data)))
+# 	Compat.String(join(map(back2julia, data)))
 # end
 # # const_lift will have a boolean value at first argument position
 # copyclipboard(_, text_selection) = copyclipboard(text_selection)

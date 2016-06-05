@@ -112,7 +112,7 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
     shader                = GLVisualizeShader("parametric.vert", "parametric.frag", view=Dict(
-         "function" => bytestring(func.source)
+         "function" => Compat.String(func.source)
      ))
 end
 
