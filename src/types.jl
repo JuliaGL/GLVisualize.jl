@@ -5,7 +5,7 @@
 immutable Grid{N, T <: Range}
     dims::NTuple{N, T}
 end
-ndims{N,T}(::Grid{N,T}) = N
+Base.ndims{N,T}(::Grid{N,T}) = N
 
 Grid(ranges::Range...) = Grid(ranges)
 function Grid{N, T}(a::Array{T, N})
