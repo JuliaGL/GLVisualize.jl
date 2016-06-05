@@ -33,7 +33,7 @@ function get_timer_signal(updates_per_second, window=ROOT_SCREEN)
     end.value
     # since the renderloop nowadays only updates when something in GLFW happens,
     # we need to register signals that produce events with GLFW.
-    preserve(map(x-> GLFW.PostEmptyEvent(), signal))
+    #preserve(map(x-> GLFW.PostEmptyEvent(), signal))
     signal
 end
 
