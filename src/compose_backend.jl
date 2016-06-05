@@ -452,13 +452,13 @@ function pango_parse_markup(text)
         Int32,
         (Ptr{UInt8}, Int32, UInt32, Ptr{Ptr{Void}},
         Ptr{Ptr{UInt8}}, Ptr{UInt32}, Ptr{Void}),
-        bytestring(text), -1, 0, c_attr_list, c_stripped_text,
+        Compat.String(text), -1, 0, c_attr_list, c_stripped_text,
         C_NULL, C_NULL
     )
     if ret == 0
         error("Could not parse pango markup.")
     end
-    str = bytestring(c_stripped_text[1])
+    str = Compat.String(c_stripped_text[1])
 
     # TODO: do c_stripped_text and c_attr_list need to be freed?
 
@@ -483,7 +483,7 @@ function parse_pango(text::AbstractString, scale)
     offset          = Point2f0[]
     uv_offset_width = Vec4f0[]
     for (idx, attr) in Compose.unpack_pango_attr_list(c_attr_list)
-        current_text = bytestring(text[last_idx:idx])
+        current_text = Compat.String(text[last_idx:idx])
         last_idx = idx+1
 
         pos, sa, oa, uvwidth = gen_text(current_text,
@@ -509,7 +509,7 @@ function parse_pango(text::AbstractString, scale)
     end
     last_scale = Vec2f0(1)
     if last_idx <= length(text)
-        current_text = bytestring(text[last_idx:end])
+        current_text = Compat.String(text[last_idx:end])
         pos, sa, oa, uvwidth = gen_text(current_text,
             atlas, font, last_position, last_scale.*scale, last_offset
         )
