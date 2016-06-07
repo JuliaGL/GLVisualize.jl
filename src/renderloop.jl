@@ -3,11 +3,25 @@ export glscreen
 
 
 let screen_list = Screen[]
-    global current_screen, add_screen
+    global current_screen, add_screen, get_screens, empty_screens!
     current_screen() = last(screen_list)
     add_screen(screen) = push!(screen_list, screen)
+    get_screens() = copy(screen_list)
+    empty_screens!() = empty!(screen_list)
 end
 
+
+function cleanup_old_screens()
+    for screen in get_screens()
+        destroy!(screen)
+    end
+    empty!(timer_signal_dict)
+    empty_screens!()
+    GLFW.Terminate()
+    GLFW.Init()
+    reset_texture_atlas!()
+    GLAbstraction.empty_shader_cache!()
+end
 
 function glscreen(name="GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
@@ -15,18 +29,14 @@ function glscreen(name="GLVisualize";
         background = RGBA(1,1,1,1)
     )
 
+    cleanup_old_screens()
+
     screen = Screen(name, resolution=resolution, debugging=debugging, color=background)
     add_screen(screen)
 
     GLWindow.add_complex_signals!(screen) #add the drag events and such
     add_oit_fxaa_postprocessing!(screen) # add postprocessing
 
-    preserve(map(screen.inputs[:window_open]) do open
-        if !open
-            reset_texture_atlas!()
-        end
-        nothing
-    end)
     screen
 end
 
@@ -41,9 +51,6 @@ function get_timer_signal(updates_per_second, window=current_screen())
         # because this is a function, it'll only get executed if needed
         WeakRef(fpswhen(window.inputs[:window_open], updates_per_second))
     end.value
-    # since the renderloop nowadays only updates when something in GLFW happens,
-    # we need to register signals that produce events with GLFW.
-    #preserve(map(x-> GLFW.PostEmptyEvent(), signal))
     signal
 end
 

@@ -392,6 +392,7 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
         stroke_width   = 0f0
         glow_width     = 0f0
         font           = DEFAULT_FONT_FACE
+        
         position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
         offset          = const_lift(calc_offset, main, relative_scale, font, atlas)
         uv_offset_width = const_lift(main) do str
