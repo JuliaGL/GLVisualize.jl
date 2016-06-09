@@ -17,10 +17,9 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         vertex              = p_vec  => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
         stroke_color        = default(RGBA, s, 2) => GLBuffer
-        thickness           = 2f0
+        thickness           = 1f0
         shape               = RECTANGLE
         transparent_picking = false
-        is_fully_opaque     = false
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, p_vec)
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
@@ -49,7 +48,6 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         color               = default(RGBA, s, 1) => GLBuffer
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
-        is_fully_opaque     = false
         transparent_picking = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
@@ -94,13 +92,10 @@ end
 immutable GridPreRender end
 
 function call(::GridPreRender)
-    glEnable(GL_DEPTH_TEST)
-    glDepthMask(GL_FALSE)
-    glDepthFunc(GL_LEQUAL)
     glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
-    enabletransparency()
 end
+
 function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
     @gen_defaults! data begin
         primitive::GLPlainMesh = c
@@ -108,8 +103,13 @@ function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
         grid_color = RGBA{Float32}(0.8,0.8,0.8,1)
         grid_thickness = Vec3f0(0.999)
         gridsteps = Vec3f0(5)
+        is_fully_opaque     = false
         shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
         boundingbox = c
         prerender = GridPreRender()
+        postrender = () -> (
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK)
+        )
     end
 end

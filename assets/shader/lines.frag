@@ -50,10 +50,10 @@ void main(){
             signed_distance = rounded_rectangle(uv, vec2(0.2), vec2(0.8));
         else if(shape == RECTANGLE)
             signed_distance = rectangle(uv);
-        float inside     = aastep(0.0, 120.0, signed_distance);
-        color   = vec4(f_color.rgb, f_color.a*inside);
+        float inside     = aastep(0.0, signed_distance);
+        color = vec4(f_color.rgb, f_color.a*inside);
     }else{
-        color   = vec4(f_color.rgb, f_color.a*aastep(0.2, 0.8, f_uv.y));
+        color = vec4(f_color.rgb, f_color.a*aastep(0.15, 0.95, f_uv.y));
     }
     write2framebuffer(color, f_id);
 }

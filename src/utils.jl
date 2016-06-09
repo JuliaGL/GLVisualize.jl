@@ -54,7 +54,9 @@ function assemble_shader(data)
         robj = std_renderobject(data, shader, bb, glp, pre=pre)
     end
     if haskey(data, :postrender)
-        robj.postrenderfunction = data[:postrender]
+        tmp = robj.postrenderfunction # needs to be always executed
+        pr = data[:postrender] # for cleaning up!
+        robj.postrenderfunction = () -> (tmp(); pr())
     end
     Context(robj)
 end

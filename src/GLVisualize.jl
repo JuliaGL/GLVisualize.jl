@@ -18,6 +18,7 @@ using SignedDistanceFields
 using FreeType
 import Images
 using Base.Markdown
+using Compat
 
 typealias GLBoundingBox AABB{Float32}
 
@@ -30,7 +31,7 @@ function assetpath(folders...)
     isfile(path) || isdir(path) || error("Could not locate file at $path")
     path
 end
-loadasset(folders...) = load(assetpath(folders...))
+loadasset(folders...; kw_args...) = load(assetpath(folders...); kw_args...)
 export assetpath, loadasset
 
 include("FreeTypeAbstraction.jl")

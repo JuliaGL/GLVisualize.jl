@@ -6,7 +6,6 @@ layout(location=1) out vec4 sum_color;
 layout(location=2) out vec4 sum_weight;
 layout(location=3) out uvec2 fragment_groupid;
 
-uniform float uDepthScale;
 uniform bool is_transparent_pass;
 
 

@@ -2,17 +2,8 @@ using GeometryTypes
 using GLVisualize, Colors, GLWindow
 w = glscreen()
 @async renderloop(w)
-N = 1000
-view(visualize(
-    randstring(N),
-    scale=fill(Vec2f0(0.1), N),
-    color=fill(RGBA{Float32}(0,0,0,1), N),
-    rotation=fill(Vec3f0(0,0,1), N),
-    position=fill(Point3f0(0), N),
-), camera=:perspective)
 
 
-richtext = GLVisualize.RichText(GLVisualize.Text(renderlist(w)[1]))
 """
 Returns a tuple of points and indices which can be rendered as line segments.
 You can pass an optional `step` plus `stepscale`, to scale the linesegment at
@@ -39,11 +30,13 @@ function tick_axis!{N,T}(
     )
     ab = Vec{N,T}(b-a)
     len = norm(ab)
+
     dir = (ab/len)*step
     # generate grid point edges like:
     # :    :    :    : (.) <- optional ending point
     step_count_high = ceil(Int, len / step)+1
     step_count_low = floor(Int, len / step)+1
+
     endpoint = step_count_high-step_count_low #0 or 1
     if step_count_high*2 > length(points) # resize if necessary
         resize!(points, step_count_low*2+endpoint)
@@ -77,47 +70,72 @@ function tick_axis!{N,T}(
     points, indices
 end
 
-function annoteded_axis(range, axis, tick_dir, richtext, origin)
-    s = step(range)
-    step_long=5; step_long_scale=1.2
-    b = origin+normalize(axis)*last(range)
-    points, indices = tick_axis(Point3f0(origin), Point3f0(b), tick_dir, s, step_long, step_long_scale)
-    for ri in 1:step_long:length(range)
-        p = points[(ri-1)*2+1]
-        x = string(range[ri])
+function annoteded_axis(a, b, tick_dir, richtext, dim)
+    s = 0.1
+    step_long=5; step_long_scale=2f0
+    points, indices = tick_axis(a, b, tick_dir, s, step_long, step_long_scale)
+    i = 2
+    while i <= length(points)
+        p = points[i]
+        ppadd = p + tick_dir*step_long_scale*1.5f0
+        x = string(p[dim])
+        pos = GLVisualize.calc_position(
+            x, Point2f0(0), Vec2f0(0.01),
+            richtext.defaults[:font], richtext.text.atlas
+        )
+        pos3d = map(x-> ppadd+Point3f0(x, 0), pos)
         insert!(richtext, x, richtext.cursor, Dict(
-            :position => Point3f0[p+Point3f0(0,i*0.1,0) for i=0:(length(x)-1)],
+            :position => pos3d,
+            :scale => Vec2f0(0.003),
+            :color => RGBA{Float32}(0,0,0,1)
         ))
         richtext.cursor += length(x)
+        i += 2*step_long
     end
     view(visualize(points, :linesegment, indices=indices), camera=:perspective)
 end
 function grid_axis(cube, richtext)
     o = origin(cube)
     w = widths(cube)
-    m = o+(w*0.5f0)
-    xdir = w .* unit(Point3f0, 1)
-    zdir = xdir+w .* unit(Point3f0, 2)
-    x = o+xdir
-    z = o+zdir
-    origins = [x, z, x]
-    for i=1:3
-        range = linspace(o[i], w[i], 20)
-        o2 = origins[i]
-        tick_dir = normalize(o2-m) * -0.05f0
-        annoteded_axis(range, unit(Point3f0, i), tick_dir, richtext, o2)
+    c_axis = ntuple(i->unit(Point3f0, i), 3)
+    axis = ntuple(i->w[i].*c_axis[i], 3)
+    xpoint = o + axis[1]
+    ypoint = o + axis[2]
+    xypoint = o + axis[1] + axis[2]
+    origins = Point3f0[xpoint, xpoint, xypoint]
+    targets = Point3f0[xpoint+axis[3], xypoint, o+axis[2]]
+    tickdirs = map([c_axis[1], c_axis[1], c_axis[2]]) do x
+        Vec3f0(0.03*x)
     end
+    for i=1:3
+        annoteded_axis(origins[i], targets[i], tickdirs[i], richtext, i)
+    end
+    view(visualize(cube, :grid))
 end
-grid_axis(AABB{Float32}(Vec3f0(0), Vec3f0(1)), richtext)
+bb = AABB{Float32}(Vec3f0(-0.4, 0.5, -0.7), Vec3f0(2, 3, 4))
+N = 1000
+view(visualize(
+    randstring(N),
+    scale=fill(Vec2f0(0.1), N),
+    color=fill(RGBA{Float32}(0,0,0,0), N),
+    rotation=fill(Vec3f0(0,0,1), N),
+    position=fill(Point3f0(0), N),
+), camera=:perspective)
 
-richtext.cursor
-x = "hey duude"
 
-insert!(richtext, x, 0:1, Dict(
-    :position => Point3f0[Point3f0(0,i*0.8,0) for i=0:(length(x)-1)],
-    :scale => Vec2f0(0.05),
-    :rotation => Vec3f0(pi,0,4*pi)
-))
+richtext = GLVisualize.RichText(GLVisualize.Text(renderlist(w)[1]))
+
+grid_axis(bb, richtext)
+view(visualize(GLNormalMesh(Sphere(Point3f0(0.5,2,2), 0.2f0))))
+
+
+# richtext.cursor
+#
+# insert!(richtext, x, 0:1, Dict(
+#     :position => Point3f0[Point3f0(0,i*0.8,0) for i=0:(length(x)-1)],
+#     :scale => Vec2f0(0.05),
+#     :rotation => Vec3f0(pi,0,4*pi)
+# ))
 
 # #
 # #

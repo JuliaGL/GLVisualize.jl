@@ -32,7 +32,7 @@ void emit_vertex(vec2 position, vec2 uv, int index)
     f_id          = g_id[index];
     EmitVertex();
 }
-#define AA_THICKNESS 2.0
+#define AA_THICKNESS 0.0
 
 uniform int max_primtives;
 
@@ -42,8 +42,8 @@ void main(void)
     vec2 p0 = screen_space(gl_in[0].gl_Position); // start of previous segment
     vec2 p1 = screen_space(gl_in[1].gl_Position); // end of previous segment, start of current segment
 
-    float thickness_aa0 = (g_thickness[0]+AA_THICKNESS);
-    float thickness_aa1 = (g_thickness[1]+AA_THICKNESS);
+    float thickness_aa0 = g_thickness[0];
+    float thickness_aa1 = g_thickness[1];
     // determine the direction of each of the 3 segments (previous, current, next)
     vec2 v0 = normalize(p1 - p0);
     float segment_lengths = length(v0);
