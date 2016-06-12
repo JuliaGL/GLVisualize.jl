@@ -20,6 +20,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         thickness           = 1f0
         shape               = RECTANGLE
         transparent_picking = false
+        is_fully_opaque     = false
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, p_vec)
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
