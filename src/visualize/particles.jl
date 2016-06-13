@@ -366,6 +366,7 @@ function sprites(p, s, data)
         distancefield       = primitive_distancefield(p[1]) => Texture
         indices             = const_lift(length, p[2]) => to_indices
         boundingbox         = const_lift(GLBoundingBox, inst)
+        is_fully_opaque     = false
         preferred_camera    = :orthographic_pixel
         shader              = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "sprites.geom",
