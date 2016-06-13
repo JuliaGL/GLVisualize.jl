@@ -20,14 +20,19 @@ visualize(main, s::Style, data::Dict) = assemble_shader(default(main, s, data)):
 visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
-function Base.push!(screen::Screen, robj::RenderObject)
+function Base.push!(screen::Screen, robj::RenderObject, camera::Symbol)
     # only add to renderlist if not already in there
     if !(in(robj, screen.renderlist))
         push!(screen.renderlist, robj)
+        len = length(screen.renderlist)
+        camlist = Int[]
+        camlist = get!(screen.camera2robj, camera, camlist)
+        push!(camlist, len)
+
         if Bool(get(robj.uniforms, :is_fully_opaque, true))
-            push!(screen.opaque, length(screen.renderlist))
+            push!(screen.opaque, len)
         else
-            push!(screen.transparent, length(screen.renderlist))
+            push!(screen.transparent, len)
         end
     end
     nothing
@@ -51,17 +56,18 @@ function view(
         inside = screen.inputs[:mouseinside]
         real_camera = OrthographicPixelCamera(screen.inputs, keep=inside)
 	elseif camera == :nothing
-        push!(screen, robj)
+        push!(screen, robj, :nothing)
 		return nothing
 	else
          error("Method $camera not a known camera type")
 	end
-    screen.cameras[Symbol(string(camera))] = real_camera
+    camsym = Symbol(string(camera))
+    screen.cameras[camsym] = real_camera
 	merge!(robj.uniforms, collect(real_camera), Dict( # add display dependant values
 		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
 		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
-    push!(screen, robj)
+    push!(screen, robj, camsym)
 	nothing
 end
 
