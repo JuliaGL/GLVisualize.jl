@@ -103,11 +103,11 @@ end
 Base.call(c::ClampFunctor, elem) = clamp(elem, c.a, c.b)
 Base.clamp(x::FixedVector, a, b) = map(ClampFunctor(a,b) , x)
 
-clampU8(x::RGBA) = RGBA{U8}(ntuple(i->clamp(getfield(x, i), 0.,1.), Val{4})...)
+clampU8{T}(x::RGBA{T}) = RGBA{T}(ntuple(i->clamp(getfield(x, i), 0.,1.), Val{4})...)
 channel_color(channel, value) = RGBA{Float32}(ntuple(i->i==channel ? value : 0.0f0, Val{3})..., 1f0)
-function c_setindex(color, val, channel)
+function c_setindex{T}(color::RGBA{T}, val, channel)
     v = clamp(val, 0, 1)
-    RGBA{U8}(
+    RGBA{T}(
         1==channel ? v : comp1(color),
         2==channel ? v : comp2(color),
         3==channel ? v : comp3(color),
