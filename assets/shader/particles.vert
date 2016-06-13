@@ -67,6 +67,7 @@ vec3 get_rotation(vec3 rotation, int index){
 vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
 vec3 _scale(vec3          scale, float   scale_x, samplerBuffer scale_y, float         scale_z, int index);
 vec3 _scale(vec3          scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
+vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
 
 vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, Nothing scale_z, int index){
     vec3 rot = get_rotation(rotation, index);
