@@ -48,6 +48,9 @@ end
 
 vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
 
+function range_default{T<:FixedVector}(::Type{T})
+    range_default(eltype(T))
+end
 function range_default{T<:AbstractFloat}(::Type{T})
     T(-10):T(0.01):T(10)
 end
@@ -61,7 +64,23 @@ end
 function calc_val{T<:Integer}(sval::T, val, range)
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
-function vizzedit{T <: Union{FixedVector, Real}}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
+function vizzedit{T <: FixedVector}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
+    last_x = 0f0
+    le_sigs = []
+    le_tuple = ntuple(length(value(slider_value))) do i
+        number_s = map(getindex, slider_value, Signal(i))
+        num_s, vizz = vizzedit(number_s, window, numberwidth=numberwidth, range=range)
+        push!(le_sigs, num_s)
+        bb = value(boundingbox(vizz))
+        w = widths(bb)
+        o = layout!(SimpleRectangle{Float32}(last_x, 0, w[1], w[2]), vizz)
+        last_x += w[1]
+        o
+    end
+
+    map(T, le_sigs...), Context(le_tuple...)
+end
+function vizzedit{T <: Real}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)

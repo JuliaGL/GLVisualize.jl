@@ -11,62 +11,92 @@ function point_edit(past, mousediff_index, point_gpu)
     end
     mousediff_index
 end
+function edit_line(
+        line, direction_restriction::Vec2f0, clampto, window;
+        color=default(RGBA{Float32}),
+    )
+    mouse_hover = mouse2id(window)
+    line_robj = visualize(line, :lines, color=color, thickness=1f0).children[]
+    point_gpu = line_robj[:vertex]
+    points = visualize(
+        (Circle, point_gpu),
+        offset=Point2f0(-0.5),
+        scale=Vec2f0(10), color=RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
+    )
+    point_robj = points.children[]
+    gpu_position = point_robj[:position]
+    gpu_color = point_robj[:color]
+    gpu_scale = point_robj[:scale]
+
+    m2id = mouse2id(window)
+    ids = (point_robj.id, line_robj.id)
+    isoverpoint = droprepeats(const_lift(is_same_id, m2id, ids))
+
+    @materialize mouse_buttons_pressed, mouseposition = window.inputs
+    key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
+    mousedragg = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
+    T = Point2f0
+    sig = foldp((value(m2id)..., Point2f0(0), Point2f0(0)), mousedragg) do v0, dragg
+        np = v0[4]
+        if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)
+            id, index = value(m2id)
+            if id==point_robj.id && length(gpu_position) >= index
+                p0 = gpu_position[index]
+            else
+                p0 = v0[3]
+            end
+            np = p0
+        else
+            id, index, p0, _ = v0
+            np = p0
+            if id==point_robj.id && length(gpu_position) >= index
+                np = p0 + T(dragg).*T(direction_restriction)
+                np = T(np[1], clamp(np[2], clampto...))
+                gpu_position[index] = np
+            end
+        end
+        return id, index, p0, np
+    end
+
+    Context(point_robj, line_robj), map(x->(x[2], x[4]), sig)
+end
+
+
 function vizzedit{T}(points::Vector{Point{2,T}}, window; color=default(RGBA))
-	line 	= visualize(points, :lines, thickness=10f0)
+    line = visualize(points, :lines, thickness=2f0)
     line_robj = line.children[]
-	point_gpu = line_robj[:vertex]
-	points 	= visualize((Circle(Point2f0(0), 10f0), point_gpu), glow_width=2f0)
+    point_gpu = line_robj[:vertex]
+    points = visualize((Circle(Point2f0(0), 8f0), point_gpu), glow_width=2f0)
     points_robj = points.children[]
     preserve(const_lift(point_attribs, window.inputs[:mouse_hover], points_robj, line_robj))
     mousediff_index = dragged_on(points_robj, MOUSE_LEFT, window)
-	preserve(foldp(point_edit, mousediff_index.value, mousediff_index, Signal(point_gpu)))
-	Context(line, points)
+    preserve(foldp(point_edit, mousediff_index.value, mousediff_index, Signal(point_gpu)))
+    Context(line, points)
 end
 
 function mouse_drag_diff(past, drag_index)
-	index_past, _, drag_past = past
-	drag, index = drag_index
-	index, drag-drag_past, drag
+    index_past, _, drag_past = past
+    drag, index = drag_index
+    index, drag-drag_past, drag
 end
 
-function edit_line(
-        line, direction_restriction::Vec2f0, clampto, window;
-        color=default(RGBA{Float32})
-    )
-    mouse_hover = mouse2id(window)
-	line_robj = visualize(line, :lines, color=color, thickness=10f0).children[]
-	point_gpu = line_robj[:vertex]
-	points 	  = visualize(
-        (Circle(Point2f0(0), 10f0), point_gpu),
-        stroke_width=1f0, glow_width=1f0,
-        color = RGBA{Float32}(1.0, 1.0, 1.0, 1.0),
-        stroke_color = default(RGBA)
-    )
-    point_robj = points.children[]
-	point_robj[:glow_color] = const_lift(is_hovering(point_robj, window)) do h
-		h ? RGBA{Float32}(0.9,.1,0.2,0.9) : RGBA{Float32}(0.,0.,0.,0.)
-	end
-	mousedrag_index = dragged_on(point_robj, MOUSE_LEFT, window)
-    drag0, index0   = mousedrag_index.value
-	diff_signal = foldp(mouse_drag_diff, (index0, Vec2f0(0), drag0), mousedrag_index)
-	diff_signal = droprepeats(const_lift(getindex, diff_signal, 1:2)) #throw away drag, tmp
-	preserve(const_lift(gpu_diff_set!, point_gpu, diff_signal, direction_restriction, clampto))
-    point_robj[:visible] = preserve(map(mouse_hover) do mh
-         mh[1] == point_robj.id || mh[1] == line_robj.id
-    end)
-	Context(line_robj, points), diff_signal
+function dragg_gpu(v0, dragg)
+    if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)
+        id, index = value(m2id)
+        if id==point_robj.id && length(gpu_position) >= index
+            p0 = gpu_position[index]
+        else
+            p0 = v0[3]
+        end
+    else
+        id, index, p0 = v0
+        if id==point_robj.id && length(gpu_position) >= index
+            gpu_position[index] = Point2f0(p0) + Point2f0(dragg)
+        end
+    end
+    return id, index, p0
 end
 
-gpu_diff_set!(gpu_object, index_value, direction_restriction, clampto) = gpu_diff_set!(gpu_object, index_value..., direction_restriction, clampto)
-function gpu_diff_set!(gpu_object, index, value, direction_restriction, clampto)
-	if checkbounds(Bool, size(gpu_object), index)
-        T = eltype(gpu_object)
-        a = T(value.*direction_restriction)
-        np = gpu_object[index] + a
-		gpu_object[index] = T(np[1], clamp(np[2], clampto...))
-	end
-	nothing
-end
 immutable ClampFunctor{T}
     a::T
     b::T
@@ -76,28 +106,44 @@ Base.clamp(x::FixedVector, a, b) = map(ClampFunctor(a,b) , x)
 
 clampU8(x::RGBA) = RGBA{U8}(ntuple(i->clamp(getfield(x, i), 0.,1.), Val{4})...)
 channel_color(channel, value) = RGBA{Float32}(ntuple(i->i==channel ? value : 0.0f0, Val{3})..., 1f0)
-
+function c_setindex(color, val, channel)
+    v = clamp(val, 0, 1)
+    RGBA{U8}(
+        1==channel ? v : comp1(color),
+        2==channel ? v : comp2(color),
+        3==channel ? v : comp3(color),
+        4==channel ? v : alpha(color)
+    )
+end
 function edit_color(tex, buff, index_value, channel, maxval)
     index, value = index_value
     if checkbounds(Bool, size(tex), index)
-        color = RGBA{Float32}(buff[index]) - channel_color(channel, value[2]/maxval) # we need buff, since getindex is very slow for textures
-        buff[index] = clampU8(color)
-        tex[index]  = buff[index]
+        color = c_setindex(buff[index], value[2]/maxval, channel) # we need buff, since getindex is very slow for textures
+        buff[index] = color
+        tex[index] = color
     end
     nothing
 end
 
-function vizzedit(colors::Vector{RGBA{U8}}, window)
-	scale_factor = 300
-    color_tex    = Texture(colors)
-	range        = linspace(1, scale_factor, length(colors))
+function vizzedit(colors::Vector{RGBA{U8}}, window;
+        area = (200, 100),
+        slider_colors = (
+            RGBA{Float32}(0.41796875,0.78125,0.1796875),
+            RGBA{Float32}(0.78125,0.1796875,0.41796875),
+            RGBA{Float32}(0.1796875,0.41796875,0.78125),
+            RGBA{Float32}(0.9,0.9,0.9)
+        )
+    )
+    N = length(colors)
+    color_tex = Texture(colors)
+    scale = Point2f0(area)
     dir_restrict = Vec2f0(0,1)
-    c = Context()
-    for i=1:4
-        c_channel = points2f0(Float32[getfield(p, i)*scale_factor for p in colors], range)
-        c_i, diff = edit_line(c_channel, dir_restrict, (0, scale_factor), window, color=channel_color(i, 0.8f0))
-        #preserve(const_lift(edit_color, color_tex, colors, diff, i, Float32(scale_factor)))
-        push!(c, c_i)
+    vis = ntuple(Val{4}) do i
+        c_channel = Point2f0[Point2f0(x, getfield(c, i)) .* scale for (c,x) in zip(colors, linspace(0,1,N))]
+        c_i, diff = edit_line(c_channel, dir_restrict, (0, scale[2]), window, color=slider_colors[i])
+        preserve(const_lift(edit_color, color_tex, colors, diff, i, scale[2]))
+        c_i
     end
-    c, color_tex
+    tex = visualize(color_tex, is_fully_opaque=false, primitive=SimpleRectangle{Float32}(0, area[2]+6, area[1], 10))
+    Context(tex, vis...), color_tex
 end
