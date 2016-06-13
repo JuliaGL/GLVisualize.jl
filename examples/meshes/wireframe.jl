@@ -14,7 +14,7 @@ const static_example = true
 msh = GLNormalMesh(loadasset("cat.obj"))
 
 view(visualize(msh), window, camera=:perspective)
-view(visualize(msh, :lines, thickness=0.3f0), window, camera=:perspective)
+view(visualize(msh, :lines, thickness=1f0), window, camera=:perspective)
 
 if !isdefined(:runtests)
 	renderloop(window)
