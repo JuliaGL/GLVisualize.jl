@@ -21,6 +21,9 @@ end
 function isopaque{T<:Color}(color::AbstractArray{T})
     true
 end
+function isopaque(color::GPUArray)
+    isopaque(gpu_data(color))
+end
 function isopaque(color::AbstractArray)
     all(isopaque, color)
 end
@@ -46,7 +49,9 @@ function assemble_shader(data)
     end
     glp = get(data, :gl_primitive, GL_TRIANGLES)
     pre = get(data, :prerender, GLAbstraction.EmptyPrerender())
-    get!(data, :is_fully_opaque, isopaque(get_color(data)))
+    get!(data, :is_fully_opaque) do
+        isopaque(get_color(data))
+    end
 
     if haskey(data, :instances)
         robj = instanced_renderobject(data, shader, bb, glp, data[:instances], pre=pre)
@@ -105,7 +110,7 @@ function clicked(robj::RenderObject, button::MouseButton, window::Screen)
     leftclicked, clicked_on_obj
 end
 
-is_same_id(id, robj) = id.id == robj.id
+
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
