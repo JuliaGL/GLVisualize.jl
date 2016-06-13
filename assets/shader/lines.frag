@@ -53,7 +53,7 @@ void main(){
         float inside     = aastep(0.0, signed_distance);
         color = vec4(f_color.rgb, f_color.a*inside);
     }else{
-        float aa = 0.001;
+        float aa = 0.01;
         color = vec4(f_color.rgb, f_color.a*aastep(0+aa, 1-aa, f_uv.y));
     }
     write2framebuffer(color, f_id);

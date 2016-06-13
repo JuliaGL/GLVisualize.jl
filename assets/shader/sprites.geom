@@ -66,14 +66,15 @@ vec4 _position(vec2 position, sampler2D heightfield, int index){
 
 void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
 {
-    vec4 final_position;
+    vec4 final_position = model*vec4(g_position[0], 1);
+
     if(billboard){
-        final_position = projectionview*model*vec4(g_position[0], 1);
+        final_position = projectionview*final_position;
         gl_Position    = final_position + (projection*vec4(vertex, 0, 0));
     }else{
         mat3 rot       = rotation_mat(g_rotation[0]);
-        final_position = vec4(g_position[0]+(rot*vec3(vertex, 0)), 1);
-        gl_Position    = projectionview*model*final_position;
+        final_position = final_position+vec4(rot*vec3(vertex, 0), 0);
+        gl_Position    = projectionview*final_position;
     }
 
     f_uv              = uv;
@@ -99,19 +100,17 @@ void main(void)
     //    |___\|
     // v1*      * v2
     vec4 o_w = g_offset_width[0];
-    vec4 vertices = vec4(0, 0, 1, 1); // use a 0 origin quad (x,y,w,h)
     vec4 uv_o_w = g_uv_offset_width[0];
+    vec4 vertices = vec4(-0.5,-0.5,0.5,0.5); // use offset as origin quad (x,y,w,h)
     float glow_stroke = glow_width+stroke_width;
-    vec2 uv_frame = -glow_stroke/o_w.zw;
-    vec2 uv_max = 1-uv_frame;
-    vertices.xy *= o_w.zw+glow_stroke; // scale
-    vertices.zw *= o_w.zw+glow_stroke;
-    vertices.xy += o_w.xy; // offset
-    vertices.zw += o_w.xy;
+    vec4 uv_min_max = vec4(0,0,1,1); //minx, miny, maxx, maxy
 
-    emit_vertex(vertices.xy, vec2(uv_frame.x,uv_max.y), uv_o_w.xw);
-    emit_vertex(vertices.xw, uv_frame, uv_o_w.xy);
-    emit_vertex(vertices.zy, uv_max, uv_o_w.zw);
-    emit_vertex(vertices.zw, vec2(uv_max.x, uv_frame.y), uv_o_w.zy);
+    vertices.xy *= o_w.zw + glow_stroke; // scale
+    vertices.zw *= o_w.zw + glow_stroke;
+
+    emit_vertex(vertices.xy, uv_min_max.xw, uv_o_w.xw);
+    emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);
+    emit_vertex(vertices.zy, uv_min_max.zw, uv_o_w.zw);
+    emit_vertex(vertices.zw, uv_min_max.zy, uv_o_w.zy);
     EndPrimitive();
 }
