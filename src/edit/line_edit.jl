@@ -19,9 +19,8 @@ function edit_line(
     line_robj = visualize(line, :lines, color=color, thickness=1f0).children[]
     point_gpu = line_robj[:vertex]
     points = visualize(
-        (Circle, point_gpu),
-        offset=Point2f0(-0.5),
-        scale=Vec2f0(10), color=RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
+        (Circle(Point2f0(0), 5f0), point_gpu),
+        color=RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
     )
     point_robj = points.children[]
     gpu_position = point_robj[:position]
@@ -58,7 +57,7 @@ function edit_line(
         return id, index, p0, np
     end
 
-    Context(point_robj, line_robj), map(x->(x[2], x[4]), sig)
+    Context(line_robj, point_robj), map(x->(x[2], x[4]), sig)
 end
 
 
@@ -125,7 +124,7 @@ function edit_color(tex, buff, index_value, channel, maxval)
     nothing
 end
 
-function vizzedit(colors::Vector{RGBA{U8}}, window;
+function vizzedit{T<:Colorant}(colormap::VecTypes{T}, window;
         area = (200, 100),
         slider_colors = (
             RGBA{Float32}(0.41796875,0.78125,0.1796875),
@@ -134,8 +133,9 @@ function vizzedit(colors::Vector{RGBA{U8}}, window;
             RGBA{Float32}(0.9,0.9,0.9)
         )
     )
+    colors = to_cpu_mem(value(colormap))
     N = length(colors)
-    color_tex = Texture(colors)
+    color_tex = GLAbstraction.gl_convert(Texture, colormap)
     scale = Point2f0(area)
     dir_restrict = Vec2f0(0,1)
     vis = ntuple(Val{4}) do i
@@ -145,5 +145,5 @@ function vizzedit(colors::Vector{RGBA{U8}}, window;
         c_i
     end
     tex = visualize(color_tex, is_fully_opaque=false, primitive=SimpleRectangle{Float32}(0, area[2]+6, area[1], 10))
-    Context(tex, vis...), color_tex
+    color_tex, Context(tex, vis...)
 end

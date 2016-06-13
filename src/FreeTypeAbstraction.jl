@@ -61,8 +61,8 @@ end
 
 
 function newface(facename, faceindex::Real=0, ftlib=FREE_FONT_LIBRARY)
-	face 	= (FT_Face)[C_NULL]
-    err 	= FT_New_Face(ftlib[1], facename, Int32(faceindex), face)
+    face     = (FT_Face)[C_NULL]
+    err     = FT_New_Face(ftlib[1], facename, Int32(faceindex), face)
     if err != 0
         error("FreeType could not load font $facename with error $err")
         return face[1]
@@ -73,7 +73,7 @@ end
 setpixelsize(face, x, y) = setpixelsize(face, (x, y))
 
 function setpixelsize(face, size)
-	err = FT_Set_Pixel_Sizes(face[1], UInt32(size[1]), UInt32(size[2]))
+    err = FT_Set_Pixel_Sizes(face[1], UInt32(size[1]), UInt32(size[2]))
     if err != 0
         error("Couldn't set the pixel size for font with error $err")
     end

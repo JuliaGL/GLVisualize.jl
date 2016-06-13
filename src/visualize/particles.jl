@@ -350,25 +350,25 @@ function sprites(p, s, data)
         rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
-        intensity           = nothing => GLBuffer
-        color_map           = nothing => Texture
-        color_norm          = nothing
-        color               = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
+        intensity        = nothing => GLBuffer
+        color_map        = nothing => Texture
+        color_norm       = nothing
+        color            = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
 
-        glow_color          = RGBA{Float32}(0,0,0,0) => GLBuffer
-        stroke_color        = RGBA{Float32}(0,0,0,0) => GLBuffer
+        glow_color       = RGBA{Float32}(0,0,0,0) => GLBuffer
+        stroke_color     = RGBA{Float32}(0,0,0,0) => GLBuffer
 
-        stroke_width        = 0f0
-        glow_width          = 0f0
-        uv_offset_width     = primitive_uv_offset_width(p[1]) => GLBuffer
+        stroke_width     = 0f0
+        glow_width       = 0f0
+        uv_offset_width  = primitive_uv_offset_width(p[1]) => GLBuffer
 
-        image               = nothing => Texture
-        distancefield       = primitive_distancefield(p[1]) => Texture
-        indices             = const_lift(length, p[2]) => to_indices
-        boundingbox         = const_lift(GLBoundingBox, inst)
-        is_fully_opaque     = false
-        preferred_camera    = :orthographic_pixel
-        shader              = GLVisualizeShader(
+        image            = nothing => Texture
+        distancefield    = primitive_distancefield(p[1]) => Texture
+        indices          = const_lift(length, p[2]) => to_indices
+        boundingbox      = const_lift(GLBoundingBox, inst)
+        is_fully_opaque  = false
+        preferred_camera = :orthographic_pixel
+        shader           = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "sprites.geom",
             "sprites.vert", "distance_shape.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))

@@ -101,12 +101,14 @@ void main(void)
     // v1*      * v2
     vec4 o_w = g_offset_width[0];
     vec4 uv_o_w = g_uv_offset_width[0];
-    vec4 vertices = vec4(-0.5,-0.5,0.5,0.5); // use offset as origin quad (x,y,w,h)
+    vec4 vertices = vec4(0, 0, 1, 1); // use offset as origin quad (x,y,w,h)
     float glow_stroke = glow_width+stroke_width;
     vec4 uv_min_max = vec4(0,0,1,1); //minx, miny, maxx, maxy
 
-    vertices.xy *= o_w.zw + glow_stroke; // scale
-    vertices.zw *= o_w.zw + glow_stroke;
+    vertices.xy *= o_w.zw+glow_stroke; // scale
+    vertices.zw *= o_w.zw+glow_stroke;
+    vertices.xy += o_w.xy; // offset
+    vertices.zw += o_w.xy;
 
     emit_vertex(vertices.xy, uv_min_max.xw, uv_o_w.xw);
     emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);

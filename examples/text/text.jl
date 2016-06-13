@@ -1,8 +1,8 @@
 using GLVisualize, GeometryTypes, Colors, GLAbstraction
 
 if !isdefined(:runtests)
-	window = glscreen()
-	timesignal = bounce(linspace(0,1,20))
+    window = glscreen()
+    timesignal = bounce(linspace(0,1,20))
 end
 
 # GLAbstraction.const_lift is defined as
@@ -33,13 +33,8 @@ I can't even...
 # view and visualize it!
 view(visualize(s,
     model=translationmatrix(Vec3f0(0,600,0)), # move this up, since the text starts at 0 and goes down from there
-    color=fill(RGBA{Float32}(0,1,0,0.8), length((s))),
-    relative_scale=Vec2f0(1),
-    rotation = Vec3f0(0,0, 1),
-    stroke_width = 1f0,
-    stroke_color=RGBA{Float32}(0,1,0,0.8),
 ), window)
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end

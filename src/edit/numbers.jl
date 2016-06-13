@@ -73,9 +73,13 @@ function vizzedit{T <: FixedVector}(slider_value::Signal{T}, window; numberwidth
         push!(le_sigs, num_s)
         bb = value(boundingbox(vizz))
         w = widths(bb)
-        o = layout!(SimpleRectangle{Float32}(last_x, 0, w[1], w[2]), vizz)
-        last_x += w[1]
-        o
+        min = minimum(bb)
+        trans = Signal(translationmatrix(Vec3f0(last_x, 0, 0)-min))
+        for elem in vizz.children
+            elem[:model] = trans
+        end
+        last_x += w[1] + 10
+        vizz
     end
 
     map(T, le_sigs...), Context(le_tuple...)
@@ -85,10 +89,20 @@ function vizzedit{T <: Real}(slider_value::Signal{T}, window; numberwidth=5, ran
     startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)
     vizz              = visualize(slider_value_str)
+    bb                = value(boundingbox(vizz))
+    mini, maxi        = minimum(bb)-2f0, widths(bb)+6f0
+    bb_rect           = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
+    bb_vizz           = visualize(
+        bb_rect,
+        color=RGBA{Float32}(0.9, 0.9, 0.91),
+        is_fully_opaque = true
+    ).children[]
+
     slider_robj       = vizz.children[]
     # current tuple of renderobject id and index into the gpu array
     m2id = GLWindow.mouse2id(window)
-    hovers_slider = const_lift(is_same_id, m2id, slider_robj)
+    ids = (bb_vizz.id, slider_robj.id)
+    hovers_slider = const_lift(is_same_id, m2id, ids)
     # inputs are a dict, materialize gets the keys out of it (equivalent to mouseposition = w.inputs[:mouseposition])
     # single left mousekey pressed (while no other mouse key is pressed)
     key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
@@ -101,5 +115,5 @@ function vizzedit{T <: Real}(slider_value::Signal{T}, window; numberwidth=5, ran
         push!(slider_value, calc_val(v0, dragg[1], range))
         v0
     end)
-    return slider_value, vizz
+    return slider_value, Context(slider_robj, bb_vizz)
 end

@@ -110,7 +110,6 @@ end
 
 
 function getposition(text, text2, fonts, scales, start_pos)
-
     GLVisualize.calc_position(text2, start_pos, scales, fonts, text.text.atlas)
 end
 function getoffsets(text, text2, fonts, scales)

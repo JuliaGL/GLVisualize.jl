@@ -38,13 +38,3 @@ function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
         shader          = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
     end
 end
-
-function _default(mesh::Union{GLNormalMesh, GLPlainMesh}, ::style"lines", data::Dict)
-    vertices = const_lift(mesh) do g
-         decompose(Point3f0, g) # get the point representation of the geometry
-    end
-    # Get line index representation
-    indices = reinterpret(GLuint, decompose(Face{2, GLuint, -1}, value(mesh)))
-    data[:indices] = indices
-    _default(vertices, style"linesegment"(), data)
-end

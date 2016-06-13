@@ -27,7 +27,7 @@ function Base.push!(screen::Screen, robj::RenderObject, camera::Symbol)
         len = length(screen.renderlist)
         camlist = Int[]
         camlist = get!(screen.camera2robj, camera, camlist)
-        push!(camlist, len)
+        push!(camlist, robj.id)
 
         if Bool(get(robj.uniforms, :is_fully_opaque, true))
             push!(screen.opaque, len)
