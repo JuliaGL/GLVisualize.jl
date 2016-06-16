@@ -1,12 +1,16 @@
 _clamp(x) = Point2f0(clamp(x[1], 0, 1), clamp(x[2], 0, 1))
-function vizzedit{T<:RGBA}(color::Signal{T}, window)
+function vizzedit{T<:RGBA}(
+        color::Signal{T}, window;
+        kw_args...
+    )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     color_button = visualize(
-        (ROUNDED_RECTANGLE, zeros(Point2f0, 1)),
+        (ROUNDED_RECTANGLE, zeros(Point2f0, 1));
         scale=Vec2f0(30),
         color=color,
         stroke_width=1f0,
         stroke_color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0),
+        kw_args...
     )
     color_robj = color_button.children[]
     m2id = GLWindow.mouse2id(window)

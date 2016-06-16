@@ -149,7 +149,7 @@ end
 
 immutable VolumePrerender
 end
-function call(::VolumePrerender)
+@compat function (::VolumePrerender)()
     GLAbstraction.StandardPrerender()()
     glEnable(GL_CULL_FACE)
     glCullFace(GL_FRONT)
@@ -167,5 +167,8 @@ _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_de
     algorithm        = MaximumIntensityProjection
     boundingbox      = hull
     shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
-    prerender        = VolumePrerender()
+    # prerender        = VolumePrerender()
+    # postrender       = () -> begin
+    #     glDisable(GL_CULL_FACE)
+    # end
 end

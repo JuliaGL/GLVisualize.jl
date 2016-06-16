@@ -80,7 +80,7 @@ function annoteded_axis(a, b, tick_dir, richtext, dim)
         ppadd = p + tick_dir*step_long_scale*1.5f0
         x = string(p[dim])
         pos = GLVisualize.calc_position(
-            x, Point2f0(0), Vec2f0(0.01),
+            x, Point2f0(0), Vec2f0(0.003),
             richtext.defaults[:font], richtext.text.atlas
         )
         pos3d = map(x-> ppadd+Point3f0(x, 0), pos)
@@ -120,6 +120,7 @@ view(visualize(
     color=fill(RGBA{Float32}(0,0,0,0), N),
     rotation=fill(Vec3f0(0,0,1), N),
     position=fill(Point3f0(0), N),
+    billboard=true
 ), camera=:perspective)
 
 

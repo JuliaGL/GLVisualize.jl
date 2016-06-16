@@ -18,7 +18,7 @@ slider_s, slider = vizzedit(Signal(1f0), range=1f0:0.1f0:20f0, window)
 # performant conversion to RGBAU8, implemted with a functor
 # in 0.5 anonymous functions offer the same speed, so this wouldn't be needed
 immutable ClampRGBAU8 end
-call(::ClampRGBAU8, x) = RGBA{U8}(clamp(comp1(x), 0,1), clamp(comp2(x), 0,1), clamp(comp3(x), 0,1), clamp(alpha(x), 0,1))
+@compat (::ClampRGBAU8)(x) = RGBA{U8}(clamp(comp1(x), 0,1), clamp(comp2(x), 0,1), clamp(comp3(x), 0,1), clamp(alpha(x), 0,1))
 
 """
 Applies a gaussian filter to `img` and converts it to RGBA{U8}

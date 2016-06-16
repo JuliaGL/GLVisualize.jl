@@ -92,7 +92,7 @@ end
 
 immutable GridPreRender end
 
-function call(::GridPreRender)
+function (::GridPreRender)()
     glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
 end

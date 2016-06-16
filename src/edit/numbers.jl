@@ -46,7 +46,9 @@ function slide(startvalue, slide_pos, range::Range)
     clamp(val, range)
 end
 
-vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
+function vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
+    vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
+end
 
 function range_default{T<:FixedVector}(::Type{T})
     range_default(eltype(T))
@@ -64,12 +66,19 @@ end
 function calc_val{T<:Integer}(sval::T, val, range)
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
-function vizzedit{T <: FixedVector}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
+function vizzedit{T <: FixedVector}(
+        slider_value::Signal{T}, window; 
+        numberwidth=5, range=range_default(T),
+        kw_args...
+    )
     last_x = 0f0
     le_sigs = []
     le_tuple = ntuple(length(value(slider_value))) do i
         number_s = map(getindex, slider_value, Signal(i))
-        num_s, vizz = vizzedit(number_s, window, numberwidth=numberwidth, range=range)
+        num_s, vizz = vizzedit(number_s, window; 
+            numberwidth=numberwidth, range=range,
+            kw_args...
+        )
         push!(le_sigs, num_s)
         bb = value(boundingbox(vizz))
         w = widths(bb)
@@ -78,24 +87,32 @@ function vizzedit{T <: FixedVector}(slider_value::Signal{T}, window; numberwidth
         for elem in vizz.children
             elem[:model] = trans
         end
-        last_x += w[1] + 10
+        last_x += w[1] + 5
         vizz
     end
 
     map(T, le_sigs...), Context(le_tuple...)
 end
-function vizzedit{T <: Real}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
+function vizzedit{T <: Real}(
+        slider_value::Signal{T}, window; 
+        numberwidth=5, range=range_default(T), kw_args...
+    )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)
-    vizz              = visualize(slider_value_str)
+    vizz              = visualize(
+        slider_value_str; 
+        color = RGBA{Float32}(0.6, 0.6, 0.6),
+        kw_args...
+    )
     bb                = value(boundingbox(vizz))
-    mini, maxi        = minimum(bb)-2f0, widths(bb)+6f0
+    mini, maxi        = minimum(bb)-4f0, widths(bb)+8f0
     bb_rect           = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
     bb_vizz           = visualize(
-        bb_rect,
-        color=RGBA{Float32}(0.9, 0.9, 0.91),
-        is_fully_opaque = true
+        bb_rect;
+        color=RGBA{Float32}(0.95, 0.95, 0.95),
+        is_fully_opaque = true,
+        kw_args...
     ).children[]
 
     slider_robj       = vizz.children[]

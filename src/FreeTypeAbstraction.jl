@@ -122,7 +122,7 @@ function glyphbitmap(bmpRec::FreeType.FT_Bitmap)
     end
 
     for r = 1:bmpRec.rows
-        srcArray = pointer_to_array(row, bmpRec.width)
+        srcArray = unsafe_wrap(Array, row, bmpRec.width)
         bmp[:, r] = srcArray
         row += bmpRec.pitch
     end

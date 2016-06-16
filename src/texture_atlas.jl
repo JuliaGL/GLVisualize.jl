@@ -106,7 +106,7 @@ function sdistancefield(img, min_size=32)
     w, h = w+2halfpad, h+2halfpad #pad this, to avoid cuttoffs
     in_or_out = Bool[begin
         x, y = i-halfpad, j-halfpad
-        if checkbounds(Bool, size(img), x,y)
+        if checkbounds(Bool, img, x,y)
             img[x,y] >= 1.0
         else
             false
@@ -130,7 +130,7 @@ function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     if glyph == '\n' # don't render  newline
         glyph = ' '
     end
-    bitmap, extent = renderface(font, glyph, (64, 64))
+    bitmap, extent = renderface(font, glyph, (128, 128))
 
     sd, width_nopadd, scaling_factor = sdistancefield(bitmap)
     if min(size(bitmap)...) > 0
