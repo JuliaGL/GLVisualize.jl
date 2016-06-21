@@ -102,15 +102,15 @@ function vizzedit{T <: Real}(
     slider_value_str  = map(printforslider, slider_value)
     vizz              = visualize(
         slider_value_str; 
-        color = RGBA{Float32}(0.6, 0.6, 0.6),
+        color = RGBA{Float32}(0.5, 0.5, 0.5),
         kw_args...
     )
-    bb                = value(boundingbox(vizz))
-    mini, maxi        = minimum(bb)-4f0, widths(bb)+8f0
-    bb_rect           = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
-    bb_vizz           = visualize(
+    bb         = value(boundingbox(vizz))
+    mini, maxi = minimum(bb)-5f0, widths(bb)+10f0
+    bb_rect    = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
+    bb_vizz    = visualize(
         bb_rect;
-        color=RGBA{Float32}(0.95, 0.95, 0.95),
+        color=RGBA{Float32}(0.97, 0.97, 0.97),
         is_fully_opaque = true,
         kw_args...
     ).children[]

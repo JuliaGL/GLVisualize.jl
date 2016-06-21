@@ -12,9 +12,13 @@ y = [j for i in vx, j in vy];
 z = (x .* y .* (x.^2 - y.^2) ./ (x.^2 .+ y.^2 + eps())) / 5.;
 xyz  = map(Point3f0, zip(x, y, z));
 # ma
-lines3d = visualize(xyz, :lines)
+lines3d = visualize(
+	xyz, :lines,
+	color=RGBA(0.0f0,0.74736935f0,1.0f0,0.6f0),
+	thickness=4f0
+)
 view(lines3d, window, camera=:perspective)
 
 if !isdefined(:runtests)
-    renderloop(window)
+    @async renderloop(window)
 end

@@ -18,12 +18,12 @@ function edit_line(
     mouse_hover = mouse2id(window)
     line_robj = visualize(
         line, :lines; 
-        color=color, thickness=1f0,
+        color=color, thickness=0.5f0,
         kw_args...
     ).children[]
     point_gpu = line_robj[:vertex]
     points = visualize(
-        (Circle(Point2f0(0), 5f0), point_gpu);
+        (Circle(Point2f0(0), 9f0), point_gpu);
         color=RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
         kw_args...
     )
@@ -37,22 +37,24 @@ function edit_line(
     isoverpoint = droprepeats(const_lift(is_same_id, m2id, ids))
 
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
-    key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
-    mousedragg = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
+
+    key_pressed = const_lift(
+        GLAbstraction.singlepressed, 
+        mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT
+    )
+    mousedragg = GLAbstraction.dragged(
+        mouseposition, key_pressed, isoverpoint
+    )
     T = Point2f0
-    sig = foldp((value(m2id)..., Point2f0(0), Point2f0(0)), mousedragg) do v0, dragg
-        np = v0[4]
+    startvalue = (0, 0, Point2f0(0), Point2f0(0))
+    sig = foldp(startvalue, mousedragg) do v0, dragg
+        id, index, p0, np = v0
         if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)
             id, index = value(m2id)
             if id==point_robj.id && length(gpu_position) >= index
                 p0 = gpu_position[index]
-            else
-                p0 = v0[3]
             end
-            np = p0
         else
-            id, index, p0, _ = v0
-            np = p0
             if id==point_robj.id && length(gpu_position) >= index
                 np = p0 + T(dragg).*T(direction_restriction)
                 np = T(np[1], clamp(np[2], clampto...))
@@ -136,10 +138,10 @@ function edit_color(tex, buff, index_value, channel, maxval)
 end
 
 function vizzedit{T<:Colorant}(colormap::VecTypes{T}, window;
-        area = (200, 100),
+        area = (300, 200),
         slider_colors = (
-            RGBA{Float32}(0.41796875,0.78125,0.1796875),
             RGBA{Float32}(0.78125,0.1796875,0.41796875),
+            RGBA{Float32}(0.41796875,0.78125,0.1796875),
             RGBA{Float32}(0.1796875,0.41796875,0.78125),
             RGBA{Float32}(0.9,0.9,0.9)
         ),
@@ -148,10 +150,13 @@ function vizzedit{T<:Colorant}(colormap::VecTypes{T}, window;
     colors = to_cpu_mem(value(colormap))
     N = length(colors)
     color_tex = GLAbstraction.gl_convert(Texture, colormap)
+    @assert colors == to_cpu_mem(color_tex)
     scale = Point2f0(area)
     dir_restrict = Vec2f0(0,1)
     vis = ntuple(Val{4}) do i
-        c_channel = Point2f0[Point2f0(x, getfield(c, i)) .* scale for (c,x) in zip(colors, linspace(0,1,N))]
+        c_channel = Point2f0[
+            Point2f0(x, getfield(c, i)) .* scale for (x, c) in zip(linspace(0,1,N), colors)
+        ]
         c_i, diff = edit_line(c_channel, dir_restrict, (0, scale[2]), window, color=slider_colors[i])
         preserve(const_lift(edit_color, color_tex, colors, diff, i, scale[2]))
         c_i

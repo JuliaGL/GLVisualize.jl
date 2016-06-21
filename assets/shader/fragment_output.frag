@@ -10,6 +10,7 @@ uniform bool is_transparent_pass;
 
 
 void write2framebuffer(vec4 color, uvec2 id){
+    fragment_groupid = id;
     if(is_transparent_pass){
         // Assuming that the projection matrix is a perspective projection
         // gl_FragCoord.w returns the inverse of the oPos.w register from the vertex shader
@@ -21,11 +22,11 @@ void write2framebuffer(vec4 color, uvec2 id){
 
         sum_color = vec4(color.rgb * color.a, color.a) * weight;
         sum_weight = vec4(color.a);
+
     }else{
         if(color.a < 0.99){
             discard;
         }
         opaque_color = color;
-        fragment_groupid = id;
     }
 }

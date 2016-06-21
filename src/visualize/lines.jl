@@ -10,7 +10,11 @@ end
 
 function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
     pv = value(position)
-    p_vec = const_lift(vec, position)
+    if isa(position, GPUArray)
+        p_vec = position
+    else
+        p_vec = const_lift(vec, position)
+    end
     @gen_defaults! data begin
         dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
         dotted              = false

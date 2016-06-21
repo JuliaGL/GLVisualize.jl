@@ -23,7 +23,7 @@ function vizzedit{T<:RGBA}(
         false
     end
     # dragg while key_pressed. Drag only starts if isoverpoint is true
-    mousedragg  = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
+    mousedragg = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
 
     preserve(foldp((value(m2id)..., value(color)), mousedragg) do v0, dragg
         if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)

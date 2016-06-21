@@ -12,10 +12,19 @@ const static_example = true
 # stability.
 # Formats supported are currently: obj, stl, ply, off and 2DM
 msh = GLNormalMesh(loadasset("cat.obj"))
+v = vertices(msh)
+f = faces(msh)
+colors = RGBA{Float32}[RGBA{Float32}(rand(), rand(), rand(), 1.) for i=1:length(v)]
 
-view(visualize(msh), window, camera=:perspective)
+colored_mesh = GLNormalVertexcolorMesh(
+    vertices=v, faces=f,
+    color=colors
+)
+
+
+view(visualize(colored_mesh), window, camera=:perspective)
 view(visualize(msh, :lines, thickness=1f0), window, camera=:perspective)
 
 if !isdefined(:runtests)
-	renderloop(window)
+	@async renderloop(window)
 end

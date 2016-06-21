@@ -41,6 +41,8 @@ void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
     vec4 color;
+    float aa = 0.001;
+
     if(dotted){
         vec2 uv = vec2(fract(f_uv.x), f_uv.y);
         float signed_distance;
@@ -50,10 +52,9 @@ void main(){
             signed_distance = rounded_rectangle(uv, vec2(0.2), vec2(0.8));
         else if(shape == RECTANGLE)
             signed_distance = rectangle(uv);
-        float inside     = aastep(0.0, signed_distance);
+        float inside = aastep(aa, signed_distance);
         color = vec4(f_color.rgb, f_color.a*inside);
     }else{
-        float aa = 0.01;
         color = vec4(f_color.rgb, f_color.a*aastep(0+aa, 1-aa, f_uv.y));
     }
     write2framebuffer(color, f_id);
