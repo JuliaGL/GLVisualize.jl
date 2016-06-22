@@ -54,6 +54,7 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
         transparent_picking = false
+        is_fully_opaque     = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
@@ -85,7 +86,7 @@ function wireframe(
         geometry, data::Dict
     )
     points = const_lift(geometry) do g
-         decompose(Point3f0, g) # get the point representation of the geometry
+        decompose(Point3f0, g) # get the point representation of the geometry
     end
     # Get line index representation
     indices = decompose(Face{2, GLuint, -1}, value(geometry))
@@ -108,13 +109,12 @@ function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
         grid_color = RGBA{Float32}(0.8,0.8,0.8,1)
         grid_thickness = Vec3f0(0.999)
         gridsteps = Vec3f0(5)
-        is_fully_opaque     = false
+        is_fully_opaque = false
         shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
         boundingbox = c
         prerender = GridPreRender()
         postrender = () -> (
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK)
+            glDisable(GL_CULL_FACE);
         )
     end
 end
