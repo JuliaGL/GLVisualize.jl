@@ -86,7 +86,7 @@ function wireframe(
         geometry, data::Dict
     )
     points = const_lift(geometry) do g
-         decompose(Point3f0, g) # get the point representation of the geometry
+        decompose(Point3f0, g) # get the point representation of the geometry
     end
     # Get line index representation
     indices = decompose(Face{2, GLuint, -1}, value(geometry))
@@ -114,8 +114,7 @@ function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
         boundingbox = c
         prerender = GridPreRender()
         postrender = () -> (
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK)
+            glDisable(GL_CULL_FACE);
         )
     end
 end
