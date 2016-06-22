@@ -40,7 +40,11 @@ end
 @compat function (B::Type{AABB{T}}){T}(
       ti::TransformationIterator, primitive::AABB{T}
     )
-    trans_scale_rot, state = next(ti, start(ti))
+    state = start(ti)
+    if done(ti, state)
+        return primitive
+    end
+    trans_scale_rot, state = next(ti, state)
     points = decompose(Point3f0, primitive)
     bb = transform(trans_scale_rot..., points)
     while !done(ti, state)
