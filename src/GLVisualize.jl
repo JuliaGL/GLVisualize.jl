@@ -19,6 +19,16 @@ using FreeType
 import Images
 using Base.Markdown
 using Compat
+import Compat.unsafe_wrap
+import Compat.String
+import Compat.unsafe_string
+
+if VERSION < v"0.5.0-dev+4612"
+	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
+		checkbounds(Bool, size(array), indexes...)
+	end
+end
+
 
 typealias GLBoundingBox AABB{Float32}
 

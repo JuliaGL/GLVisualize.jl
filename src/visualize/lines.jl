@@ -54,6 +54,7 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
         transparent_picking = false
+        is_fully_opaque     = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
@@ -96,7 +97,7 @@ end
 
 immutable GridPreRender end
 
-function (::GridPreRender)()
+@compat function (::GridPreRender)()
     glEnable(GL_CULL_FACE)
     glCullFace(GL_BACK)
 end
@@ -108,7 +109,7 @@ function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
         grid_color = RGBA{Float32}(0.8,0.8,0.8,1)
         grid_thickness = Vec3f0(0.999)
         gridsteps = Vec3f0(5)
-        is_fully_opaque     = false
+        is_fully_opaque = false
         shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
         boundingbox = c
         prerender = GridPreRender()
