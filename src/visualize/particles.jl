@@ -259,9 +259,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     intensity    = nothing  => GLBuffer
     point_size   = 2f0
     #boundingbox  = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
-    prerender    = (
-        (glPointSize,   point_size),
-    )
+    prerender    = ()->glPointSize(point_size)
     shader       = GLVisualizeShader("fragment_output.frag", "dots.vert", "dots.frag")
     gl_primitive = GL_POINTS
 end
