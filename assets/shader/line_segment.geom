@@ -45,19 +45,19 @@ void main(void)
     float thickness_aa0 = g_thickness[0]+AA_THICKNESS;
     float thickness_aa1 = g_thickness[1]+AA_THICKNESS;
     // determine the direction of each of the 3 segments (previous, current, next)
-    vec2 v0 = normalize(p1 - p0);
-    float segment_lengths = length(v0);
+    vec2 vun0 = p1 - p0;
+    vec2 v0 = normalize(vun0);
+    float segment_lengths = length(vun0);
     // determine the normal of each of the 3 segments (previous, current, next)
     vec2 n0 = vec2(-v0.y, v0.x);
-    // if(!dotted){
-    //     xstart  = 1;
-    //     xend    = 1;
-    // }else{
-    //     xstart  = segment_lengths/thickness_aa;
-    //     xend    = segment_lengths/thickness_aa;
-    // }
-    emit_vertex(p0 + thickness_aa0 * n0, vec2( 0, 0 ), 0);
-    emit_vertex(p0 - thickness_aa0 * n0, vec2( 0, 1 ), 0);
-    emit_vertex(p1 + thickness_aa1 * n0, vec2( 0, 0 ), 1);
-    emit_vertex(p1 - thickness_aa1 * n0, vec2( 0, 1 ), 1);
+    float l;
+    if(dotted){
+        l = 0;
+    }else{
+        l = segment_lengths/20;
+    }
+    emit_vertex(p0 + thickness_aa0 * n0, vec2( 0, 0.0 ), 0);
+    emit_vertex(p0 - thickness_aa0 * n0, vec2( 0, 1.0 ), 0);
+    emit_vertex(p1 + thickness_aa1 * n0, vec2( l, 0.0 ), 1);
+    emit_vertex(p1 - thickness_aa1 * n0, vec2( l, 1.0 ), 1);
 }

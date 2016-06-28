@@ -44,7 +44,7 @@ void main(){
     float aa = 0.001;
 
     if(dotted){
-        vec2 uv = vec2(fract(f_uv.x), f_uv.y);
+        vec2 uv = vec2(fract(f_uv.x)*2, f_uv.y);
         float signed_distance;
         if(shape == CIRCLE)
             signed_distance = circle(uv);
@@ -52,8 +52,9 @@ void main(){
             signed_distance = rounded_rectangle(uv, vec2(0.2), vec2(0.8));
         else if(shape == RECTANGLE)
             signed_distance = rectangle(uv);
+
         float inside = aastep(aa, signed_distance);
-        color = vec4(f_color.rgb, f_color.a*inside);
+        color = vec4(f_color.rgb, inside);
     }else{
         color = vec4(f_color.rgb, f_color.a*aastep(0+aa, 1-aa, f_uv.y));
     }
