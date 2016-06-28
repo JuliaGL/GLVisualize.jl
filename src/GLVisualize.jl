@@ -22,7 +22,7 @@ using Compat
 
 typealias GLBoundingBox AABB{Float32}
 
-import Base: merge, convert, show
+import Base: merge, convert, show, view
 
 export renderloop
 
