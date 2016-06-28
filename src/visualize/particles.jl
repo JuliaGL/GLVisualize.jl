@@ -263,8 +263,10 @@ primitive_scale(prim::GeometryPrimitive) = Vec2f0(widths(prim))
 primitive_scale(::Shape) = Vec2f0(40)
 primitive_scale(c::Char) = Vec(glyph_scale!(c))
 
-primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
 primitive_offset(x) = Vec2f0(0) # default offset
+primitive_offset(prim::GeometryPrimitive) = -Vec2f0(widths(prim)) / 2f0
+primitive_offset(x::Char) = -Vec(glyph_scale!(x)) / 2f0
+
 
 primitive_uv_offset_width(c::Char) = glyph_uv_width!(c)
 primitive_uv_offset_width(x) = Vec4f0(0,0,1,1)
