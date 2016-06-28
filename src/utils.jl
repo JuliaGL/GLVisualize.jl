@@ -92,8 +92,8 @@ function default_boundingbox(main, model)
     main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
     const_lift(*, model, AABB{Float32}(main))
 end
-(::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
-call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
+@compat (::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
+@compat (::Type{AABB{T}}){T}(a::GPUArray) = AABB{T}(gpu_data(a))
 
 
 """
@@ -114,8 +114,9 @@ end
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
-is_hovering(robj::RenderObject, window::Screen) =
+function is_hovering(robj::RenderObject, window::Screen)
     droprepeats(const_lift(is_same_id, mouse2id(window), robj))
+end
 
 function dragon_tmp(past, mh, mbp, mpos, robj, button, start_value)
     diff, dragstart_index, was_clicked, dragstart_pos = past
