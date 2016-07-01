@@ -17,7 +17,7 @@ sprites = visualize(
 	model=rotation
 )
 
-view(sprites, window, camera=:perspective)
+_view(sprites, window, camera=:perspective)
 end
 
 if !isdefined(:runtests)

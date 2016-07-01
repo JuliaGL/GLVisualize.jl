@@ -32,7 +32,7 @@ end
 
 typealias GLBoundingBox AABB{Float32}
 
-import Base: merge, convert, show, view
+import Base: merge, convert, show, _view
 
 export renderloop
 
@@ -60,7 +60,7 @@ import .Config: default
 include("boundingbox.jl")
 
 include("visualize_interface.jl")
-export view #push renderobject into renderlist of the default screen, or supplied screen
+export _view #push renderobject into renderlist of the default screen, or supplied screen
 export visualize    # Visualize an object
 export visualize_default # get the default parameter for a visualization
 

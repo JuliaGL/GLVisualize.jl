@@ -32,7 +32,7 @@ images = reshape(images, (4,4))
 # spaced out as the underlying array. So this will create a grid whereas every
 # item is 128x128x128 pixels big
 img_vis = visualize(images, scale=Vec3f0(128))
-view(img_vis, window)
+_view(img_vis, window)
 
 
 

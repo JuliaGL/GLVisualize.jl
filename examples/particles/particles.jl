@@ -33,7 +33,7 @@ rotation 	 = -sphere.normals
 
 cats = visualize((cat, ps), scale=scale, color=color, rotation=rotation)
 
-view(cats, window)
+_view(cats, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

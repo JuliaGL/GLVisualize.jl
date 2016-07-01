@@ -16,7 +16,7 @@ flow = map(rotation_func, timesignal)
 
 # create a visualisation
 vis = visualize(flow, ranges=(50:800,50:500))
-view(vis, window, camera=:orthographic_pixel)
+_view(vis, window, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

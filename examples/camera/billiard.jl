@@ -69,9 +69,9 @@ particles = visualize(
 
 # visualize the boundingbox
 boundingbox = visualize(boundingbox, :lines)
-# view them (add them to the windows render list)
-view(particles, window, camera=:perspective)
-view(boundingbox, window, camera=:perspective)
+# _view them (add them to the windows render list)
+_view(particles, window, camera=:perspective)
+_view(boundingbox, window, camera=:perspective)
 
 
 if !isdefined(:runtests)

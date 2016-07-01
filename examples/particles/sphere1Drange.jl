@@ -10,7 +10,7 @@ c = collect(linspace(0.1f0,1.0f0,10f0))
 rotation = map(rotationmatrix_z, const_lift(*, timesignal, 2f0*pi))
 # create a visualisation
 vis = visualize((sphere, c), model=rotation, scale_y=0.1f0)
-view(vis, window)
+_view(vis, window)
 
 if !isdefined(:runtests)
     renderloop(window)

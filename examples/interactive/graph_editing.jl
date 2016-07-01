@@ -70,9 +70,9 @@ preserve(map(right_pressed) do rp
         push!(indices, new_indices) # update indices!
     end
 end)
-# view it!
-view(lines, window, camera=:fixed_pixel)
-view(points, window, camera=:fixed_pixel)
+# _view it!
+_view(lines, window, camera=:fixed_pixel)
+_view(points, window, camera=:fixed_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

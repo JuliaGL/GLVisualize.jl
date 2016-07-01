@@ -94,7 +94,7 @@ catmesh = GLNormalVertexcolorMesh(
     vertices=vertices(cat), faces=faces(cat), normals=normals(cat),
     color=colors
 )
-view(visualize(catmesh))
+_view(visualize(catmesh))
 
 vertsvec = reinterpret(Float32, vertices(cat), (3,length(vertices(cat))));
 colorsvec = reinterpret(Float32, colors, (4,length(colors)));

@@ -14,9 +14,9 @@ color_s, b_v = vizzedit(color_b, window)
 color_c = Signal(RGBA{Float32}(0,0,1,0.7))
 color_s, c_v = vizzedit(color_c, window)
 
-view(layout!(Rectangle{Float32}(0,0,60,60), a_v), window, camera=:fixed_pixel)
-view(layout!(Rectangle{Float32}(60,0,60,60), b_v), window, camera=:fixed_pixel)
-view(layout!(Rectangle{Float32}(120,0,60,60), c_v), window, camera=:fixed_pixel)
+_view(layout!(Rectangle{Float32}(0,0,60,60), a_v), window, camera=:fixed_pixel)
+_view(layout!(Rectangle{Float32}(60,0,60,60), b_v), window, camera=:fixed_pixel)
+_view(layout!(Rectangle{Float32}(120,0,60,60), c_v), window, camera=:fixed_pixel)
 
 
 function multirandomwalk(n1, n2)
@@ -40,16 +40,16 @@ c = multirandomwalk(15, 20)
 
 
 
-view(visualize(
+_view(visualize(
 	(Circle(Point2f0(0), 0.02f0), a),
 	color=color_a, billboard=true
 ), camera=:perspective)
-view(visualize(
+_view(visualize(
 	(Circle(Point2f0(0), 0.02f0), b),
 	color=color_b, billboard=true
 ), camera=:perspective)
 
-view(visualize(
+_view(visualize(
 	(Circle(Point2f0(0), 0.02f0), c),
 	color=color_c, billboard=true
 ), camera=:perspective)

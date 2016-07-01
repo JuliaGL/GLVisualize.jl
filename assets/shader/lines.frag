@@ -54,7 +54,7 @@ void main(){
             signed_distance = rectangle(uv);
 
         float inside = aastep(aa, signed_distance);
-        color = vec4(f_color.rgb, inside);
+        color = vec4(f_color.rgb, f_color.a*inside);
     }else{
         color = vec4(f_color.rgb, f_color.a*aastep(0+aa, 1-aa, f_uv.y));
     }

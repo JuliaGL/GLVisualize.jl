@@ -158,6 +158,7 @@ end
 """
 Converts index arrays to the OpenGL equivalent.
 """
+to_indices(x::GLBuffer) = x
 to_indices(x::TOrSignal{Int}) = x
 to_indices(x::VecOrSignal{UnitRange{Int}}) = x
 """
@@ -185,8 +186,9 @@ to_indices(x) = error(
 
 
 function mix_linearly{C<:Colorant}(a::C, b::C, s)
-    RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), 1.)
+    RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), (1-s)*alpha(a)+s*alpha(b))
 end
+
 color_lookup(cmap, value, mi, ma) = color_lookup(cmap, value, (mi, ma))
 function color_lookup(cmap, value, color_norm)
     mi,ma = color_norm

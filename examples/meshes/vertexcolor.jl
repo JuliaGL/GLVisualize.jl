@@ -19,7 +19,7 @@ sphere_mesh = GLNormalVertexcolorMesh(
     color=colors
 )
 
-view(visualize(sphere_mesh), window)
+_view(visualize(sphere_mesh), window)
 
 if !isdefined(:runtests)
 	renderloop(window)

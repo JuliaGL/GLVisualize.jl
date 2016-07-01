@@ -22,7 +22,7 @@ function view_boundingboxes(w, camera)
         push!(bbs, visualize(value(bb), :lines, model=robj[:model]))
     end
     for elem in bbs
-        view(elem, w, camera=camera)
+        _view(elem, w, camera=camera)
     end
 end
 
@@ -76,7 +76,7 @@ push!(particles, visualize((cat, ps), scale=scale, color=color, rotation=rotatio
 push!(particles, visualize(e, scale=Vec3f0(0.3)))
 
 if has_opengl
-    view(visualize(particles), windows[1])
+    _view(visualize(particles), windows[1])
     view_boundingboxes(windows[1], :perspective)
 end
 
@@ -106,7 +106,7 @@ facts("Image Like") do
         if has_opengl
             images = visualize(images, direction=1, gap=Vec3f0(5))
             context("viewing") do
-                gl_obj = view(images, windows[2], camera = :orthographic_pixel)
+                gl_obj = _view(images, windows[2], camera = :orthographic_pixel)
                 view_boundingboxes(windows[2], :orthographic_pixel)
 
             end
@@ -180,7 +180,7 @@ facts("sprite particles") do
             ]
             if has_opengl
                 context("viewing") do
-                    gl_obj = view(visualize(particles, direction=1), windows[3], camera=:orthographic_pixel)
+                    gl_obj = _view(visualize(particles, direction=1), windows[3], camera=:orthographic_pixel)
                     view_boundingboxes(windows[3], :orthographic_pixel)
                 end
             end
@@ -203,7 +203,7 @@ facts("sprite particles") do
 
             if has_opengl
                 context("viewing") do
-                    gl_obj = view(visualize(particles), windows[4], camera=:perspective)
+                    gl_obj = _view(visualize(particles), windows[4], camera=:perspective)
                     view_boundingboxes(windows[4], :perspective)
                 end
             end
@@ -243,7 +243,7 @@ facts("Surfaces") do
         if has_opengl
             suf_vizz = visualize(surfs, direction=1)
             context("viewing") do
-                gl_obj = view(suf_vizz, windows[5])
+                gl_obj = _view(suf_vizz, windows[5])
                 view_boundingboxes(windows[5], :perspective)
             end
         end
@@ -277,7 +277,7 @@ facts("Lines") do
         if has_opengl
             #suf_vizz = visualize(line_vizz, direction=1)
             context("viewing") do
-                gl_obj = view(line_vizz, windows[6], camera=:perspective)
+                gl_obj = _view(line_vizz, windows[6], camera=:perspective)
                 view_boundingboxes(windows[6], :perspective)
             end
         end

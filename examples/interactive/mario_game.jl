@@ -95,7 +95,7 @@ modelmatrix 	= const_lift(mario2model, mario_signal)
 
 mario = visualize(image_stream, model=modelmatrix)
 
-view(mario, window, camera=:fixed_pixel)
+_view(mario, window, camera=:fixed_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

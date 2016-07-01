@@ -33,7 +33,7 @@ barsvis = visualize(
     ranges=(range, range),
     boundingbox=Signal(AABB{Float32}(mini, maxi))
 )
-view(barsvis, window)
+_view(barsvis, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

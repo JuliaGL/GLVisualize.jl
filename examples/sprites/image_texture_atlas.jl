@@ -34,7 +34,7 @@ distfield = visualize((Circle, positions),
     stroke_color = RGBA{Float32}(0.9,0.9,0.9,1.0),
     image=texture_atlas
 )
-view(distfield, window)
+_view(distfield, window)
 
 
 if !isdefined(:runtests)

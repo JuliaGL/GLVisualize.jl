@@ -40,7 +40,7 @@ Resets the state of a window
 """
 function reset!(window, color=RGB(0.2,0.2,0.2))
     clear_frame!(window, color)
-    empty!(window) # removes all viewables that where added with `view`
+    empty!(window) # removes all viewables that where added with `_view`
 end
 
 """
@@ -136,12 +136,12 @@ function main(window, timesignal)
         boundingbox=nothing,
         color=color
     )
-    # reset is basically the antagonist of view
+    # reset is basically the antagonist of _view
     reset!(window) # when you reset the window here, you can call main multiple times
 
-    # view adds an (animated) viewable to the list of things that you want to see
+    # _view adds an (animated) viewable to the list of things that you want to see
     # in `window`
-    view(viewable, window, camera=:fixed_pixel)
+    _view(viewable, window, camera=:fixed_pixel)
 end
 
 

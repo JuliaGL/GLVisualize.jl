@@ -30,7 +30,7 @@ z = r.*sin(phi).*sin(theta);
 
 
 surface = visualize((x,y,z), :surface, model=rotation)
-view(surface, window)
+_view(surface, window)
 
 
 if !isdefined(:runtests)

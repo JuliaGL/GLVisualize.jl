@@ -43,7 +43,7 @@ vis = visualize(
 )
 
 # display it on the window
-view(vis, window)
+_view(vis, window)
 
 
 if !isdefined(:runtests)
