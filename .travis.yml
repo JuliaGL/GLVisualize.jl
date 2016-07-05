@@ -16,4 +16,4 @@ addons:
     - kubuntu-backports
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'using GLVisualize'
+  - julia -e 'Pkg.clone(pwd()); using GLVisualize'
