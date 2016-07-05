@@ -12,9 +12,10 @@ addons:
     packages:
     - cmake
     - libxxf86vm-dev
+    - libxinerama-dev
+    - libxcursor-dev
     sources:
     - kubuntu-backports
-install: sudo apt-get install cmake libXxf86vm-dev libxinerama-dev libxcursor-dev
 before_script:
   - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; fi
 script:
