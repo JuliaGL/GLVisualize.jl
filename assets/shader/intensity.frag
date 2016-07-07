@@ -24,14 +24,14 @@ void write2framebuffer(vec4 color, uvec2 id);
 
 
 void main(){
-	float i = float(getindex(intensity, o_uv).x);
-	vec4 stroke_color = vec4(1,1,1,1);
-	float lines = i*M_PI;
-	lines = abs(sin(lines));
-	lines = aastep(0.4, 0.7, lines);
-
+    float i = float(getindex(intensity, o_uv).x);
+    i = _normalize(i, color_norm.x, color_norm.y);
+    vec4 stroke_color = vec4(1,1,1,1);
+    float lines = i*5*M_PI;
+    lines = abs(fract(lines));
+    lines = aastep(0.4, 0.6, lines);
     write2framebuffer(
-        mix(color_lookup(i, color, color_norm), stroke_color, lines),
+        mix(texture(color, i), stroke_color, lines),
         uvec2(0)
     );
 }

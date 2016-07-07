@@ -41,7 +41,7 @@ void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
     vec4 color;
-    float aa = 0.001;
+    float aa = 0.1;
 
     if(dotted){
         vec2 uv = vec2(fract(f_uv.x)*2, f_uv.y);

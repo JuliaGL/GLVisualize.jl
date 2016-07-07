@@ -107,8 +107,8 @@ out vec4  g_glow_color;
 
 
 void main(){
-	g_primitive_index = gl_VertexID;
     int index         = gl_VertexID;
+	g_primitive_index = index;
     vec3 pos;
     {{position_calc}}
     g_position        = pos;
@@ -120,5 +120,5 @@ void main(){
     g_stroke_color    = stroke_color;
     g_glow_color      = glow_color;
 
-    g_id              = uvec2(objectid, gl_VertexID+1);
+    g_id              = uvec2(objectid, index+1);
 }

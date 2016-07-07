@@ -35,7 +35,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
     if dotted
         @gen_defaults! data begin
             lastlen   = const_lift(sumlengths, p_vec) => GLBuffer
-            maxlength = const_lift(last, ll)
+            maxlength = const_lift(last, lastlen)
         end
     end
     data

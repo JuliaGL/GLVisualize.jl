@@ -54,10 +54,20 @@ vec2 compute_miter(vec2 normal_a, vec2 normal_b)
 }
 
 uniform int max_primtives;
+const float infinity = 1. / 0.;
 
 void main(void)
 {
     if(
+        gl_in[0].gl_Position.x == infinity ||
+        gl_in[1].gl_Position.x == infinity ||
+        gl_in[2].gl_Position.x == infinity ||
+        gl_in[3].gl_Position.x == infinity ||
+
+        gl_in[0].gl_Position.y == infinity ||
+        gl_in[1].gl_Position.y == infinity ||
+        gl_in[2].gl_Position.y == infinity ||
+        gl_in[3].gl_Position.y == infinity ||
         g_line_connections[0] != g_line_connections[1] ||
         g_line_connections[0] != g_line_connections[2] ||
         g_line_connections[0] != g_line_connections[3]

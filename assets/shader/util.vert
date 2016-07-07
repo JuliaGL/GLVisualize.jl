@@ -180,10 +180,10 @@ vec3 _scale(Nothing  scale, float scale_x, float scale_y, float scale_z, int ind
     return vec3(scale_x, scale_y, scale_z);
 }
 vec3 _scale(vec2  scale, float scale_x, float scale_y, float scale_z, int index){
-    return vec3(scale_x, scale_y, scale_z);
+    return vec3(scale.x*scale_x, scale.y*scale_y, scale_z);
 }
 vec3 _scale(vec3  scale, float scale_x, float scale_y, float scale_z, int index){
-    return vec3(scale_x, scale_y, scale_z);
+    return vec3(scale_x, scale_y, scale_z)*scale;
 }
 vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){
     return getindex(scale, index).xyz;
