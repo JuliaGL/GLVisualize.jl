@@ -32,7 +32,7 @@ void emit_vertex(vec2 position, vec2 uv, int index)
     f_id          = g_id[index];
     EmitVertex();
 }
-#define AA_THICKNESS 3.0
+#define AA_THICKNESS 2.0
 
 uniform int max_primtives;
 

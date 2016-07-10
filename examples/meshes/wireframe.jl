@@ -14,7 +14,7 @@ const static_example = true
 msh = GLNormalMesh(loadasset("cat.obj"))
 v = vertices(msh)
 f = faces(msh)
-colors = RGBA{Float32}[RGBA{Float32}(rand(), rand(), rand(), 1.) for i=1:length(v)]
+colors = RGBA{Float32}[RGBA{Float32}(rand(), rand(), rand(), 0.5) for i=1:length(v)]
 
 colored_mesh = GLNormalVertexcolorMesh(
     vertices=v, faces=f,
@@ -22,8 +22,8 @@ colored_mesh = GLNormalVertexcolorMesh(
 )
 
 
-view(visualize(colored_mesh), window, camera=:perspective)
-view(visualize(msh, :lines, thickness=1f0), window, camera=:perspective)
+view(visualize(colored_mesh, is_fully_opaque=false), window, camera=:perspective)
+view(visualize(msh, :lines, thickness=0.1f0), window, camera=:perspective)
 
 if !isdefined(:runtests)
 	@async renderloop(window)

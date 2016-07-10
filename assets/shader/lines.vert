@@ -5,7 +5,7 @@
 in float lastlen;
 {{color_type}} color;
 
-uniform mat4 projectionview, model;
+uniform mat4 projection, view, model;
 uniform uint objectid;
 uniform ivec2 dims;
 
@@ -23,10 +23,10 @@ vec4 to_vec4(vec2 v){return vec4(v, 0, 1);}
 
 void main()
 {
-	g_lastlen 	= lastlen;
-	int index 	= gl_VertexID;
-	g_id 		= uvec2(objectid, index+1);
-	g_color 	= {{color_calculation}};
+    g_lastlen = lastlen;
+    int index = gl_VertexID;
+    g_id = uvec2(objectid, index+1);
+    g_color = {{color_calculation}};
     g_line_connections = uint(index/dims.x);
-	gl_Position = projectionview*model*to_vec4(vertex);
+    gl_Position = projection * view*model*to_vec4(vertex);
 }

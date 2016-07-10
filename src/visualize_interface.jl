@@ -1,8 +1,10 @@
+
+const _default_light = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
 function default(main, s, data)
     data = _default(main, s, copy(data))
     @gen_defaults! data begin # make sure every object has these!
         model      	     = eye(Mat4f0)
-        light      	     = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
+        light      	     = _default_light
         preferred_camera = :perspective
         is_transparent_pass = Cint(false)
     end
@@ -64,8 +66,8 @@ function view(
     camsym = Symbol(string(camera))
     screen.cameras[camsym] = real_camera
 	merge!(robj.uniforms, collect(real_camera), Dict( # add display dependant values
-		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
-		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
+		:resolution => get!(screen.inputs, :resolution, const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area))),
+		:fixed_projectionview => get!(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
     push!(screen, robj, camsym)
 	nothing

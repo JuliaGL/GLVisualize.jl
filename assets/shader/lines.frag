@@ -41,7 +41,7 @@ void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
     vec4 color;
-    float aa = 0.1;
+    float aa = 0.2;
 
     if(dotted){
         vec2 uv = vec2(fract(f_uv.x)*2, f_uv.y);
@@ -56,7 +56,8 @@ void main(){
         float inside = aastep(aa, signed_distance);
         color = vec4(f_color.rgb, inside);
     }else{
-        color = vec4(f_color.rgb, f_color.a*aastep(0+aa, 1-aa, f_uv.y));
+        float a = aastep(0+aa, 1-aa, f_uv.y);
+        color = vec4(f_color.rgb, f_color.a*a);
     }
     write2framebuffer(color, f_id);
 }
