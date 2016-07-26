@@ -32,7 +32,7 @@ reset_texture_atlas!() = empty!(TEXTURE_ATLAS)
 function get_texture_atlas()
     not_initilized = isempty(TEXTURE_ATLAS)
     if not_initilized
-        fn = assetpath("fonts", "saxmono.ttf")
+        fn = assetpath("fonts", "DejaVuSansMono.ttf")
         global DEFAULT_FONT_FACE = newface(fn)
         atlas = push!(TEXTURE_ATLAS, TextureAtlas())[] # initialize only on demand
         for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
@@ -130,7 +130,7 @@ function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     if glyph == '\n' # don't render  newline
         glyph = ' '
     end
-    bitmap, extent = renderface(font, glyph, (256, 256))
+    bitmap, extent = renderface(font, glyph, (128, 128))
 
     sd, width_nopadd, scaling_factor = sdistancefield(bitmap)
     if min(size(bitmap)...) > 0

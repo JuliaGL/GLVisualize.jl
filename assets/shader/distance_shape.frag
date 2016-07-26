@@ -121,7 +121,7 @@ void main(){
     else if(shape == TRIANGLE)
         signed_distance = triangle(f_uv);
 
-    float half_stroke = 0.04;
+    float half_stroke = (stroke_width/f_scale).x;
     float inside = aastep(half_stroke, 100.0, signed_distance);
     float outside = abs(aastep(-100.0, -half_stroke, signed_distance));
     vec4 final_color = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);

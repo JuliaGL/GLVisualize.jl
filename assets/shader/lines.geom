@@ -186,7 +186,7 @@ void main(void)
         emit_vertex(p2 + length_b * miter_b, vec2( 0, 0 ), 2);
         emit_vertex(p2 - length_b * miter_b, vec2( 0, 1 ), 2);
 
-        if(gl_PrimitiveIDIn == max_primitives-5) //last primtive
+        if(gl_PrimitiveIDIn == max_primitives-4) //last primtive
         {
             emit_vertex(p3 + (thickness_aa) * nc, vec2(0, 0), 3);
             emit_vertex(p3 - (thickness_aa) * nc, vec2(0, 1), 3);
