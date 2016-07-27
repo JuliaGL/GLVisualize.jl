@@ -85,7 +85,7 @@ void fill(vec4 c, sampler2DArray image, vec2 uv, float infill, inout vec4 color)
 
 void stroke(vec4 strokecolor, float signed_distance, float half_stroke, inout vec4 color){
     if (half_stroke > 0.0){
-        float t = step2(0, half_stroke, signed_distance);
+        float t = aastep(0, half_stroke, signed_distance);
         color = mix(color, strokecolor, t);
     }
 }
@@ -121,9 +121,9 @@ void main(){
     else if(shape == TRIANGLE)
         signed_distance = triangle(f_uv);
 
-    float half_stroke = (stroke_width) / max(f_scale.x, f_scale.y);
+    float half_stroke = (stroke_width/f_scale).x;
     float inside = aastep(half_stroke, 100.0, signed_distance);
-    float outside = abs(step2(-100.0, half_stroke, signed_distance));
+    float outside = abs(aastep(-100.0, -half_stroke, signed_distance));
     vec4 final_color = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);

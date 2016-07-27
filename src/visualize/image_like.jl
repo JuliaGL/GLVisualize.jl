@@ -120,7 +120,7 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
-    shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", _view=Dict(
+    shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", view=Dict(
          "function" => Compat.String(func.source)
      ))
 end
