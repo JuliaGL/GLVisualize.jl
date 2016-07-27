@@ -70,10 +70,10 @@
 # points1, indices1 = tick_axis(origin, Point3f0(0,0,1), Vec3f0(-0.1,0,0), 0.1f0, 5, 1.5)
 # points2, indices2 = tick_axis(origin, Point3f0(0,1,0), Vec3f0(-0.1,0,0), 0.1f0, 5, 1.5)
 # points3, indices3 = tick_axis(origin, Point3f0(1,0,0), Vec3f0(0,-0.1,0), 0.1f0, 5, 1.5)
-# view(visualize(points1, :linesegment, indices=indices1), camera=:perspective)
-# view(visualize(points2, :linesegment, indices=indices2), camera=:perspective)
-# view(visualize(points3, :linesegment, indices=indices3), camera=:perspective)
-# view(visualize(rand(Float32, 32, 32)), camera=:perspective)
+# _view(visualize(points1, :linesegment, indices=indices1), camera=:perspective)
+# _view(visualize(points2, :linesegment, indices=indices2), camera=:perspective)
+# _view(visualize(points3, :linesegment, indices=indices3), camera=:perspective)
+# _view(visualize(rand(Float32, 32, 32)), camera=:perspective)
 # versioninfo()
 # using GeometryTypes
 #
@@ -149,5 +149,5 @@
 # #
 # # points, indices = gen_grid(Vec3f0(0,0,1), Vec3f0(0,0.1,0), linspace(0f0,3f0, 20), 5, 1.5)
 # # empty!(w.renderlist)
-# # view(visualize(points, :linesegment, indices=indices), camera=:perspective)
+# # _view(visualize(points, :linesegment, indices=indices), camera=:perspective)
 # # map(Int, indices)

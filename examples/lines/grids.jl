@@ -92,7 +92,7 @@ function annoteded_axis(a, b, tick_dir, richtext, dim)
         richtext.cursor += length(x)
         i += 2*step_long
     end
-    view(visualize(points, :linesegment, indices=indices), camera=:perspective)
+    _view(visualize(points, :linesegment, indices=indices), camera=:perspective)
 end
 function grid_axis(cube, richtext)
     o = origin(cube)
@@ -110,11 +110,11 @@ function grid_axis(cube, richtext)
     for i=1:3
         annoteded_axis(origins[i], targets[i], tickdirs[i], richtext, i)
     end
-    view(visualize(cube, :grid))
+    _view(visualize(cube, :grid))
 end
 bb = AABB{Float32}(Vec3f0(-0.4, 0.5, -0.7), Vec3f0(2, 3, 4))
 N = 1000
-view(visualize(
+_view(visualize(
     randstring(N),
     scale=fill(Vec2f0(0.1), N),
     color=fill(RGBA{Float32}(0,0,0,0), N),
@@ -127,7 +127,7 @@ view(visualize(
 richtext = GLVisualize.RichText(GLVisualize.Text(renderlist(w)[1]))
 
 grid_axis(bb, richtext)
-view(visualize(GLNormalMesh(Sphere(Point3f0(0.5,2,2), 0.2f0))))
+_view(visualize(GLNormalMesh(Sphere(Point3f0(0.5,2,2), 0.2f0))))
 
 
 # richtext.cursor
@@ -198,5 +198,5 @@ view(visualize(GLNormalMesh(Sphere(Point3f0(0.5,2,2), 0.2f0))))
 # #
 # # points, indices = gen_grid(Vec3f0(0,0,1), Vec3f0(0,0.1,0), linspace(0f0,3f0, 20), 5, 1.5)
 # # empty!(w.renderlist)
-# # view(visualize(points, :linesegment, indices=indices), camera=:perspective)
+# # _view(visualize(points, :linesegment, indices=indices), camera=:perspective)
 # # map(Int, indices)

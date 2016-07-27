@@ -33,18 +33,18 @@ viewing_screen = Screen(
 #     h = 300
 #     SimpleRectangle(0,a.y-h, a.w, h)
 # end
-# view(layout!(rect1, v1), edit_screen, camera=:fixed_pixel)
+# _view(layout!(rect1, v1), edit_screen, camera=:fixed_pixel)
 
-view(visualize(rand(Float32, 82,82), is_fully_opaque=false), viewing_screen)
+_view(visualize(rand(Float32, 82,82), is_fully_opaque=false), viewing_screen)
 
 #
 # # create something to look at!
 # bars = visualize(rand(Float32, 10,10), color=RGBA{Float32}(0,0,0,1),
 # is_fully_opaque=false)
 # robj = bars.children[]
-# # view them in different screens
-# view(bars, viewing_screen, camera=:perspective)
+# # _view them in different screens
+# _view(bars, viewing_screen, camera=:perspective)
 
 
 # sig, viz = vizzedit(robj[:color_norm], window)
-# view(visualize(viz), edit_screen, camera=:orthographic_pixel)
+# _view(visualize(viz), edit_screen, camera=:orthographic_pixel)

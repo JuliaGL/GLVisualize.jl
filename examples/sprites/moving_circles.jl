@@ -21,7 +21,7 @@ circles = visualize(
 	rotation=rotation, scale=scales,
 )
 
-view(circles, window)
+_view(circles, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

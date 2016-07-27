@@ -19,7 +19,7 @@ const record_interactive = true
 
 volume = visualize(volumedata, :mip)
 
-view(volume, window)
+_view(volume, window)
 
 
 if !isdefined(:runtests)

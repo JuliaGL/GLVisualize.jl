@@ -119,7 +119,7 @@ function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
     end
     grid = Grid(heightfield, ranges)
     @gen_defaults! data begin
-        scale            = nothing
+        scale = nothing
         scale_x::Float32 = step(grid.dims[1])
         scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
         scale_z = const_lift(vec, heightfield_s)

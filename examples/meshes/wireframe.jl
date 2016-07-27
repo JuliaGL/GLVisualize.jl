@@ -22,8 +22,8 @@ colored_mesh = GLNormalVertexcolorMesh(
 )
 
 
-view(visualize(colored_mesh, is_fully_opaque=false), window, camera=:perspective)
-view(visualize(msh, :lines, thickness=0.1f0), window, camera=:perspective)
+_view(visualize(colored_mesh, is_fully_opaque=false), window, camera=:perspective)
+_view(visualize(msh, :lines, thickness=1f0), window, camera=:perspective)
 
 if !isdefined(:runtests)
 	@async renderloop(window)

@@ -24,8 +24,8 @@ spheres = visualize(
 	(Sphere{Float32}(Point3f0(0.0), 1f0), positions),
 	color=color2, scale=Vec3f0(0.05), model=rotation
 )
-view(lines, window, camera=:perspective)
-view(spheres, window, camera=:perspective)
+_view(lines, window, camera=:perspective)
+_view(spheres, window, camera=:perspective)
 
 
 if !isdefined(:runtests)

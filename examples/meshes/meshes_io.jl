@@ -13,7 +13,7 @@ const static_example = true
 # Formats supported are currently: obj, stl, ply, off and 2DM
 msh = GLNormalMesh(loadasset("cat.obj"))
 
-view(visualize(msh), window)
+_view(visualize(msh), window)
 
 if !isdefined(:runtests)
     renderloop(window)

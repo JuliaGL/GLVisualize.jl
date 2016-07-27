@@ -38,7 +38,7 @@ snowflakes = visualize(
     scale=Vec2f0(0.6), billboard=true, model=rotation
 )
 
-view(snowflakes, window, camera=:perspective)
+_view(snowflakes, window, camera=:perspective)
 
 
 if !isdefined(:runtests)

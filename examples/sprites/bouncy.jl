@@ -32,7 +32,7 @@ vis = visualize((circle, map(first, position_velocity)),
     stroke_color=RGBA{Float32}(0.91,0.91,0.91,1),
     boundingbox = nothing
 )
-view(vis, window, camera=:orthographic_pixel)
+_view(vis, window, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

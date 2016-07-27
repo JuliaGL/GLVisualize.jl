@@ -27,7 +27,7 @@ end
 
 renderable = visualize(map(contourdata, timesignal))
 
-view(renderable, window, camera=:orthographic_pixel)
+_view(renderable, window, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
 	renderloop(window)

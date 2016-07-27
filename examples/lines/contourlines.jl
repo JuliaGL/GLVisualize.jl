@@ -28,7 +28,7 @@ for h in mini:0.2f0:maxi
             color=color_lookup(color_ramp, h, mini, maxi),
             model=rotation
         )
-        view(line_renderable, window, camera=:perspective)
+        _view(line_renderable, window, camera=:perspective)
     end
 end
 

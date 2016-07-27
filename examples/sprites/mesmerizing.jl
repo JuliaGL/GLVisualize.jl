@@ -20,7 +20,7 @@ ps1 = const_lift(sin_torus, 2, 6, 10, t)
 ps2 = const_lift(sin_torus, 5, 4, 10, t)
 ps3 = const_lift(sin_torus, 10, 2, 10, t)
 ps = map(vcat, ps1, ps2, ps3)
-view(visualize((Circle, ps), scale=Vec2f0(0.04), billboard=true), camera=:perspective)
+_view(visualize((Circle, ps), scale=Vec2f0(0.04), billboard=true), camera=:perspective)
 
 if !isdefined(:runtests)
     renderloop(window)

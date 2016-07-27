@@ -30,8 +30,8 @@ but it gets even more ludicrous:
 I can't even...
 """
 
-# view and visualize it!
-view(visualize(s,
+# _view and visualize it!
+_view(visualize(s,
     model=translationmatrix(Vec3f0(0,600,0)), # move this up, since the text starts at 0 and goes down from there
 ), window)
 

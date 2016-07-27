@@ -17,7 +17,7 @@ lines3d = visualize(
 	color=RGBA(0.0f0,0.74736935f0,1.0f0,0.6f0),
 	thickness=4f0
 )
-view(lines3d, window, camera=:perspective)
+_view(lines3d, window, camera=:perspective)
 
 if !isdefined(:runtests)
     @async renderloop(window)

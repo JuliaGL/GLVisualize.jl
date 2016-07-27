@@ -34,7 +34,7 @@ end
 
 lines3d = visualize(xyz, :lines, color=colors, model=rotation)
 
-view(lines3d, window, camera=:perspective)
+_view(lines3d, window, camera=:perspective)
 
 if !isdefined(:runtests)
     renderloop(window)

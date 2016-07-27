@@ -11,8 +11,8 @@ color = map(collect(s)) do char
     c::RGBA{Float32}
 end
 
-# view and visualize it!
-view(visualize(s,
+# _view and visualize it!
+_view(visualize(s,
     model=translationmatrix(Vec3f0(0,600,0)), # move this up, since the text starts at 0 and goes down from there
     color=color,
     rotation=fill(Vec3f0(0,0,1), length(s))
