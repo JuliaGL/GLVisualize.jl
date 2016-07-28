@@ -27,7 +27,7 @@ Pkg.checkout("Reactive")
 
 
 Known problems:
-- GLVisualize seems to be slow randomly. Please open an issue if Pkg.test("GLVisualize") runs slow, so that I can figure out if this is a general problem.
+
 - boundingboxes are not always correct
 - On Mac OS, you need to make sure that Homebrew.jl works correctly, which was not the case on some tested machines (needed to checkout master and then rebuild)
 - GLFW needs `cmake` and `xorg-dev` `libglu1-mesa-dev` on linux (can be installed via `sudo apt-get install xorg-dev libglu1-mesa-dev`).
