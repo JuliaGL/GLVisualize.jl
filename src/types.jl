@@ -228,19 +228,15 @@ immutable GLVisualizeShader <: AbstractLazyShader
     paths  ::Tuple
     kw_args::Vector
     function GLVisualizeShader(paths...; kw_args...)
-        _view = filter(kv->kv[1]==:_view, kw_args)
-        if isempty(_view) # _view needs special treatment
-            _view = Dict{String, String}()
+        view = filter(kv->kv[1]==:view, kw_args)
+        if isempty(view) # _view needs special treatment
+            view = Dict{String, String}()
         else
-            _view = _view[1][2]
+            view = view[1][2]
         end
 
         shaders = map(paths) do shader
-            loadasset(
-                "shader", shader;
-                update_interval=1.0,
-                updatewhile=current_screen().inputs[:window_open]
-            )
+            assetpath("shader", shader)
         end
         new(shaders, vcat(kw_args, [
             (:fragdatalocation, [
@@ -249,7 +245,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
                 (2, "sum_weight"),
                 (3, "fragment_groupid"),
             ]),
-            (:_view, _view)
+            (:view, view)
         ]))
     end
 end

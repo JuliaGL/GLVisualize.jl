@@ -286,4 +286,13 @@ end
 
 if has_opengl
     renderloop(window)
+    # GLVisualize.cleanup_old_screens()
+    # using Plots, StatPlots
+    # for i=1:30
+    #     try
+    #         test_examples(:glvisualize, i)
+    #     catch e
+    #         println(e)
+    #     end
+    # end
 end

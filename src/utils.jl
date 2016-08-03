@@ -39,8 +39,11 @@ function get_color(data)
     color != nothing && return color
     RGBA{Float32}(0,0,0,1)
 end
+
+
+
 function assemble_shader(data)
-    shader = data[:shader]
+    lazy_shader = data[:shader]
     delete!(data, :shader)
     default_bb = Signal(centered(AABB))
     bb  = get(data, :boundingbox, default_bb)
@@ -54,9 +57,9 @@ function assemble_shader(data)
     end
 
     if haskey(data, :instances)
-        robj = instanced_renderobject(data, shader, bb, glp, data[:instances], pre=pre)
+        robj = instanced_renderobject(data, lazy_shader, bb, glp, data[:instances], pre=pre)
     else
-        robj = std_renderobject(data, shader, bb, glp, pre=pre)
+        robj = std_renderobject(data, lazy_shader, bb, glp, pre=pre)
     end
     if haskey(data, :postrender)
         tmp = robj.postrenderfunction # needs to be always executed
