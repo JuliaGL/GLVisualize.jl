@@ -16,6 +16,8 @@ using FileIO
 using Packing
 using SignedDistanceFields
 using FreeType
+import ColorVectorSpace
+
 import Images
 using Base.Markdown
 using Compat
@@ -32,7 +34,7 @@ end
 
 typealias GLBoundingBox AABB{Float32}
 
-import Base: merge, convert, show, _view
+import Base: merge, convert, show
 
 export renderloop
 
@@ -107,5 +109,8 @@ export create_video
 
 include("documentation.jl")
 export get_docs
+
+include("glv_userimg.jl")
+
 
 end # module
