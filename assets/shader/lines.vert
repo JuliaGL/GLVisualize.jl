@@ -28,5 +28,5 @@ void main()
     g_id = uvec2(objectid, index+1);
     g_color = {{color_calculation}};
     g_line_connections = uint(index/dims.x);
-    gl_Position = projection * view*model*to_vec4(vertex);
+    gl_Position = projection*view*model*to_vec4(vertex);
 }
