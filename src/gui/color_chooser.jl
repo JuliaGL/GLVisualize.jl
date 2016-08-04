@@ -1,5 +1,5 @@
 _clamp(x) = Point2f0(clamp(x[1], 0, 1), clamp(x[2], 0, 1))
-function vizzedit{T<:RGBA}(
+function widget{T<:RGBA}(
         color::Signal{T}, window;
         kw_args...
     )

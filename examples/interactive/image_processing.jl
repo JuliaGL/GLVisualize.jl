@@ -13,7 +13,7 @@ doge = loadasset("doge.png")
 # Convert to RGBA{Float32}. Float for filtering and 32 because it fits the GPU better
 img = map(RGBA{Float32}, doge)
 # create a slider that goes from 1-20 in 0.1 steps
-slider_s, slider = vizzedit(Signal(1f0), range=1f0:0.1f0:20f0, window)
+slider_s, slider = widget(Signal(1f0), range=1f0:0.1f0:20f0, window)
 
 # performant conversion to RGBAU8, implemted with a functor
 # in 0.5 anonymous functions offer the same speed, so this wouldn't be needed

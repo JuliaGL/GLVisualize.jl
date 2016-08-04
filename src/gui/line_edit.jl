@@ -68,7 +68,7 @@ function edit_line(
 end
 
 
-function vizzedit{T}(
+function widget{T}(
         points::Vector{Point{2,T}}, window; 
         color=default(RGBA), kw_args...
     )
@@ -137,7 +137,7 @@ function edit_color(tex, buff, index_value, channel, maxval)
     nothing
 end
 
-function vizzedit{T<:Colorant}(colormap::VecTypes{T}, window;
+function widget{T<:Colorant}(colormap::VecTypes{T}, window;
         area = (300, 200),
         slider_colors = (
             RGBA{Float32}(0.78125,0.1796875,0.41796875),

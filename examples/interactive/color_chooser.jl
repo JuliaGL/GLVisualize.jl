@@ -6,13 +6,13 @@ end
 const record_interactive = true
 
 color_a = Signal(RGBA{Float32}(1,0,0,0.7))
-color_s, a_v = vizzedit(color_a, window)
+color_s, a_v = widget(color_a, window)
 
 color_b = Signal(RGBA{Float32}(0,1,0,0.7))
-color_s, b_v = vizzedit(color_b, window)
+color_s, b_v = widget(color_b, window)
 
 color_c = Signal(RGBA{Float32}(0,0,1,0.7))
-color_s, c_v = vizzedit(color_c, window)
+color_s, c_v = widget(color_c, window)
 
 _view(layout!(Rectangle{Float32}(0,0,60,60), a_v), window, camera=:fixed_pixel)
 _view(layout!(Rectangle{Float32}(60,0,60,60), b_v), window, camera=:fixed_pixel)

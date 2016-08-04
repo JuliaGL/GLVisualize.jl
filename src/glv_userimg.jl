@@ -4579,7 +4579,6 @@
     precompile(GLVisualize.visualize, (Tuple{Array{Float32, 2}, Array{Float32, 2}, Array{Float32, 2}}, GLAbstraction.Style{:surface}, Base.Dict{Symbol, Any},))
     precompile(GLAbstraction.Type, (Type{GLAbstraction.GLBuffer}, Array{GeometryTypes.Normal{3, Float32}, 1},))
     precompile(Base.get!, (Base.Dict{Symbol, Array{Int64, 1}}, Symbol, Array{Int64, 1},))
-    precompile(Reactive.run_timer, ())
     precompile(Base.uvfinalize, (Base.Process,))
     precompile(Base.collect_to_with_first!, (Array{Int64, 1}, Int64, Base.Generator{SimpleVector,typeof( FixedSizeArrays.nested_Tuple_shape)}, Int64,))
     precompile(FixedSizeArrays.similar_type, (Type{GLVisualize.Intensity{1, Float32}}, Type{Float32},))

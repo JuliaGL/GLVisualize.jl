@@ -46,8 +46,8 @@ function slide(startvalue, slide_pos, range::Range)
     clamp(val, range)
 end
 
-function vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
-    vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
+function widget{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
+    widget(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
 end
 
 function range_default{T<:FixedVector}(::Type{T})
@@ -66,7 +66,7 @@ end
 function calc_val{T<:Integer}(sval::T, val, range)
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
-function vizzedit{T <: FixedVector}(
+function widget{T <: FixedVector}(
         slider_value::Signal{T}, window; 
         numberwidth=5, range=range_default(T),
         kw_args...
@@ -75,7 +75,7 @@ function vizzedit{T <: FixedVector}(
     le_sigs = []
     le_tuple = ntuple(length(value(slider_value))) do i
         number_s = map(getindex, slider_value, Signal(i))
-        num_s, vizz = vizzedit(number_s, window; 
+        num_s, vizz = widget(number_s, window; 
             numberwidth=numberwidth, range=range,
             kw_args...
         )
@@ -93,7 +93,7 @@ function vizzedit{T <: FixedVector}(
 
     map(T, le_sigs...), Context(le_tuple...)
 end
-function vizzedit{T <: Real}(
+function widget{T <: Real}(
         slider_value::Signal{T}, window; 
         numberwidth=5, range=range_default(T), kw_args...
     )

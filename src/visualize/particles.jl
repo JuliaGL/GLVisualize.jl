@@ -279,7 +279,8 @@ Extracts the scale from a primitive.
 """
 primitive_scale(prim::GeometryPrimitive) = Vec2f0(widths(prim))
 primitive_scale(::Shape) = Vec2f0(40)
-primitive_scale(c::Char) = Vec(glyph_scale!(c))
+primitive_scale(c::Char) = Vec2f0(glyph_scale!(c))
+primitive_scale(c) = Vec2f0(0.1)
 
 """
 Extracts the offset from a primitive.

@@ -46,5 +46,5 @@ _view(visualize(rand(Float32, 82,82), is_fully_opaque=false), viewing_screen)
 # _view(bars, viewing_screen, camera=:perspective)
 
 
-# sig, viz = vizzedit(robj[:color_norm], window)
+# sig, viz = widget(robj[:color_norm], window)
 # _view(visualize(viz), edit_screen, camera=:orthographic_pixel)

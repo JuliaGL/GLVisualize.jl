@@ -78,15 +78,13 @@ include("renderloop.jl")
 
 
 include("texture_atlas.jl")
-export Sprite
-export GLSprite
-export SpriteStyle
-export GLSpriteStyle
 
-include(joinpath("edit", "color_chooser.jl"))
-include(joinpath("edit", "numbers.jl"))
-include(joinpath("edit", "line_edit.jl"))
-export vizzedit # edits some value, name should be changed in the future!
+include(joinpath("gui", "color_chooser.jl"))
+include(joinpath("gui", "numbers.jl"))
+include(joinpath("gui", "line_edit.jl"))
+include(joinpath("gui", "buttons.jl"))
+
+export widget # edits some value, name should be changed in the future!
 
 include(joinpath("visualize", "lines.jl"))
 include(joinpath("visualize", "containers.jl"))
