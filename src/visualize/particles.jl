@@ -8,13 +8,6 @@ In that case, GLVisualize will fill in some default that is anticipated to make
 the most sense for the datatype.
 =#
 
-#3D primitives
-typealias Primitives3D  Union{AbstractGeometry{3}, AbstractMesh}
-#2D primitives AKA sprites, since they are shapes mapped onto a 2D rectangle
-typealias Sprites Union{AbstractGeometry{2}, Shape, Char, Type}
-typealias AllPrimitives Union{AbstractGeometry, Shape, Char}
-
-
 """
 We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
@@ -75,9 +68,11 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
     primitive, rotation_s = main
     rotation_v = value(rotation_s)
     @gen_defaults! data begin
-        color_norm = const_lift(extrema2f0, rotation_s)
+        limits = const_lift(extrema2f0, rotation_s)
+        color = default(Vector{RGBA})
         ranges = ntuple(i->linspace(0f0, 1f0, size(rotation_v, i)), N)
     end
+
     grid = Grid(rotation_v, ranges)
 
     if N == 1
@@ -97,7 +92,6 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
     end
     @gen_defaults! data begin
         rotation   = const_lift(vec, rotation_s)
-        color_map  = default(Vector{RGBA})
         scale      = scalevec
         color      = nothing
     end
@@ -120,12 +114,9 @@ function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
     grid = Grid(heightfield, ranges)
     @gen_defaults! data begin
         scale = nothing
-        scale_x::Float32 = step(grid.dims[1])
-        scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
-        scale_z = const_lift(vec, heightfield_s)
-        color = nothing
-        color_map  = color == nothing ? default(Vector{RGBA}) : nothing
-        color_norm = color == nothing ? const_lift(extrema2f0, heightfield_s) : nothing
+        scale = (step(grid.dims[1]), N==1 ? 1f0 : step(grid.dims[2]), const_lift(vec, heightfield_s))
+        color  = default(Vector{RGBA})
+        limits = const_lift(extrema2f0, heightfield_s)
     end
     _default((primitive, grid), s, data)
 end
@@ -146,11 +137,10 @@ function _default{P<:Sprites, T<:AbstractFloat, N}(
     end
     grid = Grid(heightfield, ranges)
     @gen_defaults! data begin
-        position_z = const_lift(vec, heightfield_s)
-        scale      = Vec2f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0)
-        color_map  = default(Vector{RGBA})
-        color      = nothing
-        color_norm = const_lift(extrema2f0, heightfield_s)
+        position = (grid, const_lift(vec, heightfield_s))
+        scale = Vec2f0(step(grid.dims[1]), N>=2 ? step(grid.dims[2]) : 1f0)
+        color = default(Vector{RGBA})
+        limits = const_lift(extrema2f0, heightfield_s)
     end
     _default((primitive, grid), s, data)
 end
@@ -167,10 +157,7 @@ function _default{P<:Sprites, T<:AbstractFloat}(
     end
     grid = Grid(heightfield, ranges)
     @gen_defaults! data begin
-        scale            = nothing
-        scale_x::Float32 = step(grid.dims[1])
-        scale_y          = heightfield_s
-        scale_z::Float32 = 1f0
+        scale = (step(grid.dims[1]), heightfield_s, 1f0)
     end
     _default((primitive, grid), s, data)
 end
@@ -188,13 +175,11 @@ end
 function _default{Pr <: Primitives3D, G <: Tuple}(
         p::Tuple{Pr, G}, s::Style, data::Dict
     )
+    xyz = (p[2]..., 0f0)[1:3]
     @gen_defaults! data begin
         primitive::GLNormalMesh = p[1]
-        position         = nothing => TextureBuffer
-        position_x       = p[2][1] => TextureBuffer
-        position_y       = p[2][2] => TextureBuffer
-        position_z       = length(p[2]) > 2 ? p[2][3] : 0f0 => TextureBuffer
-        instances        = const_lift(length, position_x)
+        position = xyz => TextureBuffer
+        instances = const_lift(length, position_x)
     end
     meshparticle(p, s, data)
 end
@@ -210,57 +195,34 @@ This is the main function to assemble particles with a GLNormalMesh as a primiti
 function meshparticle(p, s, data)
     @gen_defaults! data begin
         primitive::GLNormalMesh = p[1]
-        position         = p[2] => TextureBuffer
-        position_x       = nothing => TextureBuffer
-        position_y       = nothing => TextureBuffer
-        position_z       = nothing => TextureBuffer
-
-        scale            = Vec3f0(1) => TextureBuffer
-        scale_x          = nothing => TextureBuffer
-        scale_y          = nothing => TextureBuffer
-        scale_z          = nothing => TextureBuffer
-
-        rotation         = Vec3f0(0,0,1) => TextureBuffer
+        position = p[2]
+        scale = Vec3f0(1)
+        rotation = Vec3f0(0,0,1)
     end
     inst = _Instances(
-        position, position_x, position_y, position_z,
-        scale, scale_x, scale_y, scale_z,
+        position, scale,
         rotation, primitive
     )
     @gen_defaults! data begin
-        color_map  = nothing => Texture
-        color_norm = nothing
-        intensity  = nothing => TextureBuffer
-        color      = if color_map == nothing
-            default(RGBA{Float32}, s)
-        else
-             nothing
-        end => TextureBuffer
-
-        instances   = const_lift(length, position)
+        color_lookup = :rotation
+        color = default(RGBA{Float32}, s)
+        instances = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)
-        shader      = GLVisualizeShader(
-            "util.vert", "particles.vert", "fragment_output.frag", "standard.frag",
-            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, TextureBuffer))
-        )
     end
+    handle_colormap!(data)
+    data
 end
 
 """
 This is the most primitive particle system, which uses simple points as primitives.
 This is supposed to be the fastest way of displaying particles!
 """
-_default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_defaults! data begin
-    vertex       = position => GLBuffer
-    color_map    = nothing  => Vec2f0
-    color        = (color_map == nothing ? default(RGBA{Float32}, s) : nothing) => GLBuffer
-
-    color_norm   = nothing  => Vec2f0
-    intensity    = nothing  => GLBuffer
-    point_size   = 2f0
+_default{T <: Point}(position::VecTypes{T}, s::style"dots", data::Dict) = @gen_defaults! data begin
+    position = position
+    color = default(RGBA{Float32}, s)
+    color_lookup = nothing
+    scale = 2f0
     #boundingbox  = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
-    prerender    = ()->glPointSize(point_size)
-    shader       = GLVisualizeShader("fragment_output.frag", "dots.vert", "dots.frag")
     gl_primitive = GL_POINTS
 end
 
@@ -310,17 +272,11 @@ _default{Primitive<:Sprites, G<:Grid}(p::Tuple{Primitive, G}, s::Style, data::Di
     sprites(p,s,data)
 
 function _default{Pr <: Sprites, G <: Tuple}(
-            p::Tuple{Pr, G}, s::Style, data::Dict
-        )
-        @gen_defaults! data begin
-            shape            = primitive_shape(p[1])
-            position         = nothing => GLBuffer
-            position_x       = p[2][1] => GLBuffer
-            position_y       = p[2][2] => GLBuffer
-            position_z       = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
-        end
-        sprites(p, s, data)
-    end
+        p::Tuple{Pr, G}, s::Style, data::Dict
+    )
+    xyz = (p[2]..., 0f0)[1:3] # p[2] can be 2D or 3D
+    sprites((p[1], xyz), s, data)
+end
 
 """
 Main assemble functions for sprite particles.
@@ -328,52 +284,34 @@ Sprites are anything like distance fields, images and simple geometries
 """
 function sprites(p, s, data)
     @gen_defaults! data begin
-        shape       = primitive_shape(p[1])
-        position    = p[2]    => GLBuffer
-        position_x  = nothing => GLBuffer
-        position_y  = nothing => GLBuffer
-        position_z  = nothing => GLBuffer
-
-        scale       = primitive_scale(p[1])  => GLBuffer
-        scale_x     = nothing                => GLBuffer
-        scale_y     = nothing                => GLBuffer
-        scale_z     = nothing                => GLBuffer
-
-        rotation    = Vec3f0(0,0,1)          => GLBuffer
-        offset      = primitive_offset(p[1]) => GLBuffer
-
+        shape    = primitive_shape(p[1])
+        position = p[2]
+        scale    = primitive_scale(p[1])
+        rotation = Vec3f0(0,0,1)
+        offset   = primitive_offset(p[1])
     end
     inst = _Instances(
-        position, position_x, position_y, position_z,
-        scale, scale_x, scale_y, scale_z,
+        position, scale,
         rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
-        intensity        = nothing => GLBuffer
-        color_map        = nothing => Texture
-        color_norm       = nothing
-        color            = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
+        intensity        = nothing
+        color            = default(RGBA, s)
 
-        glow_color       = RGBA{Float32}(0,0,0,0) => GLBuffer
-        stroke_color     = RGBA{Float32}(0,0,0,0) => GLBuffer
+        glow_color       = RGBA{Float32}(0,0,0,0)
+        stroke_color     = RGBA{Float32}(0,0,0,0)
 
         stroke_width     = 0f0
         glow_width       = 0f0
-        uv_offset_width  = primitive_uv_offset_width(p[1]) => GLBuffer
+        uv_offset_width  = primitive_uv_offset_width(p[1])
 
         image            = nothing => Texture
         distancefield    = primitive_distancefield(p[1]) => Texture
         indices          = const_lift(length, p[2]) => to_indices
         boundingbox      = const_lift(GLBoundingBox, inst)
-        is_fully_opaque  = false
-        preferred_camera = :orthographic_pixel
-        shader           = GLVisualizeShader(
-            "fragment_output.frag", "util.vert", "sprites.geom",
-            "sprites.vert", "distance_shape.frag",
-            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
-        )
-        gl_primitive        = GL_POINTS
     end
+    handle_colormap!(data)
+    data
 end
 
 
@@ -382,7 +320,6 @@ Transforms text into a particle system of sprites, by inferring the
 texture coordinates in the texture atlas, widths and positions of the characters.
 """
 function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
-
     @gen_defaults! data begin
         relative_scale = Vec2f0(1)
         start_position = Point2f0(0)
@@ -392,12 +329,12 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
         glow_width     = 0f0
         font           = DEFAULT_FONT_FACE
 
-        position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
-        offset          = const_lift(calc_offset, main, relative_scale, font, atlas)
+        position = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
+        offset = const_lift(calc_offset, main, relative_scale, font, atlas)
         uv_offset_width = const_lift(main) do str
             Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
         end
-        scale           = const_lift(main, relative_scale) do str, s
+        scale = const_lift(main, relative_scale) do str, s
             Vec2f0[glyph_scale!(atlas, c, font).*s for c=str]
         end
     end

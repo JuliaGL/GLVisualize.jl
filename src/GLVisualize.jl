@@ -15,7 +15,7 @@ using FixedPointNumbers
 using FileIO
 using Packing
 using SignedDistanceFields
-using FreeType
+using Parameters
 import ColorVectorSpace
 
 import Images
@@ -46,9 +46,6 @@ end
 loadasset(folders...; kw_args...) = load(assetpath(folders...); kw_args...)
 export assetpath, loadasset
 
-include("FreeTypeAbstraction.jl")
-using .FreeTypeAbstraction
-
 include("StructsOfArrays.jl")
 using .StructsOfArrays
 
@@ -61,6 +58,7 @@ import .Config: default
 
 include("boundingbox.jl")
 
+include("representation.jl")
 include("visualize_interface.jl")
 export _view #push renderobject into renderlist of the default screen, or supplied screen
 export visualize    # Visualize an object
@@ -74,11 +72,6 @@ export clicked, dragged_on, is_hovering
 export OR, AND, isnotempty
 export color_lookup
 
-include("renderloop.jl")
-
-
-include("texture_atlas.jl")
-
 include(joinpath("gui", "color_chooser.jl"))
 include(joinpath("gui", "numbers.jl"))
 include(joinpath("gui", "line_edit.jl"))
@@ -86,29 +79,22 @@ include(joinpath("gui", "buttons.jl"))
 
 export widget # edits some value, name should be changed in the future!
 
-include(joinpath("visualize", "lines.jl"))
-include(joinpath("visualize", "containers.jl"))
-include(joinpath("visualize", "image_like.jl"))
-include(joinpath("visualize", "mesh.jl"))
-include(joinpath("visualize", "particles.jl"))
-include(joinpath("visualize", "surface.jl"))
-include(joinpath("visualize", "text.jl"))
+#include(joinpath("visualize", "lines.jl"))
+#include(joinpath("visualize", "containers.jl"))
+#include(joinpath("visualize", "image_like.jl"))
+#include(joinpath("visualize", "mesh.jl"))
+#include(joinpath("visualize", "particles.jl"))
+#include(joinpath("visualize", "surface.jl"))
+#include(joinpath("visualize", "text.jl"))
 
 include("camera.jl")
 export cubecamera
 
-# Compose/Gadfly only work for 0.4 right now
-if VERSION.minor == 4
-include("compose_backend.jl")
-end
 
 include("videotool.jl")
 export create_video
 
 include("documentation.jl")
 export get_docs
-
-include("glv_userimg.jl")
-
 
 end # module

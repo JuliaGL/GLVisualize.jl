@@ -1,13 +1,3 @@
-function sumlengths(points)
-    result = zeros(eltype(points[1]), length(points))
-    for i=1:length(points)
-        i0 = max(i-1,1)
-        result[i] = result[i0] + norm(points[i0]-points[i])
-    end
-    result
-end
-
-
 function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
     pv = value(position)
     if isa(position, GPUArray)
@@ -18,25 +8,13 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
     @gen_defaults! data begin
         dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
         dotted              = false
-        vertex              = p_vec  => GLBuffer
-        color               = default(RGBA, s, 1) => GLBuffer
-        stroke_color        = default(RGBA, s, 2) => GLBuffer
+        position            = p_vec
+        color               = default(RGBA, s, 1)
+        stroke_color        = default(RGBA, s, 2)
         thickness           = 1f0
         shape               = RECTANGLE
-        transparent_picking = false
-        is_fully_opaque     = false
-        preferred_camera    = :orthographic_pixel
-        max_primitives      = const_lift(length, p_vec)
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
         indices             = const_lift(length, p_vec) => to_indices
-        shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
-        gl_primitive        = GL_LINE_STRIP_ADJACENCY
-    end
-    if dotted
-        @gen_defaults! data begin
-            lastlen   = const_lift(sumlengths, p_vec) => GLBuffer
-            maxlength = const_lift(last, lastlen)
-        end
     end
     data
 end
@@ -49,17 +27,12 @@ _default{T <: Point}(positions::VecTypes{LineSegment{T}}, s::Style, data::Dict) 
 function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", data::Dict)
     @gen_defaults! data begin
         dotted              = false
-        vertex              = positions           => GLBuffer
-        color               = default(RGBA, s, 1) => GLBuffer
-        thickness           = 2f0                 => GLBuffer
+        position            = positions
+        color               = default(RGBA, s, 1)
+        thickness           = 2f0
         shape               = RECTANGLE
-        transparent_picking = false
-        is_fully_opaque     = false
         indices             = const_lift(length, positions) => to_indices
-        preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
-        shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
-        gl_primitive        = GL_LINES
     end
 end
 

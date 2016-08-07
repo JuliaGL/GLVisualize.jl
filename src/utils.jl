@@ -40,38 +40,6 @@ function get_color(data)
     RGBA{Float32}(0,0,0,1)
 end
 
-
-
-function assemble_shader(data)
-    lazy_shader = data[:shader]
-    delete!(data, :shader)
-    default_bb = Signal(centered(AABB))
-    bb  = get(data, :boundingbox, default_bb)
-    if bb == nothing || isa(bb, Signal{Void})
-        bb = default_bb
-    end
-    glp = get(data, :gl_primitive, GL_TRIANGLES)
-    pre = get(data, :prerender, GLAbstraction.EmptyPrerender())
-    get!(data, :is_fully_opaque) do
-        isopaque(get_color(data))
-    end
-
-    if haskey(data, :instances)
-        robj = instanced_renderobject(data, lazy_shader, bb, glp, data[:instances], pre=pre)
-    else
-        robj = std_renderobject(data, lazy_shader, bb, glp, pre=pre)
-    end
-    if haskey(data, :postrender)
-        tmp = robj.postrenderfunction # needs to be always executed
-        pr = data[:postrender] # for cleaning up!
-        robj.postrenderfunction = () -> (tmp(); pr())
-    end
-    Context(robj)
-end
-
-
-
-
 function y_partition(area, percent)
     amount = percent / 100.0
     p = const_lift(area) do r
@@ -88,16 +56,6 @@ function x_partition(area, percent)
     end
     return map(first, p), map(last, p)
 end
-
-
-glboundingbox(mini, maxi) = AABB{Float32}(Vec3f0(mini), Vec3f0(maxi)-Vec3f0(mini))
-function default_boundingbox(main, model)
-    main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
-    const_lift(*, model, AABB{Float32}(main))
-end
-@compat (::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
-@compat (::Type{AABB{T}}){T}(a::GPUArray) = AABB{T}(gpu_data(a))
-
 
 """
 Returns two signals, one boolean signal if clicked over `robj` and another
@@ -174,6 +132,8 @@ function to_indices{I<:Integer}(x::Signal{Vector{I}})
     preserve(const_lift(update!, gpu_mem, x))
     gpu_mem
 end
+
+
 """
 If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
 """
@@ -187,7 +147,6 @@ to_indices(x) = error(
     Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
 )
 
-
 function mix_linearly{C<:Colorant}(a::C, b::C, s)
     RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), (1-s)*alpha(a)+s*alpha(b))
 end
@@ -199,4 +158,15 @@ function color_lookup(cmap, value, color_norm)
     index = scaled * (length(cmap)-1)
     i_a, i_b = floor(Int, index)+1, ceil(Int, index)+1
     mix_linearly(cmap[i_a], cmap[i_b], scaled)
+end
+
+
+function handle_colormap!(data)
+    c = data[:color]
+    if isa(c, Vector)
+        lookup = get(data, :color_lookup)
+        limits = get(data, :limits)
+        data[:color] = ColorMap(c, lookup, limits)
+    end
+    nothing
 end
