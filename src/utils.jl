@@ -12,38 +12,9 @@ function Base.split(condition::Function, associative::Associative)
     A, B
 end
 
-function isopaque(color::TransparentColor)
-    alpha(color) == 1.0
-end
-function isopaque(color::Color)
-    true
-end
-function isopaque{T<:Color}(color::AbstractArray{T})
-    true
-end
-function isopaque(color::GPUArray)
-    isopaque(gpu_data(color))
-end
-function isopaque(color::AbstractArray)
-    all(isopaque, color)
-end
-# can't be dynamic for now!
-function isopaque(color::Signal)
-    isopaque(value(color))
-end
-
-function get_color(data)
-    color = get(data, :color, nothing)
-    color != nothing && return color
-    color = get(data, :color_map, nothing)
-    color != nothing && return color
-    RGBA{Float32}(0,0,0,1)
-end
-
-
 
 function assemble_shader(data)
-    lazy_shader = data[:shader]
+    shader = data[:shader]
     delete!(data, :shader)
     default_bb = Signal(centered(AABB))
     bb  = get(data, :boundingbox, default_bb)
@@ -51,21 +22,18 @@ function assemble_shader(data)
         bb = default_bb
     end
     glp = get(data, :gl_primitive, GL_TRIANGLES)
-    pre = get(data, :prerender, GLAbstraction.EmptyPrerender())
-    get!(data, :is_fully_opaque) do
-        isopaque(get_color(data))
-    end
-
     if haskey(data, :instances)
-        robj = instanced_renderobject(data, lazy_shader, bb, glp, data[:instances], pre=pre)
+        robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
     else
-        robj = std_renderobject(data, lazy_shader, bb, glp, pre=pre)
+        robj = std_renderobject(data, shader, bb, glp)
     end
-    if haskey(data, :postrender)
-        tmp = robj.postrenderfunction # needs to be always executed
-        pr = data[:postrender] # for cleaning up!
-        robj.postrenderfunction = () -> (tmp(); pr())
-    end
+    # for key in (:prerender, :postrender)
+    #     if haskey(data, key)
+    #         for elem in data[key]
+    #             robj.(symbol("$(key)function"))[elem[1]] = length(elem)<2 ? () : elem[2:end]
+    #         end
+    #     end
+    # end
     Context(robj)
 end
 
@@ -86,7 +54,7 @@ function x_partition(area, percent)
         (SimpleRectangle{Int}(r.x, r.y, round(Int, r.w*amount), r.h ),
             SimpleRectangle{Int}(round(Int, r.w*amount), r.y, round(Int, r.w*(1-amount)), r.h))
     end
-    return map(first, p), map(last, p)
+    return const_lift(first, p), const_lift(last, p)
 end
 
 
@@ -95,8 +63,8 @@ function default_boundingbox(main, model)
     main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
     const_lift(*, model, AABB{Float32}(main))
 end
-@compat (::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
-@compat (::Type{AABB{T}}){T}(a::GPUArray) = AABB{T}(gpu_data(a))
+call(::Type{AABB}, a::GPUArray) = AABB{Float32}(gpu_data(a))
+call{T}(::Type{AABB{T}}, a::GPUArray) = AABB{T}(gpu_data(a))
 
 
 """
@@ -113,13 +81,12 @@ function clicked(robj::RenderObject, button::MouseButton, window::Screen)
     leftclicked, clicked_on_obj
 end
 
-
+is_same_id(id, robj) = id.id == robj.id
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
-function is_hovering(robj::RenderObject, window::Screen)
+is_hovering(robj::RenderObject, window::Screen) =
     droprepeats(const_lift(is_same_id, mouse2id(window), robj))
-end
 
 function dragon_tmp(past, mh, mbp, mpos, robj, button, start_value)
     diff, dragstart_index, was_clicked, dragstart_pos = past
@@ -158,6 +125,7 @@ function extrema2f0{T<:Vec,N}(x::Array{T,N})
     Vec2f0(minimum(_norm), maximum(_norm))
 end
 
+
 """
 Converts index arrays to the OpenGL equivalent.
 """
@@ -186,17 +154,3 @@ to_indices(x) = error(
     "Not a valid index type: $x.
     Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
 )
-
-
-function mix_linearly{C<:Colorant}(a::C, b::C, s)
-    RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), (1-s)*alpha(a)+s*alpha(b))
-end
-
-color_lookup(cmap, value, mi, ma) = color_lookup(cmap, value, (mi, ma))
-function color_lookup(cmap, value, color_norm)
-    mi,ma = color_norm
-    scaled = clamp((value-mi)/(ma-mi), 0, 1)
-    index = scaled * (length(cmap)-1)
-    i_a, i_b = floor(Int, index)+1, ceil(Int, index)+1
-    mix_linearly(cmap[i_a], cmap[i_b], scaled)
-end

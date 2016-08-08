@@ -17,9 +17,11 @@ has_opengl = true
 
 function view_boundingboxes(w, camera)
     bbs = []
-    for robj in w.renderlist
-        bb = boundingbox(robj)
-        push!(bbs, visualize(value(bb), :lines, model=robj[:model]))
+    for renderlist in w.renderlist
+        for robj in renderlist
+            bb = boundingbox(robj)
+            push!(bbs, visualize(value(bb), :lines, model=robj[:model]))
+        end
     end
     for elem in bbs
         _view(elem, w, camera=camera)
@@ -286,13 +288,4 @@ end
 
 if has_opengl
     renderloop(window)
-    # GLVisualize.cleanup_old_screens()
-    # using Plots, StatPlots
-    # for i=1:30
-    #     try
-    #         test_examples(:glvisualize, i)
-    #     catch e
-    #         println(e)
-    #     end
-    # end
 end

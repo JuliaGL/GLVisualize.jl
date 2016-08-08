@@ -42,7 +42,7 @@ if VERSION < v"0.5.0-dev+4612"
 	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
 		checkbounds(Bool, size(array), indexes...)
 	end
-else 
+else
 	import Base: view
 end
 
@@ -118,7 +118,7 @@ export create_video
 include("documentation.jl")
 export get_docs
 
-include("glv_userimg.jl")
+#include("glv_userimg.jl")
 
 
 end # module

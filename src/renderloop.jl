@@ -33,9 +33,7 @@ function glscreen(name="GLVisualize";
 
     screen = Screen(name, resolution=resolution, debugging=debugging, color=background)
     add_screen(screen)
-
     GLWindow.add_complex_signals!(screen) #add the drag events and such
-    add_oit_fxaa_postprocessing!(screen) # add postprocessing
 
     screen
 end

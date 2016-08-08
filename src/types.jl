@@ -9,12 +9,12 @@ Base.ndims{N,T}(::Grid{N,T}) = N
 
 Grid(ranges::Range...) = Grid(ranges)
 function Grid{N, T}(a::Array{T, N})
-    s = Vec{N, Float32}(size(a))
-    smax = maximum(s)
-    s = s./smax
-    Grid(ntuple(Val{N}) do i
-        linspace(0, s[i], size(a, i))
-    end)
+	s = Vec{N, Float32}(size(a))
+	smax = maximum(s)
+	s = s./smax
+	Grid(ntuple(Val{N}) do i
+		linspace(0, s[i], size(a, i))
+	end)
 end
 
 Grid(a::AbstractArray, ranges...) = Grid(a, ranges)
@@ -30,9 +30,9 @@ function Grid{T, N}(a::AbstractArray{T, N}, ranges::Tuple)
         "You need to supply a range for every dimension of the array. Given: $ranges
         given Array: $(typeof(a))"
     ))
-    Grid(ntuple(Val{N}) do i
-        linspace(first(ranges[i]), last(ranges[i]), size(a, i))
-    end)
+	Grid(ntuple(Val{N}) do i
+		linspace(first(ranges[i]), last(ranges[i]), size(a, i))
+	end)
 end
 
 Base.length(p::Grid) = prod(size(p))
@@ -218,7 +218,7 @@ end
 
 
 immutable Intensity{N, T} <: FixedVector{N, T}
-    _::NTuple{N, T}
+	_::NTuple{N, T}
 end
 typealias GLIntensity Intensity{1, Float32}
 export Intensity,GLIntensity
@@ -229,22 +229,26 @@ immutable GLVisualizeShader <: AbstractLazyShader
     kw_args::Vector
     function GLVisualizeShader(paths...; kw_args...)
         view = filter(kv->kv[1]==:view, kw_args)
-        if isempty(view) # _view needs special treatment
-            view = Dict{String, String}()
+        if isempty(view)
+            view = Dict{Compat.UTF8String, Compat.UTF8String}()
         else
             view = view[1][2]
         end
 
-        shaders = map(paths) do shader
-            assetpath("shader", shader)
+        # TODO properly check what extensions are available
+        @osx? begin
+        end : begin
+            view = merge(view, Dict{Compat.UTF8String, Compat.UTF8String}(
+                "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
+                "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
+            ))
         end
-        new(shaders, vcat(kw_args, [
-            (:fragdatalocation, [
-                (0, "opaque_color"),
-                (1, "sum_color"),
-                (2, "sum_weight"),
-                (3, "fragment_groupid"),
-            ]),
+
+        paths = map(shader -> loadasset("shader", shader), paths)
+        new(paths, vcat(kw_args, [
+        	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
+    		(:updatewhile, current_screen().inputs[:window_open]),
+    		(:update_interval, 1.0),
             (:view, view)
         ]))
     end

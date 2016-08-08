@@ -22,21 +22,18 @@ visualize(main, s::Style, data::Dict) = assemble_shader(default(main, s, data)):
 visualize(c::Composable) = Context(c)
 visualize(c::Context) = c
 
-function Base.push!(screen::Screen, robj::RenderObject, camera::Symbol)
-    # only add to renderlist if not already in there
-    if !(in(robj, screen.renderlist))
-        push!(screen.renderlist, robj)
-        len = length(screen.renderlist)
-        camlist = Int[]
-        camlist = get!(screen.camera2robj, camera, camlist)
-        push!(camlist, robj.id)
-
-        if Bool(get(robj.uniforms, :is_fully_opaque, true))
-            push!(screen.opaque, len)
-        else
-            push!(screen.transparent, len)
-        end
+function Base.push!{Pre}(screen::Screen, robj::RenderObject{Pre})
+    # find renderlist specialized to current prerender function
+    index = findfirst(screen.renderlist) do renderlist
+        prerendertype(eltype(renderlist)) == Pre
     end
+    if index == 0
+        # add new specialised renderlist, if none found
+        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
+        index = length(screen.renderlist)
+    end
+    # only add to renderlist if not already in there
+    in(robj, screen.renderlist[index]) || push!(screen.renderlist[index], robj)
     nothing
 end
 
@@ -69,7 +66,7 @@ function _view(
 		:resolution => get!(screen.inputs, :resolution, const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area))),
 		:fixed_projectionview => get!(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
-    push!(screen, robj, camsym)
+    push!(screen, robj)
 	nothing
 end
 
