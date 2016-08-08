@@ -34,7 +34,12 @@ function glscreen(name="GLVisualize";
     screen = Screen(name, resolution=resolution, debugging=debugging, color=background)
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
-
+    preserve(map(screen.inputs[:window_open]) do open
+        if !open
+            empty_screens!()
+        end
+        nothing
+    end)
     screen
 end
 

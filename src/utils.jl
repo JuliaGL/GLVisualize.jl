@@ -81,7 +81,6 @@ function clicked(robj::RenderObject, button::MouseButton, window::Screen)
     leftclicked, clicked_on_obj
 end
 
-is_same_id(id, robj) = id.id == robj.id
 """
 Returns a boolean signal indicating if the mouse hovers over `robj`
 """
