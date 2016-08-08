@@ -1,13 +1,9 @@
 using GLVisualize, GeometryTypes
 using GLAbstraction
-<<<<<<< HEAD
 if !isdefined(:runtests)
 	window = glscreen()
 	timesignal = bounce(linspace(0f0,1f0,360))
 end
-=======
-w = glscreen();@async renderloop(w)
->>>>>>> master
 
 function sin_torus(radius, thickness, N, t)
     pirange = linspace(0, 2pi, N^2)
@@ -19,7 +15,7 @@ function sin_torus(radius, thickness, N, t)
     end
     points
 end
-<<<<<<< HEAD
+
 t = const_lift(*, 1000f0, timesignal)
 ps1 = const_lift(sin_torus, 2, 6, 10, t)
 ps2 = const_lift(sin_torus, 5, 4, 10, t)
@@ -30,11 +26,3 @@ _view(visualize((Circle, ps), scale=Vec2f0(0.04), billboard=true), camera=:persp
 if !isdefined(:runtests)
     renderloop(window)
 end
-=======
-ps1 = const_lift(sin_torus, 2, 6, 10, bounce(linspace(0,pi, 1000)))
-ps2 = const_lift(sin_torus, 5, 4, 10, bounce(linspace(0,pi, 1000)))
-ps3 = const_lift(sin_torus, 10, 2, 10, bounce(linspace(0,pi, 1000)))
-ps = map(vcat, ps1, ps2, ps3)
-empty!(w)
-view(visualize((Circle, ps), scale=Vec2f0(0.04), billboard=true), camera=:perspective)
->>>>>>> master

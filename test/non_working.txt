@@ -1,3 +1,2 @@
-/home/s/.julia/v0.4/GLVisualize/examples/camera/billiard.jl
-/home/s/.julia/v0.4/GLVisualize/examples/lines/contourlines.jl
-/home/s/.julia/v0.4/GLVisualize/examples/volumes/maximum_intensity_projection.jl
+/home/s/.julia/v0.5/GLVisualize/examples/camera/billiard.jl
+/home/s/.julia/v0.5/GLVisualize/examples/volumes/maximum_intensity_projection.jl

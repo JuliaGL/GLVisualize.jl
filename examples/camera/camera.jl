@@ -51,7 +51,7 @@ cam = PerspectiveCamera(camera_screen.area, eyeposition, lookatposition, upvecto
 """
 Simple visualization of a camera (this could be moved to GLVisualize)
 """
-function GLVisualize.visualize(cam::PerspectiveCamera, style, keyword_args)
+function GLVisualize.visualize(cam::PerspectiveCamera, style::Style, keyword_args::Dict)
     lookvec, posvec, upvec = map(f-> getfield(cam, f), (:lookat, :eyeposition, :up))
     positions = map((a,b) -> Point3f0[a,b], lookvec, posvec)
     lines = map(lookvec, posvec, upvec) do l,p,u

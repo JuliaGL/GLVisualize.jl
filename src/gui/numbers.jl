@@ -67,7 +67,7 @@ function calc_val{T<:Integer}(sval::T, val, range)
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
 function widget{T <: FixedVector}(
-        slider_value::Signal{T}, window; 
+        slider_value::Signal{T}, window;
         numberwidth=5, range=range_default(T),
         kw_args...
     )
@@ -75,7 +75,7 @@ function widget{T <: FixedVector}(
     le_sigs = []
     le_tuple = ntuple(length(value(slider_value))) do i
         number_s = map(getindex, slider_value, Signal(i))
-        num_s, vizz = widget(number_s, window; 
+        num_s, vizz = widget(number_s, window;
             numberwidth=numberwidth, range=range,
             kw_args...
         )
@@ -94,31 +94,30 @@ function widget{T <: FixedVector}(
     map(T, le_sigs...), Context(le_tuple...)
 end
 function widget{T <: Real}(
-        slider_value::Signal{T}, window; 
+        slider_value::Signal{T}, window;
         numberwidth=5, range=range_default(T), kw_args...
     )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)
     vizz              = visualize(
-        slider_value_str; 
-        color = RGBA{Float32}(0.5, 0.5, 0.5),
+        slider_value_str;
+        color = RGBA{Float32}(0.1, 0.1, 0.1),
         kw_args...
     )
     bb         = value(boundingbox(vizz))
     mini, maxi = minimum(bb)-5f0, widths(bb)+10f0
     bb_rect    = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
-    bb_vizz    = visualize(
-        bb_rect;
-        color=RGBA{Float32}(0.97, 0.97, 0.97),
-        is_fully_opaque = true,
-        kw_args...
-    ).children[]
+    # bb_vizz    = visualize(
+    #     bb_rect;
+    #     color=RGBA{Float32}(0.97, 0.97, 0.97),
+    #     kw_args...
+    # ).children[]
 
-    slider_robj       = vizz.children[]
+    slider_robj = vizz.children[]
     # current tuple of renderobject id and index into the gpu array
     m2id = GLWindow.mouse2id(window)
-    ids = (bb_vizz.id, slider_robj.id)
+    ids = (slider_robj.id,)
     hovers_slider = const_lift(is_same_id, m2id, ids)
     # inputs are a dict, materialize gets the keys out of it (equivalent to mouseposition = w.inputs[:mouseposition])
     # single left mousekey pressed (while no other mouse key is pressed)
@@ -132,5 +131,5 @@ function widget{T <: Real}(
         push!(slider_value, calc_val(v0, dragg[1], range))
         v0
     end)
-    return slider_value, Context(slider_robj, bb_vizz)
+    return slider_value, Context(slider_robj)
 end
