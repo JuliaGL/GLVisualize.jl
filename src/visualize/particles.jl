@@ -288,7 +288,7 @@ Extracts the offset from a primitive.
 primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
 
 primitive_offset(x) = Vec2f0(0) # default offset
-primitive_offset(prim::GeometryPrimitive) = -Vec2f0(widths(prim)) / 2f0
+#primitive_offset(prim::GeometryPrimitive) = -Vec2f0(widths(prim)) / 2f0
 primitive_offset(x::Char) = -Vec(glyph_scale!(x)) / 2f0
 
 
