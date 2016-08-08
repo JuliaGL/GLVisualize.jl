@@ -2,6 +2,7 @@ module FreeTypeAbstraction
 
 using FreeType, GeometryTypes
 using Compat
+
 export newface
 export renderface
 export FontExtent

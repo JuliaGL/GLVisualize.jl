@@ -112,6 +112,7 @@ function cubecamera(
     end
 
     robj = visualize(cube_steering, model=viewmatrix)
+
     start_colors = cube_steering.attributes
     color_tex    = robj.children[][:attributes]
     preserve(const_lift(cubeside_color, id, mousehover, Signal(start_colors), Signal(color_tex)))

@@ -105,6 +105,7 @@ void main(void)
     float glow_stroke = glow_width+stroke_width;
     vec4 uv_min_max = vec4(0,0,1,1); //minx, miny, maxx, maxy
 
+
     vertices.xy *= o_w.zw+glow_stroke; // scale
     vertices.zw *= o_w.zw+glow_stroke;
     vertices.xy += o_w.xy; // offset
@@ -114,5 +115,6 @@ void main(void)
     emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);
     emit_vertex(vertices.zy, uv_min_max.zw, uv_o_w.zw);
     emit_vertex(vertices.zw, uv_min_max.zy, uv_o_w.zy);
+
     EndPrimitive();
 }

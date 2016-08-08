@@ -1,6 +1,7 @@
 __precompile__(true)
 module GLVisualize
 
+using Compat
 using GLFW
 using GLWindow
 using GLAbstraction
@@ -34,7 +35,16 @@ end
 
 typealias GLBoundingBox AABB{Float32}
 
+
 import Base: merge, convert, show
+
+if VERSION < v"0.5.0-dev+4612"
+	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
+		checkbounds(Bool, size(array), indexes...)
+	end
+else 
+	import Base: view
+end
 
 export renderloop
 

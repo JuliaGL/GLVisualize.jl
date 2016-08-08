@@ -15,7 +15,7 @@ Creates a default visualization for any value.
 The defaults can be customized via the key word arguments and the style parameter.
 The style can change the the look completely (e.g points displayed as lines, or particles),
 while the key word arguments just alter the parameters of one visualization.
-Always returns a context, which can be displayed on a window via _view(::Context, [display]).
+Always returns a context, which can be displayed on a window via view(::Context, [display]).
 """
 visualize(main, s::Symbol=:default; kw_args...) = visualize(main, Style{s}(), Dict{Symbol, Any}(kw_args))::Context
 visualize(main, s::Style, data::Dict) = assemble_shader(default(main, s, data))::Context
