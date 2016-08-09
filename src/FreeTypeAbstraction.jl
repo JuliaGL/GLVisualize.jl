@@ -17,7 +17,7 @@ immutable FontExtent{T}
     scale               ::Vec{2, T}
 end
 immutable FontFace
-    name::String
+    name::AbstractString
 end
 
 import Base: ./, .*
