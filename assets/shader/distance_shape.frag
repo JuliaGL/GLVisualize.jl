@@ -59,7 +59,7 @@ float triangle(vec2 P){
     return -max(r1,r2);
 }
 float circle(vec2 uv){
-    return (1-length(uv-0.5))-0.5;
+    return 1-length(uv);
 }
 float rectangle(vec2 uv){
     vec2 d = max(-uv, uv-vec2(1));
@@ -85,15 +85,17 @@ void fill(vec4 c, sampler2DArray image, vec2 uv, float infill, inout vec4 color)
 
 void stroke(vec4 strokecolor, float signed_distance, float half_stroke, inout vec4 color){
     if (half_stroke > 0.0){
-        float t = aastep(0, half_stroke, signed_distance);
+        float t = aastep(-half_stroke, 0, signed_distance);
         color = mix(color, strokecolor, t);
     }
 }
 
-void glow(vec4 glowcolor, float signed_distance, float outside, inout vec4 color){
+void glow(vec4 glowcolor, float signed_distance, float inside, inout vec4 color){
     if (glow_width > 0.0){
-        float alpha = 1-(outside*abs(clamp(signed_distance, -1, 0))*20); //TODO figure out better factor than 7
-        color = mix(color, vec4(glowcolor.rgb, glowcolor.a*alpha), outside);
+        float lolz = (f_scale.x+f_scale.y);
+        float outside = (abs(signed_distance)-f_scale.x)/f_scale.y;
+        float alpha = 1-outside;
+        color = mix(vec4(glowcolor.rgb, glowcolor.a*alpha), color, inside);
     }
 }
 
@@ -121,13 +123,12 @@ void main(){
     else if(shape == TRIANGLE)
         signed_distance = triangle(f_uv);
 
-    float half_stroke = (stroke_width/f_scale).x;
-    float inside = aastep(half_stroke, 100.0, signed_distance);
-    float outside = abs(aastep(-100.0, -half_stroke, signed_distance));
+    float half_stroke = f_scale.x;
+    float inside = aastep(0, signed_distance);
     vec4 final_color = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
-    glow(f_glow_color, signed_distance, outside, final_color);
+    glow(f_glow_color, signed_distance, aastep(-f_scale.x, signed_distance), final_color);
     write2framebuffer(final_color, f_id);
 }

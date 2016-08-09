@@ -83,7 +83,6 @@ void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
     f_color           = g_color[0];
     f_stroke_color    = g_stroke_color[0];
     f_glow_color      = g_glow_color[0];
-    f_scale           = g_offset_width[0].zw;
     f_id              = g_id[0];
 
     EmitVertex();
@@ -101,20 +100,15 @@ void main(void)
     // v1*      * v2
     vec4 o_w = g_offset_width[0];
     vec4 uv_o_w = g_uv_offset_width[0];
-    vec4 vertices = vec4(0, 0, 1, 1); // use offset as origin quad (x,y,w,h)
     float glow_stroke = glow_width+stroke_width;
-    vec4 uv_min_max = vec4(0,0,1,1); //minx, miny, maxx, maxy
-
-
-    vertices.xy *= o_w.zw+glow_stroke; // scale
-    vertices.zw *= o_w.zw+glow_stroke;
-    vertices.xy += o_w.xy; // offset
-    vertices.zw += o_w.xy;
-
+    vec2 final_scale = o_w.zw+glow_stroke;
+    vec2 scale_rel = (final_scale/o_w.zw);
+    vec4 uv_min_max = vec4(-scale_rel, scale_rel); //minx, miny, maxx, maxy
+    vec4 vertices = vec4(-final_scale/2.0, final_scale/2.0); // use offset as origin quad (x,y,w,h)
+    f_scale = vec2(stroke_width, glow_width)/o_w.zw;
     emit_vertex(vertices.xy, uv_min_max.xw, uv_o_w.xw);
     emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);
     emit_vertex(vertices.zy, uv_min_max.zw, uv_o_w.zw);
     emit_vertex(vertices.zw, uv_min_max.zy, uv_o_w.zy);
-
     EndPrimitive();
 }
