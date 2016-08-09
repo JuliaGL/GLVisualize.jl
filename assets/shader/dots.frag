@@ -3,10 +3,8 @@
 flat in vec4  o_color;
 flat in uvec2 o_objectid;
 
-out vec4 fragment_color;
-out uvec2 fragment_groupid;
+void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
-    fragment_color   = o_color;
-    fragment_groupid = o_objectid;
+    write2framebuffer(o_color, o_objectid);
 }

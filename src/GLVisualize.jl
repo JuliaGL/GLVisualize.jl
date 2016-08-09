@@ -12,13 +12,26 @@ using ColorTypes
 using Colors
 using Reactive
 using Quaternions
-using Compat
 using FixedPointNumbers
 using FileIO
 using Packing
 using SignedDistanceFields
 using FreeType
+import ColorVectorSpace
+
 import Images
+using Base.Markdown
+using Compat
+import Compat.unsafe_wrap
+import Compat.String
+import Compat.unsafe_string
+
+if VERSION < v"0.5.0-dev+4612"
+	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
+		checkbounds(Bool, size(array), indexes...)
+	end
+end
+
 
 typealias GLBoundingBox AABB{Float32}
 
@@ -29,7 +42,7 @@ if VERSION < v"0.5.0-dev+4612"
 	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
 		checkbounds(Bool, size(array), indexes...)
 	end
-else 
+else
 	import Base: view
 end
 
@@ -40,7 +53,7 @@ function assetpath(folders...)
     isfile(path) || isdir(path) || error("Could not locate file at $path")
     path
 end
-loadasset(folders...) = load(assetpath(folders...))
+loadasset(folders...; kw_args...) = load(assetpath(folders...); kw_args...)
 export assetpath, loadasset
 
 include("FreeTypeAbstraction.jl")
@@ -59,7 +72,7 @@ import .Config: default
 include("boundingbox.jl")
 
 include("visualize_interface.jl")
-export view #push renderobject into renderlist of the default screen, or supplied screen
+export _view #push renderobject into renderlist of the default screen, or supplied screen
 export visualize    # Visualize an object
 export visualize_default # get the default parameter for a visualization
 
@@ -69,20 +82,19 @@ export x_partition
 export loop, bounce
 export clicked, dragged_on, is_hovering
 export OR, AND, isnotempty
+export color_lookup
 
 include("renderloop.jl")
 
 
 include("texture_atlas.jl")
-export Sprite
-export GLSprite
-export SpriteStyle
-export GLSpriteStyle
 
-include(joinpath("edit", "color_chooser.jl"))
-include(joinpath("edit", "numbers.jl"))
-include(joinpath("edit", "line_edit.jl"))
-export vizzedit # edits some value, name should be changed in the future!
+include(joinpath("gui", "color_chooser.jl"))
+include(joinpath("gui", "numbers.jl"))
+include(joinpath("gui", "line_edit.jl"))
+include(joinpath("gui", "buttons.jl"))
+
+export widget # edits some value, name should be changed in the future!
 
 include(joinpath("visualize", "lines.jl"))
 include(joinpath("visualize", "containers.jl"))
@@ -103,7 +115,10 @@ end
 include("videotool.jl")
 export create_video
 
-Base.precompile(glscreen, ())
+include("documentation.jl")
+export get_docs
+
+#include("glv_userimg.jl")
 
 
 end # module

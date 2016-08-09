@@ -10,28 +10,29 @@ end
 
 function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        position_x  = main[1] => Texture
-        position_y  = main[2] => Texture
-        position_z  = main[3] => Texture
+        position_x  = main[1] => (Texture, "x position, must be an `Matrix{Float}`")
+        position_y  = main[2] => (Texture, "y position, must be an `Matrix{Float}`")
+        position_z  = main[3] => (Texture, "z position, must be an `Matrix{Float}`")
         boundingbox = surfboundingbox(position_x, position_y, position_z)
-        scale       = Vec3f0(0)
+        scale       = Vec3f0(0) => "scale must be 0, for a surfacemesh"
     end
     surface(position_z, s, data)
 end
 
 function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        ranges = ((-1f0, 1f0), (-1f0,1f0))
+        ranges = ((-1f0, 1f0), (-1f0,1f0)) => "x, and y position given as `(start, endvalue)` or any `Range`"
     end
     delete!(data, :ranges) # no need to have them in the OpenGL data
     _default((Grid(value(main), value(ranges)), main), s, data)
 end
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        position    = main[1]
-        position_z  = main[2] => Texture
+        position    = main[1] =>" Position given as a `Grid{2}`.
+        Can be constructed e.g. `Grid(linspace(0,2,N1), linspace(0,3, N2))`"
+        position_z  = main[2] => (Texture, "height offset for the surface, must be `Matrix{Float}`")
         boundingbox = surfboundingbox(position, position_z)
-        scale       = Vec3f0(step(main[1].dims[1]), step(main[1].dims[2]), 1)
+        scale       = Vec3f0(step(main[1].dims[1]), step(main[1].dims[2]), 1) => "scale of the grid planes forming the surface. Can be made smaller, to let the grid show"
     end
     surface(position_z, s, data)
 end
@@ -49,13 +50,16 @@ function surface(main, s::Style{:surface}, data::Dict)
         boundingbox= nothing
     end
     @gen_defaults! data begin
-        color      = nothing
-        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => Texture
-        color_norm = (color==nothing ? const_lift(_extrema, boundingbox) : nothing)
-        instances  = const_lift(length, main)
+        color      = nothing => "must be single color value, must be nothing for color_map"
+        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => (Texture,
+        "must be `Vector{Color}`, `color` must be nothing")
+        color_norm = (color==nothing ? const_lift(_extrema, boundingbox) : nothing) => begin
+            "normalizes the heightvalues before looking up color in `color_map`."
+        end
+        instances  = const_lift(length, main) => "number of planes used to render the surface"
 
         shader     = GLVisualizeShader(
-            "util.vert", "surface.vert", "standard.frag",
+            "fragment_output.frag", "util.vert", "surface.vert", "standard.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
         )
     end

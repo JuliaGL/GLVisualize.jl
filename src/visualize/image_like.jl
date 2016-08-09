@@ -7,11 +7,20 @@ _default{T <: Colorant, X}(main::Signal{Images.Image{T, 2, X}}, s::Style, d::Dic
 A matrix of colors is interpreted as an image
 """
 _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults! data begin
-    image                 = main => Texture
-    primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...)
+    image                 = main => (Texture, "image, can be a Texture or Array of colors")
+    primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
     boundingbox           = GLBoundingBox(primitive)
     preferred_camera      = :orthographic_pixel
-    shader                = GLVisualizeShader("uv_vert.vert", "texture.frag")
+    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
+end
+function _default{T <: Colorant}(main::VecTypes{T}, ::Style, data::Dict)
+    @gen_defaults! data begin
+        image                 = main => (Texture, "image, can be a Texture or Array of colors")
+        primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, length(value(main)), 50f0) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
+        boundingbox           = GLBoundingBox(primitive)
+        preferred_camera      = :orthographic_pixel
+        shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
+    end
 end
 
 """
@@ -25,7 +34,7 @@ _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_default
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(grid_start..., grid_size...)
     color_norm	          = const_lift(extrema2f0, main)
     boundingbox 	      = GLBoundingBox(primitive)
-    shader                = GLVisualizeShader("uv_vert.vert", "intensity.frag")
+    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "intensity.frag")
     preferred_camera      = :orthographic_pixel
 end
 
@@ -111,8 +120,8 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
-    shader                = GLVisualizeShader("parametric.vert", "parametric.frag", view=Dict(
-         "function" => bytestring(func.source)
+    shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", view=Dict(
+         "function" => Compat.String(func.source)
      ))
 end
 
@@ -138,6 +147,14 @@ function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, da
     _default(a, default_style, data)
 end
 
+immutable VolumePrerender
+end
+@compat function (::VolumePrerender)()
+    GLAbstraction.StandardPrerender()()
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_FRONT)
+end
+
 _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
     intensities      = main => Texture
     dimensions       = Vec3f0(1)
@@ -149,9 +166,9 @@ _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_de
     color_norm       = const_lift(extrema2f0, main)
     algorithm        = MaximumIntensityProjection
     boundingbox      = hull
-    shader           = GLVisualizeShader("util.vert", "volume.vert", "volume.frag")
-    prerender        = (
-        (glEnable,   GL_CULL_FACE),
-        (glCullFace, GL_FRONT),
-    )
+    shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
+    # prerender        = VolumePrerender()
+    # postrender       = () -> begin
+    #     glDisable(GL_CULL_FACE)
+    # end
 end

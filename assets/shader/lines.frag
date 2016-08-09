@@ -37,25 +37,14 @@ float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
 
-#ifdef DEPTH_LAYOUT
-    layout (depth_greater) out float gl_FragDepth;
-#endif
-out vec4  fragment_color;
-out uvec2 fragment_groupid;
-void write2framebuffer(vec4 color, uvec2 id){
-    fragment_color   = color;
-    fragment_groupid = id;
-    if (color.a > 0.5){
-        gl_FragDepth = gl_FragCoord.z;
-    }else{
-        gl_FragDepth = 1.0;
-    }
-}
+void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
     vec4 color;
+    float aa = 0.2;
+
     if(dotted){
-        vec2 uv = vec2(fract(f_uv.x), f_uv.y);
+        vec2 uv = vec2(fract(f_uv.x)*2, f_uv.y);
         float signed_distance;
         if(shape == CIRCLE)
             signed_distance = circle(uv);
@@ -63,10 +52,12 @@ void main(){
             signed_distance = rounded_rectangle(uv, vec2(0.2), vec2(0.8));
         else if(shape == RECTANGLE)
             signed_distance = rectangle(uv);
-        float inside     = aastep(0.0, 120.0, signed_distance);
-        color   = vec4(f_color.rgb, f_color.a*inside);
+
+        float inside = aastep(aa, signed_distance);
+        color = vec4(f_color.rgb, inside);
     }else{
-        color   = vec4(f_color.rgb, f_color.a*aastep(0.2, 0.8, f_uv.y));
+        float a = aastep(0+aa, 1-aa, f_uv.y);
+        color = vec4(f_color.rgb, f_color.a*a);
     }
     write2framebuffer(color, f_id);
 }

@@ -41,61 +41,24 @@ end
 
 Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.mousehover/T(2)))
 
-"""
-creates a button that can switch between orthographic and perspective projection
-"""
-function projection_switch(width, mousehover, mouse_buttons_pressed;
-        color=RGBA{Float32}(0,0,0,0),
-        stroke_width=1.5f0
-    )
-    # we use two overlapping rectangles as a symbol for the two projections
-    positions = Signal(Point2f0[(0,0), (10,10)])
-    scale     = Signal(Vec2f0[(width, width), (width,width)])
-    ortho1    = visualize(
-        (RECTANGLE, positions), color=color,
-        scale=scale, stroke_width=stroke_width, transparent_picking=true
-    )
-    ortho_robj = ortho1.children[]
-    # find out if we hover over the the button
-    hovers_ortho = const_lift(mousehover) do mh
-        mh.id == ortho_robj.id
-    end
-    # change the color when we're hovering over the button
-    stroke_color = const_lift(hovers_ortho) do ho
-        ho && return RGBA(0.8f0, 0.8f0, 0.8f0, 0.8f0)
-        RGBA(0.5f0, 0.5f0, 0.5f0, 1f0)
-    end
-    # overwrite the stroke color attribute
-    ortho_robj[:stroke_color] = stroke_color
 
-    # find out if the button was pressed and if yes, switch the projection
-    isperspective = foldp(true, mouse_buttons_pressed) do v0, clicked
-        clicked==Set([0]) && value(hovers_ortho) && return !v0
-        v0
-    end
-
-    projectiontype = map(isperspective) do isp
-        if isp
-            # for perspective, the back rectangle is a little smaller
-            # (like in a perspective projection)
-            push!(scale, Vec2f0[(width,width), (width*0.8,width*0.8)])
-        else
-            # for orthographic, both have the same size
-            push!(scale, fill(Vec2f0(width), 2))
-        end
-        # return the correct projection type
-        isp && return GLAbstraction.PERSPECTIVE
-        GLAbstraction.ORTHOGRAPHIC
-    end
-    return projectiontype, ortho1
+function get_rotation(m)
+    xs = norm(Vec3f0(Tuple(m)[1][1:3]))
+    ys = norm(Vec3f0(Tuple(m)[2][1:3]))
+    zs = norm(Vec3f0(Tuple(m)[3][1:3]))
+    Mat4f0(
+        (m[1,1]/xs, m[1,2]/xs, m[1,3]/xs, 0),
+        (m[2,1]/ys, m[2,2]/ys, m[2,3]/ys, 0),
+        (m[3,1]/zs, m[3,2]/zs, m[3,3]/zs, 0),
+        (0     , 0     , 0     , 1),
+    )
 end
-
 
 """
 Creates a camera which is steered by a cube for `window`.
 """
 function cubecamera(
-		window;
+		window, projectiontype;
 		cube_area 	= Signal(SimpleRectangle(0,0,150,150)),
 		eyeposition = Vec3f0(2),
     	lookatv 	= Vec3f0(0),
@@ -115,24 +78,10 @@ function cubecamera(
         should_reset, id,
         Signal(mousehover)
     ))
-    projectiontype, projectionbutton = projection_switch(20f0, mousehover, mouse_buttons_pressed)
-    inside_trans  = Quaternions.Quaternion(1f0,0f0,0f0,0f0)
-    outside_trans = Quaternions.qrotation(Float32[0,1,0], deg2rad(180f0))
-    cube_rotation = const_lift(cube_area, mouseposition) do ca, mp
-        m = minimum(ca)
-        max_dist = norm(maximum(ca) - m)
-        mindist = max_dist *0.9f0
-        maxdist = max_dist *1.5f0
-        m, mp = Point2f0(m), Point2f0(mp)
-        t = norm(m-mp)
-        t = Float32((t-mindist)/(maxdist-mindist))
-        t = clamp(t, 0f0,1f0)
-        slerp(inside_trans, outside_trans, t)
-    end
 
     left_ctrl = Set([GLFW.KEY_LEFT_CONTROL])
-    use_cam = const_lift(buttons_pressed) do b
-        b == left_ctrl
+    use_cam = map(buttons_pressed, window.inputs[:mouseinside]) do b, mi
+        b == left_ctrl && mi
     end
     theta, trans = default_camera_control(
         window.inputs, Signal(0.02f0), Signal(0.01f0),
@@ -145,39 +94,29 @@ function cubecamera(
         window.area, fov, near, far,
         projectiontype
     )
-    preserve(map(new_eyeposition) do neweyepos
-        dir = value(eyeposition)-value(lookatvec)
-        oldlength = norm(dir)
-        push!(lookatvec, lookatv)
-        push!(eyeposition, neweyepos*oldlength) # neweyepos should be normalized
+    preserve(map(new_eyeposition) do neweye_dir
+        eypos, lookv = value(eyeposition), value(lookatvec)
+        oldlength = norm(eypos - lookv)
+        push!(eyeposition, lookv+neweye_dir*oldlength)
         for i=1:3
             unitvec = unit(Vec3f0, i)
-            if dot(neweyepos, unitvec) == 0f0 # find an orthogonal vector
-                push!(upvector,unitvec)
+            if dot(neweye_dir, unitvec) == 0f0 # find an orthogonal vector
+                push!(upvector, unitvec)
             end
         end
     end)
     window.cameras[:perspective] = main_cam
 
-    cubescreen = Screen(window, area=cube_area, color=RGBA{Float32}(0,0,0,0))
-    viewmatrix = map(eyeposition, lookatvec) do eyepos, lvec
-        dir = GeometryTypes.normalize(eyepos-lvec)
-        lookat(dir*2, Vec3f0(0), value(upvector))
+    viewmatrix = map(main_cam.view) do m
+        inv(get_rotation(m))
     end
-    cubescreen.cameras[:cube_cam] = DummyCamera(
-        farclip=far,
-        nearclip=near,
-        view=viewmatrix,
-        projection=const_lift(perspectiveprojection, cube_area, fov, near, far)
-    )
-    
-    robj = visualize(cube_steering, preferred_camera=:cube_cam, model=scalematrix(Vec3f0(0.5)))
+
+    robj = visualize(cube_steering, model=viewmatrix)
+
     start_colors = cube_steering.attributes
     color_tex    = robj.children[][:attributes]
     preserve(const_lift(cubeside_color, id, mousehover, Signal(start_colors), Signal(color_tex)))
     preserve(id)
     push!(id, robj.children[].id)
-    view(robj, cubescreen)
-    view(projectionbutton, cubescreen, camera=:fixed_pixel)
-	window
+	robj
 end

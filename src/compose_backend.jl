@@ -302,7 +302,7 @@ function Compose.draw{T <: Compose.CirclePrimitive}(img::GLVisualizeBackend, for
     r = form.primitives[1].radius
     radius = absolute_native_units(img, r)
     positions = Point2f0[absolute_native_units(img, elem.center) for elem in form.primitives]
-    view(visualize((Circle{Float32}(Point2f0(0), radius), positions),
+    _view(visualize((Circle{Float32}(Point2f0(0), radius), positions),
     	color=img.fill,
     	stroke_color=img.stroke,
     	visible=img.visible
@@ -313,7 +313,7 @@ function Compose.draw{T <: Compose.RectanglePrimitive}(img::GLVisualizeBackend, 
     positions = [absolute_native_units(img, elem.corner) for elem in form.primitives]
     wh = form.primitives[1].width, form.primitives[1].height
     scale = absolute_native_units(img, wh)
-    view(visualize(positions,
+    _view(visualize(positions,
     	scale=scale,
     	shape=Cint(RECTANGLE),
     	model=translationmatrix(Vec3f0(scale/2, 0)),
@@ -353,14 +353,14 @@ end
 function _add_line(points::Vector{Point2f0}, color, thickness)
     c = fill(RGBA{Float32}(color), length(points))
     robj      = visualize(points, :lines, color=c, thickness=thickness)
-    view(robj, camera=:orthographic_pixel)
+    _view(robj, camera=:orthographic_pixel)
 end
 function _add_line(points::LineSegment{Point2f0}, color, thickness)
     robj = visualize([points],
         color     = color,
         thickness = thickness
     )
-    view(robj, camera=:orthographic_pixel)
+    _view(robj, camera=:orthographic_pixel)
 end
 function add_line(points::Vector{Point2f0}, color, thickness)
     N = length(points)
@@ -401,7 +401,7 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
         scales    = GLBuffer([wh])
         fillcolors = GLBuffer([fillcolor])
         strokecolors = GLBuffer([stroke_color])
-        view(visualize((RECTANGLE, positions),
+        _view(visualize((RECTANGLE, positions),
         	color=fillcolors,
             scale=scales,
         	stroke_color=strokecolors,
@@ -433,7 +433,7 @@ end
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.BitmapPrimitive)
     xyz = Vec3f0(prim.corner.x.abs, prim.corner.y.abs, 0)
     scale = Vec3f0(prim.width.abs, prim.height.abs, 1)
-    view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen, camera=:orthographic_pixel)
+    _view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen, camera=:orthographic_pixel)
 end
 
 function gen_text(text, atlas, font, position, scale, offset)
@@ -452,13 +452,13 @@ function pango_parse_markup(text)
         Int32,
         (Ptr{UInt8}, Int32, UInt32, Ptr{Ptr{Void}},
         Ptr{Ptr{UInt8}}, Ptr{UInt32}, Ptr{Void}),
-        bytestring(text), -1, 0, c_attr_list, c_stripped_text,
+        Compat.String(text), -1, 0, c_attr_list, c_stripped_text,
         C_NULL, C_NULL
     )
     if ret == 0
         error("Could not parse pango markup.")
     end
-    str = bytestring(c_stripped_text[1])
+    str = Compat.String(c_stripped_text[1])
 
     # TODO: do c_stripped_text and c_attr_list need to be freed?
 
@@ -483,7 +483,7 @@ function parse_pango(text::AbstractString, scale)
     offset          = Point2f0[]
     uv_offset_width = Vec4f0[]
     for (idx, attr) in Compose.unpack_pango_attr_list(c_attr_list)
-        current_text = bytestring(text[last_idx:idx])
+        current_text = Compat.String(text[last_idx:idx])
         last_idx = idx+1
 
         pos, sa, oa, uvwidth = gen_text(current_text,
@@ -509,7 +509,7 @@ function parse_pango(text::AbstractString, scale)
     end
     last_scale = Vec2f0(1)
     if last_idx <= length(text)
-        current_text = bytestring(text[last_idx:end])
+        current_text = Compat.String(text[last_idx:end])
         pos, sa, oa, uvwidth = gen_text(current_text,
             atlas, font, last_position, last_scale.*scale, last_offset
         )
@@ -561,7 +561,7 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
     end
     transmat *= translationmatrix(Vec3f0(pos..., 0))
 	GLAbstraction.transformation(obj, transmat)
-	view(obj, img.screen, camera=:orthographic_pixel)
+	_view(obj, img.screen, camera=:orthographic_pixel)
 end
 
 

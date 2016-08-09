@@ -13,7 +13,7 @@ vectors3d = rand(Vec3f0, 5,5,5)
 # to look up the a color from the optional keyword argument `color_map`.
 arrows = visualize(('➤', vectors3d), scale=Vec2f0(0.1), model=rotation)
 
-view(arrows, camera=:perspective)
+_view(arrows, camera=:perspective)
 
 if !isdefined(:runtests)
     renderloop(window)

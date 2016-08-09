@@ -28,7 +28,7 @@ camera_screen = Screen(
 	window, name=:camera_screen,
 	area=const_lift(xhalf2, window.area)
 )
-# create second screen to view the scene
+# create second screen to _view the scene
 scene_screen = Screen(
 	window, name=:scene_screen,
 	area=const_lift(xhalf, window.area)
@@ -51,7 +51,7 @@ cam = PerspectiveCamera(camera_screen.area, eyeposition, lookatposition, upvecto
 """
 Simple visualization of a camera (this could be moved to GLVisualize)
 """
-function GLVisualize.visualize(cam::PerspectiveCamera, style, keyword_args)
+function GLVisualize.visualize(cam::PerspectiveCamera, style::Style, keyword_args::Dict)
     lookvec, posvec, upvec = map(f-> getfield(cam, f), (:lookat, :eyeposition, :up))
     positions = map((a,b) -> Point3f0[a,b], lookvec, posvec)
     lines = map(lookvec, posvec, upvec) do l,p,u
@@ -94,16 +94,16 @@ camera_path_line = visualize(camera_path, :lines)
 
 
 
-# view everything on the appropriate screen.
-# we need to copy the cat, because view inserts the camera into the
+# _view everything on the appropriate screen.
+# we need to copy the cat, because _view inserts the camera into the
 # actual render object. this is sub optimal and will get changed!
 # Note, that this is a shallow copy, so the actual data won't be copied,
 # just the data structure that holds the camera
-view(copy(cat), camera_screen, camera=:perspective)
-view(copy(cat), scene_screen, camera=:perspective)
-view(visualize(cam), scene_screen, camera=:perspective)
-view(camera_points, scene_screen, camera=:perspective)
-view(camera_path_line, scene_screen, camera=:perspective)
+_view(copy(cat), camera_screen, camera=:perspective)
+_view(copy(cat), scene_screen, camera=:perspective)
+_view(visualize(cam), scene_screen, camera=:perspective)
+_view(camera_points, scene_screen, camera=:perspective)
+_view(camera_path_line, scene_screen, camera=:perspective)
 
 if !isdefined(:runtests)
 	renderloop(window)

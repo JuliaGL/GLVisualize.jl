@@ -1,24 +1,24 @@
 function _default{M<:GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
-        main 		= mesh
+        main        = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shader 		= GLVisualizeShader("util.vert", "attribute_mesh.vert", "standard.frag")
+        shader      = GLVisualizeShader("fragment_output.frag", "util.vert", "attribute_mesh.vert", "standard.frag")
     end
 end
 
 function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
-        main 		= value(mesh)
-        color 		= default(RGBA{Float32}, s)
+        main        = value(mesh)
+        color       = default(RGBA{Float32}, s)
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shader 		= GLVisualizeShader("util.vert", "standard.vert", "standard.frag")
+        shader      = GLVisualizeShader("fragment_output.frag", "util.vert", "standard.vert", "standard.frag")
     end
 end
 function _default{M<:GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
-        main 		= value(mesh)
+        main         = value(mesh)
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shader 		= GLVisualizeShader("util.vert", "vertexcolor.vert", "standard.frag")
+        shader         = GLVisualizeShader("fragment_output.frag", "util.vert", "vertexcolor.vert", "standard.frag")
     end
 end
 
@@ -35,6 +35,6 @@ function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
         grid_thickness  = Vec3f0(2)
         gridsteps       = Vec3f0(5)
         boundingbox     = const_lift(GLBoundingBox, mesh)
-        shader          = GLVisualizeShader("grid.vert", "grid.frag")
+        shader          = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
     end
 end

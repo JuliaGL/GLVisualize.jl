@@ -21,7 +21,7 @@ particles = const_lift(particle_data2D, t, 256)
 # create a visualisation with each particle being 15px wide
 # if you omit the primitive, it defaults to a SimpleRectangle
 vis = visualize(particles, scale=Vec2f0(15))
-view(vis, window, camera=:orthographic_pixel)
+_view(vis, window, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)

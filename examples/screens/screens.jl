@@ -29,9 +29,9 @@ screen3D = Screen(
 bars = visualize(rand(Float32, 10,10))
 points = visualize([rand(Point2f0)*1000 for i=1:50], scale=Vec2f0(40))
 
-# view them in different screens
-view(bars,   screen3D, camera=:perspective)
-view(points, screen2D, camera=:orthographic_pixel)
+# _view them in different screens
+_view(bars,   screen3D, camera=:perspective)
+_view(points, screen2D, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
 	renderloop(window)

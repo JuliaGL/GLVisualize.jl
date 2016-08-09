@@ -7,52 +7,35 @@ function sumlengths(points)
     result
 end
 
-"""
-Converts index arrays to the OpenGL equivalent.
-"""
-to_indices(x::TOrSignal{Int}) = x
-to_indices(x::VecOrSignal{UnitRange{Int}}) = x
-"""
-For integers, we transform it to 0 based indices
-"""
-to_indices{I<:Integer}(x::Vector{I}) = indexbuffer(map(i-> Cuint(i-1), x))
-function to_indices{I<:Integer}(x::Signal{Vector{I}})
-    x = map(x-> map(i->Cuint(i-1),x), x)
-    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
-    preserve(const_lift(update!, gpu_mem, x))
-    gpu_mem
-end
-"""
-If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
-"""
-to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
-to_indices{I<:GLuint}(x::Signal{Vector{I}}) = indexbuffer(x)
-to_indices(x) = error(
-    "Not a valid index type: $x.
-    Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
-)
 
-
-function _default{N,T}(position::VecTypes{Point{N,T}}, s::style"lines", data::Dict)
+function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
+    pv = value(position)
+    if isa(position, GPUArray)
+        p_vec = position
+    else
+        p_vec = const_lift(vec, position)
+    end
     @gen_defaults! data begin
+        dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
         dotted              = false
-        vertex              = position            => GLBuffer
+        vertex              = p_vec  => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
         stroke_color        = default(RGBA, s, 2) => GLBuffer
-        thickness           = 2f0
+        thickness           = 1f0
         shape               = RECTANGLE
         transparent_picking = false
+        is_fully_opaque     = false
         preferred_camera    = :orthographic_pixel
-        max_primitives      = const_lift(length, position)
-        boundingbox         = GLBoundingBox(to_cpu_mem(value(position)))
-        indices             = const_lift(length, position) => to_indices
-        shader              = GLVisualizeShader("util.vert", "lines.vert", "lines.geom", "lines.frag")
+        max_primitives      = const_lift(length, p_vec)
+        boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
+        indices             = const_lift(length, p_vec) => to_indices
+        shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
     if dotted
         @gen_defaults! data begin
-            lastlen   = const_lift(sumlengths, position) => GLBuffer
-            maxlength = const_lift(last, ll)
+            lastlen   = const_lift(sumlengths, p_vec) => GLBuffer
+            maxlength = const_lift(last, lastlen)
         end
     end
     data
@@ -71,10 +54,11 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
         transparent_picking = false
+        is_fully_opaque     = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
-        shader              = GLVisualizeShader("util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
+        shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
         gl_primitive        = GL_LINES
     end
 end
@@ -91,11 +75,46 @@ end
 function _default{G<:GeometryPrimitive{3}}(
         geometry::TOrSignal{G}, s::style"lines", data::Dict
     )
+    wireframe(geometry, data)
+end
+function _default(
+        geometry::TOrSignal{GLNormalMesh}, s::style"lines", data::Dict
+    )
+    wireframe(geometry, data)
+end
+function wireframe(
+        geometry, data::Dict
+    )
     points = const_lift(geometry) do g
-         decompose(Point3f0, g) # get the point representation of the geometry
+        decompose(Point3f0, g) # get the point representation of the geometry
     end
     # Get line index representation
     indices = decompose(Face{2, GLuint, -1}, value(geometry))
     data[:indices] = reinterpret(GLuint, indices)
     _default(points, style"linesegment"(), data)
+end
+
+
+immutable GridPreRender end
+
+@compat function (::GridPreRender)()
+    glEnable(GL_CULL_FACE)
+    glCullFace(GL_BACK)
+end
+
+function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
+    @gen_defaults! data begin
+        primitive::GLPlainMesh = c
+        bg_color = RGBA{Float32}(1,1,1,0)
+        grid_color = RGBA{Float32}(0.8,0.8,0.8,1)
+        grid_thickness = Vec3f0(0.999)
+        gridsteps = Vec3f0(5)
+        is_fully_opaque = false
+        shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
+        boundingbox = c
+        prerender = GridPreRender()
+        postrender = () -> (
+            glDisable(GL_CULL_FACE);
+        )
+    end
 end

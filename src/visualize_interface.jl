@@ -1,9 +1,12 @@
+
+const _default_light = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
 function default(main, s, data)
     data = _default(main, s, copy(data))
     @gen_defaults! data begin # make sure every object has these!
         model      	     = eye(Mat4f0)
-        light      	     = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
+        light      	     = _default_light
         preferred_camera = :perspective
+        is_transparent_pass = Cint(false)
     end
 end
 
@@ -34,8 +37,8 @@ function Base.push!{Pre}(screen::Screen, robj::RenderObject{Pre})
     nothing
 end
 
-function view{Pre}(
-		robj::RenderObject{Pre}, screen=ROOT_SCREEN;
+function _view(
+		robj::RenderObject, screen=current_screen();
 		camera = robj.uniforms[:preferred_camera],
 		position = Vec3f0(2), lookat=Vec3f0(0)
 	)
@@ -44,27 +47,30 @@ function view{Pre}(
     elseif haskey(screen.cameras, camera)
         real_camera = screen.cameras[camera]
     elseif camera == :perspective
-		real_camera = PerspectiveCamera(screen.inputs, position, lookat)
+        inside = screen.inputs[:mouseinside]
+		real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep=inside)
 	elseif camera == :fixed_pixel
 		real_camera = DummyCamera(window_size=screen.area)
 	elseif camera == :orthographic_pixel
-        real_camera = OrthographicPixelCamera(screen.inputs)
+        inside = screen.inputs[:mouseinside]
+        real_camera = OrthographicPixelCamera(screen.inputs, keep=inside)
 	elseif camera == :nothing
-        push!(screen, robj)
+        push!(screen, robj, :nothing)
 		return nothing
 	else
          error("Method $camera not a known camera type")
 	end
-    screen.cameras[Symbol(string(camera))] = real_camera
+    camsym = Symbol(string(camera))
+    screen.cameras[camsym] = real_camera
 	merge!(robj.uniforms, collect(real_camera), Dict( # add display dependant values
-		:resolution => const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area)),
-		:fixed_projectionview => get(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
+		:resolution => get!(screen.inputs, :resolution, const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area))),
+		:fixed_projectionview => get!(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
 	))
     push!(screen, robj)
 	nothing
 end
 
-view(robjs::Vector, screen=ROOT_SCREEN; kw_args...) = for robj in robjs
-	view(robj, screen; kw_args...)
+_view(robjs::Vector, screen=current_screen(); kw_args...) = for robj in robjs
+	_view(robj, screen; kw_args...)
 end
-view(c::Composable, screen=ROOT_SCREEN; kw_args...) = view(extract_renderable(c), screen; kw_args...)
+_view(c::Composable, screen=current_screen(); kw_args...) = _view(extract_renderable(c), screen; kw_args...)

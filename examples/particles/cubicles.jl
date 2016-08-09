@@ -50,7 +50,7 @@ camera = PerspectiveCamera(
     Signal(100f0), # Max distance (clip distance)
     Signal(GLAbstraction.ORTHOGRAPHIC)
 )
-view(cubes, window, camera=camera)
+_view(cubes, window, camera=camera)
 
 
 if !isdefined(:runtests)

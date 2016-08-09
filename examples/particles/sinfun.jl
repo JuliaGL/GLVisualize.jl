@@ -25,7 +25,7 @@ primitive = centered(Sphere)
 color     = map(RGB{Float32}, colormap("RdBu", n))
 points 	  = visualize((primitive, positions), scale=scale, color=color)
 
-view(points, window)
+_view(points, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

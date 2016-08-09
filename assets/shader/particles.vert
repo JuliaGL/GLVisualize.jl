@@ -43,22 +43,41 @@ flat out uvec2 o_id;
 ivec2 ind2sub(ivec2 dim, int linearindex);
 ivec3 ind2sub(ivec3 dim, int linearindex);
 
-{{scale_type}}   scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
-{{scale_x_type}} scale_x;
-{{scale_y_type}} scale_y;
-{{scale_z_type}} scale_z;
-
-vec3 _scale(vec3          scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
-vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
-vec3 _scale(vec3          scale, float   scale_x, samplerBuffer scale_y, float         scale_z, int index);
-vec3 _scale(vec3          scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
-vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
-
 
 {{rotation_type}}   rotation;
 void rotate(Nothing       vectors, int index, inout vec3 vertices, inout vec3 normal);
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N);
 void rotate(vec3          vectors, int index, inout vec3 vertices, inout vec3 normal);
+
+
+
+{{scale_type}}   scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
+{{scale_x_type}} scale_x;
+{{scale_y_type}} scale_y;
+{{scale_z_type}} scale_z;
+vec3 get_rotation(samplerBuffer rotation, int index){
+    return texelFetch(rotation, index).xyz;
+}
+vec3 get_rotation(Nothing rotation, int index){
+    return vec3(0,0,1);
+}
+vec3 get_rotation(vec3 rotation, int index){
+    return rotation;
+}
+vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
+vec3 _scale(vec3          scale, float   scale_x, samplerBuffer scale_y, float         scale_z, int index);
+vec3 _scale(vec3          scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
+vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
+
+vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, Nothing scale_z, int index){
+    vec3 rot = get_rotation(rotation, index);
+    return vec3(scale_x,scale_y, length(rot));
+}
+vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){
+    vec3 rot = get_rotation(rotation, index);
+    return vec3(scale.xy, scale.z*length(rot));
+}
+
 
 
 {{color_type}}      color;
@@ -105,7 +124,6 @@ void main(){
 	{{position_calc}}
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
     o_color    = _color(color, intensity, color_map, color_norm, index);
-
     V *= scale;
     rotate(rotation, index, V, N);
     render(pos + V, N, view*model, projection, light);

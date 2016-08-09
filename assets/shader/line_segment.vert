@@ -5,7 +5,7 @@
 {{color_type}} color;
 {{thickness_type}} thickness;
 
-uniform mat4 projectionview, model;
+uniform mat4 projection, view, model;
 uniform uint objectid;
 
 out uvec2 g_id;
@@ -25,5 +25,5 @@ void main()
 	g_id 		= uvec2(objectid, index+1);
     g_color 	= {{color_calculation}};
 	g_thickness	= thickness;
-	gl_Position = projectionview*model*to_vec4(vertex);
+	gl_Position = projection*view*model*to_vec4(vertex);
 }

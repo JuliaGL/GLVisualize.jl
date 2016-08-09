@@ -46,8 +46,13 @@ function slide(startvalue, slide_pos, range::Range)
     clamp(val, range)
 end
 
-vizzedit{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5) = vizzedit(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x)
+function widget{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
+    widget(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
+end
 
+function range_default{T<:FixedVector}(::Type{T})
+    range_default(eltype(T))
+end
 function range_default{T<:AbstractFloat}(::Type{T})
     T(-10):T(0.01):T(10)
 end
@@ -61,15 +66,59 @@ end
 function calc_val{T<:Integer}(sval::T, val, range)
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
-function vizzedit{T <: Union{FixedVector, Real}}(slider_value::Signal{T}, window; numberwidth=5, range=range_default(T))
+function widget{T <: FixedVector}(
+        slider_value::Signal{T}, window;
+        numberwidth=5, range=range_default(T),
+        kw_args...
+    )
+    last_x = 0f0
+    le_sigs = []
+    le_tuple = ntuple(length(value(slider_value))) do i
+        number_s = map(getindex, slider_value, Signal(i))
+        num_s, vizz = widget(number_s, window;
+            numberwidth=numberwidth, range=range,
+            kw_args...
+        )
+        push!(le_sigs, num_s)
+        bb = value(boundingbox(vizz))
+        w = widths(bb)
+        min = minimum(bb)
+        trans = Signal(translationmatrix(Vec3f0(last_x, 0, 0)-min))
+        for elem in vizz.children
+            elem[:model] = trans
+        end
+        last_x += w[1] + 5
+        vizz
+    end
+
+    map(T, le_sigs...), Context(le_tuple...)
+end
+function widget{T <: Real}(
+        slider_value::Signal{T}, window;
+        numberwidth=5, range=range_default(T), kw_args...
+    )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)
-    vizz              = visualize(slider_value_str)
-    slider_robj       = vizz.children[]
+    vizz              = visualize(
+        slider_value_str;
+        color = RGBA{Float32}(0.1, 0.1, 0.1),
+        kw_args...
+    )
+    bb         = value(boundingbox(vizz))
+    mini, maxi = minimum(bb)-5f0, widths(bb)+10f0
+    bb_rect    = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
+    # bb_vizz    = visualize(
+    #     bb_rect;
+    #     color=RGBA{Float32}(0.97, 0.97, 0.97),
+    #     kw_args...
+    # ).children[]
+
+    slider_robj = vizz.children[]
     # current tuple of renderobject id and index into the gpu array
     m2id = GLWindow.mouse2id(window)
-    hovers_slider = const_lift(is_same_id, m2id, slider_robj)
+    ids = (slider_robj.id,)
+    hovers_slider = const_lift(is_same_id, m2id, ids)
     # inputs are a dict, materialize gets the keys out of it (equivalent to mouseposition = w.inputs[:mouseposition])
     # single left mousekey pressed (while no other mouse key is pressed)
     key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
@@ -82,5 +131,5 @@ function vizzedit{T <: Union{FixedVector, Real}}(slider_value::Signal{T}, window
         push!(slider_value, calc_val(v0, dragg[1], range))
         v0
     end)
-    return slider_value, vizz
+    return slider_value, Context(slider_robj)
 end

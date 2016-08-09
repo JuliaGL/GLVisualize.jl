@@ -1,12 +1,16 @@
 _clamp(x) = Point2f0(clamp(x[1], 0, 1), clamp(x[2], 0, 1))
-function vizzedit{T<:RGBA}(color::Signal{T}, window)
+function widget{T<:RGBA}(
+        color::Signal{T}, window;
+        kw_args...
+    )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     color_button = visualize(
-        (ROUNDED_RECTANGLE, zeros(Point2f0, 1)),
+        (ROUNDED_RECTANGLE, zeros(Point2f0, 1));
         scale=Vec2f0(30),
         color=color,
         stroke_width=1f0,
         stroke_color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0),
+        kw_args...
     )
     color_robj = color_button.children[]
     m2id = GLWindow.mouse2id(window)
@@ -19,7 +23,7 @@ function vizzedit{T<:RGBA}(color::Signal{T}, window)
         false
     end
     # dragg while key_pressed. Drag only starts if isoverpoint is true
-    mousedragg  = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
+    mousedragg = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
 
     preserve(foldp((value(m2id)..., value(color)), mousedragg) do v0, dragg
         if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)

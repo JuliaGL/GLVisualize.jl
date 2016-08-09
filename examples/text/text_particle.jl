@@ -46,7 +46,7 @@ end
 # per glyph stroke color
 stroke_color = RGBA{Float32}[RGBA{Float32}(0,0,0, i/len) for i=1:len]
 
-# view and visualize it!
+# _view and visualize it!
 # you could also pass positions as a keyword argument or make
 # the scale/rotation per glyph by supplying a Vector of them.
 textvizz = visualize(s,
@@ -58,7 +58,7 @@ textvizz = visualize(s,
     relative_scale=scale
 )
 
-view(textvizz, window)
+_view(textvizz, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

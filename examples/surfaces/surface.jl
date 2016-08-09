@@ -19,7 +19,7 @@ t = map(t->(t*30f0)+20f0, timesignal)
 
 bb = Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
 
-view(visualize(const_lift(surf, t, 400), :surface, boundingbox=bb))
+_view(visualize(const_lift(surf, t, 400), :surface, boundingbox=bb))
 
 if !isdefined(:runtests)
 	renderloop(window)

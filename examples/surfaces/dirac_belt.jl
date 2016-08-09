@@ -67,7 +67,7 @@ if !isdefined(:runtests)
 end
 
 xyz = quaternion_belt_trick(timesignal)
-view(visualize(xyz, :surface), window)
+_view(visualize(xyz, :surface), window)
 
 if !isdefined(:runtests)
     renderloop(window)

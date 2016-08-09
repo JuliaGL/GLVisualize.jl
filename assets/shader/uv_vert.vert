@@ -4,7 +4,7 @@
 {{vertices_type}} vertices;
 in vec2 texturecoordinates;
 
-uniform mat4 projectionview, model;
+uniform mat4 projection, view, model;
 uniform uint objectid;
 
 out vec2       o_uv;
@@ -16,5 +16,5 @@ vec4 _position(vec2 p){return vec4(p,0,1);}
 void main(){
 	o_uv        = texturecoordinates;
     o_objectid  = uvec2(objectid, gl_VertexID+1);
-	gl_Position = projectionview * model * _position(vertices);
+	gl_Position = projection * view * model * _position(vertices);
 }

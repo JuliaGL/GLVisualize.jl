@@ -36,7 +36,7 @@ final_rotation 	= map(*, start_rotation, rotation)
 robj = visualize(mesh, model=final_rotation)
 
 
-view(robj, window)
+_view(robj, window)
 
 if !isdefined(:runtests)
 	renderloop(window)

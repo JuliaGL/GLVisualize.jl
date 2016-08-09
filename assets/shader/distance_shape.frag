@@ -37,8 +37,6 @@ in vec2                 f_uv_offset;
 
 
 
-
-
 float aastep(float threshold1, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value);
@@ -46,6 +44,10 @@ float aastep(float threshold1, float value) {
 float aastep(float threshold1, float threshold2, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value)-smoothstep(threshold2-afwidth, threshold2+afwidth, value);
+}
+
+float step2(float edge1, float edge2, float value){
+    return min(step(edge1, value), 1-step(edge2, value));
 }
 
 float triangle(vec2 P){
@@ -102,22 +104,7 @@ float get_distancefield(Nothing distancefield, vec2 uv){
     return 0.0;
 }
 
-
-#ifdef DEPTH_LAYOUT
-    layout (depth_greater) out float gl_FragDepth;
-#endif
-
-out vec4  fragment_color;
-out uvec2 fragment_groupid;
-void write2framebuffer(vec4 color, uvec2 id){
-    fragment_color   = color;
-    fragment_groupid = id;
-    if (color.a > 0.5){
-        gl_FragDepth = gl_FragCoord.z;
-    }else{
-        gl_FragDepth = 1.0;
-    }
-}
+void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
 
@@ -134,10 +121,10 @@ void main(){
     else if(shape == TRIANGLE)
         signed_distance = triangle(f_uv);
 
-    float half_stroke   = (stroke_width) / max(f_scale.x, f_scale.y);
-    float inside        = aastep(half_stroke, 100.0, signed_distance);
-    float outside       = abs(aastep(-100.0, 0.0, signed_distance));
-    vec4 final_color    = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
+    float half_stroke = (stroke_width/f_scale).x;
+    float inside = aastep(half_stroke, 100.0, signed_distance);
+    float outside = abs(aastep(-100.0, -half_stroke, signed_distance));
+    vec4 final_color = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);

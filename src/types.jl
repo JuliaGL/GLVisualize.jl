@@ -5,7 +5,7 @@
 immutable Grid{N, T <: Range}
     dims::NTuple{N, T}
 end
-ndims{N,T}(::Grid{N,T}) = N
+Base.ndims{N,T}(::Grid{N,T}) = N
 
 Grid(ranges::Range...) = Grid(ranges)
 function Grid{N, T}(a::Array{T, N})
@@ -236,9 +236,8 @@ immutable GLVisualizeShader <: AbstractLazyShader
         end
 
         # TODO properly check what extensions are available
-        @osx? begin
-        end : begin
-            view = merge(view, Dict{Compat.UTF8String, Compat.UTF8String}(
+        if !is_apple()
+            merge!(view, Dict{Compat.String, Compat.String}(
                 "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
                 "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
             ))
@@ -247,7 +246,7 @@ immutable GLVisualizeShader <: AbstractLazyShader
         paths = map(shader -> loadasset("shader", shader), paths)
         new(paths, vcat(kw_args, [
         	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
-    		(:updatewhile, ROOT_SCREEN.inputs[:window_open]),
+    		(:updatewhile, current_screen().inputs[:window_open]),
     		(:update_interval, 1.0),
             (:view, view)
         ]))

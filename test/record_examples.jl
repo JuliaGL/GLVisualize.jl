@@ -9,32 +9,38 @@ using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive
 #using GLVisualize.ComposeBackend
 
-const number_of_frames = 1
-const interactive_time = 0.1
+const number_of_frames = 360
+const interactive_time = 2.0
 const screencast_folder = joinpath(homedir(), "glvisualize_screencast")#Pkg.dir("GLVisualizeDocs", "docs", "media")
 !isdir(screencast_folder) && mkdir(screencast_folder)
+
+function render_fr(window)
+    render_frame(window)
+    pollevents()
+    swapbuffers(window)
+end
 
 function record_test(window, timesignal, nframes=number_of_frames)
     push!(timesignal, 0f0)
     yield()
-    render_frame(window) # make sure we start with a valid image
+    render_fr(window) # make sure we start with a valid image
     yield()
     frames = []
     for frame in 1:nframes
         push!(timesignal, frame/nframes)
-        render_frame(window)
+        render_fr(window)
         push!(frames, screenbuffer(window))
     end
     frames
 end
 function record_test_static(window)
     yield()
-    render_frame(window) # make sure we start with a valid image
+    render_fr(window) # make sure we start with a valid image
     sleep(0.1)
     yield()
-    render_frame(window)
+    render_fr(window)
     yield()
-    render_frame(window)
+    render_fr(window)
     return screenbuffer(window)
 end
 function record_test_interactive(window, timesignal, total_time=interactive_time)
@@ -42,13 +48,13 @@ function record_test_interactive(window, timesignal, total_time=interactive_time
     add_mouse(window)
     push!(timesignal, 0f0)
     for i=1:2 # warm up
-        render_frame(window)
+        render_fr(window)
         yield()
     end
     start_time = time()
     while time()-start_time < total_time
         push!(timesignal, (start_time-time())/3.0)
-        render_frame(window)
+        render_fr(window)
         push!(frames, screenbuffer(window))
     end
 
@@ -56,13 +62,9 @@ function record_test_interactive(window, timesignal, total_time=interactive_time
 end
 
 
-if isfile("working.jls")
-    working_list = open("working.jls") do io
-        deserialize(io)
-    end
-else
-    working_list = []
-end
+
+non_working_list = []
+
 
 """
  include the example in it's own module
@@ -106,7 +108,6 @@ function test_include(path, window)
             end
             println("recorded successfully: $name")
             create_video(frames, name, screencast_folder, 1)
-            push!(working_list, path)
         end
     catch e
         println("################################################################")
@@ -115,6 +116,7 @@ function test_include(path, window)
         println("ERROR in $path")
         showerror(STDERR, ex)
         println("\n################################################################")
+        push!(non_working_list, path)
     finally
         empty!(window.children)
         empty!(window)
@@ -125,7 +127,7 @@ end
 
 function make_tests(path::AbstractString)
     if isdir(path)
-        if basename(path) != "compose"
+        if basename(path) != "compose" && basename(path) != "gpgpu"
             make_tests(map(x->joinpath(path, x), readdir(path)))
         end
     elseif isfile(path) && endswith(path, ".jl")
@@ -141,7 +143,7 @@ end
 
 include("mouse.jl")
 
-window = glscreen(resolution=(255, 255))
+window = glscreen(resolution=(300, 300))
 #composebackend = ComposeBackend.GLVisualizeBackend(window)
 
 const make_docs  = true
@@ -149,8 +151,14 @@ srand(777) # set rand seed, to get the same results for tests that use rand
 
 make_tests(Pkg.dir("GLVisualize", "examples"))
 
-open("working.jls", "w") do io
-    serialize(io, working_list)
+isfile("non_working.txt") && rm("non_working.txt")
+for elem in non_working_list
+    println(elem)
+end
+open("non_working.txt", "w") do io
+    for elem in non_working_list
+        println(io, elem)
+    end
 end
 
 end

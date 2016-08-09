@@ -23,7 +23,7 @@ meshes = map(GLNormalMesh, rectangles)
 # attributes (colors). An array of the colors will be created and each vertex in the
 # mesh will be asigned to one of the colors found there.
 colored_mesh = merge(meshes)
-view(visualize(colored_mesh), window)
+_view(visualize(colored_mesh), window)
 
 # one could also create a GLNormalAttributeMesh manually:
 sphere = Sphere{Float32}(Point3f0(0), 2f0)
@@ -44,7 +44,7 @@ sphere_mesh = GLNormalAttributeMesh(
 # move the model a bit to the right
 moveright = translationmatrix(Vec3f0(5,0,0))
 
-view(visualize(sphere_mesh, model=moveright), window)
+_view(visualize(sphere_mesh, model=moveright), window)
 
 if !isdefined(:runtests)
 	renderloop(window)

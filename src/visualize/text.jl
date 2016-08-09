@@ -1,5 +1,149 @@
 
+immutable SpriteElem{N,T}
+    offset::Vec{2,T}
+    uv_offset_width::Vec{4,T}
+    position::Point{N, T}
+    color::RGBA{Float32}
+    scale::Vec{2,T}
+end
+type Text
+    offsets
+    uv_offset_width
+    positions
+    colors
+    scales
+    rotations
+    atlas
+end
+Base.length(rt::Text) = length(rt.positions)
+function Base.sizehint!(t::Text, size::Int)
+    for elem in (:positions, :colors, :scales, :uv_offset_width, :offsets, :rotations)
+        field = getfield(t, elem)
+        if isa(field, AbstractArray) # all fields can be scalars
+            sizehint!(field, size)
+        end
+    end
+    nothing
+end
+function Base.resize!(t::Text, size::Int)
+    for elem in (:positions, :colors, :scales, :uv_offset_width, :offsets, :rotations)
+        field = getfield(t, elem)
+        if isa(field, AbstractArray)
+            resize!(field, size)
+        end
+    end
+    nothing
+end
+function Base.setindex!(t::Text, value::NTuple{6}, i::Integer)
+    char, offset, position, color, scale, rotation = value
+    gs = GLVisualize.glyph_scale!(t.atlas, char, GLVisualize.DEFAULT_FONT_FACE)
+    guvw = GLVisualize.glyph_uv_width!(t.atlas, char, GLVisualize.DEFAULT_FONT_FACE)
+    t.offsets[i] = offset
+    t.uv_offset_width[i] = guvw
+    t.positions[i] = position
+    t.colors[i] = color
+    t.scales[i] = gs .* Vec2f0(scale)
+    t.rotations[i] = rotation
+    nothing
+end
+
+function Base.setindex!(t::Text, value::Char, i::Integer)
+    gs = GLVisualize.glyph_scale!(rt.text.atlas, c, GLVisualize.DEFAULT_FONT_FACE)
+    guvw = GLVisualize.glyph_uv_width!(rt.text.atlas, c, GLVisualize.DEFAULT_FONT_FACE)
+    t.uv_offset_width[i] = guvw
+    t.scales[i] = gs
+end
+
+function Base.setindex!(t::Text, value::Associative, i::Integer)
+    for (k,v) in value
+        getfield(t, k)[i] = v
+    end
+end
+function Base.setindex!(t::Text, value::SpriteElem, i::Integer)
+    for f=1:5
+        getfield(t, f)[i] = getfield(value, f)
+    end
+end
+function Text(robj::RenderObject)
+    @materialize atlas, offset, uv_offset_width, position, color, scale, rotation = robj.uniforms
+    text = Text(
+        offset,
+        uv_offset_width,
+        position,
+        color,
+        scale,
+        rotation,
+        atlas
+    )
+end
+type RichText
+    text::Text
+    inlined_objects::Vector
+    links::Vector
+    cursor
+    defaults::Dict
+end
+function RichText(text::Text)
+    style_default = Dict(
+        :color => RGBA{Float32}(0,0,0,1),
+        :scale => Vec2f0(1),
+        :font => GLVisualize.DEFAULT_FONT_FACE
+    )
+    RichText(text, [], [], 0:1, style_default)
+end
+
+function Base.sizehint!(t::RichText, size::Int)
+    sizehint!(t.text, size)
+    nothing
+end
+function Base.resize!(t::RichText, size::Int)
+    resize!(t.text, size)
+    nothing
+end
+Base.length(rt::RichText) = length(rt.text)
+make_iter(x) = repeated(x)
+make_iter(x::AbstractArray) = x
+
+function get_iter(defaultfunc, dictlike, key)
+    make_iter(get(defaultfunc, dictlike, key))
+end
+
+
+function getposition(text, text2, fonts, scales, start_pos)
+    GLVisualize.calc_position(text2, start_pos, scales, fonts, text.text.atlas)
+end
+function getoffsets(text, text2, fonts, scales)
+    GLVisualize.calc_offset(text2, scales, fonts, text.text.atlas)
+end
+font_color(text::RichText) = text.defaults[:color]
+font(text::RichText) = text.defaults[:font]
+font_size(text::RichText) = text.defaults[:scale]
+"""
+Inserts text at [`position`] with `style`
+"""
+function Base.insert!(text::RichText, text2::AbstractString, position=text.cursor, style=text.defaults)
+    fonts     = get_iter(()->font(text), style, :font)
+    scales    = get_iter(()->font_size(text), style, :scale)
+    start_pos = get(style, :start_position, text.text.positions[max(last(text.cursor), 1)])
+    positions = get_iter(()->getposition(text, text2, fonts, scales, start_pos), style, :position)
+    offsets   = get_iter(()->getoffsets(text, text2, fonts, scales), style, :offset)
+    colors    = get_iter(()->font_color(text), style, :color)
+    rotation  = get_iter(()->Vec3f0(0,0,1), style, :rotation)
+
+    pos = max(last(text.cursor), 1)
+    if pos + length(text2) > length(text)
+        resize!(text, pos + length(text2))
+    end
+    for elem in zip(text2, offsets, positions, colors, scales, rotation)
+        text.text[pos] = elem
+        pos += 1
+    end
+    nothing
+end
+
+
 iter_or_array(x) = repeated(x)
+iter_or_array(x::Base.Repeated) = x
 iter_or_array(x::Array) = x
 iter_or_array(x::Vector{Ptr{FreeType.FT_FaceRec}}) = repeated(x)
 
@@ -11,7 +155,6 @@ function calc_position(last_pos, start_pos, atlas, glyph, font, scale)
         return last_pos + Point2f0(advance_x, 0)
     end
 end
-
 function calc_position(glyphs, start_pos, scales, fonts, atlas)
     positions = fill(Point2f0(0.0), length(glyphs))
     last_pos  = Point2f0(start_pos)
@@ -19,7 +162,7 @@ function calc_position(glyphs, start_pos, scales, fonts, atlas)
     for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
         glyph == '\r' && continue # stupid windows!
         positions[i] = last_pos
-        last_pos     = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
+        last_pos = calc_position(last_pos, start_pos, atlas, glyph, font, scale)
     end
     positions
 end
@@ -216,7 +359,7 @@ function textedit_signals(inputs, background, text)
 
     preserve(const_lift(update_positions, text_sig, Signal(text), Signal(background[:style_index])))
     preserve(foldp(visualize_selection, 0:0, selection,    Signal(background[:style_index])))
-    const_lift(utf8, text_sig), selection
+    const_lift(Compat.String, text_sig), selection
 end
 # # i must be a valid character index
 # function next_newline(text, i::Integer)
@@ -319,7 +462,7 @@ end
 # 		clipboard_data = clipboard()
 # 	catch e # clipboard throws error when there is no data (WTF)
 # 	end
-# 	return utf8(clipboard_data)
+# 	return Compat.String(clipboard_data)
 # end
 #
 # export clipboardpaste
@@ -329,9 +472,9 @@ end
 # 	isnewline(x[1]) && return '\n'
 # 	ID_TO_CHAR[x[1]]
 # end
-# function Base.utf8(v::GPUVector{GLSprite})
+# function Base.Compat.String(v::GPUVector{GLSprite})
 # 	data = gpu_data(v)
-# 	utf8(join(map(back2julia, data)))
+# 	Compat.String(join(map(back2julia, data)))
 # end
 # # const_lift will have a boolean value at first argument position
 # copyclipboard(_, text_selection) = copyclipboard(text_selection)

@@ -13,7 +13,7 @@ function volume_data(N)
 end
 
 vol = visualize(volume_data(128), :iso, isovalue=timesignal)
-view(vol, window)
+_view(vol, window)
 
 
 if !isdefined(:runtests)

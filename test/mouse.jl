@@ -46,7 +46,7 @@ function add_mouse(window)
     scale = foldp(circlescale, scales0, mouse_buttons_pressed)
     color = map(mouse_color, mouse_buttons_pressed)
 
-    view(visualize(
+    _view(visualize(
         (Circle(Point2f0(0), 20f0), points),
         color=RGBA{Float32}(0,0,0,0), stroke_width=2f0,
         stroke_color=color, scale=scale,

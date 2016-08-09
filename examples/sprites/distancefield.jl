@@ -33,7 +33,7 @@ distfield = visualize((DISTANCEFIELD, positions),
     color=rand(RGBA{Float32}, n1),
     distancefield=dfield
 )
-view(distfield, window)
+_view(distfield, window)
 
 
 if !isdefined(:runtests)

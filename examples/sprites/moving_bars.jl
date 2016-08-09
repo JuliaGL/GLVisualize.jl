@@ -29,7 +29,7 @@ bars = visualize(
     color_norm=Vec2f0(-40,200),
     color_map=GLVisualize.default(Vector{RGBA})
 )
-view(bars, window, camera=:orthographic_pixel)
+_view(bars, window, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
 	renderloop(window)

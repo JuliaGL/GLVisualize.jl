@@ -28,7 +28,7 @@ function default{T <: Colorant}(::Type{T}, s::Style=Style{:default}(), index=1)
     index > length(color_defaults) && error("There are only three color defaults.")
     color_defaults[index]
 end
-default{T <: Colorant}(::Type{Vector{T}}, s::Style=Style{:default}()) = convert(Array{RGBA{U8}, 1}, map(x->RGBA{U8}(x, 1.0), colormap("Blues")))
+default{T <: Colorant}(::Type{Vector{T}}, s::Style=Style{:default}()) = convert(Array{RGBA{U8}, 1}, map(x->RGBA{U8}(x, 1.0), colormap("Blues", 7)))
 export default
 
 end
