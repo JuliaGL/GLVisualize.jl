@@ -10,9 +10,9 @@ end
 
 function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        position_x  = main[1] => (Texture, "x position, must be an `Matrix{Float}`")
-        position_y  = main[2] => (Texture, "y position, must be an `Matrix{Float}`")
-        position_z  = main[3] => (Texture, "z position, must be an `Matrix{Float}`")
+        position_x::Matrix{Float32} = main[1] => (Texture, "x position, must be an `Matrix{Float}`")
+        position_y::Matrix{Float32}  = main[2] => (Texture, "y position, must be an `Matrix{Float}`")
+        position_z::Matrix{Float32}  = main[3] => (Texture, "z position, must be an `Matrix{Float}`")
         boundingbox = surfboundingbox(position_x, position_y, position_z)
         scale       = Vec3f0(0) => "scale must be 0, for a surfacemesh"
     end
@@ -26,6 +26,7 @@ function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, dat
     delete!(data, :ranges) # no need to have them in the OpenGL data
     _default((Grid(value(main), value(ranges)), main), s, data)
 end
+
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
         position    = main[1] =>" Position given as a `Grid{2}`.
@@ -42,28 +43,40 @@ nothing_or_vec(x::Array) = vec(x)
 function surface(main, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
         primitive::GLMesh2D = SimpleRectangle(0f0,0f0,1f0,1f0)
-        scale      = nothing
-        position   = nothing
-        position_x = nothing => Texture
-        position_y = nothing => Texture
-        position_z = nothing => Texture
-        boundingbox= nothing
+        scale       = nothing
+        position    = nothing
+        position_x  = nothing => Texture
+        position_y  = nothing => Texture
+        position_z  = nothing => Texture
+        boundingbox = nothing
+        wireframe   = false
+        glow_color       = RGBA{Float32}(0,0,0,0) => GLBuffer
+        stroke_color     = RGBA{Float32}(0,0,0,1) => GLBuffer
+        stroke_width     = wireframe ? 0.03f0 : 0f0
+        glow_width       = 0f0
+        uv_offset_width  = Vec4f0(0) => GLBuffer
+        shape            = RECTANGLE
+        wireframe        = false
+        image            = nothing => Texture
+        distancefield    = nothing => Texture
     end
     @gen_defaults! data begin
-        color      = nothing => "must be single color value, must be nothing for color_map"
-        color_map  = (color==nothing ? default(Vector{RGBA}, s) : nothing) => (Texture,
+        color      = (wireframe ? RGBA{Float32}(0,0,0,0) : nothing) => "must be single color value, must be nothing for color_map"
+        color_map  = (!wireframe ? default(Vector{RGBA}, s) : nothing) => (Texture,
         "must be `Vector{Color}`, `color` must be nothing")
-        color_norm = (color==nothing ? const_lift(_extrema, boundingbox) : nothing) => begin
+        color_norm = (!wireframe ? const_lift(_extrema, boundingbox) : nothing) => begin
             "normalizes the heightvalues before looking up color in `color_map`."
         end
         instances  = const_lift(length, main) => "number of planes used to render the surface"
 
         shader     = GLVisualizeShader(
-            "fragment_output.frag", "util.vert", "surface.vert", "standard.frag",
+            "fragment_output.frag", "util.vert", "surface.vert",
+            wireframe ? "distance_shape.frag" : "standard.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
         )
     end
 end
+
 
 function position_calc(x...)
     _position_calc(filter(x->!isa(x, Void), x)...)

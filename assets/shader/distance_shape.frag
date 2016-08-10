@@ -51,7 +51,7 @@ float step2(float edge1, float edge2, float value){
 }
 
 float triangle(vec2 P){
-    P -= 0.5;
+    P /= 2;
     float x = M_SQRT_2/2.0 * (P.x - P.y);
     float y = M_SQRT_2/2.0 * (P.x + P.y);
     float r1 = max(abs(x), abs(y)) - 1./(2*M_SQRT_2);
@@ -62,15 +62,15 @@ float circle(vec2 uv){
     return 1-length(uv);
 }
 float rectangle(vec2 uv){
+    uv /= 2; uv += 0.5;
     vec2 d = max(-uv, uv-vec2(1));
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y))));
 }
 float rounded_rectangle(vec2 uv, vec2 tl, vec2 br){
+    uv /= 2; uv += 0.5;
     vec2 d = max(tl-uv, uv-br);
     return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
 }
-
-
 
 void fill(vec4 fillcolor, Nothing image, vec2 uv, float infill, inout vec4 color){
     color = mix(color, fillcolor, infill);

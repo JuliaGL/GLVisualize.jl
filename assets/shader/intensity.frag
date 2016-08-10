@@ -27,7 +27,7 @@ void main(){
     float i = float(getindex(intensity, o_uv).x);
     i = _normalize(i, color_norm.x, color_norm.y);
     vec4 stroke_color = vec4(1,1,1,1);
-    float lines = i*5*M_PI;
+    float lines = i*5;
     lines = abs(fract(lines));
     lines = aastep(0.4, 0.6, lines);
     write2framebuffer(

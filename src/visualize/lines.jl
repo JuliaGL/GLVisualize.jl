@@ -1,8 +1,14 @@
 function sumlengths(points)
-    result = zeros(eltype(points[1]), length(points))
+    T = eltype(points[1])
+    result = zeros(T, length(points))
     for i=1:length(points)
         i0 = max(i-1,1)
-        result[i] = result[i0] + norm(points[i0]-points[i])
+        p1, p2 = points[i0], points[i]
+        if !(any(map(isnan, p1)) || any(map(isnan, p2)))
+            result[i] = result[i0] + norm(p1-p2)
+        else
+            result[i] = result[i0]
+        end
     end
     result
 end
@@ -17,14 +23,11 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
     end
     @gen_defaults! data begin
         dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
-        dotted              = false
         vertex              = p_vec  => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
         stroke_color        = default(RGBA, s, 2) => GLBuffer
         thickness           = 1f0
-        shape               = RECTANGLE
-        transparent_picking = false
-        is_fully_opaque     = false
+        pattern             = nothing
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, p_vec)
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
@@ -32,11 +35,13 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
     end
-    if dotted
+    if pattern != nothing
         @gen_defaults! data begin
             lastlen   = const_lift(sumlengths, p_vec) => GLBuffer
             maxlength = const_lift(last, lastlen)
+            pattern_length = last(pattern)
         end
+        println(maxlength)
     end
     data
 end
@@ -48,13 +53,13 @@ _default{T <: Point}(positions::VecTypes{LineSegment{T}}, s::Style, data::Dict) 
 
 function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", data::Dict)
     @gen_defaults! data begin
-        dotted              = false
         vertex              = positions           => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
         thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
         transparent_picking = false
         is_fully_opaque     = false
+        pattern             = nothing
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))

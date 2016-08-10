@@ -2,16 +2,17 @@
 {{GLSL_EXTENSIONS}}
 {{SUPPORTED_EXTENSIONS}}
 
-#define CIRCLE            0
-#define RECTANGLE         1
-#define ROUNDED_RECTANGLE 2
-#define DISTANCEFIELD     3
+struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
+    bool _; //empty structs are not allowed
+};
 
 in vec4 f_color;
 in vec2 f_uv;
+in float f_thickness;
 flat in uvec2 f_id;
-uniform int shape;
-uniform bool dotted;
+{{pattern_type}} pattern;
+
+uniform float pattern_length;
 
 const float ALIASING_CONST = 0.7710678118654757;
 
@@ -23,41 +24,26 @@ float aastep(float threshold1, float threshold2, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value)-smoothstep(threshold2-afwidth, threshold2+afwidth, value);
 }
-float rectangle(vec2 uv)
-{
-    vec2 d = max(-uv, uv-vec2(1));
-    return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y))));
-}
-float circle(vec2 uv){
-    return (1-length(uv-0.5))-0.5;
-}
-float rounded_rectangle(vec2 uv, vec2 tl, vec2 br)
-{
-    vec2 d = max(tl-uv, uv-br);
-    return -((length(max(vec2(0.0), d)) + min(0.0, max(d.x, d.y)))-tl.x);
-}
-
 void write2framebuffer(vec4 color, uvec2 id);
 
+// x/y pattern
+float get_sd(sampler2D pattern, vec2 uv){
+    return texture(pattern, uv).x;
+}
+uniform float maxlength;
+// x pattern
+vec2 get_sd(sampler1D pattern, vec2 uv){
+    return vec2(texture(pattern, uv.x).x, uv.y);
+}
+// normal line type
+vec2 get_sd(Nothing _, vec2 uv){
+    return vec2(0.5, uv.y);
+}
+
 void main(){
-    vec4 color;
-    float aa = 0.2;
-
-    if(dotted){
-        vec2 uv = vec2(fract(f_uv.x)*2, f_uv.y);
-        float signed_distance;
-        if(shape == CIRCLE)
-            signed_distance = circle(uv);
-        else if(shape == ROUNDED_RECTANGLE)
-            signed_distance = rounded_rectangle(uv, vec2(0.2), vec2(0.8));
-        else if(shape == RECTANGLE)
-            signed_distance = rectangle(uv);
-
-        float inside = aastep(aa, signed_distance);
-        color = vec4(f_color.rgb, inside);
-    }else{
-        float a = aastep(0+aa, 1-aa, f_uv.y);
-        color = vec4(f_color.rgb, f_color.a*a);
-    }
+    vec2 xy = get_sd(pattern, f_uv);
+    float alpha = aastep(0, xy.x);
+    float alpha2 = aastep(0.1, 0.9, xy.y);
+    vec4 color = vec4(f_color.rgb, alpha*alpha2);
     write2framebuffer(color, f_id);
 }

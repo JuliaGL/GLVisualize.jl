@@ -23,7 +23,7 @@ performance.
 function _default{G<:GeometryPrimitive{2}}(
         geometry::TOrSignal{G}, s::Style, data::Dict
     )
-    _default((geometry, zeros(Point{2, Float32}, 1)), s, data)
+    _default((geometry, const_lift(x->Point2f0[minimum(x)], geometry)), s, data)
 end
 
 """
@@ -285,11 +285,10 @@ primitive_scale(c) = Vec2f0(0.1)
 """
 Extracts the offset from a primitive.
 """
-primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
+#primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
 
-primitive_offset(x) = Vec2f0(0) # default offset
-#primitive_offset(prim::GeometryPrimitive) = -Vec2f0(widths(prim)) / 2f0
-primitive_offset(x::Char) = -Vec(glyph_scale!(x)) / 2f0
+primitive_offset(x, scale) = scale./2f0 # default offset
+primitive_offset(x::Char, scale) = -Vec(glyph_scale!(x)).*scale / 2f0
 
 
 """
@@ -344,7 +343,7 @@ function sprites(p, s, data)
         scale_z     = nothing                => GLBuffer
 
         rotation    = Vec3f0(0,0,1)          => GLBuffer
-        offset      = primitive_offset(p[1]) => GLBuffer
+        offset      = primitive_offset(p[1], scale) => GLBuffer
 
     end
     inst = _Instances(

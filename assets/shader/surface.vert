@@ -21,6 +21,8 @@ in vec2 vertices;
 uniform sampler2D position_z;
 
 uniform vec3 light[4];
+{{stroke_color_type}} stroke_color;
+{{glow_color_type}} glow_color;
 {{color_type}} color;
 {{color_map_type}} color_map;
 {{color_norm_type}} color_norm;
@@ -45,23 +47,53 @@ vec2 linear_index(ivec2 dims, int index, vec2 offset);
 vec4 linear_texture(sampler2D tex, int index, vec2 offset);
 vec3 getnormal(sampler2D zvalues, vec2 uv);
 
+uniform bool wireframe;
 uniform uint objectid;
+uniform float stroke_width;
 flat out uvec2 o_id;
 out vec4 o_color;
 
 
-
+flat out vec2            f_scale;
+flat out vec4            f_color;
+flat out vec4            f_stroke_color;
+flat out vec4            f_glow_color;
+flat out int             f_primitive_index;
+out vec2                 f_uv;
+out vec2                 f_uv_offset;
 
 void main()
 {
     int index       = gl_InstanceID;
-	ivec2 dims 		= textureSize(position_z, 0);
+    ivec2 dims      = textureSize(position_z, 0);
     vec2 offset     = vertices;
-	vec3 pos;
+    float glow_stroke = stroke_width;
+    vec2 final_scale = ((scale.xy)/(scale.xy-glow_stroke));
+    if(offset.x == 0){
+        f_uv.x = -final_scale.x;
+    }else{
+        f_uv.x = final_scale.x;
+    }
+    if(offset.y == 0){
+        f_uv.y = -final_scale.y;
+    }else{
+        f_uv.y = final_scale.y;
+    }
+
+    vec3 pos;
     {{position_calc}}
-	pos           += vec3(scale.xy*vertices, 0.0);
-	o_color        = get_color(color, pos.z, color_map, color_norm, index);
-	vec3 normalvec = getnormal(position_z, linear_index(dims, index, vertices));
+    pos           += vec3(scale.xy*vertices, 0.0);
+    o_color        = (get_color(color, pos.z, color_map, color_norm, index));
+    vec3 normalvec = getnormal(position_z, linear_index(dims, index, vertices));
     o_id           = uvec2(objectid, index+1);
-	render(pos, normalvec, view*model, projection, light);
+    f_uv_offset    = vec2(0);
+    f_color        = o_color;
+    f_stroke_color = stroke_color;
+    f_glow_color   = glow_color;
+    f_scale        = vec2(stroke_width, 0)/scale.xy;
+    if(wireframe){
+        gl_Position = projection*view*model*vec4(pos, 1);
+    }else{
+        render(pos, normalvec, view*model, projection, light);
+    }
 }

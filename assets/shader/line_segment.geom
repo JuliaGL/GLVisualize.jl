@@ -7,17 +7,18 @@ layout(triangle_strip, max_vertices = 4) out;
 uniform vec2 resolution;
 uniform float maxlength;
 uniform float thickness;
-uniform bool dotted;
+uniform float pattern_length;
 
 in vec4 g_color[];
 in uvec2 g_id[];
 in float g_thickness[];
 
+out float f_thickness;
 out vec4 f_color;
 out vec2 f_uv;
 flat out uvec2 f_id;
 
-
+#define AA_THICKNESS 2.0
 
 vec2 screen_space(vec4 vertex)
 {
@@ -30,9 +31,9 @@ void emit_vertex(vec2 position, vec2 uv, int index)
     f_color       = g_color[index];
     gl_Position   = vec4((position/resolution)*inpos.w, inpos.z, inpos.w);
     f_id          = g_id[index];
+    f_thickness   = g_thickness[index]+AA_THICKNESS;
     EmitVertex();
 }
-#define AA_THICKNESS 2.0
 
 uniform int max_primtives;
 
@@ -47,17 +48,18 @@ void main(void)
     // determine the direction of each of the 3 segments (previous, current, next)
     vec2 vun0 = p1 - p0;
     vec2 v0 = normalize(vun0);
-    float segment_lengths = length(vun0);
     // determine the normal of each of the 3 segments (previous, current, next)
     vec2 n0 = vec2(-v0.y, v0.x);
     float l;
-    if(dotted){
+    if(false){
         l = 0;
     }else{
-        l = segment_lengths/20;
+        float vx = length(gl_in[0].gl_Position-gl_in[1].gl_Position);
+        vx *= resolution.x/pattern_length/thickness;
+        l = vx;
     }
-    emit_vertex(p0 + thickness_aa0 * n0, vec2( 0, 0.0 ), 0);
-    emit_vertex(p0 - thickness_aa0 * n0, vec2( 0, 1.0 ), 0);
-    emit_vertex(p1 + thickness_aa1 * n0, vec2( l, 0.0 ), 1);
-    emit_vertex(p1 - thickness_aa1 * n0, vec2( l, 1.0 ), 1);
+    emit_vertex(p0 + thickness_aa0 * n0, vec2(0, 0.0), 0);
+    emit_vertex(p0 - thickness_aa0 * n0, vec2(0, 1), 0);
+    emit_vertex(p1 + thickness_aa1 * n0, vec2(l, 0.0), 1);
+    emit_vertex(p1 - thickness_aa1 * n0, vec2(l, 1), 1);
 }

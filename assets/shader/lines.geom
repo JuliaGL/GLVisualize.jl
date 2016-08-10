@@ -15,15 +15,15 @@ in uint g_line_connections[];
 
 out vec4 f_color;
 out vec2 f_uv;
+out float f_thickness;
 
 flat out uvec2 f_id;
 
 uniform vec2 resolution;
 uniform float maxlength;
 uniform float thickness;
-uniform bool dotted;
 uniform int max_primitives;
-
+uniform float pattern_length;
 
 
 #define MITER_LIMIT 0.75
@@ -34,11 +34,13 @@ vec2 screen_space(vec4 vertex)
 }
 void emit_vertex(vec2 position, vec2 uv, int index)
 {
-    vec4 inpos    = gl_in[index].gl_Position;
-    f_uv          = uv;
-    f_color       = g_color[index];
-    gl_Position   = vec4((position/resolution)*inpos.w, inpos.z, inpos.w);
-    f_id          = g_id[index];
+    vec4 inpos  = gl_in[index].gl_Position;
+    float vx    = (g_lastlen[index]/maxlength) * 80 * inpos.w;
+    f_uv        = vec2(vx, uv.y);
+    f_color     = g_color[index];
+    gl_Position = vec4((position/resolution)*inpos.w, inpos.z, inpos.w);
+    f_id        = g_id[index];
+    f_thickness = thickness;
     EmitVertex();
 }
 #define AA_THICKNESS 3.0
@@ -61,16 +63,16 @@ void main(void)
     if(
         gl_in[0].gl_Position.x == infinity ||
         gl_in[1].gl_Position.x == infinity ||
-        gl_in[2].gl_Position.x == infinity ||
-        gl_in[3].gl_Position.x == infinity ||
+        //gl_in[2].gl_Position.x == infinity ||
+        //gl_in[3].gl_Position.x == infinity ||
 
         gl_in[0].gl_Position.y == infinity ||
-        gl_in[1].gl_Position.y == infinity ||
-        gl_in[2].gl_Position.y == infinity ||
-        gl_in[3].gl_Position.y == infinity ||
-        g_line_connections[0] != g_line_connections[1] ||
-        g_line_connections[0] != g_line_connections[2] ||
-        g_line_connections[0] != g_line_connections[3]
+        gl_in[1].gl_Position.y == infinity
+        //gl_in[2].gl_Position.y == infinity ||
+        //gl_in[3].gl_Position.y == infinity ||
+        //g_line_connections[0] != g_line_connections[1] ||
+        //g_line_connections[0] != g_line_connections[2] ||
+        //g_line_connections[0] != g_line_connections[3]
     ){
         return; // if there is a break in the line, we don't emit anything
     }else{
@@ -82,7 +84,7 @@ void main(void)
         vec2 p3 = screen_space(gl_in[3].gl_Position); // end of next segment
 
 
-        float thickness_aa = thickness+3;
+        float thickness_aa = thickness+2;
 
 
         // perform naive culling
@@ -113,12 +115,12 @@ void main(void)
         float start = 0.0;
         float end   = 1.0;
         float xstart, xend;
-        if(!dotted){
+        if(false){
             xstart  = 1;
             xend    = 1;
         }else{
-            xstart  = (g_lastlen[1])/thickness_aa;
-            xend    = (g_lastlen[2])/thickness_aa;
+            xstart  = (g_lastlen[1]);
+            xend    = (g_lastlen[2]);
         }
         /*
         over 90
@@ -149,8 +151,8 @@ void main(void)
                     emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
                     emit_vertex(p1 + thickness_aa * n1, vec2(1, 1), 1);
                 }
-                emit_vertex(p1 + thickness_aa * n0, vec2(xstart, start), 1);
-                emit_vertex(p1 + thickness_aa * n1, vec2(xstart, start), 1);
+                emit_vertex(p1 + thickness_aa * n0, vec2(1, start), 1);
+                emit_vertex(p1 + thickness_aa * n1, vec2(1, start), 1);
                 emit_vertex(p1,                     vec2(0, 0.5), 1);
                 EndPrimitive();
             }else{
@@ -159,9 +161,9 @@ void main(void)
                     emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
                     emit_vertex(p1 + length_a * miter_a, vec2(1, 0), 1);
                 }
-                emit_vertex(p1 - thickness_aa * n0, vec2(xstart, 1), 1);
+                emit_vertex(p1 - thickness_aa * n0, vec2(1, 1), 1);
                 emit_vertex(p1,                     vec2(0, 0.5), 1);
-                emit_vertex(p1 - thickness_aa * n1, vec2(xstart, 1), 1);
+                emit_vertex(p1 - thickness_aa * n1, vec2(1, 1), 1);
                 EndPrimitive();
             }
             miter_a = n1;
@@ -186,7 +188,7 @@ void main(void)
         emit_vertex(p2 + length_b * miter_b, vec2( 0, 0 ), 2);
         emit_vertex(p2 - length_b * miter_b, vec2( 0, 1 ), 2);
 
-        if(gl_PrimitiveIDIn == max_primitives-5) //last primtive
+        if(gl_PrimitiveIDIn > max_primitives-5) //last primtive
         {
             emit_vertex(p3 + (thickness_aa) * nc, vec2(0, 0), 3);
             emit_vertex(p3 - (thickness_aa) * nc, vec2(0, 1), 3);

@@ -21,9 +21,9 @@ vec4 to_vec4(vec2 v){return vec4(v, 0, 1);}
 
 void main()
 {
-	int index 	= gl_VertexID;
-	g_id 		= uvec2(objectid, index+1);
-    g_color 	= {{color_calculation}};
-	g_thickness	= thickness;
-	gl_Position = projection*view*model*to_vec4(vertex);
+    int index   = gl_VertexID;
+    g_id        = uvec2(objectid, index+1);
+    g_color     = {{color_calculation}};
+    g_thickness = thickness;
+    gl_Position = projection*view*model*to_vec4(vertex);
 }
