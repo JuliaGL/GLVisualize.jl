@@ -59,6 +59,8 @@ flat out vec4            f_color;
 flat out vec4            f_stroke_color;
 flat out vec4            f_glow_color;
 flat out int             f_primitive_index;
+flat out uvec2                 f_id;
+
 out vec2                 f_uv;
 out vec2                 f_uv_offset;
 
@@ -86,6 +88,7 @@ void main()
     o_color        = (get_color(color, pos.z, color_map, color_norm, index));
     vec3 normalvec = getnormal(position_z, linear_index(dims, index, vertices));
     o_id           = uvec2(objectid, index+1);
+    f_id           = o_id;
     f_uv_offset    = vec2(0);
     f_color        = o_color;
     f_stroke_color = stroke_color;

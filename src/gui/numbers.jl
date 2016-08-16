@@ -87,7 +87,7 @@ function widget{T <: FixedVector}(
         for elem in vizz.children
             elem[:model] = trans
         end
-        last_x += w[1] + 5
+        last_x += w[1] + 50
         vizz
     end
 

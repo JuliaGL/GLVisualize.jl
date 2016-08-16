@@ -105,7 +105,7 @@ void main(void)
     vec2 scale_rel = (final_scale/o_w.zw);
     float hfs = glow_stroke/2.0;
     vec4 uv_min_max = vec4(-scale_rel, scale_rel); //minx, miny, maxx, maxy
-    vec4 vertices = vec4(-hfs-o_w.xy, (o_w.zw)-o_w.xy+hfs); // use offset as origin quad (x,y,w,h)
+    vec4 vertices = vec4(-hfs+o_w.xy, (o_w.zw)+o_w.xy+hfs); // use offset as origin quad (x,y,w,h)
     f_scale = vec2(stroke_width, glow_width)/o_w.zw;
     emit_vertex(vertices.xy, uv_min_max.xw, uv_o_w.xw);
     emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);

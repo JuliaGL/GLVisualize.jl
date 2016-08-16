@@ -93,6 +93,7 @@ include(joinpath("gui", "color_chooser.jl"))
 include(joinpath("gui", "numbers.jl"))
 include(joinpath("gui", "line_edit.jl"))
 include(joinpath("gui", "buttons.jl"))
+include(joinpath("gui", "options.jl"))
 
 export widget # edits some value, name should be changed in the future!
 

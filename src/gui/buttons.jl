@@ -12,6 +12,12 @@ function button(a, window)
     robj, is_pressed
 end
 
+
+function toggle_button(a::Signal, b::Composable, window)
+    toggle(b, window, signal=a)
+    b, a
+end
+
 function toggle_button(a, b, window)
     id = Signal(0)
     ab_bool = toggle(id, window)
@@ -23,22 +29,23 @@ function toggle_button(a, b, window)
     robj, ab_bool
 end
 
-function toggle(id1::Union{Signal{Int}, Int}, window, default=true)
-    droprepeats(foldp(default, window.inputs[:mouse_buttons_pressed]) do v0, mbp
+function toggle(id1::Union{Signal{Int}, Int}, window, default=true; signal=Signal(default))
+    preserve(map(window.inputs[:mouse_buttons_pressed]) do mbp
         if GLAbstraction.singlepressed(mbp, GLFW.MOUSE_BUTTON_LEFT)
             id2, index = value(mouse2id(window))
             if value(id1)==id2
-                return !v0
+                push!(signal, !Bool(value(signal)))
             end
         end
-        v0
+        nothing
     end)
+    signal
 end
 
-function toggle(robj::RenderObject, window, default=true)
-    toggle(Int(robj.id), window, default)
+function toggle(robj::RenderObject, window, default=true; signal=Signal(default))
+    toggle(Int(robj.id), window, default, signal=signal)
 end
 
-function toggle(robj::Context, window, default=true)
-    toggle(robj.children[], window, default)
+function toggle(robj::Context, window, default=true; signal=Signal(default))
+    toggle(robj.children[], window, default, signal=signal)
 end

@@ -7,6 +7,7 @@ function widget{T<:RGBA}(
     color_button = visualize(
         (ROUNDED_RECTANGLE, zeros(Point2f0, 1));
         scale=Vec2f0(30),
+        offset=Vec2f0(0),
         color=color,
         stroke_width=1f0,
         stroke_color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0),
