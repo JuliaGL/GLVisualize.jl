@@ -124,8 +124,8 @@ void main(){
         signed_distance = triangle(f_uv);
 
     float half_stroke = f_scale.x;
-    float inside = aastep(0, signed_distance);
-    vec4 final_color = vec4((inside > 0) ? f_color.rgb : f_stroke_color.rgb, 0);
+    float inside = aastep(-0.0, signed_distance);
+    vec4 final_color = vec4((inside >= 0) ? f_color.rgb : f_stroke_color.rgb, 0);
 
     fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);
