@@ -26,16 +26,24 @@ end
 """
 A matrix of Intensities will result in a contourf kind of plot
 """
-_default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
-    intensity             = main => Texture
-    color                 = default(Vector{RGBA{U8}},s) => Texture
-    grid_size             = size(value(main))
-    grid_start            = (0, 0)
-    primitive::GLUVMesh2D = SimpleRectangle{Float32}(grid_start..., grid_size...)
-    color_norm	          = const_lift(extrema2f0, main)
-    boundingbox 	      = GLBoundingBox(primitive)
-    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "intensity.frag")
-    preferred_camera      = :orthographic_pixel
+function _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict)
+    main_v = value(main)
+    @gen_defaults! data begin
+        ranges = (0:size(main_v, 1), 0:size(main_v, 2))
+    end
+    x, y, xw, yh = first(ranges[1]), first(ranges[2]), last(ranges[1]), last(ranges[2])
+    @gen_defaults! data begin
+        intensity             = main => Texture
+        color                 = default(Vector{RGBA{U8}},s) => Texture
+        primitive::GLUVMesh2D = SimpleRectangle{Float32}(x, y, xw-x, yh-y)
+        color_norm            = const_lift(extrema2f0, main)
+        stroke_width::Float32 = 0.05f0
+        levels::Float32       = 5f0
+        stroke_color          = RGBA{Float32}(1,1,1,1)
+        boundingbox           = GLBoundingBox(primitive)
+        shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "intensity.frag")
+        preferred_camera      = :orthographic_pixel
+    end
 end
 
 """
@@ -79,8 +87,8 @@ which will be reused for better performance.
 """
 function play{T}(buffer::Array{T, 2}, video_stream, t)
     eof(video_stream) && seekstart(video_stream)
-    w,h 	= size(buffer)
-    buffer 	= reinterpret(UInt8, buffer, (3, w,h))
+    w,h     = size(buffer)
+    buffer     = reinterpret(UInt8, buffer, (3, w,h))
     read!(video_stream, buffer) # looses type and shape
     return reinterpret(T, buffer, (w,h))
 end

@@ -5,6 +5,9 @@ in vec2 o_uv;
 {{intensity_type}} intensity;
 uniform sampler1D color;
 uniform vec2 color_norm;
+uniform float stroke_width;
+uniform float stroke_color;
+uniform float levels;
 
 vec4 getindex(sampler2D image, vec2 uv){return texture(image, uv);}
 vec4 getindex(sampler1D image, vec2 uv){return texture(image, uv.y);}
@@ -19,17 +22,20 @@ float aastep(float threshold1, float threshold2, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
     return smoothstep(threshold1-afwidth, threshold1+afwidth, value)-smoothstep(threshold2-afwidth, threshold2+afwidth, value);
 }
-
+float aastep(float threshold1, float value) {
+    float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
+    return smoothstep(threshold1-afwidth, threshold1+afwidth, value);
+}
 void write2framebuffer(vec4 color, uvec2 id);
-
 
 void main(){
     float i = float(getindex(intensity, o_uv).x);
-    i = _normalize(i, color_norm.x, color_norm.y);
+    i = i/281;
     vec4 stroke_color = vec4(1,1,1,1);
-    float lines = i*5;
-    lines = abs(fract(lines));
-    lines = aastep(0.4, 0.6, lines);
+    float lines = i*levels;
+    lines = abs(fract(lines-0.5));
+    float half_stroke = stroke_width*0.5;
+    lines = aastep(0.5 - half_stroke, 0.5 + half_stroke, lines);
     write2framebuffer(
         mix(texture(color, i), stroke_color, lines),
         uvec2(0)
