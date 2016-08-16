@@ -288,8 +288,7 @@ Extracts the offset from a primitive.
 #primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
 
 primitive_offset(x, scale::Void) = Vec2f0(0) # default offset
-primitive_offset(x, scale) = const_lift(./, scale, -2f0) # default offset
-primitive_offset(x::Char, scale) = -Vec(glyph_scale!(x)).*scale / 2f0
+primitive_offset(x, scale) = const_lift(./, scale, -2f0)  # default offset
 
 
 """
@@ -349,8 +348,8 @@ function sprites(p, s, data)
     end
     inst = _Instances(
         position, position_x, position_y, position_z,
-        scale, scale_x, scale_y, scale_z
-,        rotation, SimpleRectangle{Float32}(0,0,1,1)
+        scale, scale_x, scale_y, scale_z,
+        rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
         intensity        = nothing => GLBuffer
@@ -369,7 +368,7 @@ function sprites(p, s, data)
         distancefield    = primitive_distancefield(p[1]) => Texture
         indices          = const_lift(length, p[2]) => to_indices
         boundingbox      = const_lift(GLBoundingBox, inst)
-        billboard        = true
+        billboard        = false
         preferred_camera = :orthographic_pixel
         shader           = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "sprites.geom",
