@@ -34,7 +34,7 @@ function _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict)
     x, y, xw, yh = first(ranges[1]), first(ranges[2]), last(ranges[1]), last(ranges[2])
     @gen_defaults! data begin
         intensity             = main => Texture
-        color                 = default(Vector{RGBA{U8}},s) => Texture
+        color_map             = default(Vector{RGBA{U8}},s) => Texture
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(x, y, xw-x, yh-y)
         color_norm            = const_lift(extrema2f0, main)
         stroke_width::Float32 = 0.05f0

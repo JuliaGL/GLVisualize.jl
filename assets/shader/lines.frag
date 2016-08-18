@@ -44,6 +44,6 @@ void main(){
     vec2 xy = get_sd(pattern, f_uv);
     float alpha = aastep(0, xy.x);
     float alpha2 = aastep(0.1, 0.9, xy.y);
-    vec4 color = vec4(f_color.rgb, alpha*alpha2);
+    vec4 color = vec4(f_color.rgb, f_color.a*alpha*alpha2);
     write2framebuffer(color, f_id);
 }

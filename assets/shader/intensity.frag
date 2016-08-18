@@ -3,7 +3,7 @@
 in vec2 o_uv;
 
 {{intensity_type}} intensity;
-uniform sampler1D color;
+uniform sampler1D color_map;
 uniform vec2 color_norm;
 uniform float stroke_width;
 uniform float stroke_color;
@@ -29,15 +29,15 @@ float aastep(float threshold1, float value) {
 void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
-    float i = float(getindex(intensity, o_uv).x);
-    i = i/281;
+    float i = float(getindex(intensity, vec2(o_uv.x, o_uv.y)).x);
+    i = _normalize(i, color_norm.x, color_norm.y);
     vec4 stroke_color = vec4(1,1,1,1);
     float lines = i*levels;
     lines = abs(fract(lines-0.5));
     float half_stroke = stroke_width*0.5;
     lines = aastep(0.5 - half_stroke, 0.5 + half_stroke, lines);
     write2framebuffer(
-        mix(texture(color, i), stroke_color, lines),
+        mix(texture(color_map, i), stroke_color, lines),
         uvec2(0)
     );
 }
