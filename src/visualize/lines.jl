@@ -26,7 +26,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         vertex              = p_vec  => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
         stroke_color        = default(RGBA, s, 2) => GLBuffer
-        thickness           = 1f0
+        thickness::Float32  = 2f0
         pattern             = nothing
         preferred_camera    = :orthographic_pixel
         max_primitives      = const_lift(length, p_vec)
@@ -55,10 +55,8 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
     @gen_defaults! data begin
         vertex              = positions           => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
-        thickness           = 2f0                 => GLBuffer
+        thickness::Float32  = 2f0                 => GLBuffer
         shape               = RECTANGLE
-        transparent_picking = false
-        is_fully_opaque     = false
         pattern             = nothing
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
