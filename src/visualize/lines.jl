@@ -37,11 +37,10 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
     end
     if pattern != nothing
         @gen_defaults! data begin
+            pattern_length = last(pattern)
             lastlen   = const_lift(sumlengths, p_vec) => GLBuffer
             maxlength = const_lift(last, lastlen)
-            pattern_length = last(pattern)
         end
-        println(maxlength)
     end
     data
 end
