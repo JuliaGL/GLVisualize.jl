@@ -54,8 +54,8 @@ void main(void)
     if(false){
         l = 0;
     }else{
-        float vx = length(gl_in[0].gl_Position-gl_in[1].gl_Position);
-        vx *= resolution.x/pattern_length/thickness;
+        float vx = length(p1-p0);
+        vx /= (pattern_length*10);
         l = vx;
     }
     emit_vertex(p0 + thickness_aa0 * n0, vec2(0, 0.0), 0);

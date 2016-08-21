@@ -72,14 +72,14 @@ void main()
     float glow_stroke = stroke_width;
     vec2 final_scale = ((scale.xy)/(scale.xy-glow_stroke));
     if(offset.x == 0){
-        f_uv.x = -final_scale.x;
+        f_uv.x = -1;
     }else{
-        f_uv.x = final_scale.x;
+        f_uv.x = 1;
     }
     if(offset.y == 0){
-        f_uv.y = -final_scale.y;
+        f_uv.y = -1;
     }else{
-        f_uv.y = final_scale.y;
+        f_uv.y = 1;
     }
 
     vec3 pos;
@@ -93,7 +93,7 @@ void main()
     f_color        = o_color;
     f_stroke_color = stroke_color;
     f_glow_color   = glow_color;
-    f_scale        = vec2(stroke_width, 0)/scale.xy;
+    f_scale        = vec2(-stroke_width, 0)/scale.xy;
     if(wireframe){
         gl_Position = projection*view*model*vec4(pos, 1);
     }else{
