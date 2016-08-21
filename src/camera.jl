@@ -58,13 +58,13 @@ end
 Creates a camera which is steered by a cube for `window`.
 """
 function cubecamera(
-		window, projectiontype;
-		cube_area 	= Signal(SimpleRectangle(0,0,150,150)),
-		eyeposition = Vec3f0(2),
-    	lookatv 	= Vec3f0(0),
+        window, projectiontype;
+        cube_area   = Signal(SimpleRectangle(0,0,150,150)),
+        eyeposition = Vec3f0(2),
+        lookatv     = Vec3f0(0),
         trans       = Signal(Vec3f0(0)),
         theta       = Signal(Vec3f0(0))
-	)
+    )
     const T = Float32
     @materialize mouse_buttons_pressed, mouseposition, buttons_pressed = window.inputs
     dd = doubleclick(mouse_buttons_pressed, 0.3)
@@ -118,5 +118,5 @@ function cubecamera(
     preserve(const_lift(cubeside_color, id, mousehover, Signal(start_colors), Signal(color_tex)))
     preserve(id)
     push!(id, robj.children[].id)
-	robj
+    robj
 end
