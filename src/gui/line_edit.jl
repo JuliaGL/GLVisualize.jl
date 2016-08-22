@@ -13,17 +13,17 @@ function point_edit(past, mousediff_index, point_gpu)
 end
 function edit_line(
         line, direction_restriction::Vec2f0, clampto, window;
-        color=default(RGBA{Float32}), kw_args...
+        color=default(RGBA{Float32}), knob_scale=9f0, kw_args...
     )
     mouse_hover = mouse2id(window)
     line_robj = visualize(
-        line, :lines; 
-        color=color, thickness=0.5f0,
+        line, :lines;
+        color=color, thickness=1f0,
         kw_args...
     ).children[]
     point_gpu = line_robj[:vertex]
     points = visualize(
-        (Circle(Point2f0(0), 9f0), point_gpu);
+        (Circle{Float32}(Point2f0(0), knob_scale), point_gpu);
         color=RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
         kw_args...
     )
@@ -39,7 +39,7 @@ function edit_line(
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
 
     key_pressed = const_lift(
-        GLAbstraction.singlepressed, 
+        GLAbstraction.singlepressed,
         mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT
     )
     mousedragg = GLAbstraction.dragged(
@@ -69,7 +69,7 @@ end
 
 
 function widget{T}(
-        points::Vector{Point{2,T}}, window; 
+        points::Vector{Point{2,T}}, window;
         color=default(RGBA), kw_args...
     )
     line = visualize(points, :lines; thickness=2f0, kw_args...)
@@ -144,7 +144,7 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
             RGBA{Float32}(0.41796875,0.78125,0.1796875),
             RGBA{Float32}(0.1796875,0.41796875,0.78125),
             RGBA{Float32}(0.9,0.9,0.9)
-        ),
+        ), knob_scale=9f0,
         kw_args...
     )
     colors = to_cpu_mem(value(colormap))
@@ -157,13 +157,17 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
         c_channel = Point2f0[
             Point2f0(x, getfield(c, i)) .* scale for (x, c) in zip(linspace(0,1,N), colors)
         ]
-        c_i, diff = edit_line(c_channel, dir_restrict, (0, scale[2]), window, color=slider_colors[i])
+        c_i, diff = edit_line(
+            c_channel, dir_restrict,
+            (0, scale[2]), window, color=slider_colors[i],
+            knob_scale=knob_scale
+        )
         preserve(const_lift(edit_color, color_tex, colors, diff, i, scale[2]))
         c_i
     end
     tex = visualize(
-        color_tex; 
-        is_fully_opaque=false, 
+        color_tex;
+        is_fully_opaque=false,
         primitive=SimpleRectangle{Float32}(0, area[2]+6, area[1], 10),
         kw_args...
     )
