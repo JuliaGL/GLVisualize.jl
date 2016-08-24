@@ -16,24 +16,38 @@ end
 
 function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
     pv = value(position)
-    if isa(position, GPUArray)
-        p_vec = position
+    p_vec = if isa(position, GPUArray)
+        position
     else
-        p_vec = const_lift(vec, position)
+        const_lift(position) do p
+            pv = vec(p)
+            if length(pv) < 4 # geometryshader doesn't work with less then 4
+                return [pv..., fill(T(NaN), 4-length(pv))...]
+            else
+                return pv
+            end
+        end
+    end
+    _startend = const_lift(p_vec) do vec
+        l = length(vec)
+        map(1:l) do i
+            (i == 1 || isnan(vec[max(i-1, 1)])) && return Float32(0) # start
+            (i == l || isnan(vec[min(i+1, l)])) && return Float32(1) # end
+            Float32(2) # segment
+        end
     end
     @gen_defaults! data begin
         dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
         vertex              = p_vec  => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
-        stroke_color        = default(RGBA, s, 2) => GLBuffer
         thickness::Float32  = 2f0
         pattern             = nothing
         preferred_camera    = :orthographic_pixel
-        max_primitives      = const_lift(length, p_vec)
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
         indices             = const_lift(length, p_vec) => to_indices
         shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
+        startend            = _startend => GLBuffer
     end
     if pattern != nothing
         @gen_defaults! data begin

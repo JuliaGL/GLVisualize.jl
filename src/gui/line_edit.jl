@@ -16,9 +16,11 @@ function edit_line(
         color=default(RGBA{Float32}), knob_scale=9f0, kw_args...
     )
     mouse_hover = mouse2id(window)
+    inds = reinterpret(Cuint, collect(partition(Cuint(0):Cuint(length(line)-1),2,1)))
     line_robj = visualize(
-        line, :lines;
+        line, :linesegment;
         color=color, thickness=1f0,
+        indices=inds,
         kw_args...
     ).children[]
     point_gpu = line_robj[:vertex]

@@ -73,6 +73,7 @@ vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, Nothing
     vec3 rot = get_rotation(rotation, index);
     return vec3(scale_x,scale_y, length(rot));
 }
+vec3 _scale(vec2 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index);
 vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){
     vec3 rot = get_rotation(rotation, index);
     return vec3(scale.xy, scale.z*length(rot));

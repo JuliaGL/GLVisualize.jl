@@ -71,7 +71,10 @@ function surface(main, s::Style{:surface}, data::Dict)
 
         shader     = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "surface.vert",
-            wireframe ? "distance_shape.frag" : "standard.frag",
+            const_lift(wireframe) do wf
+                path = wf ? "distance_shape.frag" : "standard.frag"
+                Shader(query(assetpath("shader", path)))
+            end,
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
         )
     end

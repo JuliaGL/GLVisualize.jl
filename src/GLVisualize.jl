@@ -17,6 +17,7 @@ using FileIO
 using Packing
 using SignedDistanceFields
 using FreeType
+using Iterators
 import ColorVectorSpace
 
 import Images

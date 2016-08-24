@@ -85,7 +85,7 @@ void fill(vec4 c, sampler2DArray image, vec2 uv, float infill, inout vec4 color)
 
 void stroke(vec4 strokecolor, float signed_distance, float half_stroke, inout vec4 color){
     if (half_stroke != 0.0){
-        float t = aastep(min(half_stroke, -0.01), max(half_stroke, -0.01), signed_distance);
+        float t = aastep(min(half_stroke, -0.0), max(half_stroke, -0.0), signed_distance);
         color = mix(color, strokecolor, t);
     }
 }

@@ -50,16 +50,13 @@ void main(void)
     vec2 v0 = normalize(vun0);
     // determine the normal of each of the 3 segments (previous, current, next)
     vec2 n0 = vec2(-v0.y, v0.x);
-    float l;
-    if(false){
-        l = 0;
-    }else{
-        float vx = length(p1-p0);
-        vx /= (pattern_length*10);
-        l = vx;
-    }
-    emit_vertex(p0 + thickness_aa0 * n0, vec2(0, 0.0), 0);
-    emit_vertex(p0 - thickness_aa0 * n0, vec2(0, 1), 0);
-    emit_vertex(p1 + thickness_aa1 * n0, vec2(l, 0.0), 1);
-    emit_vertex(p1 - thickness_aa1 * n0, vec2(l, 1), 1);
+    float l = length(p1-p0);
+    l /= (pattern_length*10);
+
+    float uv0 = thickness_aa0/g_thickness[0];
+    float uv1 = thickness_aa1/g_thickness[1];
+    emit_vertex(p0 + thickness_aa0 * n0, vec2(0, -uv0), 0);
+    emit_vertex(p0 - thickness_aa0 * n0, vec2(0, uv0), 0);
+    emit_vertex(p1 + thickness_aa1 * n0, vec2(l, -uv1), 1);
+    emit_vertex(p1 - thickness_aa1 * n0, vec2(l, uv1), 1);
 }

@@ -11,6 +11,7 @@ in vec4 g_color[];
 in float g_lastlen[];
 in uvec2 g_id[];
 in uint g_line_connections[];
+in int g_startend[];
 //in float g_thickness[];
 
 out vec4 f_color;
@@ -22,7 +23,6 @@ flat out uvec2 f_id;
 uniform vec2 resolution;
 uniform float maxlength;
 uniform float thickness;
-uniform int max_primitives;
 uniform float pattern_length;
 
 
@@ -61,18 +61,9 @@ const float infinity = 1. / 0.;
 void main(void)
 {
     if(
-        gl_in[0].gl_Position.x == infinity ||
-        gl_in[1].gl_Position.x == infinity ||
-        //gl_in[2].gl_Position.x == infinity ||
-        //gl_in[3].gl_Position.x == infinity ||
-
-        gl_in[0].gl_Position.y == infinity ||
-        gl_in[1].gl_Position.y == infinity
-        //gl_in[2].gl_Position.y == infinity ||
-        //gl_in[3].gl_Position.y == infinity ||
-        //g_line_connections[0] != g_line_connections[1] ||
-        //g_line_connections[0] != g_line_connections[2] ||
-        //g_line_connections[0] != g_line_connections[3]
+        g_line_connections[0] != g_line_connections[1] ||
+        g_line_connections[0] != g_line_connections[2] ||
+        g_line_connections[0] != g_line_connections[3]
     ){
         return; // if there is a break in the line, we don't emit anything
     }else{
@@ -84,7 +75,7 @@ void main(void)
         vec2 p3 = screen_space(gl_in[3].gl_Position); // end of next segment
 
 
-        float thickness_aa = thickness+2;
+        float thickness_aa = thickness+4;
 
 
         // perform naive culling
@@ -112,16 +103,8 @@ void main(void)
         float length_a = thickness_aa / dot(miter_a, n1);
         float length_b = thickness_aa / dot(miter_b, n1);
 
-        float start = 0.0;
-        float end   = 1.0;
-        float xstart, xend;
-        if(false){
-            xstart  = 1;
-            xend    = 1;
-        }else{
-            xstart  = (g_lastlen[1]);
-            xend    = (g_lastlen[2]);
-        }
+        float xstart = g_lastlen[1];
+        float xend   = g_lastlen[2];
         /*
         over 90
              v0
@@ -142,35 +125,35 @@ void main(void)
         . ------> :
         */
         bool gap = dot( v0, n1 ) > 0;
-
-        if(over_90_deg) {
+        float uvy = thickness_aa/thickness;
+        if(over_90_deg){
             // close the gap
             if(gap){
-                if (gl_PrimitiveIDIn == 0){
-                    emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
-                    emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
-                    emit_vertex(p1 + thickness_aa * n1, vec2(1, 1), 1);
+                if (g_startend[0] == 0){
+                    emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0);
+                    emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0);
+                    emit_vertex(p1 + thickness_aa * n1, vec2(1, uvy), 1);
                 }
-                emit_vertex(p1 + thickness_aa * n0, vec2(1, start), 1);
-                emit_vertex(p1 + thickness_aa * n1, vec2(1, start), 1);
-                emit_vertex(p1,                     vec2(0, 0.5), 1);
+                emit_vertex(p1 + thickness_aa * n0, vec2(1, -uvy), 1);
+                emit_vertex(p1 + thickness_aa * n1, vec2(1, -uvy), 1);
+                emit_vertex(p1,                     vec2(0, 0.0), 1);
                 EndPrimitive();
             }else{
-                if (gl_PrimitiveIDIn == 0){
-                    emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
-                    emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
-                    emit_vertex(p1 + length_a * miter_a, vec2(1, 0), 1);
+                if (g_startend[0] == 0){
+                    emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0);
+                    emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0);
+                    emit_vertex(p1 + length_a * miter_a, vec2(1, -uvy), 1);
                 }
-                emit_vertex(p1 - thickness_aa * n0, vec2(1, 1), 1);
-                emit_vertex(p1,                     vec2(0, 0.5), 1);
-                emit_vertex(p1 - thickness_aa * n1, vec2(1, 1), 1);
+                emit_vertex(p1 - thickness_aa * n0, vec2(1, uvy), 1);
+                emit_vertex(p1,                     vec2(0, 0.0), 1);
+                emit_vertex(p1 - thickness_aa * n1, vec2(1, uvy), 1);
                 EndPrimitive();
             }
             miter_a = n1;
             length_a = thickness_aa;
-        }else if(gl_PrimitiveIDIn == 0){
-            emit_vertex(p0 + thickness_aa * n0, vec2(1, 0), 0);
-            emit_vertex(p0 - thickness_aa * n0, vec2(1, 1), 0);
+        }else if(g_startend[0] == 0){
+            emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0);
+            emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0);
         }
 
         vec2 nc = n2;
@@ -182,16 +165,16 @@ void main(void)
 
         // generate the triangle strip
 
-        emit_vertex(p1 + length_a * miter_a, vec2( 0, 0 ), 1);
-        emit_vertex(p1 - length_a * miter_a, vec2( 0, 1 ), 1);
+        emit_vertex(p1 + length_a * miter_a, vec2( 0, -uvy), 1);
+        emit_vertex(p1 - length_a * miter_a, vec2( 0, uvy), 1);
 
-        emit_vertex(p2 + length_b * miter_b, vec2( 0, 0 ), 2);
-        emit_vertex(p2 - length_b * miter_b, vec2( 0, 1 ), 2);
+        emit_vertex(p2 + length_b * miter_b, vec2( 0, -uvy ), 2);
+        emit_vertex(p2 - length_b * miter_b, vec2( 0, uvy), 2);
 
-        if(gl_PrimitiveIDIn > max_primitives-5) //last primtive
+        if(g_startend[3] == 1) //last primitive
         {
-            emit_vertex(p3 + (thickness_aa) * nc, vec2(0, 0), 3);
-            emit_vertex(p3 - (thickness_aa) * nc, vec2(0, 1), 3);
+            emit_vertex(p3 + (thickness_aa) * nc, vec2(0, -uvy), 3);
+            emit_vertex(p3 - (thickness_aa) * nc, vec2(0, uvy), 3);
         }
     }
 }

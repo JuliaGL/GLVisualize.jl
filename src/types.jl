@@ -243,7 +243,9 @@ immutable GLVisualizeShader <: AbstractLazyShader
             ))
         end
 
-        paths = map(shader -> loadasset("shader", shader), paths)
+        paths = map(paths) do shader
+            isa(shader, String) ? loadasset("shader", shader) : shader
+        end
         new(paths, vcat(kw_args, [
         	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
     		(:updatewhile, current_screen().inputs[:window_open]),

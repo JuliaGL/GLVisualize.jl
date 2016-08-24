@@ -3,6 +3,7 @@
 
 {{vertex_type}} vertex;
 in float lastlen;
+in float startend;
 {{color_type}} color;
 
 uniform mat4 projection, view, model;
@@ -12,6 +13,7 @@ uniform ivec2 dims;
 out uvec2 g_id;
 out vec4 g_color;
 out float g_lastlen;
+out int g_startend;
 out uint g_line_connections;
 
 vec4 getindex(sampler2D tex, int index);
@@ -26,6 +28,7 @@ void main()
     g_lastlen = lastlen;
     int index = gl_VertexID;
     g_id = uvec2(objectid, index+1);
+    g_startend = int(startend);
     g_color = {{color_calculation}};
     g_line_connections = uint(index/dims.x);
     gl_Position = projection*view*model*to_vec4(vertex);
