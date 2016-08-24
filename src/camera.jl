@@ -84,7 +84,7 @@ function cubecamera(
         b == left_ctrl && mi
     end
     theta, trans = default_camera_control(
-        window.inputs, Signal(0.02f0), Signal(0.01f0),
+        window.inputs, Signal(0.02f0), Signal(1f0),
         use_cam
     )
     far, near, fov, upvector = map(Signal, (100f0, 1f0, 43f0, Vec3f0(0,0,1)))
