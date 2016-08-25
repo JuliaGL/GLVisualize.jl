@@ -1,13 +1,18 @@
 {{GLSL_VERSION}}
 
-
+struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
+    bool _; //empty structs are not allowed
+};
 in vec3 frag_vertposition;
 
 uniform sampler3D intensities;
 
 uniform vec3 light_position = vec3(1.0, 1.0, 3.0);
 uniform vec3 light_intensity = vec3(15.0);
+{{color_map_type}} color_map;
 {{color_type}} color;
+{{color_norm_type}} color_norm;
+
 uniform float absorption = 1.0;
 
 uniform vec3 eyeposition;
@@ -18,8 +23,8 @@ uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
 uniform int algorithm;
 uniform float isovalue;
+uniform float isorange;
 uniform vec3 dimensions;
-uniform vec2 color_norm;
 
 const int view_samples = 128;
 const float max_distance = sqrt(1.0);
@@ -35,17 +40,17 @@ float _normalize(float val, float from, float to)
     return (val-from) / (to - from);
 }
 
-vec4 color_lookup(float intensity, vec4 color, vec2 norm)
+vec4 color_lookup(float intensity, Nothing color_map, Nothing norm, vec4 color)
 {
     return color;
 }
 
-vec4 color_lookup(float intensity, samplerBuffer color_ramp, vec2 norm)
+vec4 color_lookup(float intensity, samplerBuffer color_ramp, vec2 norm, Nothing color)
 {
     return texelFetch(color_ramp, int(_normalize(intensity, norm.x, norm.y)*textureSize(color_ramp)));
 }
 
-vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm)
+vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm, Nothing color)
 {
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
@@ -138,14 +143,14 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
     int   i             = 0;
     vec4 _color         = vec4(0.0);
     pos += stepsize_dir;//apply first, to padd
-    vec4 difuse_color   = color_lookup(isovalue, color, color_norm);
+    vec4 difuse_color   = color_lookup(isovalue, color_map, color_norm, color);
 
     for (i; i < num_samples && (!is_outside(pos/dimensions) || i==1); ++i, pos += stepsize_dir)
     {
         float density = texture(intensities, pos/dimensions).x;
         if (density <= 0.0)
             continue;
-        if(abs(density - isovalue) < 0.01)
+        if(abs(density - isovalue) < isorange)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
@@ -171,7 +176,7 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
         if(maximum < density)
             maximum = density;
     }
-    return color_lookup(maximum, color, color_norm);
+    return color_lookup(maximum, color_map, color_norm, color);
 }
 
 uniform uint objectid;
@@ -191,5 +196,4 @@ void main()
         color = mip(frag_vertposition, normalize(frag_vertposition-eyeposition), step_size);
 
     write2framebuffer(color, uvec2(objectid, 0));
-
 }

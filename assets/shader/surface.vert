@@ -72,14 +72,14 @@ void main()
     float glow_stroke = stroke_width;
     vec2 final_scale = ((scale.xy)/(scale.xy-glow_stroke));
     if(offset.x == 0){
-        f_uv.x = -1;
+        f_uv.x = -0.95;
     }else{
-        f_uv.x = 1;
+        f_uv.x = 0.95;
     }
     if(offset.y == 0){
-        f_uv.y = -1;
+        f_uv.y = -0.95;
     }else{
-        f_uv.y = 1;
+        f_uv.y = 0.95;
     }
 
     vec3 pos;
