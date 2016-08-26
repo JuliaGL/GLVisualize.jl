@@ -54,7 +54,7 @@ function range_default{T<:FixedVector}(::Type{T})
     range_default(eltype(T))
 end
 function range_default{T<:AbstractFloat}(::Type{T})
-    T(-10):T(0.01):T(10)
+    T(-100):T(0.01):T(100)
 end
 function range_default{T<:Integer}(::Type{T})
     T(-100):T(1):T(100)
