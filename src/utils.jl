@@ -13,6 +13,30 @@ function Base.split(condition::Function, associative::Associative)
 end
 
 
+function assemble_robj(data, program, bb, primitive, pre_fun, post_fun)
+    pre = if pre_fun != nothing
+        () -> (GLAbstraction.StandardPrerender(); pre_fun())
+    else
+        GLAbstraction.StandardPrerender()
+    end
+    robj = RenderObject(data, program, pre, nothing, bb, nothing)
+    post = if haskey(data, :instances)
+        GLAbstraction.StandardPostrenderInstanced(data[:instances], robj.vertexarray, primitive)
+    else
+        GLAbstraction.StandardPostrender(robj.vertexarray, primitive)
+    end
+    robj.postrenderfunction = if post_fun != nothing
+        () -> begin
+            post()
+            post_fun()
+        end
+    else
+        post
+    end
+    robj
+end
+
+
 function assemble_shader(data)
     shader = data[:shader]
     delete!(data, :shader)
@@ -22,18 +46,11 @@ function assemble_shader(data)
         bb = default_bb
     end
     glp = get(data, :gl_primitive, GL_TRIANGLES)
-    if haskey(data, :instances)
-        robj = instanced_renderobject(data, shader, bb, glp, data[:instances])
-    else
-        robj = std_renderobject(data, shader, bb, glp)
-    end
-    # for key in (:prerender, :postrender)
-    #     if haskey(data, key)
-    #         for elem in data[key]
-    #             robj.(symbol("$(key)function"))[elem[1]] = length(elem)<2 ? () : elem[2:end]
-    #         end
-    #     end
-    # end
+    robj = assemble_robj(
+        data, shader, bb, glp,
+        get(data, :prerender, nothing),
+        get(data, :postrender, nothing)
+    )
     Context(robj)
 end
 

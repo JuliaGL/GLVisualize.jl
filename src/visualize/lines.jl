@@ -121,16 +121,13 @@ end
 function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
     @gen_defaults! data begin
         primitive::GLPlainMesh = c
-        bg_color = RGBA{Float32}(1,1,1,0)
+        bg_color = RGBA{Float32}(0.99,0.99,0.99,1)
         grid_color = RGBA{Float32}(0.8,0.8,0.8,1)
         grid_thickness = Vec3f0(0.999)
         gridsteps = Vec3f0(5)
-        is_fully_opaque = false
         shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
         boundingbox = c
         prerender = GridPreRender()
-        postrender = () -> (
-            glDisable(GL_CULL_FACE);
-        )
+        postrender = () -> glDisable(GL_CULL_FACE);
     end
 end
