@@ -27,13 +27,13 @@ function widget{T<:RGBA}(
     mousedragg = GLAbstraction.dragged(mouseposition, key_pressed, isoverpoint)
 
     preserve(foldp((value(m2id)..., value(color)), mousedragg) do v0, dragg
+        id, index, p0 = v0
         if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)
             id, index = value(m2id)
             if id==color_robj.id
                 p0 = value(color)
             end
         else
-            id, index, p0 = v0
             if id==color_robj.id
                 mbutton = first(value(mouse_buttons_pressed))
                 if mbutton == GLFW.MOUSE_BUTTON_RIGHT # with the right button we control red and green
