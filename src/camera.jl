@@ -87,8 +87,14 @@ function cubecamera(
         window.inputs, Signal(0.02f0), Signal(1f0),
         use_cam
     )
-    far, near, fov, upvector = map(Signal, (100f0, 1f0, 43f0, Vec3f0(0,0,1)))
+    fov, upvector = map(Signal, (43f0, Vec3f0(0,0,1)))
     lookatvec, eyeposition =  Signal(lookatv), Signal(eyeposition)
+    far = map(eyeposition, lookatvec) do a,b
+        max(norm(b-a) * 5f0, 100f0)
+    end
+    near = map(eyeposition, lookatvec) do a,b
+        norm(b-a) * 0.007f0
+    end
     main_cam = PerspectiveCamera(
         theta ,trans, lookatvec, eyeposition, upvector,
         window.area, fov, near, far,

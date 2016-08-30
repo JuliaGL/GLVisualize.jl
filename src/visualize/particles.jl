@@ -23,6 +23,7 @@ performance.
 function _default{G<:GeometryPrimitive{2}}(
         geometry::TOrSignal{G}, s::Style, data::Dict
     )
+    data[:offset] = Vec2f0(0)
     _default((geometry, const_lift(x->Point2f0[minimum(x)], geometry)), s, data)
 end
 
@@ -180,16 +181,16 @@ end
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to meshparticle
 function _default{Pr <: Primitives3D, P <: Point}(
-        p::Tuple{Pr, VecTypes{P}}, s::Style, data::Dict
+        p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
     )
     meshparticle(p, s, data)
 end
 
 function _default{Pr <: Primitives3D, G <: Tuple}(
-        p::Tuple{Pr, G}, s::Style, data::Dict
+        p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
     )
     @gen_defaults! data begin
-        primitive::GLNormalMesh = p[1]
+        primitive = p[1]
         position         = nothing => TextureBuffer
         position_x       = p[2][1] => TextureBuffer
         position_y       = p[2][2] => TextureBuffer
@@ -200,16 +201,20 @@ function _default{Pr <: Primitives3D, G <: Tuple}(
 end
 
 function _default{Pr <: Primitives3D, G <: Grid}(
-        p::Tuple{Pr, G}, s::Style, data::Dict
+        p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
     )
     meshparticle(p, s, data)
 end
+
+
+
+
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
 function meshparticle(p, s, data)
     @gen_defaults! data begin
-        primitive::GLNormalMesh = p[1]
+        primitive = p[1]
         position         = p[2] => TextureBuffer
         position_x       = nothing => TextureBuffer
         position_y       = nothing => TextureBuffer
@@ -225,7 +230,7 @@ function meshparticle(p, s, data)
     inst = _Instances(
         position, position_x, position_y, position_z,
         scale, scale_x, scale_y, scale_z,
-        rotation, primitive
+        rotation, value(primitive)
     )
     @gen_defaults! data begin
         color_map  = nothing => Texture
