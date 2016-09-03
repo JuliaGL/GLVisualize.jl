@@ -4,6 +4,7 @@
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
+uniform bool scale_primitive;
 uniform bool billboard;
 uniform float stroke_width;
 uniform float glow_width;
@@ -66,16 +67,21 @@ vec4 _position(vec2 position, sampler2D heightfield, int index){
 
 void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
 {
-    vec4 final_position = model*vec4(g_position[0], 1);
 
+    vec4 sprite_position, final_position;
+    vec4 datapoint = projection*view*model*vec4(g_position[0], 1);
+    if(scale_primitive)
+        final_position = model*vec4(vertex, 0, 0);
+    else{
+        final_position = vec4(vertex, 0, 0);
+    }
     if(billboard){
         final_position = projection*view*final_position;
-        gl_Position    = final_position + (projection*vec4(vertex, 0, 0));
     }else{
         mat3 rot       = rotation_mat(g_rotation[0]);
-        final_position = final_position+vec4(rot*vec3(vertex, 0), 0);
-        gl_Position    = projection*view*final_position;
+        final_position = projection*view*vec4(rot*final_position.xyz, 0);
     }
+    gl_Position = datapoint+final_position;
 
     f_uv              = uv;
     f_uv_offset       = uv_offset;

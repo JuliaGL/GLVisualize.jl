@@ -79,7 +79,7 @@ function widget{T <: FixedVector}(
         number_s = map(getindex, slider_value, Signal(i))
         num_s, vizz = widget(number_s, window;
             numberwidth=numberwidth, range=range,
-            text_scale = text_scale,
+            text_scale = text_scale, scale_primitive=true,
             kw_args...
         )
         push!(le_sigs, num_s)
@@ -109,7 +109,7 @@ function widget{T <: Real}(
         color = RGBA{Float32}(0.1, 0.1, 0.1),
         glow_color = RGBA{Float32}(0.97, 0.97, 0.97),
         stroke_color = RGBA{Float32}(0.97, 0.97, 0.97),
-        kw_args...
+        scale_primitive=true,kw_args...
     )
     bb         = value(boundingbox(vizz))
     mini, maxi = minimum(bb)-5f0, widths(bb)+10f0
