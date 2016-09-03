@@ -150,13 +150,13 @@ iter_or_array(x::Vector{Ptr{FreeType.FT_FaceRec}}) = repeated(x)
 function calc_position(last_pos, start_pos, atlas, glyph, font, scale)
     advance_x, advance_y = glyph_advance!(atlas, glyph, font, scale)
     if isnewline(glyph)
-        return Point2f0(start_pos[1], last_pos[2]-advance_y)
+        return Point2f0(start_pos[1], last_pos[2]-advance_y) #reset to startx
     else
         return last_pos + Point2f0(advance_x, 0)
     end
 end
 function calc_position(glyphs, start_pos, scales, fonts, atlas)
-    positions = fill(Point2f0(0.0), length(glyphs))
+    positions = zeros(Point2f0, length(glyphs))
     last_pos  = Point2f0(start_pos)
     s, f = iter_or_array(scales), iter_or_array(fonts)
     for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
