@@ -206,15 +206,16 @@ function _default{Pr <: Primitives3D, G <: Grid}(
     meshparticle(p, s, data)
 end
 
-
-
-
+# make conversion of mesh signals work. TODO move to GeometryTypes?
+function Base.convert{T<:GeometryTypes.HomogenousMesh}(::Type{T}, mesh::Signal)
+    map(T, mesh)
+end
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
 function meshparticle(p, s, data)
     @gen_defaults! data begin
-        primitive = p[1]
+        primitive::GLNormalMesh = p[1]
         position         = p[2] => TextureBuffer
         position_x       = nothing => TextureBuffer
         position_y       = nothing => TextureBuffer
