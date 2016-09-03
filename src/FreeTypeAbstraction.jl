@@ -60,14 +60,31 @@ function ft_done()
     return err == 0
 end
 
-
+function force_ucs2_charmap(face)
+    f = unsafe_load(face)
+    n = f.num_charmaps
+    charmaps = unsafe_wrap(Array, f.charmaps, n)
+    charmaprecs = map(x->unsafe_load(reinterpret(Ptr{FreeType.FT_CharMapRec}, x)), charmaps)
+    platform_ids = map(x->x.platform_id, charmaprecs)
+    encoding_ids = map(x->x.encoding_id, charmaprecs)
+    for i = 1:n
+        if ((  (platform_ids[i] == 0)
+            && (encoding_ids[i] == 3))
+           || ((platform_ids[i] == 3)
+            && (encoding_ids[i] == 1)))
+                return FreeType.FT_Set_Charmap(face, charmaps[i]);
+        end
+    end
+    return false
+end
 function newface(facename, faceindex::Real=0, ftlib=FREE_FONT_LIBRARY)
     face     = (FT_Face)[C_NULL]
     err     = FT_New_Face(ftlib[1], facename, Int32(faceindex), face)
     if err != 0
         error("FreeType could not load font $facename with error $err")
-        return face[1]
     end
+    FreeType.FT_Select_Charmap(face[] , FreeType.FT_ENCODING_UNICODE)
+    #force_ucs2_charmap(face[])
     face
 end
 
@@ -101,7 +118,7 @@ function renderface(face, c::Char, pixelsize=(32,32))
     setpixelsize(face, pixelsize)
     faceRec = unsafe_load(face[1])
     loadchar(face, c)
-    glyphRec    = unsafe_load(faceRec.glyph)
+    glyphRec = unsafe_load(faceRec.glyph)
     @assert glyphRec.format == FreeType.FT_GLYPH_FORMAT_BITMAP
     return glyphbitmap(glyphRec.bitmap), FontExtent(glyphRec.metrics)
 end

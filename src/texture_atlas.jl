@@ -32,8 +32,10 @@ reset_texture_atlas!() = empty!(TEXTURE_ATLAS)
 function get_texture_atlas()
     not_initilized = isempty(TEXTURE_ATLAS)
     if not_initilized
-        fn = assetpath("fonts", "DejaVuSansMono.ttf")
+        fn = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
         global DEFAULT_FONT_FACE = newface(fn)
+
+
         atlas = push!(TEXTURE_ATLAS, TextureAtlas())[] # initialize only on demand
         for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
             insert_glyph!(atlas, c, DEFAULT_FONT_FACE)
@@ -88,7 +90,6 @@ insert_glyph!(atlas::TextureAtlas, glyph::Char, font) = get!(atlas.mapping, (gly
     relative_start = real_start ./ tex_size # use normalized texture coordinates
     relative_width = (real_start+width_nopadd) ./ tex_size
 
-    bearing         = extent.horizontal_bearing
     uv_offset_width = Vec4f0(relative_start..., relative_width...)
     i               = atlas.index
     push!(atlas.attributes, uv_offset_width)
@@ -98,10 +99,10 @@ insert_glyph!(atlas::TextureAtlas, glyph::Char, font) = get!(atlas.mapping, (gly
     return i
 end
 
-function sdistancefield(img, min_size=32)
+function sdistancefield(img, restrict_steps=2)
     w, h = size(img)
     w1, h1 = w, h
-    restrict_steps = 2
+
     halfpad = 24*(2^restrict_steps) # padd so that after restrict it comes out as roughly 48 pixel
     w, h = w+2halfpad, h+2halfpad #pad this, to avoid cuttoffs
     in_or_out = Bool[begin
@@ -131,14 +132,9 @@ function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
         glyph = ' '
     end
     bitmap, extent = renderface(font, glyph, (164, 164))
-
-    sd, width_nopadd, scaling_factor = sdistancefield(bitmap)
-    if min(size(bitmap)...) > 0
-        s = width_nopadd ./ Vec2f0(size(bitmap))
-        extent = extent .* s
-    else
-        extent = extent ./ Vec2f0(2^2)
-    end
+    restrict_steps=2
+    sd, width_nopadd, scaling_factor = sdistancefield(bitmap, restrict_steps)
+    extent = extent ./ Vec2f0(2^restrict_steps)
     rect = SimpleRectangle(0, 0, size(sd)...)
     uv   = push!(atlas.rectangle_packer, rect) #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small. Resizing not implemented yet. Please file an issue at GLVisualize if you encounter this") #TODO resize surface
