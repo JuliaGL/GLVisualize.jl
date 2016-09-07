@@ -24,18 +24,23 @@ type TextureAtlas
     end
 end
 
-
-
 begin #basically a singleton for the textureatlas
 const local TEXTURE_ATLAS = TextureAtlas[]
 reset_texture_atlas!() = empty!(TEXTURE_ATLAS)
 function get_texture_atlas()
     not_initilized = isempty(TEXTURE_ATLAS)
     if not_initilized
-        fn = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
-        global DEFAULT_FONT_FACE = newface(fn)
-
-
+        global DEFAULT_FONT_FACE = newface(assetpath("fonts", "DejaVuSans.ttf"))
+        alternatives = [
+            "DejaVuSans.ttf",
+            #"NotoSansCJKkr-Bold.otf",
+            "NotoSansCuneiform-Regular.ttf",
+            "NotoSansSymbols-Regular.ttf",
+            "FiraMono-Medium.ttf"
+        ]
+        global ALTERNATIVE_FONTS = map(alternatives) do font
+            newface(assetpath("fonts", font))
+        end
         atlas = push!(TEXTURE_ATLAS, TextureAtlas())[] # initialize only on demand
         for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
             insert_glyph!(atlas, c, DEFAULT_FONT_FACE)
@@ -48,6 +53,13 @@ end
 end
 
 function glyph_index!(atlas::TextureAtlas, c::Char, font)
+    if FT_Get_Char_Index(font[], c) == 0
+        for afont in ALTERNATIVE_FONTS
+            if FT_Get_Char_Index(afont[], c) != 0
+                font = afont
+            end
+        end
+    end
     if c < '\u00ff' && font == DEFAULT_FONT_FACE # characters up to '\u00ff'(255), are directly mapped for default font
         Int(c)+1
     else #others must be looked up, since they're inserted when used first
