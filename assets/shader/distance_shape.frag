@@ -13,7 +13,7 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
 #define DISTANCEFIELD     3
 #define TRIANGLE          4
 
-#define ALIASING_CONST    0.70710678118654757
+#define ALIASING_CONST    0.9
 #define M_SQRT_2          1.4142135
 
 

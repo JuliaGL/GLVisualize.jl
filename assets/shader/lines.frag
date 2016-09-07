@@ -14,7 +14,7 @@ flat in uvec2 f_id;
 
 uniform float pattern_length;
 
-const float ALIASING_CONST = 0.7710678118654757;
+const float ALIASING_CONST = 0.9;
 
 float aastep(float threshold1, float value) {
     float afwidth = length(vec2(dFdx(value), dFdy(value))) * ALIASING_CONST;
