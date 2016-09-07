@@ -167,13 +167,17 @@ function calc_position(glyphs, start_pos, scales, fonts, atlas)
     positions
 end
 function calc_offset(glyphs, scales, fonts, atlas)
-    bearing   = fill(Point2f0(0.0), length(glyphs))
+    offsets = fill(Point2f0(0.0), length(glyphs))
     s, f = iter_or_array(scales), iter_or_array(fonts)
-    for (i, (glyph, scale, font)) in enumerate(zip(glyphs, s, f))
-        glyph == '\r' && continue # stupid windows!
-        bearing[i] = Point2f0(glyph_bearing!(atlas, glyph, font, scale))
+    c1 = first(glyphs)
+    for (i, (c2, scale, font)) in enumerate(zip(glyphs, s, f))
+        c2 == '\r' && continue # stupid windows!
+        b = Point2f0(glyph_bearing!(atlas, c2, font, scale))
+        k = FreeTypeAbstraction.kerning(c1, c2, font, scale)
+        offsets[i] = b + k
+        c1 = c2
     end
-    bearing # bearing is the glyph offset
+    offsets # bearing is the glyph offset
 end
 
 isnewline(x) = x == '\n'
