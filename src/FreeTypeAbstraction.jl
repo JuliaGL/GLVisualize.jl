@@ -98,19 +98,19 @@ function setpixelsize(face, size)
 end
 
 
-function kerning(c1::Char, c2::Char, face::Array{Ptr{FreeType.FT_FaceRec},1}, divisor::Float32)
+function kerning(c1::Char, c2::Char, face::Array{Ptr{FreeType.FT_FaceRec},1}, divisor)
     i1 = FT_Get_Char_Index(face[], c1)
     i2 = FT_Get_Char_Index(face[], c2)
     kernVec = Array(FreeType.FT_Vector, 1)
-    err = FT_Get_Kerning(face[], i1, i2, FreeType.FT_KERNING_DEFAULT, pointer(kernVec))
+    err = FT_Get_Kerning(face[], i1, i2, FreeType.FT_KERNING_DEFAULT, kernVec)
     if err != 0
-        return zero(Vec{2, Float32})
+        return zero(Vec2f0)
     end
-    return Vec{2, Float32}(kernVec[1].x / divisor, kernVec[1].y / divisor)
+    return Vec2f0(kernVec[1].x, kernVec[1].y) ./ (Vec2f0(divisor)*256f0)
 end
 
 function loadchar(face, c::Char)
-    err = FT_Load_Char(face[1], c, FT_LOAD_RENDER)
+    err = FT_Load_Char(face[], c, FT_LOAD_RENDER)
     @assert err == 0
 end
 
