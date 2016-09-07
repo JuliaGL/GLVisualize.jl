@@ -28,12 +28,15 @@ function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, dat
 end
 
 function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
+    xrange = main[1].dims[1];yrange = main[1].dims[2]
+    xscale = (maximum(xrange) - minimum(xrange)) / (length(xrange)-1)
+    yscale = (maximum(yrange) - minimum(yrange)) / (length(yrange)-1)
     @gen_defaults! data begin
         position    = main[1] =>" Position given as a `Grid{2}`.
         Can be constructed e.g. `Grid(linspace(0,2,N1), linspace(0,3, N2))`"
         position_z  = main[2] => (Texture, "height offset for the surface, must be `Matrix{Float}`")
         boundingbox = surfboundingbox(position, position_z)
-        scale       = Vec3f0(step(main[1].dims[1]), step(main[1].dims[2]), 1) => "scale of the grid planes forming the surface. Can be made smaller, to let the grid show"
+        scale       = Vec3f0(xscale, yscale, 1) => "scale of the grid planes forming the surface. Can be made smaller, to let the grid show"
     end
     surface(position_z, s, data)
 end
@@ -67,8 +70,7 @@ function surface(main, s::Style{:surface}, data::Dict)
         color_norm = (!wireframe ? const_lift(_extrema, boundingbox) : nothing) => begin
             "normalizes the heightvalues before looking up color in `color_map`."
         end
-        instances  = const_lift(length, main) => "number of planes used to render the surface"
-
+        instances  = const_lift(x->(size(x,1)-1) * (size(x,2)-1), main) => "number of planes used to render the surface"
         shader     = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "surface.vert",
             const_lift(wireframe) do wf
@@ -117,9 +119,10 @@ function _position_calc{T<:AbstractFloat}(
         grid::Grid{2}, position_z::MatTypes{T}, target::Type{Texture}
     )
     """
-    ivec2 index2D = ind2sub(position.dims, index);
-    vec2 normalized_index = vec2(index2D) / vec2(position.dims);
-    float height = texture(position_z, normalized_index+(offset/vec2(position.dims))).x;
+    
+    int index1D = index + offseti.x + offseti.y * position.dims.x + (index/(position.dims.x-1));
+    ivec2 index2D = ind2sub(position.dims, index1D);
+    float height = texelFetch(position_z, index2D, 0).x;
     pos = vec3($(grid_pos(grid)), height);
     """
 end
@@ -128,13 +131,12 @@ function _position_calc{T<:AbstractFloat}(
         position_x::MatTypes{T}, position_y::MatTypes{T}, position_z::MatTypes{T}, target::Type{Texture}
     )
 """
-    ivec2 index2D = ind2sub(dims, index);
-    vec2 normalized_index = vec2(index2D) / vec2(dims);
-    vec2 offsetted_index = normalized_index + (offset/vec2(dims));
+    int index1D = index + offseti.x + offseti.y * dims.x + (index/(dims.x-1));
+    ivec2 index2D = ind2sub(dims, index1D);
     pos = vec3(
-        texture(position_x, offsetted_index).x,
-        texture(position_y, offsetted_index).x,
-        texture(position_z, offsetted_index).x
+        texelFetch(position_x, index2D, 0).x,
+        texelFetch(position_y, index2D, 0).x,
+        texelFetch(position_z, index2D, 0).x
     );
 """
 end

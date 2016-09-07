@@ -43,6 +43,7 @@ uniform mat4 view, model, projection;
 
 void render(vec3 vertices, vec3 normal, mat4 viewmodel, mat4 projection, vec3 light[4]);
 ivec2 ind2sub(ivec2 dim, int linearindex);
+vec2 linear_index(ivec2 dims, int index);
 vec2 linear_index(ivec2 dims, int index, vec2 offset);
 vec4 linear_texture(sampler2D tex, int index, vec2 offset);
 vec3 getnormal(sampler2D zvalues, vec2 uv);
@@ -59,16 +60,17 @@ flat out vec4            f_color;
 flat out vec4            f_stroke_color;
 flat out vec4            f_glow_color;
 flat out int             f_primitive_index;
-flat out uvec2                 f_id;
+flat out uvec2           f_id;
 
 out vec2                 f_uv;
 out vec2                 f_uv_offset;
 
 void main()
 {
-    int index       = gl_InstanceID;
-    ivec2 dims      = textureSize(position_z, 0);
-    vec2 offset     = vertices;
+    int index = gl_InstanceID;
+    vec2 offset = vertices;
+    ivec2 offseti = ivec2(offset);
+    ivec2 dims = textureSize(position_z, 0);
     float glow_stroke = stroke_width;
     vec2 final_scale = ((scale.xy)/(scale.xy-glow_stroke));
     if(offset.x == 0){
@@ -81,13 +83,12 @@ void main()
     }else{
         f_uv.y = 0.95;
     }
-
     vec3 pos;
     {{position_calc}}
-    pos           += vec3(scale.xy*vertices, 0.0);
+    //pos           += vec3(scale.xy*vertices, 0.0);
     o_color        = (get_color(color, pos.z, color_map, color_norm, index));
-    vec3 normalvec = getnormal(position_z, linear_index(dims, index, vertices));
-    o_id           = uvec2(objectid, index+1);
+    vec3 normalvec = getnormal(position_z, linear_index(dims, index1D));
+    o_id           = uvec2(objectid, index1D+1);
     f_id           = o_id;
     f_uv_offset    = vec2(0);
     f_color        = o_color;
