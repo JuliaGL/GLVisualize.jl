@@ -76,7 +76,7 @@ void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
         final_position = vec4(vertex, 0, 0);
     }
     if(billboard){
-        final_position = projection*view*final_position;
+        final_position = projection*final_position;
     }else{
         mat3 rot       = rotation_mat(g_rotation[0]);
         final_position = projection*view*vec4(rot*final_position.xyz, 0);
