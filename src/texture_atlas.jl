@@ -33,7 +33,7 @@ function get_texture_atlas()
         global DEFAULT_FONT_FACE = newface(assetpath("fonts", "DejaVuSans.ttf"))
         alternatives = [
             "DejaVuSans.ttf",
-            #"NotoSansCJKkr-Bold.otf",
+            "NotoSansCJKkr-Regular.otf",
             "NotoSansCuneiform-Regular.ttf",
             "NotoSansSymbols-Regular.ttf",
             "FiraMono-Medium.ttf"
