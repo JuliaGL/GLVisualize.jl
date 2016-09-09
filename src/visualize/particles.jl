@@ -178,6 +178,7 @@ end
 
 
 
+
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to meshparticle
 function _default{Pr <: Primitives3D, P <: Point}(
@@ -236,7 +237,7 @@ function meshparticle(p, s, data)
     @gen_defaults! data begin
         color_map  = nothing => Texture
         color_norm = nothing
-        intensity  = nothing => TextureBuffer
+        intensity = nothing => TextureBuffer
         color      = if color_map == nothing
             default(RGBA{Float32}, s)
         else
@@ -262,7 +263,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     color        = (color_map == nothing ? default(RGBA{Float32}, s) : nothing) => GLBuffer
 
     color_norm   = nothing  => Vec2f0
-    intensity    = nothing  => GLBuffer
+    intensity = nothing  => GLBuffer
     point_size   = 2f0
     #boundingbox  = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
     prerender    = ()->glPointSize(point_size)
@@ -310,6 +311,75 @@ primitive_distancefield(x) = nothing
 primitive_distancefield(::Char) = get_texture_atlas().images
 
 
+
+
+"""
+Particles with an image as primitive
+"""
+function _default{Pr <: Images.Image, P <: Point}(
+        p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
+    )
+    _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
+end
+function _default{C <: Colorant, P <: Point}(
+        p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
+    )
+    data[:image] = p[1] # we don't want this to be overwritten by user
+    @gen_defaults! data begin
+        scale = map(Vec2f0, const_lift(size, p[1]))
+        shape = RECTANGLE
+        offset = Vec2f0(0)
+    end
+    sprites(p, s, data)
+end
+function _default{C <: AbstractFloat, P <: Point}(
+        p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
+    )
+    data[:distancefield] = p[1] # we don't want this to be overwritten by user
+    @gen_defaults! data begin
+        scale = map(Vec2f0, const_lift(size, p[1]))
+        shape = RECTANGLE
+        offset = Vec2f0(0)
+    end
+    sprites(p, s, data)
+end
+
+function _default{C <: Colorant, P <: Point}(
+        p::Tuple{Vector{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
+    )
+    images = p[1]
+    isempty(images) && error("Can not display empty vector of images as primitive")
+    images = sort(images, by=size)
+    sizes = map(size, images)
+    scale = Vec2f0(first(sizes))
+    if !all(x-> x == sizes[1], sizes) # if differently sized
+        # create texture atlas
+        maxdims = sum(map(Vec{2, Int}, sizes))
+        rectangles = map(x->SimpleRectangle(0,0,x...), sizes)
+        rpack = RectanglePacker(SimpleRectangle(0, 0, maxdims...))
+        uv_coordinates = [push!(rpack, rect).area for rect in rectangles]
+        max_xy = mapreduce(maximum, max, uv_coordinates)
+        texture_atlas = Texture(C, tuple(max_xy...))
+        for (area, img) in zip(uv_coordinates, images)
+            texture_atlas[area] = img #transfer to texture atlas
+        end
+        scale = map(Vec2f0, map(widths, uv_coordinates))
+        data[:uv_offset_width] = map(uv_coordinates) do uv
+            mini = minimum(uv) ./ max_xy
+            maxi = maximum(uv) ./ max_xy
+            Vec4f0(mini..., maxi...)
+        end
+        images = texture_atlas
+    end
+    data[:image] = images # we don't want this to be overwritten by user
+    @gen_defaults! data begin
+        scale = scale
+        shape = RECTANGLE
+        offset = Vec2f0(0)
+    end
+    sprites(p, s, data)
+end
+
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to sprites
 _default{Primitive<:Sprites, P<:Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) =
@@ -322,11 +392,11 @@ function _default{Pr <: Sprites, G <: Tuple}(
             p::Tuple{Pr, G}, s::Style, data::Dict
         )
         @gen_defaults! data begin
-            shape            = primitive_shape(p[1])
-            position         = nothing => GLBuffer
-            position_x       = p[2][1] => GLBuffer
-            position_y       = p[2][2] => GLBuffer
-            position_z       = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
+            shape      = primitive_shape(p[1])
+            position   = nothing => GLBuffer
+            position_x = p[2][1] => GLBuffer
+            position_y = p[2][2] => GLBuffer
+            position_z = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
         end
         sprites(p, s, data)
     end
@@ -358,7 +428,7 @@ function sprites(p, s, data)
         rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
-        intensity        = nothing => GLBuffer
+        intensity = nothing => GLBuffer
         color_map        = nothing => Texture
         color_norm       = nothing
         color            = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
