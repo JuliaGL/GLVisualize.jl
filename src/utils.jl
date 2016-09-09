@@ -1,3 +1,13 @@
+"""
+Determines if of Image Type
+"""
+function isa_image{T<:Matrix}(x::Type{T})
+    eltype(T) <: Union{Colorant, AbstractFloat}
+end
+isa_image(x::Matrix) = isa_image(typeof(x))
+isa_image(x::Images.Image) = true
+isa_image(x) = false
+
 # Splits a dictionary in two dicts, via a condition
 function Base.split(condition::Function, associative::Associative)
     A = similar(associative)
