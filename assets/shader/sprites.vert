@@ -83,6 +83,9 @@ float get_intensity(Nothing rotation, float position_z, int index){return positi
 float get_intensity(vec3 rotation, float position_z, int index){return position_z;}
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 
+vec4 _color(vec3 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index){
+    return vec4(color, 1);
+}
 vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
 vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index);
 vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index){

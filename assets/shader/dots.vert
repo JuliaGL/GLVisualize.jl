@@ -19,6 +19,9 @@ float _normalize(float val, float from, float to){return (val-from) / (to - from
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm){
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
+void colorize(vec3 color, Nothing intensity, Nothing color_norm){
+    o_color = vec4(color, 1);
+}
 void colorize(vec4 color, Nothing intensity, Nothing color_norm){
     o_color = color;
 }
