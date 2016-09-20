@@ -36,11 +36,12 @@ function toggle(ispressed::Signal{Bool}, window, default=true; signal=Signal(def
     end)
     signal
 end
-function toggle(id1::Union{Signal{Int}, Int}, window, default=true; signal=Signal(default))
+
+function toggle{T<:Union{Int, Tuple, RenderObject}}(id1::Union{Signal{T}, T}, window, default=true; signal=Signal(default))
     is_clicked = droprepeats(map(window.inputs[:mouse_buttons_pressed]) do mbp
         if GLAbstraction.singlepressed(mbp, GLFW.MOUSE_BUTTON_LEFT)
-            id2, index = value(mouse2id(window))
-            return value(id1)==id2
+            id2 = value(mouse2id(window))
+            return is_same_id(id2, value(id1))
         end
         false
     end)
@@ -48,9 +49,9 @@ function toggle(id1::Union{Signal{Int}, Int}, window, default=true; signal=Signa
 end
 
 function toggle(robj::RenderObject, window, default=true; signal=Signal(default))
-    toggle(Int(robj.id), window, default, signal=signal)
+    toggle(robj, window, default, signal=signal)
 end
 
-function toggle(robj::Context, window, default=true; signal=Signal(default))
-    toggle(robj.children[], window, default, signal=signal)
+function toggle(c::Context, window, default=true; signal=Signal(default))
+    toggle(map(x->x.id, tuple(GLAbstraction.extract_renderable(c)...)), window, default, signal=signal)
 end

@@ -1,12 +1,13 @@
 _clamp(x) = Point2f0(clamp(x[1], 0, 1), clamp(x[2], 0, 1))
 function widget{T<:RGBA}(
         color::Signal{T}, window;
+        area=(30, 30),
         kw_args...
     )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     color_button = visualize(
         (ROUNDED_RECTANGLE, zeros(Point2f0, 1));
-        scale=Vec2f0(30),
+        scale=const_lift(x->Vec2f0(x[2]), area),
         offset=Vec2f0(0),
         color=color,
         stroke_width=1f0,

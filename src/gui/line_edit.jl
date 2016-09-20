@@ -140,7 +140,7 @@ function edit_color(tex, buff, index_value, channel, maxval)
 end
 
 function widget{T<:Colorant}(colormap::VecTypes{T}, window;
-        area = (300, 200),
+        area = (300, 30),
         slider_colors = (
             RGBA{Float32}(0.78125,0.1796875,0.41796875),
             RGBA{Float32}(0.41796875,0.78125,0.1796875),
@@ -153,7 +153,7 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
     N = length(colors)
     color_tex = GLAbstraction.gl_convert(Texture, colormap)
     @assert colors == to_cpu_mem(color_tex)
-    scale = Point2f0(area)
+    scale = Point2f0(area) .* Point2f0(1, 6)
     dir_restrict = Vec2f0(0,1)
     vis = ntuple(Val{4}) do i
         c_channel = Point2f0[
@@ -170,7 +170,7 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
     tex = visualize(
         color_tex;
         is_fully_opaque=false,
-        primitive=SimpleRectangle{Float32}(0, area[2]+6, area[1], 10),
+        primitive=SimpleRectangle{Float32}(0, scale[2]+6, scale[1], 10),
         kw_args...
     )
     color_tex, Context(tex, vis...)

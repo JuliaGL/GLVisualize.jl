@@ -5,11 +5,14 @@ function std_checkbox()
     )
 end
 
-function widget{T<:Union{Bool, UInt8}}(tick::Signal{T}, window; checkbox=std_checkbox(), kw_args...)
+function widget{T<:Union{Bool, UInt8}}(tick::Signal{T}, window;
+        checkbox=std_checkbox(), area=(50, 50),
+        kw_args...
+    )
     icon = map(tick) do t
         checkbox[Bool(t) ? 1 : 2]
     end
-    robj = visualize(icon; primitive=SimpleRectangle(0,0,50,50), kw_args...)
+    robj = visualize(icon; primitive=SimpleRectangle(0,0,area[2],area[2]), kw_args...)
     robj, togl = toggle_button(tick, robj, window)
     togl, robj
 end
@@ -33,13 +36,14 @@ end
 
 function myscale!(robj, target)
     bb = value(boundingbox(robj))
-    w = widths(bb)
-    if w[3] == 0.0
-        w = Vec3f0(w[1], w[2], 1)
-    end
+    w1, w2, w3 = widths(bb)
+    w = Vec2f0(w1, w2)
+    wt1, wt2, wt3 = widths(target)
+    wt = Vec2f0(wt1, wt2)
     t = translationmatrix(-minimum(bb))
     t2 = translationmatrix(minimum(target))
-    s = scalematrix((1f0./w) .* widths(target))
+    sm = minimum((1f0./w) .* wt)
+    s = scalematrix(Vec3f0(sm, sm, 1))
     m = t2*s*t
     set_arg!(robj, :model, m)
     set_arg!(robj, :boundingbox, Signal(m*bb))
@@ -53,21 +57,21 @@ function choice_widget(choices::AbstractVector, window;
         i, c = i_c
         vis = choice_visual(c;
             relative_scale=text_scale,
-            visible=(i==start_idx),
             preferred_camera=:fixed_pixel,
             kw_args...
         )
-        myscale!(vis, AABB{Float32}(Vec3f0(2,2,0), Vec3f0(area[2])-Vec3f0(2,2,0)))
+        set_arg!(vis, :visible, i==start_idx)
+        myscale!(vis, AABB{Float32}(Vec3f0(2,2,0), Vec3f0(area..., 1)-Vec3f0(2,2,0)))
         vis
     end
-    vis = visualize(show_area, color=RGBA{Float32}(0.95, 0.95, 0.95, 0.4))
-    # TODO toggle better
-    selected = foldp(mod1(start_idx-1, length(vizzes)), toggle(vis, window)) do i0, _
+    vis = visualize(show_area, color=RGBA{Float32}(0.95, 0.95, 0.95, 0.4)).children[]
+    visual = Context(vis, vizzes...)
+    selected = foldp(start_idx, toggle(visual, window)) do i0, _
         idx = mod1(i0+1, length(vizzes))
         for i=1:length(vizzes)
             set_arg!(vizzes[i], :visible, i==idx)
         end
         idx
     end
-    map(getindex, Signal(choices), selected, typ=eltype(choices)), Context(vis, vizzes...)
+    map(getindex, Signal(choices), selected, typ=eltype(choices)), visual
 end
