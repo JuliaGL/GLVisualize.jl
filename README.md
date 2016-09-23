@@ -13,7 +13,7 @@ Support for hovers and unicode:
 ![hover](https://cloud.githubusercontent.com/assets/1010467/18787764/7fc2c0b2-81a4-11e6-983d-8f73527f9293.gif)
 
 
-#### [GLPlot.jl](https://github.com/SimonDanisch/GLPlot.jl), a GUI for plotting GLVisualize
+#### [GLPlot.jl](https://github.com/SimonDanisch/GLPlot.jl), a GUI for plotting with GLVisualize
 GLPlot allows you to interact with your plots and create GUI elements.
 
 ![lorenz attractor](https://cloud.githubusercontent.com/assets/1010467/18789098/f3fe7962-81a9-11e6-8305-8ffe9d4e6921.gif)
