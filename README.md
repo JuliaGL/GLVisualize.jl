@@ -12,6 +12,9 @@ Support for hovers and unicode:
 
 ![hover](https://cloud.githubusercontent.com/assets/1010467/18787764/7fc2c0b2-81a4-11e6-983d-8f73527f9293.gif)
 
+Image marker type and hover:
+
+[<img src="https://cloud.githubusercontent.com/assets/1010467/18789986/5caf3a34-81ad-11e6-8c58-d0a4b40ccce3.png" width="489">](https://vimeo.com/181942008 "Image Cloud")
 
 #### [GLPlot.jl](https://github.com/SimonDanisch/GLPlot.jl), a GUI for plotting with GLVisualize
 GLPlot allows you to interact with your plots and create GUI elements.
@@ -26,8 +29,6 @@ These are a few demos that work around this restriction by accessing the lower l
 They show what we can do as soon as GLPlot is better integrated with Plots.jl.
 
 [<img src="https://cloud.githubusercontent.com/assets/1010467/18790024/7d5f4a58-81ad-11e6-9535-e2408bbea679.png" width="489">](https://vimeo.com/180307247 "Volume Plot")
-
-[<img src="https://cloud.githubusercontent.com/assets/1010467/18789986/5caf3a34-81ad-11e6-8c58-d0a4b40ccce3.png" width="489">](https://vimeo.com/181942008 "Image Cloud")
 
 [<img src="https://cloud.githubusercontent.com/assets/1010467/18790072/a888fde6-81ad-11e6-829a-f0210711584d.png" width="489">](https://vimeo.com/181694236 "Surface")
 
