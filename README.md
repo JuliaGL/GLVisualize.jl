@@ -1,6 +1,7 @@
 # GLVisualize
 
 GLVisualize is an interactive 2D/3D visualization library completely written in OpenGL and Julia.
+Its focus is on performance and allowing to display animations/interactions as smooth as possible.
 
 #### GLVisualize can be used as a backend for [Plots.jl](https://github.com/tbreloff/Plots.jl/)
 
@@ -23,10 +24,8 @@ GLPlot allows you to interact with your plots and create GUI elements.
 
 #### Hybrid GLPlot, Plots.jl
 
-Plots.jl is not fully integrated with GLVisualize yet.
-E.g. heavy animations can't be done in a fast way yet.
-These are a few demos that work around this restriction by accessing the lower level API of Plots and GLVisualize.
-They show what we can do as soon as GLPlot is better integrated with Plots.jl.
+These examples use the lower level API of GLVisualize+GLPlot to allow interactions that would not be possible with Plots.jl alone.
+It is planned to integrate this more nicely with the higher level interface in Plots.jl.
 
 [<img src="https://cloud.githubusercontent.com/assets/1010467/18790024/7d5f4a58-81ad-11e6-9535-e2408bbea679.png" width="489">](https://vimeo.com/180307247 "Volume Plot")
 
