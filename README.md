@@ -60,6 +60,7 @@ Pkg.checkout("GLAbstraction")
 Pkg.checkout("GeometryTypes")
 Pkg.checkout("GLWindow")
 Pkg.checkout("Reactive")
+Pkg.checkout("FixedSizeArrays")
 ```
 
 Known problems:
