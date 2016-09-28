@@ -30,14 +30,17 @@ void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
     float i = float(getindex(intensity, vec2(o_uv.x, o_uv.y)).x);
-    i = _normalize(i, color_norm.x, color_norm.y);
-    vec4 stroke_color = vec4(1,1,1,1);
-    float lines = i*levels;
-    lines = abs(fract(lines-0.5));
-    float half_stroke = stroke_width*0.5;
-    lines = aastep(0.5 - half_stroke, 0.5 + half_stroke, lines);
-    write2framebuffer(
-        mix(texture(color_map, i), stroke_color, lines),
-        uvec2(0)
-    );
+    vec4 color;
+    if(isnan(i)){
+        color = vec4(0);
+    }else{
+        i = _normalize(i, color_norm.x, color_norm.y);
+        vec4 stroke_color = vec4(1,1,1,1);
+        float lines = i*levels;
+        lines = abs(fract(lines-0.5));
+        float half_stroke = stroke_width*0.5;
+        lines = aastep(0.5 - half_stroke, 0.5 + half_stroke, lines);
+        color = mix(texture(color_map, i), stroke_color, lines);
+    }
+    write2framebuffer(color, uvec2(0));
 }
