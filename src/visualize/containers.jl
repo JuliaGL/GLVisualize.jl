@@ -23,9 +23,9 @@ function list_translation(lastposition, gap, direction, bb)
     directionmask     = unit(Vec3f0, abs(direction))
     alignmask         = abs(1-directionmask)
     move2align        = (alignmask.*lastposition)-minimum(bb) #zeros direction
-    move2nextposition = sign(direction)*(directionmask.*widths(bb))*0.5f0
+    move2nextposition = sign(direction)*(directionmask.*widths(bb))
     nextpos           = lastposition + move2nextposition + (directionmask.*gap)
-    translationmatrix(lastposition+move2align),nextpos
+    lastposition+move2align, nextpos
 end
 
 function visualize{T <: Composable}(list::Vector{T}, s::Style, data::Dict)
@@ -36,8 +36,8 @@ function visualize{T <: Composable}(list::Vector{T}, s::Style, data::Dict)
     end
     for elem in list
         transl_nextpos = const_lift(list_translation, lastposition, gap, direction, boundingbox(elem))
-        transformation(elem, const_lift(first, transl_nextpos))
-        lastposition = const_lift(last, transl_nextpos)
+        GLAbstraction.translate!(elem, map(first, transl_nextpos))
+        lastposition = map(last, transl_nextpos)
     end
     Context(list...)
 end
