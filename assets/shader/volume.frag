@@ -26,12 +26,12 @@ uniform float isovalue;
 uniform float isorange;
 uniform vec3 dimensions;
 
-const int view_samples = 128;
-const float max_distance = sqrt(1.0);
+const int view_samples = 256;
+const float max_distance = 0.5;
 
-const int num_samples = 256;
+const int num_samples = 512;
 const float step_size = max_distance/float(num_samples);
-const int num_ligth_samples = 16;
+const int num_ligth_samples = 32;
 const float lscale = max_distance / float(num_ligth_samples);
 const float density_factor = 9;
 

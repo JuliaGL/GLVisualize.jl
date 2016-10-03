@@ -237,7 +237,7 @@ function meshparticle(p, s, data)
     @gen_defaults! data begin
         color_map  = nothing => Texture
         color_norm = nothing
-        intensity = nothing => TextureBuffer
+        intensity  = nothing
         color      = if color_map == nothing
             default(RGBA{Float32}, s)
         else
@@ -251,6 +251,14 @@ function meshparticle(p, s, data)
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, TextureBuffer))
         )
     end
+    if position != nothing
+        data[:intensity] = intensity_convert(intensity, position)
+        data[:len] = const_lift(length, position)
+    else
+        data[:intensity] = intensity_convert(intensity, position_x)
+        data[:len] = const_lift(length, position_x)
+    end
+    data
 end
 
 """
@@ -453,6 +461,14 @@ function sprites(p, s, data)
         )
         gl_primitive        = GL_POINTS
     end
+    if position != nothing
+        data[:intensity] = intensity_convert(intensity, position)
+        data[:len] = const_lift(length, position)
+    else
+        data[:intensity] = intensity_convert(intensity, position_x)
+        data[:len] = const_lift(length, position_x)
+    end
+    data
 end
 
 

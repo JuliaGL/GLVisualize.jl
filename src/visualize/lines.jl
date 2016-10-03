@@ -13,7 +13,14 @@ function sumlengths(points)
     result
 end
 
-
+intensity_convert(intensity, verts) = intensity
+function intensity_convert(intensity::VecTypes, verts)
+    if length(value(intensity)) == length(value(verts))
+        GLBuffer(intensity)
+    else
+        Texture(intensity)
+    end
+end
 function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
     pv = value(position)
     p_vec = if isa(position, GPUArray)
@@ -38,8 +45,11 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
     end
     @gen_defaults! data begin
         dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
-        vertex              = p_vec  => GLBuffer
-        color               = default(RGBA, s, 1) => GLBuffer
+        vertex              = p_vec => GLBuffer
+        intensity           = nothing
+        color_map           = nothing => Texture
+        color_norm          = nothing
+        color               = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
         thickness::Float32  = 2f0
         pattern             = nothing
         preferred_camera    = :orthographic_pixel
@@ -56,6 +66,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
             maxlength = const_lift(last, lastlen)
         end
     end
+    data[:intensity] = intensity_convert(intensity, vertex)
     data
 end
 

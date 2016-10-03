@@ -206,17 +206,23 @@ vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm){
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
 
-vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index){return color;}
+vec4 _color(vec3 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len){
+    return vec4(color, 1);
+}
+vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len){return color;}
 vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_norm, int index){
     return texelFetch(color, index);
 }
-vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index){
+vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len){
     return texelFetch(color, index);
 }
-vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index){
+vec4 _color(Nothing color, sampler1D intensity, sampler1D color_map, vec2 color_norm, int index, int len){
+    return color_lookup(texture(intensity, float(index)/float(len-1)).x, color_map, color_norm);
+}
+vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index, int len){
     return color_lookup(texelFetch(intensity, index).x, color_map, color_norm);
 }
-vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index){
+vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index, int len){
     return color_lookup(intensity, color_map, color_norm);
 }
 

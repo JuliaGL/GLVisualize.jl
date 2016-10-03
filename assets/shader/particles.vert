@@ -30,10 +30,11 @@ in vec3 normals;
 uniform vec3 light[4];
 uniform mat4 view, model, projection;
 uniform uint objectid;
-
+uniform int len;
 
 flat out uvec2 o_id;
      out vec4  o_color;
+
 
 {{position_type}} position;
 {{position_x_type}} position_x;
@@ -86,13 +87,14 @@ vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int i
 {{intensity_type}}  intensity;
 {{color_norm_type}} color_norm;
 // constant color!
-vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
+vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
 // only a samplerBuffer, this means we have a color per particle
-vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
+vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
 // no color, but intensities a color map and color norm. Color will be based on intensity!
-vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index);
+vec4 _color(Nothing color, sampler1D intensity, sampler1D color_map, vec2 color_norm, int index, int len);
+vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 color_norm, int index, int len);
 // no color, no intensities a color map and color norm. Color will be based on z_position or rotation!
-vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index);
+vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index, int len);
 
 float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
     return length(texelFetch(rotation, index).xyz);
@@ -107,7 +109,7 @@ float get_intensity(vec3 rotation, samplerBuffer position_z, int index){
 }
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 
-vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index){
+vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index, int len){
     float _intensity = get_intensity(rotation, scale_z, index);
     return color_lookup(_intensity, color_map, color_norm);
 }
@@ -124,7 +126,7 @@ void main(){
     vec3 pos;
 	{{position_calc}}
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
-    o_color    = _color(color, intensity, color_map, color_norm, index);
+    o_color    = _color(color, intensity, color_map, color_norm, index, len);
     V *= scale;
     rotate(rotation, index, V, N);
     render(pos + V, N, view*model, projection, light);

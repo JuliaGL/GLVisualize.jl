@@ -83,12 +83,11 @@ float get_intensity(Nothing rotation, float position_z, int index){return positi
 float get_intensity(vec3 rotation, float position_z, int index){return position_z;}
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 
-vec4 _color(vec3 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index){
-    return vec4(color, 1);
-}
-vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index);
-vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index);
-vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index){
+vec4 _color(vec3 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
+vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
+vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm, int index, int len);
+vec4 _color(Nothing color, sampler1D intensity, sampler1D color_map, vec2 color_norm, int index, int len);
+vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index, int len){
     return color_lookup(get_intensity(rotation, position_z, index), color_map, color_norm);
 }
 
@@ -96,6 +95,7 @@ vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_no
 {{glow_color_type}}   glow_color;
 
 uniform uint objectid;
+uniform int len;
 
 out uvec2 g_id;
 out int   g_primitive_index;
@@ -117,7 +117,7 @@ void main(){
     g_position        = pos;
     g_offset_width.xy = offset.xy;
     g_offset_width.zw = _scale(scale, scale_x, scale_y, scale_z, g_primitive_index).xy;
-    g_color           = _color(color, intensity, color_map, color_norm, g_primitive_index);
+    g_color           = _color(color, intensity, color_map, color_norm, g_primitive_index, len);
     g_rotation        = _rotation(rotation);
     g_uv_offset_width = uv_offset_width;
     g_stroke_color    = stroke_color;
