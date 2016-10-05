@@ -12,7 +12,9 @@ Pkg.checkout("GLWindow")
 Pkg.test("GLVisualize")
 ```
 I've updated the tests to show some statistics and cover all examples:
+
 ![glvisualize_tests](https://cloud.githubusercontent.com/assets/1010467/19108202/19984852-8af0-11e6-8fc2-d6fc2828d34c.png)
+
 
 #### GLVisualize can be used as a backend for [Plots.jl](https://github.com/tbreloff/Plots.jl/)
 
