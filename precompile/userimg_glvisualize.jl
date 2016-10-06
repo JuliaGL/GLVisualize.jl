@@ -1,34 +1,44 @@
 using SnoopCompile
 
-SnoopCompile.@snoop "glp_compiles.csv" begin
-    using GLPlot;GLPlot.init()
-    using Colors, GeometryTypes
-    glplot(rand(Float32, 32,32))
-    glplot(rand(Float32, 32,32), :surface)
-    glplot(rand(Point3f0,32))
-    glplot(rand(Point3f0,32), :lines)
-    glplot(rand(Point2f0,32), :lines)
-    glplot(rand(Point2f0,32))
-    glplot(RGBA{Float32}[RGBA{Float32}(rand(), rand(), rand(), rand()) for i=1:512, j=1:512])
-    while isopen(GLPlot.viewing_screen)
-        yield()
-    end
+SnoopCompile.@snoop "glv_compiles.csv" begin
+    include("test/ExampleRunner.jl")
+    using ExampleRunner
+    config = ExampleRunner.RunnerConfig(
+        number_of_frames = 2,
+        interactive_time = 0.01,
+        record=false,
+        resolution = (100, 100)
+    )
+    ExampleRunner.run(config)
 end
 
-using GLPlot
-data = SnoopCompile.read("glp_compiles.csv")
-blacklist = ["MIME"]
-pc = SnoopCompile.format_userimg(data[end:-1:1,2], blacklist=blacklist)
-SnoopCompile.write(Pkg.dir("GLPlot", "src", "glp_userimg.jl"), pc)
+using GLVisualize
 
+str = open("glv_compiles.csv") do io
+    str = readstring(io)
+    x = replace(str, r"[0-9]+\t\"<toplevel thunk> [\s\S]+?\)::Any\]\"\n", "")
+end
+open("glv_compiles.csv", "w") do io
+    seekstart(io)
+    print(io, str)
+end
+data = SnoopCompile.read("glv_compiles.csv")
+blacklist = [
+    "MIME", "Base", "Core",
+    "ExampleRunner", "ImageMagick", "Contour", "MeshIO"
+]
+pc = SnoopCompile.format_userimg(data[end:-1:1,2], blacklist=blacklist)
+SnoopCompile.write(Pkg.dir("GLVisualize", "precompile", "glv_userimg.jl"), pc)
 
 #=
 real	0m13.712s
 user	0m15.872s
 sys	0m0.176s
 =#
+
 include(joinpath(JULIA_HOME, "..", "..", "contrib", "build_sysimg.jl"))
+build_sysimg(default_sysimg_path(), "native", nothing; force=true)
+
 userimg_path = Pkg.dir("GLVisualize", "precompile", "userimg.jl")
-#build_sysimg(default_sysimg_path(), "native", nothing; force=true)
 
 build_sysimg(default_sysimg_path(), "native", userimg_path; force=true)
