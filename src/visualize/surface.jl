@@ -10,11 +10,11 @@ end
 
 function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatTypes{T}}, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
-        position_x::Matrix{Float32} = main[1] => (Texture, "x position, must be an `Matrix{Float}`")
-        position_y::Matrix{Float32}  = main[2] => (Texture, "y position, must be an `Matrix{Float}`")
-        position_z::Matrix{Float32}  = main[3] => (Texture, "z position, must be an `Matrix{Float}`")
+        position_x = main[1] => (Texture, "x position, must be an `Matrix{Float}`")
+        position_y = main[2] => (Texture, "y position, must be an `Matrix{Float}`")
+        position_z = main[3] => (Texture, "z position, must be an `Matrix{Float}`")
         boundingbox = surfboundingbox(position_x, position_y, position_z)
-        scale       = Vec3f0(0) => "scale must be 0, for a surfacemesh"
+        scale = Vec3f0(0) => "scale must be 0, for a surfacemesh"
     end
     surface(position_z, s, data)
 end
@@ -119,7 +119,7 @@ function _position_calc{T<:AbstractFloat}(
         grid::Grid{2}, position_z::MatTypes{T}, target::Type{Texture}
     )
     """
-    
+
     int index1D = index + offseti.x + offseti.y * position.dims.x + (index/(position.dims.x-1));
     ivec2 index2D = ind2sub(position.dims, index1D);
     float height = texelFetch(position_z, index2D, 0).x;
