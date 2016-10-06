@@ -29,7 +29,8 @@ function transform(translation, scale, rotation, points)
     _min = Vec3f0(typemax(Float32))
     for p in points
         x = scale.*Vec3f0(p)
-        x = Vec3f0(rotation*Vec4f0(x, 1f0))
+        rv = rotation*Vec4f0(x[1], x[2], x[3], 1f0)
+        x = Vec3f0(rv[1], rv[2], rv[3])
         x = Vec3f0(translation)+x
         _min = min(_min, x)
         _max = max(_max, x)
@@ -44,12 +45,12 @@ end
     if done(ti, state)
         return primitive
     end
-    trans_scale_rot, state = next(ti, state)
-    points = decompose(Point3f0, primitive)
-    bb = transform(trans_scale_rot..., points)
+    tsr::Tuple{Point3f0, Vec3f0, Mat4f0}, state = next(ti, state)
+    points = decompose(Point3f0, primitive)::Vector{Point3f0}
+    bb = transform(tsr[1], tsr[2], tsr[3], points)
     while !done(ti, state)
-        trans_scale_rot, state = next(ti, state)
-        translatet_bb = transform(trans_scale_rot..., points)
+        tsr, state = next(ti, state)
+        translatet_bb = transform(tsr[1], tsr[2], tsr[3], points)
         bb = union(bb, translatet_bb)
     end
     bb

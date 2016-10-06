@@ -9,12 +9,12 @@ Base.ndims{N,T}(::Grid{N,T}) = N
 
 Grid(ranges::Range...) = Grid(ranges)
 function Grid{N, T}(a::Array{T, N})
-	s = Vec{N, Float32}(size(a))
-	smax = maximum(s)
-	s = s./smax
-	Grid(ntuple(Val{N}) do i
-		linspace(0, s[i], size(a, i))
-	end)
+    s = Vec{N, Float32}(size(a))
+    smax = maximum(s)
+    s = s./smax
+    Grid(ntuple(Val{N}) do i
+        linspace(0, s[i], size(a, i))
+    end)
 end
 
 Grid(a::AbstractArray, ranges...) = Grid(a, ranges)
@@ -30,9 +30,9 @@ function Grid{T, N}(a::AbstractArray{T, N}, ranges::Tuple)
         "You need to supply a range for every dimension of the array. Given: $ranges
         given Array: $(typeof(a))"
     ))
-	Grid(ntuple(Val{N}) do i
-		linspace(first(ranges[i]), last(ranges[i]), size(a, i))
-	end)
+    Grid(ntuple(Val{N}) do i
+        linspace(first(ranges[i]), last(ranges[i]), size(a, i))
+    end)
 end
 
 Base.length(p::Grid) = prod(size(p))
@@ -154,23 +154,30 @@ function ArrayOrStructOfArray{T}(::Type{T}, array::Array)
     array
 end
 
-transformation_convert{T}(::Type{T}, scalar) = convert(T, scalar)
-function transformation_convert{T1<:FixedVector,T2<:FixedVector}(
-        ::Type{T1}, scalar::T2
+function transformation_convert{T1,T2}(
+        PT::Type{Point{3, T1}}, v::FixedVector{1,T2}
     )
-    T1(scalar)
+    PT(v[1], T1(0), T1(0))
+end
+function transformation_convert{T1,T2}(
+        VT::Type{Vec{3, T1}}, v::FixedVector{1, T2}
+    )
+    VT(v[1], T1(0), T1(1))
 end
 
-function transformation_convert{T1,T2,N1,N2}(
-        PT::Type{Point{N1, T1}}, scalar::FixedVector{N2,T2}
+function transformation_convert{T1,T2}(
+        PT::Type{Point{3, T1}}, v::FixedVector{2,T2}
     )
-    PT(scalar, ntuple(FixedSizeArrays.ConstFunctor(T1(0)), Val{N1-N2})...)
+    PT(v[1], v[2], T1(0))
 end
-function transformation_convert{T1,T2,N1,N2}(
-        VT::Type{Vec{N1, T1}}, scalar::FixedVector{N2, T2}
+function transformation_convert{T1,T2}(
+        VT::Type{Vec{3, T1}}, v::FixedVector{2, T2}
     )
-    VT(scalar, ntuple(FixedSizeArrays.ConstFunctor(T1(1)), Val{N1-N2})...)
+    VT(v[1], v[2], T1(1))
 end
+transformation_convert{T}(::Type{T}, scalar) = T(scalar)
+transformation_convert{T<:FixedVector}(::Type{T}, v::T) = v
+
 
 immutable TransformationIterator{T,S,R}
     translation::T
@@ -185,9 +192,9 @@ function TransformationIterator(instances::Instances)
     )
 end
 function start(t::TransformationIterator)
-    start(t.translation),start(t.scale),start(t.rotation)
+    start(t.translation), start(t.scale), start(t.rotation)
 end
-function done(t::TransformationIterator, state)
+function done(t::TransformationIterator, state)::Bool
     done(t.translation, state[1]) ||
     done(t.scale, state[2]) ||
     done(t.rotation, state[3])
@@ -204,21 +211,23 @@ function next(t::TransformationIterator, state)
     # Unfortunately, we have to check for when u == -v, as u + v
     # in this case will be (0, 0, 0), which cannot be normalized.
     T = Float32
+    local q::Quaternion{T}
     if (u == -v)
         # 180 degree rotation around any orthogonal vector
         other = (abs(dot(u, Vec{3, T}(1,0,0))) < 1.0) ? Vec{3, T}(1,0,0) : Vec{3, T}(0,1,0)
         q = Quaternions.qrotation(FixedSizeArrays.normalize(cross(u, other)), T(180))
     else
         half = FixedSizeArrays.normalize(u+v)
-        q = Quaternions.Quaternion(dot(u, half), cross(u, half)...)
+        vc = cross(u, half)
+        q = Quaternions.Quaternion(dot(u, half), vc[1], vc[2], vc[3])
     end
-    (translation, scale, Mat{4,4,T}(q)), (st, ss, sr)
+    ((translation, scale, Mat{4,4,T}(q)), (st, ss, sr))
 end
 
 
 
 immutable Intensity{N, T} <: FixedVector{N, T}
-	_::NTuple{N, T}
+    _::NTuple{N, T}
 end
 typealias GLIntensity Intensity{1, Float32}
 export Intensity,GLIntensity
@@ -247,9 +256,9 @@ immutable GLVisualizeShader <: AbstractLazyShader
             isa(shader, String) ? loadasset("shader", shader) : shader
         end
         new(paths, vcat(kw_args, [
-        	(:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
-    		(:updatewhile, current_screen().inputs[:window_open]),
-    		(:update_interval, 1.0),
+            (:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
+            (:updatewhile, current_screen().inputs[:window_open]),
+            (:update_interval, 1.0),
             (:view, view)
         ]))
     end
