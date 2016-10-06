@@ -49,9 +49,9 @@ upvector = Signal(Vec3f0(0,0,1))
 cam = PerspectiveCamera(camera_screen.area, eyeposition, lookatposition, upvector)
 
 """
-Simple visualization of a camera (this could be moved to GLVisualize)
+Simple visualization of a camera
 """
-function GLVisualize.visualize(cam::PerspectiveCamera, style::Style, keyword_args::Dict)
+function showcam(cam::PerspectiveCamera)
     lookvec, posvec, upvec = map(f-> getfield(cam, f), (:lookat, :eyeposition, :up))
     positions = map((a,b) -> Point3f0[a,b], lookvec, posvec)
     lines = map(lookvec, posvec, upvec) do l,p,u
@@ -101,7 +101,7 @@ camera_path_line = visualize(camera_path, :lines)
 # just the data structure that holds the camera
 _view(copy(cat), camera_screen, camera=:perspective)
 _view(copy(cat), scene_screen, camera=:perspective)
-_view(visualize(cam), scene_screen, camera=:perspective)
+_view(showcam(cam), scene_screen, camera=:perspective)
 _view(camera_points, scene_screen, camera=:perspective)
 _view(camera_path_line, scene_screen, camera=:perspective)
 

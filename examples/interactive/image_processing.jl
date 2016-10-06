@@ -9,7 +9,7 @@ const record_interactive = true
 
 # loadasset loads data from the GLVisualize asset folder and is defined as
 # FileIO.load(assetpath(name))
-doge = loadasset("doge.png")
+doge = loadasset("racoon.png")
 # Convert to RGBA{Float32}. Float for filtering and 32 because it fits the GPU better
 img = map(RGBA{Float32}, doge)
 # create a slider that goes from 1-20 in 0.1 steps

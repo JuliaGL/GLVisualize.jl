@@ -6,10 +6,11 @@ if !isdefined(:runtests)
 end
 const N = 2048
 function spiral(i, start_radius, offset)
-	Point2f0(sin(i), cos(i)) * (start_radius + ((i/2pi)*offset))
+    Point2f0(sin(i), cos(i)) * (start_radius + ((i/2pi)*offset))
 end
+const wh = widths(window)
 # 2D particles
-curve_data(i, N) = Point2f0[spiral(i+x/20f0, 1, (i/20)+1) for x=1:N]
+curve_data(i, N) = Point2f0[spiral(i+x/20f0, 1, (i/20)+1)+Point2f0(wh)/2f0 for x=1:N]
 
 t = const_lift(x-> (1f0-x)*100f0, timesignal)
 color = map(RGBA{Float32}, colormap("Blues", N))

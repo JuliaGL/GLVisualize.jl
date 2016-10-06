@@ -7,7 +7,8 @@ const record_interactive = true
 
 n = 50
 n_connections = 100
-a = rand(Point2f0, n)*1000f0
+w, h = widths(window)
+a = map(x->x.*Point2f0(w, h), rand(Point2f0, n))
 indices = Signal(rand(1:n, n_connections))
 # for the points, we only need unique indices!
 unique_indices = map(unique, indices)

@@ -51,7 +51,7 @@ function init(res=(800,800))
     # giving the window a transparent background color makes it transparent to
     # the previous frame. It's arguable, if that's really how things should be,
     # but that's how it currently works ;)
-    window = glscreen("vortex", resolution=res, background=RGBA(0,0,0,0))
+    window = glscreen("vortex", resolution=res, background=RGBA{Float32}(0,0,0,0))
     timesignal = Signal(0.0)
     speed = Signal(1/30)
 
@@ -62,6 +62,9 @@ function init(res=(800,800))
         # timesignal update value (here 0.01) doesn't matter for particle simulation, but controls the color update speed
         push!(timesignal, value(timesignal)+0.01)
         render_frame(window)
+        swapbuffers(window)
+        GLFW.PollEvents()
+        yield()
         sleep(value(speed))
     end
 
@@ -122,10 +125,10 @@ function main(window, timesignal)
     # create a color signal that changes over time
     # the color will update whenever timesignal updates
     color = map(timesignal) do t
-        RGBA(1,1,(sin(t)+1.)/2., 0.05)
+        RGBA(1,1,(sin(t)+1.)/2.,0.05)
     end
 
-    circle = Circle(Point2f0(0), 0.7f0)
+    circle = Circle(Point2f0(0), 0.9f0)
 
     # boundingbox is still a very expensive operation, so if you don't need it
     # you can simply set it to nothing.

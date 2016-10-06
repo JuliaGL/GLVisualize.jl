@@ -13,7 +13,7 @@ const b = Point3f0[(rand(Point3f0)*2)-1 for i=1:64]
 
 sprites = visualize(
 	(SimpleRectangle(0f0,0f0,0.5f0, 0.5f0), b),
-	billboard=true, image=loadasset("doge.png"),
+	billboard=true, image=loadasset("foxy.png"),
 	model=rotation
 )
 
