@@ -3,6 +3,19 @@
 GLVisualize is an interactive 2D/3D visualization library completely written in OpenGL and Julia.
 Its focus is on performance and allowing to display animations/interactions as smooth as possible.
 
+#### Installation of GLVisualize
+Please run:
+```Julia
+Pkg.checkout("GLVisualize")
+Pkg.checkout("GLAbstraction")
+Pkg.checkout("GLWindow")
+Pkg.test("GLVisualize")
+```
+I've updated the tests to show some statistics and cover all examples:
+
+![glvisualize_tests](https://cloud.githubusercontent.com/assets/1010467/19108202/19984852-8af0-11e6-8fc2-d6fc2828d34c.png)
+
+
 #### GLVisualize can be used as a backend for [Plots.jl](https://github.com/tbreloff/Plots.jl/)
 
 Plot examples created with Plots and GLVisualize as a backend:
@@ -46,22 +59,6 @@ Note that the CPU version takes around 60 seconds for every iteration. GPU accel
 
 Please visit [glvisualize.com](http://www.glvisualize.com/)
 
-
-# Installation
-
-
-```Julia
-Pkg.add("GLVisualize")
-```
-If you like to live on the edge, you can checkout master as well:
-```Julia
-Pkg.checkout("GLVisualize")
-Pkg.checkout("GLAbstraction")
-Pkg.checkout("GeometryTypes")
-Pkg.checkout("GLWindow")
-Pkg.checkout("Reactive")
-Pkg.checkout("FixedSizeArrays")
-```
 
 Known problems:
 - boundingboxes are not always correct
