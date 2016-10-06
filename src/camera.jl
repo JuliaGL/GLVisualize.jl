@@ -58,7 +58,7 @@ end
 Creates a camera which is steered by a cube for `window`.
 """
 function cubecamera(
-        window, projectiontype;
+        window, projectiontype=Signal(GLAbstraction.PERSPECTIVE);
         cube_area   = Signal(SimpleRectangle(0,0,150,150)),
         eyeposition = Vec3f0(2),
         lookatv     = Vec3f0(0),
