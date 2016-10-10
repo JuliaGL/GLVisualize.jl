@@ -194,11 +194,13 @@ end
 function start(t::TransformationIterator)
     start(t.translation), start(t.scale), start(t.rotation)
 end
-function done(t::TransformationIterator, state)::Bool
-    done(t.translation, state[1]) ||
+
+function done(t::TransformationIterator, state)
+    (done(t.translation, state[1]) ||
     done(t.scale, state[2]) ||
-    done(t.rotation, state[3])
+    done(t.rotation, state[3]))::Bool
 end
+
 function next(t::TransformationIterator, state)
     _translation, st = next(t.translation, state[1])
     _scale, ss = next(t.scale, state[2])
