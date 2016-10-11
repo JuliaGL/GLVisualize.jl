@@ -184,10 +184,16 @@ function test_include(path, config)
         name = basename(path)[1:end-3] # remove .jl
         # include the example file in it's own module
         test_module = include_in_module(Symbol(name), path, window, timesignal)
+
         for (camname, cam) in window.cameras
             # don't center non standard cams
             camname != :perspective && continue
-            center!(cam, renderlist(window))
+            rlist = GLAbstraction.robj_from_camera(window, camname)
+            bb = GLAbstraction.renderlist_boundingbox(rlist)
+            # make sure we don't center if bb is undefined
+            if !isnan(origin(bb))
+                center!(cam, bb)
+            end
         end
         # only when something was added to renderlist
         if !isempty(renderlist(window)) || !isempty(window.children)
@@ -218,6 +224,7 @@ function test_include(path, config)
     finally
         close(timesignal)
         empty!(window)
+        empty!(GLVisualize.timer_signal_dict)
         GLWindow.clear_all!(window)
         window.color = RGBA{Float32}(1,1,1,1)
         println("------------------------------------------")

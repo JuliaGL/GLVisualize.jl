@@ -3,7 +3,7 @@ using ExampleRunner
 screencast_folder = joinpath(homedir(), "glvisualize_screencast")
 !isdir(screencast_folder) && mkdir(screencast_folder)
 config = RunnerConfig(
-    number_of_frames = 1,
+    number_of_frames = 360,
     interactive_time = 0.1,
     record=false
 )

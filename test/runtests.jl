@@ -3,7 +3,7 @@ using ExampleRunner
 using Base.Test
 const speed = :slow
 
-if speed = :fast
+if speed == :fast
     config = ExampleRunner.RunnerConfig(
         number_of_frames = 10,
         interactive_time = 0.1,

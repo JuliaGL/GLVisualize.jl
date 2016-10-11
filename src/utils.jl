@@ -175,6 +175,7 @@ to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
 function to_indices{I<:GLuint}(x::Signal{Vector{I}})
     gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
     preserve(const_lift(update!, gpu_mem, x))
+    gpu_mem
 end
 to_indices(x) = error(
     "Not a valid index type: $x.
