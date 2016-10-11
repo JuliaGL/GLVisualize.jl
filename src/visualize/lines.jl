@@ -142,3 +142,31 @@ function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
         postrender = () -> glDisable(GL_CULL_FACE);
     end
 end
+
+
+function line_indices(array)
+    len = length(array)
+    result = Array(GLuint, len*2)
+    idx = 1
+    for i=0:(len-3), j=0:1
+        result[idx] = i+j
+        idx += 1
+    end
+    result
+    #GLuint[i+j for i=0:(len-3) for j=0:1] # on 0.5
+end
+"""
+Fast, non anti aliased lines
+"""
+function _default{T <: Point}(position::VecTypes{T}, s::style"speedlines", data::Dict)
+    @gen_defaults! data begin
+        vertex       = position => GLBuffer
+        color_map    = nothing  => Vec2f0
+        indices      = const_lift(line_indices, position) => to_indices
+        color        = (color_map == nothing ? default(RGBA{Float32}, s) : nothing) => GLBuffer
+        color_norm   = nothing  => Vec2f0
+        intensity    = nothing  => GLBuffer
+        shader       = GLVisualizeShader("fragment_output.frag", "dots.vert", "dots.frag")
+        gl_primitive = GL_LINES
+    end
+end
