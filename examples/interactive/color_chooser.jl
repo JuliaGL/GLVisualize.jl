@@ -3,6 +3,7 @@ using GLVisualize, Colors, GeometryTypes, Reactive, GLAbstraction, GLWindow
 if !isdefined(:runtests)
     window = glscreen()
 end
+
 const record_interactive = true
 
 color_a = Signal(RGBA{Float32}(1,0,0,0.7))
@@ -58,5 +59,5 @@ _view(visualize(
 
 
 if !isdefined(:runtests)
-    @async renderloop(window)
+    renderloop(window)
 end

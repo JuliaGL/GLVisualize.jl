@@ -5,6 +5,7 @@ from that with the name `name`
 """
 function create_video(frames::Vector, name, screencap_folder, resample_steps=0, remove_destination=true)
     println("saving frames for $name")
+    cd(screencap_folder)
     mktempdir() do path
         frame1 = first(frames)
         for i=1:resample_steps

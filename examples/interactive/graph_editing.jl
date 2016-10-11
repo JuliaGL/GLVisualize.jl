@@ -1,7 +1,7 @@
 using GeometryTypes, GLVisualize, GLAbstraction, Reactive, GLWindow, GLFW
 
 if !isdefined(:runtests)
-window = glscreen()
+    window = glscreen()
 end
 const record_interactive = true
 
@@ -57,7 +57,7 @@ preserve(foldp((value(m2id)..., Point2f0(0)), mousedragg) do v0, dragg
     return id, index, p0
 end)
 # On right click remove nodes!
-preserve(map(right_pressed) do rp
+s = map(right_pressed) do rp
     id, index = value(m2id)
     if rp && id==point_robj.id && length(gpu_position) >= index
         new_indices = Int[]
@@ -70,7 +70,8 @@ preserve(map(right_pressed) do rp
         end
         push!(indices, new_indices) # update indices!
     end
-end)
+end
+preserve(s)
 # _view it!
 _view(lines, window, camera=:fixed_pixel)
 _view(points, window, camera=:fixed_pixel)

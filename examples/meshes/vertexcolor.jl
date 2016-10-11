@@ -1,7 +1,7 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors
 
 if !isdefined(:runtests)
-	window = glscreen()
+    window = glscreen()
 end
 const static_example = true
 
@@ -22,5 +22,5 @@ sphere_mesh = GLNormalVertexcolorMesh(
 _view(visualize(sphere_mesh), window)
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end

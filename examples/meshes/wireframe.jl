@@ -1,7 +1,7 @@
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
 
 if !isdefined(:runtests)
-	window = glscreen()
+    window = glscreen()
 end
 const static_example = true
 
@@ -26,5 +26,5 @@ _view(visualize(colored_mesh, is_fully_opaque=false), window, camera=:perspectiv
 _view(visualize(msh, :lines, thickness=1f0), window, camera=:perspective)
 
 if !isdefined(:runtests)
-	@async renderloop(window)
+    renderloop(window)
 end

@@ -12,15 +12,16 @@ end
 
 
 function cleanup_old_screens()
+    GLAbstraction.empty_shader_cache!()
     for screen in get_screens()
         destroy!(screen)
     end
+    for (k, s) in timer_signal_dict
+        close(s.value)
+    end
     empty!(timer_signal_dict)
     empty_screens!()
-    GLFW.Terminate()
-    GLFW.Init()
     reset_texture_atlas!()
-    GLAbstraction.empty_shader_cache!()
 end
 
 function glscreen(name="GLVisualize";
@@ -40,6 +41,7 @@ function glscreen(name="GLVisualize";
         end
         nothing
     end)
+    GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
     screen
 end
 

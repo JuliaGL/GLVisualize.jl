@@ -1,6 +1,8 @@
 using GLVisualize, GeometryTypes, Colors
 
 
+
+
 function visu(x, sym=:default)
     tic()
     @profile r = visualize(x, sym)

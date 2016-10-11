@@ -1,13 +1,23 @@
 include("ExampleRunner.jl")
 using ExampleRunner
 using Base.Test
+const speed = :slow
 
-config = ExampleRunner.RunnerConfig(
-    number_of_frames = 360,
-    interactive_time = 4.0,
-    record=false,
-    resolution = (500, 500)
-)
+if speed = :fast
+    config = ExampleRunner.RunnerConfig(
+        number_of_frames = 10,
+        interactive_time = 0.1,
+        record=false,
+        resolution = (300, 300)
+    )
+else
+    config = ExampleRunner.RunnerConfig(
+        number_of_frames = 360,
+        interactive_time = 7.0,
+        record=false,
+        resolution = (500, 500)
+    )
+end
 ExampleRunner.run(config)
 
 # These are allowed to fail, since they depend on not installed packages
@@ -49,7 +59,7 @@ if is_installed("Plots") # when plots is installed, display nice statistics!
     using Plots; glvisualize(size=(800, 300))
     ystat = [length(failures), length(allowed_failures), length(successfull)]
     failur_plt = bar(
-        ["failure", "allowed failure", "passed"],
+        ["failures", "allowed failures", "passed"],
         ystat,
         markerstrokewidth=0f0, leg=false,
         title="Test Statistic",

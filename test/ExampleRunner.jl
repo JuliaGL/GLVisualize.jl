@@ -129,7 +129,7 @@ end
 function record_test_interactive(config, timesignal)
     timings = Float64[]
     frames = []
-    add_mouse(config.window)
+    #add_mouse(config.window)
     push!(timesignal, 0f0)
     for i=1:2 # warm up
         render_fr(config, timings)
@@ -157,14 +157,14 @@ end
  to avoid variable conflicts.
  this can be done only via eval.
 """
-function include_in_module(name::Symbol, include_path, window)
+function include_in_module(name::Symbol, include_path, window, timesignal)
     eval(:(
         module $(name)
             using Reactive
 
             const runtests   = true
             const window     = $(window)
-            const timesignal = Signal(0.0f0)
+            const timesignal = $(timesignal)
 
            # const composebackend = GLTest.composebackend
             include($include_path)
@@ -173,15 +173,17 @@ function include_in_module(name::Symbol, include_path, window)
 end
 
 
-function test_include(path, window, config)
+function test_include(path, config)
     rel_path = relpath(path, config.directory)
     config.current_name = rel_path
+    window = config.window
+    timesignal = Signal(0.0f0)
     try
         println("------------------------------------------")
         println("displaying $rel_path")
         name = basename(path)[1:end-3] # remove .jl
         # include the example file in it's own module
-        test_module = include_in_module(Symbol(name), path, window)
+        test_module = include_in_module(Symbol(name), path, window, timesignal)
         for (camname, cam) in window.cameras
             # don't center non standard cams
             camname != :perspective && continue
@@ -189,12 +191,13 @@ function test_include(path, window, config)
         end
         # only when something was added to renderlist
         if !isempty(renderlist(window)) || !isempty(window.children)
+            # record_test_static(config)
             if isdefined(test_module, :record_interactive)
-                record_test_interactive(config, test_module.timesignal)
+                record_test_interactive(config, timesignal)
             elseif isdefined(test_module, :static_example)
                 record_test_static(config)
             else
-                record_test(config, test_module.timesignal)
+                record_test(config, timesignal)
             end
             println("displayed successfully")
             if config.record
@@ -213,6 +216,7 @@ function test_include(path, window, config)
         config[:success] = false
         config[:exception] = ex
     finally
+        close(timesignal)
         empty!(window)
         GLWindow.clear_all!(window)
         window.color = RGBA{Float32}(1,1,1,1)
@@ -227,7 +231,7 @@ function make_tests(path::AbstractString, config)
             make_tests(map(x->joinpath(path, x), readdir(path)), config)
         end
     elseif isfile(path) && endswith(path, ".jl")
-        test_include(path, config.window, config)
+        test_include(path, config)
     end
     nothing # ignore other cases
 end
@@ -247,5 +251,6 @@ function run(config::RunnerConfig)
     make_tests(config.directory, config)
     config
 end
-#composebackend = ComposeBackend.GLVisualizeBackend(window)
+
+
 end

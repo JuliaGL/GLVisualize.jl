@@ -20,5 +20,5 @@ lines3d = visualize(
 _view(lines3d, window, camera=:perspective)
 
 if !isdefined(:runtests)
-    @async renderloop(window)
+    renderloop(window)
 end
