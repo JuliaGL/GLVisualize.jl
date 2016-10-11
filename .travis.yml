@@ -8,31 +8,10 @@ notifications:
 addons:
   apt:
     packages:
-        - libxi-dev
-        - libxmu-dev
-        - xserver-xorg-video-dummy
-        - xpra
-        - xorg-dev
-        - libgl1-mesa-dev
-        - libxcursor-dev
-        - libpulse-dev
-        - libxinerama-dev
-        - libxrandr-dev
-        - libxv-dev
-        - libudev-dev
-        - mesa-utils
-        - cmake
-        - libxxf86vm-dev
+    - &mesa_apt [libgl1-mesa-dri]
+    - &full_apt [libegl1-mesa, cmake, xorg-dev, libglu1-mesa-dev, mercurial, libdbus-1-dev, libgl1-mesa-dev, libglu1-mesa-dev, libpulse-dev, libx11-dev, libxcursor-dev, libxext-dev, libxi-dev, libxinerama-dev, libxrandr-dev, libxss-dev, libxt-dev, libxv-dev, libxxf86vm-dev, libasound2-dev, libts-dev, libudev-dev]
+
     sources:
         - kubuntu-backports
-before_script:
-  - "xpra --xvfb=\"Xorg +extension GLX +extension RANDR +extension RENDER -config `pwd`/test/dummy.xorg.conf -logfile ${HOME}/.xpra/xorg.log\"  start :9"
-  - "export DISPLAY=:9 glvisualize test"
-  - "export LIBGL_ALWAYS_SOFTWARE=1"
-  - sleep 3
-script:
-    - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-    - julia -e 'Pkg.clone(pwd()); Pkg.build("GLVisualize"); Pkg.test("GLVisualize")'
-after_script:
-  - "xpra stop :9"
-  - "cat ~/.xpra/*"
+before_install:
+    - sudo apt-get install libosmesa6-dev;
