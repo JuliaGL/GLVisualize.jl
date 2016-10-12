@@ -16,7 +16,7 @@ end
 function num2glstring(x, numberwidth)
     str   = printforslider(x, numberwidth)
     atlas = get_texture_atlas()
-    font  = DEFAULT_FONT_FACE
+    font  = defaultfont()
     Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
 end
 

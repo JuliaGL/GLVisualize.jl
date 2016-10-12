@@ -49,11 +49,12 @@ function myscale!(robj, target)
     set_arg!(robj, :boundingbox, Signal(m*bb))
 end
 
-function choice_widget(choices::AbstractVector, window;
+function widget{T<:AbstractVector}(choices::Signal{T}, window;
         text_scale=Vec2f0(1), start_idx=1, area=(150, 30), kw_args...
     )
+    choices_v = value(choices)
     show_area = SimpleRectangle(0,0, area...)
-    vizzes = map(enumerate(choices)) do i_c
+    vizzes = map(enumerate(choices_v)) do i_c
         i, c = i_c
         vis = choice_visual(c;
             relative_scale=text_scale,
@@ -73,5 +74,5 @@ function choice_widget(choices::AbstractVector, window;
         end
         idx
     end
-    map(getindex, Signal(choices), selected, typ=eltype(choices)), visual
+    map(getindex, choices, selected, typ=eltype(choices_v)), visual
 end

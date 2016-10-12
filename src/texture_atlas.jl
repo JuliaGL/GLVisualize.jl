@@ -8,67 +8,110 @@ type TextureAtlas
     scale           ::Vector{Vec2f0}
     extent          ::Vector{FontExtent{Float64}}
 
-    function TextureAtlas(initial_size=(4096, 4096))
 
-        images = Texture(fill(Float16(0.0), initial_size...), minfilter=:linear, magfilter=:linear)
-
-        new(
-            RectanglePacker(SimpleRectangle(0, 0, initial_size...)),
-            Dict{Any, Int}(),
-            1,
-            images,
-            Vec4f0[],
-            Vec2f0[],
-            FontExtent{Float64}[]
-        )
-    end
+end
+function TextureAtlas(initial_size=(4096, 4096))
+    images = Texture(fill(Float16(0.0), initial_size...), minfilter=:linear, magfilter=:linear)
+    TextureAtlas(
+        RectanglePacker(SimpleRectangle(0, 0, initial_size...)),
+        Dict{Any, Int}(),
+        1,
+        images,
+        Vec4f0[],
+        Vec2f0[],
+        FontExtent{Float64}[]
+    )
 end
 
 begin #basically a singleton for the textureatlas
-const local TEXTURE_ATLAS = TextureAtlas[]
-reset_texture_atlas!() = empty!(TEXTURE_ATLAS)
-function get_texture_atlas()
-    not_initilized = isempty(TEXTURE_ATLAS)
-    if not_initilized
-        global DEFAULT_FONT_FACE = newface(assetpath("fonts", "DejaVuSans.ttf"))
-        alternatives = [
-            "DejaVuSans.ttf",
-            "NotoSansCJKkr-Regular.otf",
-            "NotoSansCuneiform-Regular.ttf",
-            "NotoSansSymbols-Regular.ttf",
-            "FiraMono-Medium.ttf"
-        ]
-        global ALTERNATIVE_FONTS = map(alternatives) do font
-            newface(assetpath("fonts", font))
+
+
+    const local _textute_atlas = TextureAtlas[]
+    const local _cache_path = joinpath(dirname(@__FILE__), "..", ".cache", "texture_atlas.jls")
+    const local _default_font = Vector{Ptr{FreeType.FT_FaceRec}}[]
+    const local _alternative_fonts = Vector{Ptr{FreeType.FT_FaceRec}}[]
+
+    function defaultfont()
+        if isempty(_default_font)
+            push!(_default_font, newface(assetpath("fonts", "DejaVuSans.ttf")))
         end
-        atlas = push!(TEXTURE_ATLAS, TextureAtlas())[] # initialize only on demand
-        for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
-            insert_glyph!(atlas, c, DEFAULT_FONT_FACE)
-        end
-        return atlas
-    else
-        return TEXTURE_ATLAS[]
+        _default_font[]
     end
-end
+    function alternativefonts()
+        if isempty(_alternative_fonts)
+            alternatives = [
+                "DejaVuSans.ttf",
+                "NotoSansCJKkr-Regular.otf",
+                "NotoSansCuneiform-Regular.ttf",
+                "NotoSansSymbols-Regular.ttf",
+                "FiraMono-Medium.ttf"
+            ]
+            for font in alternatives
+                push!(_alternative_fonts, newface(assetpath("fonts", font)))
+            end
+        end
+        _alternative_fonts
+    end
+
+    reset_texture_atlas!() = empty!(_textute_atlas)
+
+    function cached_load()
+        if isfile(_cache_path)
+            return open(_cache_path) do io
+                dict = deserialize(io)
+                dict[:images] = Texture(dict[:images]) # upload to GPU
+                fields = [dict[n] for n in fieldnames(TextureAtlas)]
+                TextureAtlas(fields...)
+            end
+        else
+            atlas = TextureAtlas()
+            for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
+                insert_glyph!(atlas, c, defaultfont())
+            end
+            to_cache(atlas) # cache it
+            return atlas
+        end
+    end
+
+    function to_cache(atlas)
+        if !ispath(dirname(_cache_path))
+            mkdir(dirname(_cache_path))
+        end
+        open(_cache_path, "w") do io
+            dict = Dict(
+                n => getfield(atlas, n) for n in fieldnames(atlas)
+            )
+            dict[:images] = gpu_data(dict[:images])
+            serialize(io, dict)
+        end
+    end
+
+    function get_texture_atlas()
+        if isempty(_textute_atlas)
+            push!(_textute_atlas, cached_load()) # initialize only on demand
+        end
+        _textute_atlas[]
+    end
+
 end
 
 function glyph_index!(atlas::TextureAtlas, c::Char, font)
     if FT_Get_Char_Index(font[], c) == 0
-        for afont in ALTERNATIVE_FONTS
+        for afont in alternativefonts()
             if FT_Get_Char_Index(afont[], c) != 0
                 font = afont
             end
         end
     end
-    if c < '\u00ff' && font == DEFAULT_FONT_FACE # characters up to '\u00ff'(255), are directly mapped for default font
+    if c < '\u00ff' && font == defaultfont() # characters up to '\u00ff'(255), are directly mapped for default font
         Int(c)+1
     else #others must be looked up, since they're inserted when used first
         return insert_glyph!(atlas, c, font)
     end
 end
 
-glyph_scale!(c::Char) = glyph_scale!(get_texture_atlas(), c, DEFAULT_FONT_FACE)
-glyph_uv_width!(c::Char) = glyph_uv_width!(get_texture_atlas(), c, DEFAULT_FONT_FACE)
+glyph_scale!(c::Char) = glyph_scale!(get_texture_atlas(), c, defaultfont())
+glyph_uv_width!(c::Char) = glyph_uv_width!(get_texture_atlas(), c, defaultfont())
 
 function glyph_uv_width!(atlas::TextureAtlas, c::Char, font)
     atlas.attributes[glyph_index!(atlas, c, font)]

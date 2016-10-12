@@ -19,7 +19,7 @@ const TextDefault = Dict(
     :atlas => GLVisualize.get_texture_atlas()
     :color => RGBA{Float32}(0,0,0,1)
     :scale => Vec2f0(50)
-    :font => GLVisualize.DEFAULT_FONT_FACE
+    :font => GLVisualize.defaultfont()
 )
 
 type RichText

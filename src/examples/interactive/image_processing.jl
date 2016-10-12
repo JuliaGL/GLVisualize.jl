@@ -39,26 +39,8 @@ image_renderable = visualize(
     is_fully_opaque=false
 )
 _view(image_renderable)
+_view(slider, camera=:fixed_pixel)
 
-vec2i(a,b,x...) = Vec{2,Int}(round(Int, a), round(Int, b))
-vec2i(vec::Vec) = vec2i(vec...)
-"""
-creates a rectangle around `robj`
-"""
-function screen(robj)
-	bb = value(boundingbox(robj))
-	m  = vec2i(minimum(bb))
-	area = SimpleRectangle{Float32}(0,0, ((vec2i(maximum(bb))-m)+30)...)
-
-	_view(visualize((area, [Point2f0(0)]),
-        color=RGBA{Float32}(0,0,0,0), stroke_color=RGBA{Float32}(0,0,0,0.7),
-        stroke_width=3f0),
-        camera=:fixed_pixel
-    )
-	robj.children[][:model] = translationmatrix(Vec3f0(15,15,0)-minimum(bb))
-	_view(robj, camera=:fixed_pixel)
-end
-screen(slider)
 
 if !isdefined(:runtests)
 	renderloop(window)

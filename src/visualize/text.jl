@@ -36,8 +36,8 @@ function Base.resize!(t::Text, size::Int)
 end
 function Base.setindex!(t::Text, value::NTuple{6}, i::Integer)
     char, offset, position, color, scale, rotation = value
-    gs = GLVisualize.glyph_scale!(t.atlas, char, GLVisualize.DEFAULT_FONT_FACE)
-    guvw = GLVisualize.glyph_uv_width!(t.atlas, char, GLVisualize.DEFAULT_FONT_FACE)
+    gs = GLVisualize.glyph_scale!(t.atlas, char, GLVisualize.defaultfont())
+    guvw = GLVisualize.glyph_uv_width!(t.atlas, char, GLVisualize.defaultfont())
     t.offsets[i] = offset
     t.uv_offset_width[i] = guvw
     t.positions[i] = position
@@ -48,8 +48,8 @@ function Base.setindex!(t::Text, value::NTuple{6}, i::Integer)
 end
 
 function Base.setindex!(t::Text, value::Char, i::Integer)
-    gs = GLVisualize.glyph_scale!(rt.text.atlas, c, GLVisualize.DEFAULT_FONT_FACE)
-    guvw = GLVisualize.glyph_uv_width!(rt.text.atlas, c, GLVisualize.DEFAULT_FONT_FACE)
+    gs = GLVisualize.glyph_scale!(rt.text.atlas, c, GLVisualize.defaultfont())
+    guvw = GLVisualize.glyph_uv_width!(rt.text.atlas, c, GLVisualize.defaultfont())
     t.uv_offset_width[i] = guvw
     t.scales[i] = gs
 end
@@ -87,7 +87,7 @@ function RichText(text::Text)
     style_default = Dict(
         :color => RGBA{Float32}(0,0,0,1),
         :scale => Vec2f0(1),
-        :font => GLVisualize.DEFAULT_FONT_FACE
+        :font => GLVisualize.defaultfont()
     )
     RichText(text, [], [], 0:1, style_default)
 end

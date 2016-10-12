@@ -30,7 +30,7 @@ end
 function RunnerConfig(;
         resolution = (300, 300),
         make_docs = true,
-        directory = Pkg.dir("GLVisualize", "examples"),
+        directory = Pkg.dir("GLVisualize", "src", "examples"),
         exclude_dirs = ["gpgpu", "compose"],
         number_of_frames = 360,
         interactive_time = 5.0,
@@ -127,10 +127,9 @@ function record_test_static(config)
     config[:timings] = timings
 end
 function record_test_interactive(config, timesignal)
-    add_mouse(config.window)
     timings = Float64[]
     frames = []
-    #add_mouse(config.window)
+    add_mouse(config.window)
     push!(timesignal, 0f0)
     for i=1:2 # warm up
         render_fr(config, timings)
@@ -149,6 +148,8 @@ function record_test_interactive(config, timesignal)
     config[:timings] = timings
     config[:frames] = frames
 end
+
+
 
 
 """

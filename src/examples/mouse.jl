@@ -13,7 +13,6 @@ function circlescale(v0, pressed)
     end
     scale
 end
-mpos(x) = translationmatrix(Vec3f0(x, 0))
 function to_color(button)
     if button == GLFW.MOUSE_BUTTON_LEFT
         return GLVisualize.default(RGBA)
@@ -24,7 +23,6 @@ function to_color(button)
     end
     RGBA{Float32}(0.6,0.6,0.6,1.0)
 end
-
 function mouse_color(pressed)
     if isempty(pressed)
         return RGBA{Float32}(0,0,0,0.8)
@@ -33,24 +31,22 @@ function mouse_color(pressed)
     end
 end
 
+function transmat(x, pressed)
+    c = !isempty(pressed)
+    translationmatrix(Vec3f0(x, 0)) * scalematrix(Vec3f0(c ? 0.7 : 1.0))
+end
+
+
 function add_mouse(window)
-    N = 2
-    points = fill(Point2f0(0), N)
-
     @materialize mouseposition, mouse_buttons_pressed = window.inputs
-
-    model_matrix = map(mpos, mouseposition)
-
-    scales0 = fill(Vec2f0(20), N)
-
-    scale = foldp(circlescale, scales0, mouse_buttons_pressed)
-    color = map(mouse_color, mouse_buttons_pressed)
-
+    model_matrix = map(transmat, mouseposition, mouse_buttons_pressed)
+    cursor = map(RGBA{U8}, loadasset("cursor.png"))
+    w,h = size(cursor)
+    ratio = Float32(w/h)
+    w, h = ratio*15f0, 15f0
     _view(visualize(
-        (Circle(Point2f0(0), 20f0), points),
-        color=RGBA{Float32}(0,0,0,0), stroke_width=2f0,
-        stroke_color=color, scale=scale,
-        model=model_matrix
+        cursor,
+        model=model_matrix,
+        primitive=SimpleRectangle(-1f0, -(h+1f0), w, h)
     ), window, camera=:fixed_pixel)
-
 end

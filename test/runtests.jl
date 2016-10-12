@@ -1,4 +1,5 @@
-include("ExampleRunner.jl")
+include(joinpath(dirname(@__FILE__), "..", "src", "examples", "ExampleRunner.jl"))
+
 using ExampleRunner
 using Base.Test
 const speed = :slow
@@ -18,6 +19,7 @@ else
         resolution = (500, 500)
     )
 end
+
 ExampleRunner.run(config)
 
 # These are allowed to fail, since they depend on not installed packages

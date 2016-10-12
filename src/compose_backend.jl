@@ -471,7 +471,7 @@ function parse_pango(text::AbstractString, scale)
     GLV = GLVisualize
 
     atlas          = GLV.get_texture_atlas()
-    font           = GLV.DEFAULT_FONT_FACE
+    font           = GLV.defaultfont()
 
     last_idx = 1
     last_offset = 0.0
