@@ -1,10 +1,27 @@
-using Plots, PlotRecipes, RData, GLVisualize, GeometryTypes;
+using Plots, PlotRecipes, RData, GLVisualize, GeometryTypes, GLAbstraction;
 pl_size = if !isempty(GLVisualize.get_screens())
     widths(GLVisualize.current_screen())
 else
-    (500,500)
+    (1000,1000)
 end
 glvisualize(size=pl_size)
-tests = [1:5;7:20; 22; 24:30]
-plots = [test_examples(:glvisualize, x) for x in tests]
-plot(plots...)
+const static_example = true
+
+
+ys = Vector[[sin(i*7)/x * cos(x^i) for x in linspace(0.6,5,10)] for i=1:5]
+cat = loadasset("cat.obj")
+cat = rotationmatrix_y(rad2deg(110)) * cat
+marker = Any[:circle, :d, cat, loadasset("foxy.png"), '🐱']
+marker  = reshape(marker, (1, 5))
+colors = reshape(colormap("Blues", 10)[4:8], (1,5))
+
+plot(
+    ys,
+    color = colors,
+    line = ([:dot :dash :dashdot :solid :dot], [1 2 3 4 5]),
+    marker = marker,
+    markersize = [5 10 30 10 15],
+    markercolor = reshape(colormap("RdBu", 5), (1,5)),
+    markerstrokewidth = [1 0.1 0 2 4],
+    markerstrokecolor = [:blue :blue :black :blue :white],
+)
