@@ -1,3 +1,2 @@
-using FixedSizeArrays, Colors, ColorTypes, GLWindow
-using GeometryTypes, GLAbstraction
-using GLVisualize
+using FixedSizeArrays
+include(Pkg.dir("FixedSizeArrays/test/runtests.jl"))

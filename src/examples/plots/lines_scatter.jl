@@ -25,3 +25,5 @@ plot(
     markerstrokewidth = [1 0.1 0 2 4],
     markerstrokecolor = [:blue :blue :black :blue :white],
 )
+
+gui()

@@ -1,7 +1,7 @@
 using GLVisualize, GLAbstraction, GeometryTypes, Reactive
 
 if !isdefined(:runtests)
-	window = glscreen()
+    window = glscreen()
     timesignal = loop(linspace(0f0,1f0,360))
 end
 
@@ -34,5 +34,5 @@ _view(surface, window)
 
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end
