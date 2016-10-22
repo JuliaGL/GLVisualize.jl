@@ -6,6 +6,7 @@ Its focus is on performance and allowing to display animations/interactions as s
 #### Installation of GLVisualize
 Please run:
 ```Julia
+Pkg.add("GLVisualize")
 Pkg.checkout("GLVisualize")
 Pkg.checkout("GLAbstraction")
 Pkg.checkout("GLWindow")
