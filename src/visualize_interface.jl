@@ -22,20 +22,6 @@ visualize(main::ANY, s::Style, data::Dict) = assemble_shader(default(main, s, da
 visualize(c::Composable, s::Symbol=:default; kw_args...) = Context(c)
 visualize(c::Context, s::Symbol=:default; kw_args...) = c
 #
-function Base.push!{Pre}(screen::Screen, robj::RenderObject{Pre})
-    # find renderlist specialized to current prerender function
-    index = findfirst(screen.renderlist) do renderlist
-        prerendertype(eltype(renderlist)) == Pre
-    end
-    if index == 0
-        # add new specialised renderlist, if none found
-        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
-        index = length(screen.renderlist)
-    end
-    # only add to renderlist if not already in there
-    in(robj, screen.renderlist[index]) || push!(screen.renderlist[index], robj)
-    nothing
-end
 
 function _view(
         robj::RenderObject, screen=current_screen();

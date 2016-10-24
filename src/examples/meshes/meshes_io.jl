@@ -1,3 +1,5 @@
+using ModernGL, GLAbstraction, GeometryTypes
+
 using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
 
 if !isdefined(:runtests)

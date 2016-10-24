@@ -454,6 +454,7 @@ function sprites(p, s, data)
         # rotation and billboard don't go along
         billboard        = rotation == Vec3f0(0,0,1) => "if `billboard` == true, particles will always face camera"
         preferred_camera = :orthographic_pixel
+        fxaa             = false
         shader           = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "sprites.geom",
             "sprites.vert", "distance_shape.frag",

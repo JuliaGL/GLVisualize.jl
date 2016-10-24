@@ -52,6 +52,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         color               = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
         thickness::Float32  = 2f0
         pattern             = nothing
+        fxaa                = false
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
         indices             = const_lift(length, p_vec) => to_indices
@@ -82,6 +83,7 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         thickness::Float32  = 2f0                 => GLBuffer
         shape               = RECTANGLE
         pattern             = nothing
+        fxaa                = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
