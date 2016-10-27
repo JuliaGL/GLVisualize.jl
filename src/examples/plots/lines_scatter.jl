@@ -1,12 +1,10 @@
-using Plots, PlotRecipes, RData, GLVisualize, GeometryTypes, GLAbstraction;
+using Plots, PlotRecipes, RData, GLVisualize, GeometryTypes, GLAbstraction
 pl_size = if !isempty(GLVisualize.get_screens())
     widths(GLVisualize.current_screen())
 else
     (1000,1000)
 end
 glvisualize(size=pl_size)
-const static_example = true
-
 
 ys = Vector[[sin(i*7)/x * cos(x^i) for x in linspace(0.6,5,10)] for i=1:5]
 cat = loadasset("cat.obj")

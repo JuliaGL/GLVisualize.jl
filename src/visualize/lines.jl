@@ -27,11 +27,11 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         position
     else
         const_lift(position) do p
-            pv = vec(p)
-            if length(pv) < 4 # geometryshader doesn't work with less then 4
-                return [pv..., fill(T(NaN), 4-length(pv))...]
+            pvv = vec(p)
+            if length(pvv) < 4 # geometryshader doesn't work with less then 4
+                return [pvv..., fill(T(NaN), 4-length(pvv))...]
             else
-                return pv
+                return pvv
             end
         end
     end

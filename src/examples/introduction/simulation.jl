@@ -63,7 +63,7 @@ function init(res=(800,800))
         push!(timesignal, value(timesignal)+0.01)
         render_frame(window)
         swapbuffers(window)
-        GLFW.PollEvents()
+        pollevents()
         yield()
         sleep(value(speed))
     end
@@ -73,18 +73,18 @@ function init(res=(800,800))
     # returns a new signal with the returnvalue of that callback. Since we don't
     # use that signal, Reactive will try to garbage collect it, which is why we need
     # to call preserve on it.
-    preserve(map(window.inputs[:keyboard_buttons]) do kam
-            key, action, mods = kam
-            if key == GLFW.KEY_S
-                println("saving screenshot")
-                screenshot(window, path="screenshot.jpg")
-            end
-            # make sure that this function doesn't return different types
-            # for the if branch.
-            # Reactive would try to convert them otherwise.
-            nothing
-        end
-    )
+    # preserve(map(window.inputs[:keyboard_buttons]) do kam
+    #         key, action, mods = kam
+    #         if key == GLFW.KEY_S
+    #             println("saving screenshot")
+    #             screenshot(window, path="screenshot.jpg")
+    #         end
+    #         # make sure that this function doesn't return different types
+    #         # for the if branch.
+    #         # Reactive would try to convert them otherwise.
+    #         nothing
+    #     end
+    # )
 
     window, timesignal, speed
 end
@@ -116,7 +116,7 @@ function main(window, timesignal)
 
     position_velocity = foldp(
         (v0, t) -> solve_particles(v0),
-        (start_position, zeros(Float32,num), s),
+        (start_position, zeros(Float32, num), s),
         timesignal
     )
     # extract the position
@@ -125,7 +125,7 @@ function main(window, timesignal)
     # create a color signal that changes over time
     # the color will update whenever timesignal updates
     color = map(timesignal) do t
-        RGBA(1,1,(sin(t)+1.)/2.,0.05)
+        RGBA(1,1,(sin(t)+1.)/2., 0.9)
     end
 
     circle = Circle(Point2f0(0), 0.9f0)
@@ -154,7 +154,7 @@ include("simulation.jl")
 window, t, speed = init()
 main(window, t)
 #redefine main/solve_particles
-include("simulation.jl") # if you have the changes in the file
+include("simulation.jl") # if you have the chan ges in the file
 main() # call again! If you only changed solve_particles, you don't even have to call main again
 push!(speed, 1/20) # this is fully interactive so you can, e.g. change the speed
 =#

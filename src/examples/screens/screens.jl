@@ -1,28 +1,34 @@
 using GLVisualize, Reactive, GeometryTypes
-using GLWindow, GLAbstraction
+using GLWindow, GLAbstraction, Colors
 
 if !isdefined(:runtests)
-	window = glscreen()
+    window = glscreen()
 end
 const static_example = true
 
-"""
-functions to halve some rectangle
-"""
-xhalf(r)  = SimpleRectangle(r.x, r.y, r.w÷2, r.h)
-xhalf2(r) = SimpleRectangle(r.w÷2, r.y, r.w÷2, r.h)
 
+ctrla, viewa = y_partition(window.area, 20)
+view2da, view3da = x_partition(window.area, 50)
+
+ctrlscreen = Screen(
+    window, name=:ctrlscreen, color=RGBA(0.9f0, 0.9f0, 0.9f0, 1f0),
+    area=ctrla
+)
+viewscreen = Screen(
+    window, name=:viewscreen,
+    area=viewa
+)
 # create first screen with window as the parent screen
 # and a different area.
 screen2D = Screen(
-	window, name=:screen2D,
-	area=const_lift(xhalf2, window.area)
+    viewscreen, name=:screen2D, color=RGBA(1f0, 0.9f0, 1f0, 1f0),
+    area=view2da
 )
 # create second screen with window as the parent screen
 # and a different area.
 screen3D = Screen(
-	window, name=:screen3D,
-	area=const_lift(xhalf, window.area)
+    viewscreen, name=:screen3D, color=RGBA(0.9f0, 0.9f0, 1f0, 1f0),
+    area=view3da
 )
 
 # create something to look at!
@@ -30,9 +36,10 @@ bars = visualize(rand(Float32, 10,10))
 points = visualize([rand(Point2f0)*1000 for i=1:50], scale=Vec2f0(40))
 
 # _view them in different screens
+# _view them in different screens
 _view(bars,   screen3D, camera=:perspective)
 _view(points, screen2D, camera=:orthographic_pixel)
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end

@@ -24,6 +24,27 @@ function cleanup_old_screens()
     reset_texture_atlas!()
 end
 
+
+immutable Millimeter
+end
+global const mm = Millimeter()
+function Base.:(*)(x::Millimeter, y::Number)
+    round(Int, y * pixel_per_mm)
+end
+function Base.:(*)(x::Number, y::Millimeter)
+    round(Int, x * pixel_per_mm)
+end
+
+
+
+function get_dpi(window)
+    monitor = GLFW.GetPrimaryMonitor()
+    props = GLWindow.MonitorProperties(monitor)
+    props.dpi[1]# we do not start fiddling with differently scaled xy dpi's
+end
+
+
+
 function glscreen(name="GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
         debugging = false,
@@ -42,6 +63,7 @@ function glscreen(name="GLVisualize";
         nothing
     end)
     GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
+    global const pixel_per_mm = get_dpi(screen)/25.4
     screen
 end
 

@@ -42,20 +42,20 @@ b = multirandomwalk(15, 20)
 c = multirandomwalk(15, 20)
 
 
-
 _view(visualize(
     (Circle(Point2f0(0), 0.02f0), a),
     color=color_a, billboard=true
-), camera=:perspective)
+), window, camera=:perspective)
+
 _view(visualize(
     (Circle(Point2f0(0), 0.02f0), b),
     color=color_b, billboard=true
-), camera=:perspective)
+), window, camera=:perspective)
 
 _view(visualize(
     (Circle(Point2f0(0), 0.02f0), c),
     color=color_c, billboard=true
-), camera=:perspective)
+), window, camera=:perspective)
 
 
 if !isdefined(:runtests)

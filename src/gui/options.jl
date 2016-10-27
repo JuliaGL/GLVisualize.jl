@@ -53,7 +53,7 @@ function widget{T<:AbstractVector}(choices::Signal{T}, window;
         text_scale=Vec2f0(1), start_idx=1, area=(150, 30), kw_args...
     )
     choices_v = value(choices)
-    show_area = SimpleRectangle(0,0, area...)
+    show_area = SimpleRectangle{Float32}(0,0, area...)
     vizzes = map(enumerate(choices_v)) do i_c
         i, c = i_c
         vis = choice_visual(c;
@@ -62,7 +62,7 @@ function widget{T<:AbstractVector}(choices::Signal{T}, window;
             kw_args...
         )
         set_arg!(vis, :visible, i==start_idx)
-        myscale!(vis, AABB{Float32}(Vec3f0(2,2,0), Vec3f0(area..., 1)-Vec3f0(2,2,0)))
+        myscale!(vis, AABB{Float32}(Vec3f0(5,5,0), Vec3f0(area..., 1)-Vec3f0(5,5,0)))
         vis
     end
     vis = visualize(show_area, color=RGBA{Float32}(0.95, 0.95, 0.95, 0.4)).children[]

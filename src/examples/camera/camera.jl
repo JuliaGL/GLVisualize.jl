@@ -23,15 +23,16 @@ curve_data(i, N) = Point3f0[spiral(i+x/20f0, 1, (i/20)+1) for x=1:N]
 # create a spiraling camera path
 const camera_path  = curve_data(1f0, 360)
 
+area_a, area_b = x_partition(window.area, 50)
 # create first screen for the camera
 camera_screen = Screen(
 	window, name=:camera_screen,
-	area=const_lift(xhalf2, window.area)
+	area=area_a
 )
 # create second screen to _view the scene
 scene_screen = Screen(
 	window, name=:scene_screen,
-	area=const_lift(xhalf, window.area)
+	area=area_b
 )
 
 # create an camera eyeposition signal, which follows the path

@@ -2,21 +2,23 @@ include(joinpath(dirname(@__FILE__), "..", "src", "examples", "ExampleRunner.jl"
 
 using ExampleRunner
 using Base.Test
-const speed = :fast
-
+const speed = :slow
+dir = Pkg.dir("GLVisualize", "src", "examples")
 if speed == :fast
     config = ExampleRunner.RunnerConfig(
         number_of_frames = 10,
         interactive_time = 0.1,
         record=false,
-        resolution = (300, 300)
+        directory = dir,
+        resolution = (800, 700)
     )
 else
     config = ExampleRunner.RunnerConfig(
         number_of_frames = 360,
         interactive_time = 7.0,
         record=false,
-        resolution = (500, 500)
+        directory = dir,
+        resolution = (800, 700)
     )
 end
 
@@ -37,11 +39,9 @@ successfull = filter(config.attributes) do k, dict
     dict[:success]
 end
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
-window = GLVisualize.current_screen()
+window = GLWindow.rootscreen(GLVisualize.current_screen())
 
 resize!(window, 800, 700)
-Reactive.run_till_now()
-yield()
 
 function is_installed(pkgstr::AbstractString)
     try
@@ -129,8 +129,5 @@ imgs = visualize(
 _view(imgs, glvis_screen)
 
 Plots.hover(imgs, names, glvis_screen)
-@async renderloop(window)
-glvis_screen.renderlist_fxaa
-plot_screen.area.value
-
+renderloop(window)
 @test isempty(failures)

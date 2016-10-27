@@ -70,16 +70,20 @@ end
 function y_partition(area, percent)
     amount = percent / 100.0
     p = const_lift(area) do r
-        (SimpleRectangle{Int}(r.x, r.y, r.w, round(Int, r.h*amount)),
-            SimpleRectangle{Int}(r.x, round(Int, r.h*amount), r.w, round(Int, r.h*(1-amount))))
+        (
+            SimpleRectangle{Int}(0, 0, r.w, round(Int, r.h*amount)),
+            SimpleRectangle{Int}(0, round(Int, r.h*amount), r.w, round(Int, r.h*(1-amount)))
+        )
     end
     return const_lift(first, p), const_lift(last, p)
 end
 function x_partition(area, percent)
     amount = percent / 100.0
     p = const_lift(area) do r
-        (SimpleRectangle{Int}(r.x, r.y, round(Int, r.w*amount), r.h ),
-            SimpleRectangle{Int}(round(Int, r.w*amount), r.y, round(Int, r.w*(1-amount)), r.h))
+        (
+            SimpleRectangle{Int}(0, 0, round(Int, r.w*amount), r.h ),
+            SimpleRectangle{Int}(round(Int, r.w*amount), 0, round(Int, r.w*(1-amount)), r.h)
+        )
     end
     return const_lift(first, p), const_lift(last, p)
 end
