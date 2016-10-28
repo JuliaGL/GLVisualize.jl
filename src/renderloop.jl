@@ -2,16 +2,17 @@ export glscreen
 
 
 
-let screen_list = Screen[]
+let screen_list = WeakRef[]
     global current_screen, add_screen, get_screens, empty_screens!
-    current_screen() = last(screen_list)
-    add_screen(screen) = push!(screen_list, screen)
-    get_screens() = copy(screen_list)
+    clean() = filter!(x-> x.value != nothing, screen_list)
+    current_screen() = (clean(); last(screen_list).value)
+    add_screen(screen) = push!(screen_list, WeakRef(screen))
+    get_screens() = (clean(); map(x->x.value, screen_list))
     empty_screens!() = empty!(screen_list)
 end
 
 
-function cleanup_old_screens()
+function cleanup()
     GLAbstraction.empty_shader_cache!()
     for screen in get_screens()
         destroy!(screen)
@@ -19,7 +20,7 @@ function cleanup_old_screens()
     for (k, s) in timer_signal_dict
         close(s.value)
     end
-    empty!(timer_signal_dict)
+    empty!(timer_signal_dict) # is this even needed?
     empty_screens!()
     reset_texture_atlas!()
 end
@@ -48,20 +49,13 @@ end
 function glscreen(name="GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
         debugging = false,
-        background = RGBA(1,1,1,1)
+        color = RGBA(1,1,1,1),
+        stroke = (0f0, color)
     )
-
-    cleanup_old_screens()
-
-    screen = Screen(name, resolution=resolution, debugging=debugging, color=background)
+    cleanup()
+    screen = Screen(name, resolution=resolution, debugging=debugging, color=color)
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
-    preserve(map(screen.inputs[:window_open]) do open
-        if !open
-            empty_screens!()
-        end
-        nothing
-    end)
     GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
     global const pixel_per_mm = get_dpi(screen)/25.4
     screen
