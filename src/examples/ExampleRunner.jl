@@ -48,10 +48,7 @@ function RunnerConfig(;
         thumbnail = true,
         rootscreen = glscreen(resolution=resolution)
     )
-    rootscreen.inputs[:key_pressed] = const_lift(GLAbstraction.singlepressed,
-        rootscreen.inputs[:mouse_buttons_pressed],
-        GLFW.MOUSE_BUTTON_LEFT
-    )
+
     a, b = y_partition(rootscreen.area, 15)
     toolbar = Screen(rootscreen,
         area=a, color = RGBA(0.95f0, 0.95f0, 0.95f0, 1.0f0)
@@ -406,10 +403,9 @@ function make_tests(path::AbstractString, config)
     window = config.window
     break_loop = false
     runthrough = 0 # -1, backwards, 0 not, 1 forward
-    function increase(x)
-        i == length(paths) && (break_loop = true)
-        i = max(i+x, 1)
-    end
+    
+    increase(x) = (i = max(i+x, 1))
+
     preserve(map(config.buttons[:back][2], init=0) do clicked
         clicked && (break_loop = true; increase(-1))
     end)
@@ -429,7 +425,7 @@ function make_tests(path::AbstractString, config)
         try
             test_module = _test_include(path, config)
             display_msg(test_module, config)
-            firstrun = true; timings = Float64[]
+            timings = Float64[]
             render_fr(config, timings)
             record_thumbnail(config)
             while !break_loop && isopen(config.rootscreen)
