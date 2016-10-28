@@ -44,7 +44,10 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         end
     end
     @gen_defaults! data begin
-        dims::Vec{2, Int32} = ndims(pv) == 1 ? (length(pv), 1) : size(pv)
+        dims::Vec{2, Int32} = const_lift(position) do p
+            sz = ndims(p) == 1 ? (length(p), 1) : size(p)
+            Vec{2, Int32}(sz)
+        end
         vertex              = p_vec => GLBuffer
         intensity           = nothing
         color_map           = nothing => Texture
