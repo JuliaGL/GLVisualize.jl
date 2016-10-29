@@ -51,21 +51,24 @@ function init(res=(800,800))
     # giving the window a transparent background color makes it transparent to
     # the previous frame. It's arguable, if that's really how things should be,
     # but that's how it currently works ;)
-    window = glscreen("vortex", resolution=res, background=RGBA{Float32}(0,0,0,0))
+    window = glscreen("vortex", resolution=res, color=RGB(0.2,0.2,0.2), clear=false)
     timesignal = Signal(0.0)
     speed = Signal(1/30)
 
     # this is equivalent to @async renderloop(window).
     # but now you can do other stuff before an image is rendered
     # the @async is used to make this non blocking for working in the REPL/Atom
-    @async while isopen(window)
-        # timesignal update value (here 0.01) doesn't matter for particle simulation, but controls the color update speed
-        push!(timesignal, value(timesignal)+0.01)
-        render_frame(window)
-        swapbuffers(window)
-        pollevents()
-        yield()
-        sleep(value(speed))
+    @async begin
+        while isopen(window)
+            # timesignal update value (here 0.01) doesn't matter for particle simulation, but controls the color update speed
+            push!(timesignal, value(timesignal)+0.01)
+            render_frame(window)
+            swapbuffers(window)
+            pollevents()
+            yield()
+            sleep(value(speed))
+        end
+        destroy!(window)
     end
 
     # this registers a callback whenever a keybutton is clicked.
@@ -73,18 +76,17 @@ function init(res=(800,800))
     # returns a new signal with the returnvalue of that callback. Since we don't
     # use that signal, Reactive will try to garbage collect it, which is why we need
     # to call preserve on it.
-    # preserve(map(window.inputs[:keyboard_buttons]) do kam
-    #         key, action, mods = kam
-    #         if key == GLFW.KEY_S
-    #             println("saving screenshot")
-    #             screenshot(window, path="screenshot.jpg")
-    #         end
-    #         # make sure that this function doesn't return different types
-    #         # for the if branch.
-    #         # Reactive would try to convert them otherwise.
-    #         nothing
-    #     end
-    # )
+    preserve(map(window.inputs[:keyboard_buttons]) do kam
+        key, action, mods = kam
+        if key == GLFW.KEY_S
+            println("saving screenshot")
+            screenshot(window, path="screenshot.jpg")
+        end
+        # make sure that this function doesn't return different types
+        # for the if branch.
+        # Reactive would try to convert them otherwise.
+        nothing
+    end)
 
     window, timesignal, speed
 end
@@ -125,10 +127,10 @@ function main(window, timesignal)
     # create a color signal that changes over time
     # the color will update whenever timesignal updates
     color = map(timesignal) do t
-        RGBA(1,1,(sin(t)+1.)/2., 0.9)
+        RGBA(1,1,(sin(t)+1.)/2., 0.6)
     end
 
-    circle = Circle(Point2f0(0), 0.9f0)
+    circle = Sphere(Point3f0(0), 1f0)
 
     # boundingbox is still a very expensive operation, so if you don't need it
     # you can simply set it to nothing.

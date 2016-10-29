@@ -1,28 +1,28 @@
 export glscreen
 
 
+function _is_alive(x::WeakRef)
+    if isa(x.value, Screen)
+        isopen(x.value) && return true
+    end
+    false
+end
 
 let screen_list = WeakRef[]
     global current_screen, add_screen, get_screens, empty_screens!
-    clean() = filter!(x-> x.value != nothing, screen_list)
-    current_screen() = (clean(); last(screen_list).value)
+    clean!() = filter!(_is_alive, screen_list)
+    current_screen() = (clean!(); last(screen_list).value)
     add_screen(screen) = push!(screen_list, WeakRef(screen))
-    get_screens() = (clean(); map(x->x.value, screen_list))
+    get_screens() = (clean!(); map(x->x.value, screen_list))
     empty_screens!() = empty!(screen_list)
 end
 
 
 function cleanup()
-    GLAbstraction.empty_shader_cache!()
     for screen in get_screens()
         destroy!(screen)
     end
-    for (k, s) in timer_signal_dict
-        close(s.value)
-    end
-    empty!(timer_signal_dict) # is this even needed?
     empty_screens!()
-    reset_texture_atlas!()
 end
 
 
@@ -41,7 +41,7 @@ end
 function get_dpi(window)
     monitor = GLFW.GetPrimaryMonitor()
     props = GLWindow.MonitorProperties(monitor)
-    props.dpi[1]# we do not start fiddling with differently scaled xy dpi's
+    max(props.dpi...)# we do not start fiddling with differently scaled xy dpi's
 end
 
 
@@ -49,11 +49,16 @@ end
 function glscreen(name="GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
         debugging = false,
+        clear = true,
         color = RGBA(1,1,1,1),
         stroke = (0f0, color)
     )
     cleanup()
-    screen = Screen(name, resolution=resolution, debugging=debugging, color=color)
+    screen = Screen(
+        name,
+        resolution = resolution, debugging = debugging,
+        clear = clear, color = color, stroke = stroke
+    )
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
     GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
@@ -61,18 +66,17 @@ function glscreen(name="GLVisualize";
     screen
 end
 
-const timer_signal_dict = Dict{Int, WeakRef}()
+const timer_signal_dict = Dict{WeakRef, Dict{Int, Signal{Float64}}}()
 """
 Creates a timer signal with `updates_per_second` while `window` is open.
 It's reusing timer signals with the same update rate and registering the updates
 with GLFW.
 """
 function get_timer_signal(updates_per_second, window=current_screen())
-    signal = get!(timer_signal_dict, updates_per_second) do
-        # because this is a function, it'll only get executed if needed
-        WeakRef(fpswhen(window.inputs[:window_open], updates_per_second))
-    end.value
-    signal
+    dict = get!(timer_signal_dict, WeakRef(window), Dict{Int, Signal{Float64}}())
+    get!(dict, updates_per_second) do
+        fpswhen(window.inputs[:window_open], updates_per_second)
+    end
 end
 
 function fold_loop(v0, _)
