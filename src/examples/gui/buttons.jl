@@ -4,6 +4,14 @@ if !isdefined(:runtests)
     window = glscreen()
 end
 
+const description = """
+This example shows how easy it is to setup
+a menu full of widgets which can be used
+to configure a visualization interactively.
+Click and slide around!
+"""
+
+
 const record_interactive = true
 
 function lorenz(t0, a, b, c, h)
@@ -41,25 +49,22 @@ w = Dict(
     :colornorm => Signal(Vec2f0(0, 1.2)),
     :primitive => primitives
 )
-editarea, viewarea = x_partition(window.area, 20f0)
-editscreen = Screen(window, area=editarea, color=RGBA{Float32}(0.95, 1,1,1))
+editarea, viewarea = x_partition(window.area, 30f0)
+editscreen = Screen(window, area=editarea, color=RGBA{Float32}(0.98, 0.98, 1, 1))
 viewscreen = Screen(window, area=viewarea)
 GLVisualize.extract_edit_menu(w, editscreen, true)
 
-n1, n2 = 15, 20
+n1, n2 = 18, 30
 N = n1*n2
 
 args = map(value, (w[:a], w[:b], w[:c], w[:d]))
 v0 = lorenz(zeros(Point3f0, N), args...)
-println(AABB(v0))
 positions = foldp(lorenz, v0, w[:a], w[:b], w[:c], w[:d])
 scales = const_lift(Vec3f0, w[:scale])
 rotations = map(diff, positions)
 rotations = map(x-> push!(x, x[end]), rotations)
 cmap = map((a,b)->[a,b], w[:colora], w[:colorb])
 
-
-minimum(value(positions))
 _view(visualize(
     (w[:primitive], positions),
     scale=scales, rotation=rotations,

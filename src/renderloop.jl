@@ -1,62 +1,82 @@
 export glscreen
 
 
+function _is_alive(x::WeakRef)
+    if isa(x.value, Screen)
+        isopen(x.value) && return true
+    end
+    false
+end
 
-let screen_list = Screen[]
+let screen_list = WeakRef[]
     global current_screen, add_screen, get_screens, empty_screens!
-    current_screen() = last(screen_list)
-    add_screen(screen) = push!(screen_list, screen)
-    get_screens() = copy(screen_list)
+    clean!() = filter!(_is_alive, screen_list)
+    current_screen() = (clean!(); last(screen_list).value)
+    add_screen(screen) = push!(screen_list, WeakRef(screen))
+    get_screens() = (clean!(); map(x->x.value, screen_list))
     empty_screens!() = empty!(screen_list)
 end
 
 
-function cleanup_old_screens()
-    GLAbstraction.empty_shader_cache!()
+function cleanup()
     for screen in get_screens()
         destroy!(screen)
     end
-    for (k, s) in timer_signal_dict
-        close(s.value)
-    end
-    empty!(timer_signal_dict)
     empty_screens!()
-    reset_texture_atlas!()
 end
+
+
+immutable Millimeter
+end
+global const mm = Millimeter()
+function Base.:(*)(x::Millimeter, y::Number)
+    round(Int, y * pixel_per_mm)
+end
+function Base.:(*)(x::Number, y::Millimeter)
+    round(Int, x * pixel_per_mm)
+end
+
+
+
+function get_dpi(window)
+    monitor = GLFW.GetPrimaryMonitor()
+    props = GLWindow.MonitorProperties(monitor)
+    max(props.dpi...)# we do not start fiddling with differently scaled xy dpi's
+end
+
+
 
 function glscreen(name="GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
         debugging = false,
-        background = RGBA(1,1,1,1)
+        clear = true,
+        color = RGBA(1,1,1,1),
+        stroke = (0f0, color)
     )
-
-    cleanup_old_screens()
-
-    screen = Screen(name, resolution=resolution, debugging=debugging, color=background)
+    cleanup()
+    screen = Screen(
+        name,
+        resolution = resolution, debugging = debugging,
+        clear = clear, color = color, stroke = stroke
+    )
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
-    preserve(map(screen.inputs[:window_open]) do open
-        if !open
-            empty_screens!()
-        end
-        nothing
-    end)
     GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
+    global const pixel_per_mm = get_dpi(screen)/25.4
     screen
 end
 
-const timer_signal_dict = Dict{Int, WeakRef}()
+const timer_signal_dict = Dict{WeakRef, Dict{Int, Signal{Float64}}}()
 """
 Creates a timer signal with `updates_per_second` while `window` is open.
 It's reusing timer signals with the same update rate and registering the updates
 with GLFW.
 """
 function get_timer_signal(updates_per_second, window=current_screen())
-    signal = get!(timer_signal_dict, updates_per_second) do
-        # because this is a function, it'll only get executed if needed
-        WeakRef(fpswhen(window.inputs[:window_open], updates_per_second))
-    end.value
-    signal
+    dict = get!(timer_signal_dict, WeakRef(window), Dict{Int, Signal{Float64}}())
+    get!(dict, updates_per_second) do
+        fpswhen(window.inputs[:window_open], updates_per_second)
+    end
 end
 
 function fold_loop(v0, _)

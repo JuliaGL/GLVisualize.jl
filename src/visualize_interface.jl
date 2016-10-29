@@ -3,8 +3,8 @@ const _default_light = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0
 function default(main::ANY, s::ANY, data::ANY)
     data = _default(main, s, copy(data))
     @gen_defaults! data begin # make sure every object has these!
-        model               = eye(Mat4f0)
-        light               = _default_light
+        model = eye(Mat4f0)
+        light = _default_light
         preferred_camera = :perspective
         is_transparent_pass = Cint(false)
     end
@@ -22,20 +22,6 @@ visualize(main::ANY, s::Style, data::Dict) = assemble_shader(default(main, s, da
 visualize(c::Composable, s::Symbol=:default; kw_args...) = Context(c)
 visualize(c::Context, s::Symbol=:default; kw_args...) = c
 #
-function Base.push!{Pre}(screen::Screen, robj::RenderObject{Pre})
-    # find renderlist specialized to current prerender function
-    index = findfirst(screen.renderlist) do renderlist
-        prerendertype(eltype(renderlist)) == Pre
-    end
-    if index == 0
-        # add new specialised renderlist, if none found
-        screen.renderlist = (screen.renderlist..., RenderObject{Pre}[])
-        index = length(screen.renderlist)
-    end
-    # only add to renderlist if not already in there
-    in(robj, screen.renderlist[index]) || push!(screen.renderlist[index], robj)
-    nothing
-end
 
 function _view(
         robj::RenderObject, screen=current_screen();

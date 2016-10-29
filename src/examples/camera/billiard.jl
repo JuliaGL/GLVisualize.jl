@@ -7,6 +7,7 @@ using GLAbstraction, MeshIO, Colors
 using GLVisualize, GeometryTypes, Reactive, ColorTypes
 if !isdefined(:runtests)
     window = glscreen()
+    timesignal = bounce(linspace(0f0,1f0,360))
 end
 const interactive_example = true
 
@@ -51,7 +52,7 @@ cubecamera(window)
 x0              = Vector2D(0.3, 0.1)
 particles       = [BilliardModels.Particle(x0, Vector2D(1.0, 0.001*i)) for i=1:max_particles]
 colors          = RGBA{Float32}[RGBA{Float32}(1., 0.1, clamp(0.001*i, 0.0, 1.0), 1.0) for i=1:max_particles]
-particle_stream = const_lift(BilliardModels.step!, particles, table, bounce(1:10))
+particle_stream = const_lift(BilliardModels.step!, particles, table, timesignal)
 v0              = map(to_points, particles)
 vc0             = map(to_color, particles)
 colors          = const_lift(to_color, vc0, particle_stream)

@@ -544,3 +544,141 @@ end
 #
 #
 # export visualize_selection
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+using Tokenize
+using Tokenize.Tokens
+import Tokenize.Tokens: Token, kind, exactkind, iskeyword, untokenize
+using GLVisualize, GeometryTypes, GLWindow, GLAbstraction, Colors, GLFW, ModernGL
+
+hsl(a, b, c) = HSL(a, b/100.0, c/100.0)
+darken(c, p) = HSL(c.h, c.s, c.l-(p/100.0))
+fade(c, p) = HSL(c.h, c.s-(p/100.0), c.l)
+
+
+global color_scheme
+let scheme = Dict{Symbol, RGBA}()
+    function color_scheme()
+        if isempty(scheme)
+            syntax_hue = 220
+            syntax_saturation = 13
+            syntax_brightness = 18
+            # Monochrome ___________________________________
+            mono_1 = hsl(syntax_hue, 14, 71) # default text
+            mono_2 = hsl(syntax_hue,  9, 55)
+            mono_3 = hsl(syntax_hue, 10, 40)
+
+            # Colors ___________________________________
+            hue_1 = hsl(187, 47, 55) # <_cyan
+            hue_2 = hsl(207, 82, 66) # <_blue
+            hue_3 = hsl(286, 60, 67) # <_purple
+            hue_4 = hsl( 95, 38, 62) # <_green
+
+            hue_5 = hsl(355, 65, 65) # <_red 1
+            hue_5_2 = hsl(  5, 48, 51) # <_red 2
+
+            hue_6 = hsl( 29, 54, 61) # <_orange 1
+            hue_6_2 = hsl( 39, 67, 69) # <_orange 2
+
+
+            # Base colors ___________________________________
+            syntax_fg = mono_1
+            syntax_bg = hsl(syntax_hue, syntax_saturation, syntax_brightness)
+            syntax_gutter = darken(syntax_fg, 26)
+            syntax_guide = fade(syntax_fg, 15)
+            syntax_accent = hsl(syntax_hue, 100, 66)
+            cs = Dict(
+                :symbol => hue_6_2,
+                :comment => mono_3,
+                :string => hue_4,
+                :call => hue_1,
+                :op => hue_5,
+                :keyword => hue_3,
+                :text => mono_1,
+                :macro => hue_2,
+                :function_def => hue_5_2,
+                :error => hue_4,
+                :argdef => mono_1,
+                :number => hue_6
+            )
+            cs = map(x -> x[1] => RGBA{Float32}(x[2]), cs)
+            merge!(scheme, cs)
+        end
+        scheme
+    end
+end
+
+function printwithcolor(io, colors, str, color)
+    print(io, str)
+    append!(colors, repeated(color, length(str)))
+    return
+end
+function highlighted_text(path, scheme=color_scheme())
+    tokens = collect(tokenize(open(path)))
+    io = IOBuffer()
+    colors = RGBA{Float32}[scheme[:text] for t in tokens]
+    prev_t = Tokens.Token()
+    for (i, t) in enumerate(tokens)
+        print(io, untokenize(t))
+        # a::x
+        if exactkind(prev_t) == Tokens.DECLARATION
+            colors[i-1] = scheme[:argdef]
+            colors[i] = scheme[:argdef]
+        # :foo
+        elseif kind(t) == Tokens.IDENTIFIER && exactkind(prev_t) == Tokens.COLON
+            colors[i-1] = scheme[:symbol]
+            colors[i] = scheme[:symbol]
+        # function
+        elseif iskeyword(kind(t))
+            if kind(t) == Tokens.TRUE || kind(t) == Tokens.FALSE
+                colors[i] = scheme[:symbol]
+            else
+                colors[i] = scheme[:keyword]
+            end
+        # "foo"
+        elseif kind(t) == Tokens.STRING || kind(t) == Tokens.TRIPLE_STRING || kind(t) == Tokens.CHAR
+            colors[i] = scheme[:string]
+        # * _
+        elseif Tokens.isoperator(kind(t))
+            colors[i] = scheme[:op]
+        # #= foo =#
+        elseif kind(t) == Tokens.COMMENT
+            colors[i] = scheme[:comment]
+        # function f(...)
+        elseif kind(t) == Tokens.LPAREN && kind(prev_t) == Tokens.IDENTIFIER
+            colors[i-1] = scheme[:call]
+             # function f(...)
+            if i > 3 && kind(tokens[i-2]) == Tokens.WHITESPACE && exactkind(tokens[i-3]) == Tokens.FUNCTION
+                colors[i-1] = scheme[:function_def]
+            end
+        # @fdsafds
+        elseif kind(t) == Tokens.IDENTIFIER && exactkind(prev_t) == Tokens.AT_SIGN
+            colors[i-1] = scheme[:macro]
+            colors[i] = scheme[:macro]
+        # 2] = 32.32
+        elseif kind(t) == Tokens.INTEGER || kind(t) == Tokens.FLOAT
+            colors[i] = scheme[:number]
+        elseif kind(t) == Tokens.WHITESPACE
+            #colors[i] = scheme[:text]
+        else
+            #colors[i] = scheme[:text]
+        end
+        prev_t = t
+    end
+    _colors = [c for (c, t) in zip(colors, tokens) for _ in untokenize(t)]
+    takebuf_string(io), _colors
+end

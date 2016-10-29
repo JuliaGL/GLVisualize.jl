@@ -3,20 +3,22 @@ include(joinpath(dirname(@__FILE__), "..", "src", "examples", "ExampleRunner.jl"
 using ExampleRunner
 using Base.Test
 const speed = :slow
-
+dir = Pkg.dir("GLVisualize", "src", "examples")
 if speed == :fast
     config = ExampleRunner.RunnerConfig(
         number_of_frames = 10,
         interactive_time = 0.1,
         record=false,
-        resolution = (300, 300)
+        directory = dir,
+        resolution = (800, 700)
     )
 else
     config = ExampleRunner.RunnerConfig(
         number_of_frames = 360,
         interactive_time = 7.0,
         record=false,
-        resolution = (500, 500)
+        directory = dir,
+        resolution = (800, 700)
     )
 end
 
@@ -37,7 +39,8 @@ successfull = filter(config.attributes) do k, dict
     dict[:success]
 end
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
-window = GLVisualize.current_screen()
+window = GLWindow.rootscreen(GLVisualize.current_screen())
+
 resize!(window, 800, 700)
 
 function is_installed(pkgstr::AbstractString)
@@ -51,12 +54,11 @@ empty!(window)
 
 area = Signal(SimpleRectangle(0, 0, 800, 300))
 area2 = Signal(SimpleRectangle(0, 300, 800, 400))
-push!(area, SimpleRectangle(0, 0, 800, 350))
-push!(area2, SimpleRectangle(0, 350, 800, 350))
 
 plot_screen = Screen(window, name=:plots, area=area)
 glvis_screen = Screen(window, name=:glvis, area=area2)
 GLVisualize.add_screen(plot_screen) # make main screen for Plots
+
 if is_installed("Plots") # when plots is installed, display nice statistics!
     using Plots; glvisualize(size=(800, 300))
     ystat = [length(failures), length(allowed_failures), length(successfull)]
@@ -98,7 +100,6 @@ if is_installed("Plots") # when plots is installed, display nice statistics!
         markerstrokewidth=0f0,
         label="remaining runs"
     )
-
     plot(benchplot, failur_plt)
     gui()
 else
@@ -128,6 +129,5 @@ imgs = visualize(
 _view(imgs, glvis_screen)
 
 Plots.hover(imgs, names, glvis_screen)
-
 renderloop(window)
 @test isempty(failures)

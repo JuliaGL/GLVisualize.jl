@@ -25,8 +25,7 @@ end
 
 begin #basically a singleton for the textureatlas
 
-
-    const local _textute_atlas = TextureAtlas[]
+    const local _atlas_cache = Dict{WeakRef, TextureAtlas}()
     const local _cache_path = joinpath(dirname(@__FILE__), "..", ".cache", "texture_atlas.jls")
     const local _default_font = Vector{Ptr{FreeType.FT_FaceRec}}[]
     const local _alternative_fonts = Vector{Ptr{FreeType.FT_FaceRec}}[]
@@ -52,8 +51,6 @@ begin #basically a singleton for the textureatlas
         end
         _alternative_fonts
     end
-
-    reset_texture_atlas!() = empty!(_textute_atlas)
 
     function cached_load()
         if isfile(_cache_path)
@@ -86,11 +83,13 @@ begin #basically a singleton for the textureatlas
         end
     end
 
-    function get_texture_atlas()
-        if isempty(_textute_atlas)
-            push!(_textute_atlas, cached_load()) # initialize only on demand
+    function get_texture_atlas(window=current_screen())
+        root = WeakRef(GLWindow.rootscreen(window))
+        # remove dead bodies
+        filter!((k, v)-> _is_alive(k), _atlas_cache)
+        get!(_atlas_cache, root) do
+            cached_load() # initialize only on demand
         end
-        _textute_atlas[]
     end
 
 end

@@ -4,6 +4,9 @@ using FileIO, ColorTypes, Reactive
 if !isdefined(:runtests)
     window = glscreen()
 end
+const description = """
+You can move mario around with the arrow keys
+"""
 const record_interactive = true
 
 type Mario{T}

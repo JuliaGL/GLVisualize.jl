@@ -121,7 +121,7 @@ export create_video
 include("documentation.jl")
 export get_docs
 
-include("../precompile/glv_userimg.jl")
+#include("../precompile/glv_userimg.jl")
 
 
 end # module

@@ -11,6 +11,7 @@ _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults!
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
     boundingbox           = GLBoundingBox(primitive)
     preferred_camera      = :orthographic_pixel
+    fxaa                  = false
     shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
 end
 function _default{T <: Colorant}(main::VecTypes{T}, ::Style, data::Dict)
@@ -19,6 +20,7 @@ function _default{T <: Colorant}(main::VecTypes{T}, ::Style, data::Dict)
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, length(value(main)), 50f0) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
         boundingbox           = GLBoundingBox(primitive)
         preferred_camera      = :orthographic_pixel
+        fxaa                  = false
         shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
     end
 end
@@ -43,6 +45,7 @@ function _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict)
         boundingbox           = GLBoundingBox(primitive)
         shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "intensity.frag")
         preferred_camera      = :orthographic_pixel
+        fxaa                  = false
     end
 end
 
@@ -55,6 +58,7 @@ function _default{T <: AbstractFloat}(main::MatTypes{T}, s::style"distancefield"
     @gen_defaults! data begin
         distancefield = main => Texture
         shape         = DISTANCEFIELD
+        fxaa          = false
     end
     rect = SimpleRectangle{Float32}(0f0,0f0, size(value(main))...)
     _default((rect, Point2f0[0]), s, data)
@@ -128,6 +132,7 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
+    fxaa                  = false
     shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", view=Dict(
          "function" => Compat.String(func.source)
      ))
