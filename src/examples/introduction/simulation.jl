@@ -130,7 +130,7 @@ function main(window, timesignal)
         RGBA(1,1,(sin(t)+1.)/2., 0.6)
     end
 
-    circle = Sphere(Point3f0(0), 1f0)
+    circle = Sphere(Point3f0(0), 2f0)
 
     # boundingbox is still a very expensive operation, so if you don't need it
     # you can simply set it to nothing.

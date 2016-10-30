@@ -5,7 +5,6 @@ else
     (1000,1000)
 end
 glvisualize(size=pl_size)
-const interactive_example = true
 
 function lorenz(t0, a, b, c, h)
     Point3f0(

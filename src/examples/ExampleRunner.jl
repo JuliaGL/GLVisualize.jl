@@ -13,10 +13,27 @@ import GLVisualize: toggle_button, slider, button
 #using GLVisualize.ComposeBackend
 include("mouse.jl")
 
+function flatten_paths(files::Vector, excludes, paths = String[])
+    for file in files
+        flatten_paths(file, excludes, paths)
+    end
+    paths
+end
+function flatten_paths(path::AbstractString, excludes, paths = String[])
+    if isdir(path)
+        if !(basename(path) in excludes)
+            flatten_paths(map(x-> joinpath(path, x), readdir(path)), excludes, paths)
+        end
+    elseif isfile(path) && endswith(path, ".jl") && !(basename(path) in excludes)
+        push!(paths, path)
+    end
+    paths
+end
+
 type RunnerConfig
     resolution
     make_docs
-    directory
+    files
     exclude_dirs
     number_of_frames
     interactive_time
@@ -29,17 +46,18 @@ type RunnerConfig
     codewindow
     toolbar
     attributes
-    current_name
+    current_file
     buttons
 end
 
 function RunnerConfig(;
         resolution = (300, 300),
         make_docs = true,
-        directory = Pkg.dir("GLVisualize", "src", "examples"),
+        files = String[],
         exclude_dirs = [
             "gpgpu", "compose", "mouse.jl", "richtext.jl",
-            "parallel", "ExampleRunner.jl", "grids.jl"],
+            "parallel", "ExampleRunner.jl", "grids.jl"
+        ],
         number_of_frames = 360,
         interactive_time = 5.0,
         resampling = 0,
@@ -119,11 +137,15 @@ function RunnerConfig(;
         _view(b, toolscreen, camera=:fixed_pixel)
         last_x += (_w/4) + 2
     end
+    if isempty(files)
+        push!(files, Pkg.dir("GLVisualize", "src", "examples")) # make sure we have something to show
+    end
+    files = flatten_paths(files, exclude_dirs)
 
     RunnerConfig(
         resolution,
         make_docs,
-        directory,
+        files,
         exclude_dirs,
         number_of_frames,
         interactive_time,
@@ -142,13 +164,14 @@ function RunnerConfig(;
 end
 
 function Base.setindex!(x::RunnerConfig, value, sym::Symbol)
-    dict = get!(x.attributes, x.current_name, Dict())
+    dict = get!(x.attributes, x.current_file, Dict())
     dict[sym] = value
 end
 function Base.getindex(x::RunnerConfig, sym::Symbol)
-    dict = get(x.attributes, x.current_name, Dict())
+    dict = get(x.attributes, x.current_file, Dict())
     dict[sym]
 end
+
 function render_fr(config, timings)
     tic()
     render_frame(config.rootscreen)
@@ -157,6 +180,7 @@ function render_fr(config, timings)
     yield() # yield in timings? Seems fair
     push!(timings, toq())
 end
+
 function record_thumbnail(config, approx_size=128)
     if config.thumbnail
         thumb = screenbuffer(config.window)
@@ -177,63 +201,6 @@ function record_thumbnail(config, approx_size=128)
         config[:thumbnail] = img
     end
 end
-function record_test(config, timesignal)
-    timings = Float64[]
-    push!(timesignal, 0f0)
-    yield()
-    render_fr(config, timings) # make sure we start with a valid image
-    yield()
-    frames = []
-    remaining = (config.number_of_frames-1)
-    for frame in 1:remaining
-        push!(timesignal, frame/remaining)
-        render_fr(config, timings)
-        if frame == div(remaining, 2) # create thumb at half time
-            record_thumbnail(config)
-        end
-        config.record && push!(frames, screenbuffer(config.window))
-
-    end
-    config[:timings] = timings
-    config[:frames] = frames
-end
-function record_test_static(config)
-    timings = Float64[]
-    yield()
-    render_fr(config, timings) # make sure we start with a valid image
-    sleep(0.01)
-    yield()
-    render_fr(config, timings)
-    if config.record
-        config[:frames] = screenbuffer(config.window)
-    end
-    record_thumbnail(config)
-    config[:timings] = timings
-end
-function record_test_interactive(config, timesignal)
-    timings = Float64[]
-    frames = []
-    add_mouse(config.window)
-    push!(timesignal, 0f0)
-    for i=1:2 # warm up
-        render_fr(config, timings)
-        yield()
-    end
-    start_time = time()
-    while time()-start_time < config.interactive_time
-        time_diff = time()-start_time
-        push!(timesignal, time_diff/config.interactive_time)
-        render_fr(config, timings)
-        if time_diff >= config.interactive_time/2
-            record_thumbnail(config)
-        end
-        config.record && push!(frames, screenbuffer(config.window))
-    end
-    config[:timings] = timings
-    config[:frames] = frames
-end
-
-
 
 
 """
@@ -241,12 +208,13 @@ end
  to avoid variable conflicts.
  this can be done only via eval.
 """
-function include_in_module(name::Symbol, include_path, window, timesignal)
+function include_in_module(name::Symbol, config, include_path, window, timesignal)
     eval(:(
         module $(name)
             using Reactive
 
             const runtests   = true
+            const config     = $(config)
             const window     = $(window)
             const timesignal = $(timesignal)
 
@@ -258,86 +226,13 @@ end
 
 
 
-function test_include(path, config)
-    rel_path = relpath(path, config.directory)
-    config.current_name = rel_path
-    window = config.window
-    timesignal = config.buttons[:timesignal]
-    try
-        println("------------------------------------------")
-        println("displaying $rel_path")
-        name = basename(path)[1:end-3] # remove .jl
-        # include the example file in it's own module
-        test_module = include_in_module(Symbol(name), path, window, timesignal)
-        message = if isdefined(test_module, :description)
-            getfield(test_module, :description)
-        else
-            """
-            You can move the camera around
-            with the left and right mousebutton
-            """
-        end
-        msg_screen = config.toolbar.children[2]
-        empty!(msg_screen)
-        w, h = widths(msg_screen)
-        _view(visualize(message, model=translationmatrix(Vec3f0(20, (h-20), 0)), relative_scale=Vec2f0(0.3)), msg_screen, camera=:fixed_pixel)
-        for (camname, cam) in window.cameras
-            # don't center non standard cams
-            camname != :perspective && continue
-            rlist = GLAbstraction.robj_from_camera(window, camname)
-            bb = GLAbstraction.renderlist_boundingbox(rlist)
-            # make sure we don't center if bb is undefined
-            if !isnan(origin(bb))
-                center!(cam, bb)
-            end
-        end
-        # only when something was added to renderlist
-        if !isempty(renderlist(window)) || !isempty(window.children)
-            # record_test_static(config)
-            if isdefined(test_module, :record_interactive)
-                record_test_interactive(config, timesignal)
-            elseif isdefined(test_module, :static_example)
-                record_test_static(config)
-            else
-                record_test(config, timesignal)
-            end
-            println("displayed successfully")
-            if config.record
-                create_video(
-                    config[:frames], name, config.screencast_folder, config.resampling
-                )
-                delete!(config.attributes[config.current_name], :frames)
-                println("recorded successfully")
-            end
-        end
-        config[:success] = true
-    catch e
-        bt = catch_backtrace()
-        ex = CapturedException(e, bt)
-        showerror(STDERR, ex)
-        config[:success] = false
-        config[:exception] = ex
-    finally
-        empty!(window)
-        empty!(GLVisualize.timer_signal_dict)
-        GLWindow.clear_all!(window)
-        window.color = RGBA{Float32}(1,1,1,1)
-        println("------------------------------------------")
-        #empty!(window.cameras)
-    end
-end
-
-
 function _test_include(path, config)
-    rel_path = relpath(path, config.directory)
-    config.current_name = rel_path
+    config.current_file = path
     window = config.window
     timesignal = config.buttons[:timesignal]
     name = basename(path)[1:end-3] # remove .jl
     # include the example file in it's own module
-    println("------------------------------------------")
-    println("displaying $rel_path")
-    test_module = include_in_module(Symbol(name), path, window, timesignal)
+    test_module = include_in_module(Symbol(name), config, path, window, timesignal)
     for (camname, cam) in window.cameras
         # don't center non standard cams
         camname != :perspective && continue
@@ -348,23 +243,11 @@ function _test_include(path, config)
             center!(cam, bb)
         end
     end
-    # only when something was added to renderlist
     config[:success] = true
     test_module
 end
 
-function flatten_paths(path::AbstractString, config, paths = String[])
-    if isdir(path)
-        if !(basename(path) in config.exclude_dirs)
-            for elem in readdir(path)
-                flatten_paths(joinpath(path, elem), config, paths)
-            end
-        end
-    elseif isfile(path) && endswith(path, ".jl") && !(basename(path) in config.exclude_dirs)
-        push!(paths, path)
-    end
-    paths
-end
+
 function display_msg(test_module, config)
     message = if isdefined(test_module, :description)
         getfield(test_module, :description)
@@ -374,8 +257,10 @@ function display_msg(test_module, config)
         with the left and right mousebutton
         """
     end
-    rel_path = config.current_name
-    message = "Now showing $rel_path:\n" * message
+    name = basename(config.current_file)
+    message = "Now showing $name:\n\n" * message
+    println("Now showing $name")
+
     msg_screen = config.toolbar.children[2]
     empty!(msg_screen)
     w, h = widths(msg_screen)
@@ -384,11 +269,9 @@ function display_msg(test_module, config)
         relative_scale=Vec2f0(0.4), color=RGBA(0.6f0, 0.6f0, 0.6f0, 1f0)
     ), msg_screen, camera=:fixed_pixel)
 
-    path = joinpath(config.directory, rel_path)
-    code, colors = GLVisualize.highlighted_text(path)
-    # empty code window manually, since we dont want to destroy camera!
-    config.codewindow.renderlist = ()
-    config.codewindow.renderlist_fxaa = ()
+    code, colors = GLVisualize.highlighted_text(config.current_file)
+
+    empty!(config.codewindow)
     w, h = widths(config.codewindow)
     _view(visualize(
         code, color=colors, relative_scale=Vec2f0(0.5),
@@ -397,13 +280,10 @@ function display_msg(test_module, config)
 end
 to_toggle(v0, b) = !v0
 
-function make_tests(path::AbstractString, config)
-    paths = flatten_paths(path, config)
-    i = 1
-    window = config.window
-    break_loop = false
-    runthrough = 0 # -1, backwards, 0 not, 1 forward
-    
+function make_tests(config)
+    i = 1; window = config.window; break_loop = false
+    runthrough = 0 # -1, backwards, 0 no running, 1 forward
+
     increase(x) = (i = max(i+x, 1))
 
     preserve(map(config.buttons[:back][2], init=0) do clicked
@@ -420,22 +300,25 @@ function make_tests(path::AbstractString, config)
         runthrough = !toggled ? -1 : 0
     end)
 
-    while i <= length(paths) && isopen(config.rootscreen)
-        path = paths[i]
+    while i <= length(config.files) && isopen(config.rootscreen)
+        path = config.files[i]
         try
             test_module = _test_include(path, config)
+
             display_msg(test_module, config)
             timings = Float64[]
-            render_fr(config, timings)
-            record_thumbnail(config)
+            frames = 0
             while !break_loop && isopen(config.rootscreen)
-                render_fr(config, timings)
-                runthrough != 0 && break # render one time if running through
+                render_fr(config, timings); frames += 1
+                runthrough != 0 && frames > 10 && break # render one 10 if running through
             end
+            record_thumbnail(config) # record thumbnail in the end
+
             config[:timings] = timings
             break_loop = false
             increase(runthrough)
         catch e
+            increase(1) # skip example
             bt = catch_backtrace()
             ex = CapturedException(e, bt)
             showerror(STDERR, ex)
@@ -445,10 +328,9 @@ function make_tests(path::AbstractString, config)
             empty!(window)
             empty!(GLVisualize.timer_signal_dict)
             empty!(config.buttons[:timesignal].actions)
-
-            GLWindow.clear_all!(window)
+            empty!(window.cameras)
             window.color = RGBA{Float32}(1,1,1,1)
-            #empty!(window.cameras)
+            GLVisualize.add_screen(window) # make window default again!
         end
         yield()
     end
@@ -462,7 +344,7 @@ function run(;kw_args...)
 end
 function run(config::RunnerConfig)
     srand(777) # set rand seed, to get the same results for tests that use rand
-    make_tests(config.directory, config)
+    make_tests(config)
     config
 end
 
