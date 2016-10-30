@@ -73,10 +73,7 @@ function surface(main, s::Style{:surface}, data::Dict)
         instances  = const_lift(x->(size(x,1)-1) * (size(x,2)-1), main) => "number of planes used to render the surface"
         shader     = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "surface.vert",
-            const_lift(wireframe) do wf
-                path = wf ? "distance_shape.frag" : "standard.frag"
-                Shader(query(assetpath("shader", path)))
-            end,
+            value(wireframe) ? "distance_shape.frag" : "standard.frag",
             view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
         )
     end

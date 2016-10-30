@@ -253,9 +253,8 @@ immutable GLVisualizeShader <: AbstractLazyShader
                 "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
             ))
         end
-
         paths = map(paths) do shader
-            isa(shader, String) ? loadasset("shader", shader) : shader
+            isa(shader, String) ? assetpath("shader", shader) : shader
         end
         new(paths, vcat(kw_args, [
             (:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
