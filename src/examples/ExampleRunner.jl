@@ -257,26 +257,29 @@ function display_msg(test_module, config)
         with the left and right mousebutton
         """
     end
-    name = basename(config.current_file)
-    message = "Now showing $name:\n\n" * message
-    println("Now showing $name")
 
-    msg_screen = config.toolbar.children[2]
-    empty!(msg_screen)
-    w, h = widths(msg_screen)
-    _view(visualize(
-        message, model=translationmatrix(Vec3f0(20, h-20, 0)),
-        relative_scale=Vec2f0(0.4), color=RGBA(0.6f0, 0.6f0, 0.6f0, 1f0)
-    ), msg_screen, camera=:fixed_pixel)
+    if isopen(config.toolbar)
+        name = basename(config.current_file)
+        message = "Now showing $name:\n\n" * message
+        println("Now showing $name")
+        msg_screen = config.toolbar.children[2]
+        empty!(msg_screen)
+        w, h = widths(msg_screen)
+        _view(visualize(
+            message, model=translationmatrix(Vec3f0(20, h-20, 0)),
+            relative_scale=Vec2f0(0.4), color=RGBA(0.6f0, 0.6f0, 0.6f0, 1f0)
+        ), msg_screen, camera=:fixed_pixel)
 
-    code, colors = GLVisualize.highlighted_text(config.current_file)
+        code, colors = GLVisualize.highlighted_text(config.current_file)
 
-    empty!(config.codewindow)
-    w, h = widths(config.codewindow)
-    _view(visualize(
-        code, color=colors, relative_scale=Vec2f0(0.5),
-        model=translationmatrix(Vec3f0(20, h-20, 0))
-    ), config.codewindow)
+        empty!(config.codewindow)
+        w, h = widths(config.codewindow)
+        _view(visualize(
+            code, color=colors, relative_scale=Vec2f0(0.5),
+            model=translationmatrix(Vec3f0(20, h-20, 0))
+        ), config.codewindow)
+    end
+    return
 end
 to_toggle(v0, b) = !v0
 

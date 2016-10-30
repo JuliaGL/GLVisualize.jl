@@ -29,6 +29,7 @@ p1 = plot(x,y,z,
     line=0.5,
     marker=(:circle, 0.4), ms=linspace(2.0, 10.0, N),
     markercolor=colormap("RdBu", N),
+    leg=false,
     grid=false
 )
 
@@ -64,6 +65,6 @@ surface3 = Plots.wireframe(
     Float32[xy_data(x*10, y*10, 40f0, N) for x=1:30, y=1:30],
     line=4.0
 )
-using GLAbstraction
+
 p = plot(surface1, surface2, surface3, p1)
 gui()
