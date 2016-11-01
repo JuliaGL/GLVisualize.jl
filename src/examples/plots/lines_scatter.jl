@@ -2,7 +2,7 @@ using Plots, GLVisualize, GeometryTypes, GLAbstraction
 pl_size = if !isempty(GLVisualize.get_screens())
     widths(GLVisualize.current_screen())
 else
-    (1000,1000)
+    (800, 500)
 end
 glvisualize(size=pl_size)
 
