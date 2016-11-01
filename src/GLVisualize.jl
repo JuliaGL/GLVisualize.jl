@@ -28,9 +28,9 @@ import Compat.String
 import Compat.unsafe_string
 
 if VERSION < v"0.5.0-dev+4612"
-	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
-		checkbounds(Bool, size(array), indexes...)
-	end
+    function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
+        checkbounds(Bool, size(array), indexes...)
+    end
 end
 
 
@@ -40,11 +40,11 @@ typealias GLBoundingBox AABB{Float32}
 import Base: merge, convert, show
 
 if VERSION < v"0.5.0-dev+4612"
-	function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
-		checkbounds(Bool, size(array), indexes...)
-	end
+    function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
+        checkbounds(Bool, size(array), indexes...)
+    end
 else
-	import Base: view
+    import Base: view
 end
 
 export renderloop
@@ -110,10 +110,9 @@ include(joinpath("visualize", "text.jl"))
 include("camera.jl")
 export cubecamera
 
-# Compose/Gadfly only work for 0.4 right now
-if VERSION.minor == 4
-include("compose_backend.jl")
-end
+# Compose/Gadfly  backend has a weird missplaced expression error right now.
+# Lets disable it for now
+#include("compose_backend.jl")
 
 include("videotool.jl")
 export create_video
