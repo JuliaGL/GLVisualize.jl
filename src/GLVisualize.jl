@@ -27,17 +27,8 @@ import Compat.unsafe_wrap
 import Compat.String
 import Compat.unsafe_string
 
-if VERSION < v"0.5.0-dev+4612"
-    function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
-        checkbounds(Bool, size(array), indexes...)
-    end
-end
-
-
-typealias GLBoundingBox AABB{Float32}
-
-
 import Base: merge, convert, show
+
 
 if VERSION < v"0.5.0-dev+4612"
     function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
@@ -46,6 +37,9 @@ if VERSION < v"0.5.0-dev+4612"
 else
     import Base: view
 end
+
+typealias GLBoundingBox AABB{Float32}
+
 
 export renderloop
 
@@ -74,7 +68,7 @@ include("boundingbox.jl")
 
 include("visualize_interface.jl")
 export _view #push renderobject into renderlist of the default screen, or supplied screen
-export visualize    # Visualize an object
+export visualize # Visualize an object
 export visualize_default # get the default parameter for a visualization
 
 include("utils.jl")

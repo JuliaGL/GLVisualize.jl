@@ -3,13 +3,6 @@ using FileIO, GeometryTypes, Reactive, Images
 using Colors, Plots
 using Plots; glvisualize(size=(800, 300))
 
-function is_installed(pkgstr::AbstractString)
-    try
-        Pkg.installed(pkgstr) === nothing ? false: true
-    catch
-        false
-    end
-end
 
 function benchscatter(results, names, images; n=30)
     yposs, xposs = Vector{Float64}[], Vector{Float64}[]
@@ -40,6 +33,12 @@ function benchscatter(results, names, images; n=30)
         push!(yposs, [t+rand(dist)*gap for t in ts])
         push!(binss, bins)
         x += 5
+    end
+    minlen = mapreduce(length, min, scales)
+    for i = 1:length(scales)
+        resize!(scales[i], minlen)
+        resize!(xposs[i], minlen)
+        resize!(yposs[i], minlen)
     end
     mscale = clamp(hcat(scales...), 0.5, 1.0).*3
     p = scatter(

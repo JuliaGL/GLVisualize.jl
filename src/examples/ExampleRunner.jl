@@ -10,8 +10,21 @@ using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
 import GLVisualize: toggle_button, slider, button
 
-#using GLVisualize.ComposeBackend
 include("mouse.jl")
+
+
+installed_pkgs = Pkg.installed()
+
+const hasplots = get(installed_pkgs, "Plots", v"0") > v"0.9.3"
+if !hasplots
+    warn("
+        Plots.jl is not installed, excluding a lot of interesting examples from the test
+        and a nice summary.
+        Please consider doing: `Pkg.add(\"Plots\"); Pkg.checkout(\"Plots\", \"dev\")`
+    ")
+end
+
+include("texthighlight.jl")
 
 function flatten_paths(files::Vector, excludes, paths = String[])
     for file in files
@@ -56,7 +69,8 @@ function RunnerConfig(;
         files = String[],
         exclude_dirs = [
             "gpgpu", "compose", "mouse.jl", "richtext.jl",
-            "parallel", "ExampleRunner.jl", "grids.jl"
+            "parallel", "ExampleRunner.jl", "grids.jl",
+            "texthighlight.jl"
         ],
         number_of_frames = 360,
         interactive_time = 5.0,
@@ -66,6 +80,10 @@ function RunnerConfig(;
         thumbnail = true,
         rootscreen = glscreen(resolution=resolution)
     )
+    if !hasplots
+        push!(exclude_dirs, "plots")
+        push!(exclude_dirs, "summary.jl")
+    end
 
     a, b = y_partition(rootscreen.area, 15)
     toolbar = Screen(rootscreen,
@@ -270,10 +288,10 @@ function display_msg(test_module, config)
         w, h = widths(msg_screen)
         _view(visualize(
             message, model=translationmatrix(Vec3f0(20, h-20, 0)),
-            relative_scale=Vec2f0(0.4), color=RGBA(0.6f0, 0.6f0, 0.6f0, 1f0)
+            relative_scale=Vec2f0(0.2), color=RGBA(0.6f0, 0.6f0, 0.6f0, 1f0)
         ), msg_screen, camera=:fixed_pixel)
 
-        code, colors = GLVisualize.highlighted_text(config.current_file)
+        code, colors = highlight_text(config.current_file)
 
         empty!(config.codewindow)
         w, h = widths(config.codewindow)
