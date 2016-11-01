@@ -235,32 +235,19 @@ typealias GLIntensity Intensity{1, Float32}
 export Intensity,GLIntensity
 
 NOT(x) = !x
-immutable GLVisualizeShader <: AbstractLazyShader
-    paths  ::Tuple
-    kw_args::Vector
-    function GLVisualizeShader(paths...; kw_args...)
-        view = filter(kv->kv[1]==:view, kw_args)
-        if isempty(view)
-            view = Dict{Compat.UTF8String, Compat.UTF8String}()
-        else
-            view = view[1][2]
-        end
 
+immutable GLVisualizeShader <: AbstractLazyShader
+    paths::Tuple
+    kw_args::Dict{Symbol, Any}
+    function GLVisualizeShader(paths::String...; view = Dict{String, String}(), kw_args...)
         # TODO properly check what extensions are available
-        if !is_apple()
-            merge!(view, Dict{Compat.String, Compat.String}(
-                "GLSL_EXTENSIONS" => "#extension GL_ARB_conservative_depth: enable",
-                "SUPPORTED_EXTENSIONS" => "#define DETPH_LAYOUT"
-            ))
+        @static if !is_apple()
+            view["GLSL_EXTENSIONS"] = "#extension GL_ARB_conservative_depth: enable"
+            view["SUPPORTED_EXTENSIONS"] = "#define DETPH_LAYOUT"
         end
-        paths = map(paths) do shader
-            isa(shader, String) ? assetpath("shader", shader) : shader
-        end
-        new(paths, vcat(kw_args, [
-            (:fragdatalocation, [(0, "fragment_color"), (1, "fragment_groupid")]),
-            (:updatewhile, current_screen().inputs[:window_open]),
-            (:update_interval, 1.0),
-            (:view, view)
-        ]))
+        args = Dict{Symbol, Any}(kw_args)
+        args[:view] = view
+        args[:fragdatalocation] = [(0, "fragment_color"), (1, "fragment_groupid")]
+        new(map(x-> assetpath("shader", x), paths), args)
     end
 end
