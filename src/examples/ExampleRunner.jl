@@ -178,7 +178,10 @@ function render_fr(config, timings)
     pollevents()
     swapbuffers(config.rootscreen)
     yield() # yield in timings? Seems fair
-    push!(timings, toq())
+    t = toq()
+    if length(timings) < 1000
+        push!(timings, t)
+    end
 end
 
 function record_thumbnail(config, approx_size=128)
@@ -258,7 +261,7 @@ function display_msg(test_module, config)
         """
     end
 
-    if isopen(config.toolbar)
+    if isopen(config.toolbar) && !isempty(config.toolbar.children)
         name = basename(config.current_file)
         message = "Now showing $name:\n\n" * message
         println("Now showing $name")
@@ -313,7 +316,7 @@ function make_tests(config)
             frames = 0
             while !break_loop && isopen(config.rootscreen)
                 render_fr(config, timings); frames += 1
-                runthrough != 0 && frames > 10 && break # render one 10 if running through
+                (runthrough != 0 && frames > 100) && break # render one 10 if running through
             end
             record_thumbnail(config) # record thumbnail in the end
 
