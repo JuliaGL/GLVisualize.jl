@@ -284,14 +284,19 @@ function display_msg(test_module, config)
 
     if isopen(config.toolbar) && !isempty(config.toolbar.children)
         name = basename(config.current_file)
-        message = "Now showing $name:\n\n" * message
+        title = "Now showing $name:\n"
+        colors = [
+            fill(RGBA(0.3f0, 0.3f0, 0.3f0, 1f0), length(title));
+            fill(RGBA(0.6f0, 0.6f0, 0.6f0, 1f0), length(message));
+        ]
+        message = title*message
         println("Now showing $name")
         msg_screen = config.toolbar.children[2]
         empty!(msg_screen)
         w, h = widths(msg_screen)
         _view(visualize(
             message, model=translationmatrix(Vec3f0(20, h-20, 0)),
-            relative_scale=Vec2f0(0.2), color=RGBA(0.6f0, 0.6f0, 0.6f0, 1f0)
+            relative_scale=Vec2f0(0.28), color=colors
         ), msg_screen, camera=:fixed_pixel)
 
         code, colors = highlight_text(config.current_file)
