@@ -13,7 +13,7 @@ import GLVisualize: toggle_button, slider, button
 include("mouse.jl")
 
 
-installed_pkgs = Pkg.installed()
+const installed_pkgs = Pkg.installed()
 
 const hasplots = get(installed_pkgs, "Plots", v"0") > v"0.9.3"
 if !hasplots
@@ -83,6 +83,9 @@ function RunnerConfig(;
     if !hasplots
         push!(exclude_dirs, "plots")
         push!(exclude_dirs, "summary.jl")
+    end
+    if !haskey(installed_pkgs, "BilliardModels")
+        push!(exclude_dirs, "billiard.jl")
     end
 
     a, b = y_partition(rootscreen.area, 15)

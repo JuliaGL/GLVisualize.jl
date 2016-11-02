@@ -4,17 +4,27 @@ using Colors, Plots
 using Plots; glvisualize(size=(800, 300))
 
 
-function benchscatter(results, names, images; n=30)
+function benchscatter(timings, names, images; n=30)
+    for (i, ts) in enumerate(timings)
+
+    end
     yposs, xposs = Vector{Float64}[], Vector{Float64}[]
     binss, scales = Vector{Float64}[], Vector{Float64}[]
     x = 1; dist = -0.5:0.0001:0.5
     min_res = 100
 
-    for ts in results
+    for ts in timings
+        # If benchmarks
+        ts = if length(ts) < 300
+            append!(ts, fill(0.0, 300 - length(ts)))
+        elseif length(ts) > 300
+            resize!(ts, 300) # resampling would be more accurate, I suppose
+        end
         bins = zeros(n); mini, maxi = minimum(ts), maximum(ts)
-        w = maxi - mini
+        w = max(maxi - mini, 1)
         min_res = min(mini, min_res)
         for t in ts
+            t == 0 && continue # ignore the zeros we added
             i = round(Int, ((t-mini)/w)*(n-1) + 1)
             bins[i] += 1
         end
@@ -22,25 +32,28 @@ function benchscatter(results, names, images; n=30)
         xpos = similar(ts)
         scale = similar(ts)
         for (j,t) in enumerate(ts)
-            i = round(Int, ((t-mini)/w)*(n-1) + 1)
-            xpos[j] = x + rand(dist)*bins[i]*3
-            scale[j] = bins[i] # at least a bit thicker
+            if t != 0 # ignore the zeros we added
+                i = round(Int, ((t-mini)/w)*(n-1) + 1)
+                xpos[j] = x + rand(dist)*bins[i]*3
+                scale[j] = bins[i]
+            else
+                xpos[j] = x
+                scale[j] = 0.0
+            end
         end
         push!(scales, scale)
-
         push!(xposs, xpos)
+
         gap = w/n
         push!(yposs, [t+rand(dist)*gap for t in ts])
         push!(binss, bins)
         x += 5
     end
-    minlen = mapreduce(length, min, scales)
-    for i = 1:length(scales)
-        resize!(scales[i], minlen)
-        resize!(xposs[i], minlen)
-        resize!(yposs[i], minlen)
+
+    mscale = map(hcat(scales...)) do s
+        s==0 && return s # preserve 0.0
+        clamp(s*3.0, 1.5, 3.5) # else, don't make things too small
     end
-    mscale = clamp(hcat(scales...), 0.5, 1.0).*3
     p = scatter(
         xposs, yposs, marker_z=hcat(scales...),
         shape=:circle, leg=false, ms=mscale,
@@ -49,10 +62,9 @@ function benchscatter(results, names, images; n=30)
         title="Frame rendering times",
         ylabel="time in ms",
     )
-    rn = length(results)
     x = [mean(x) for x in xposs] .- 2.5
     scatter!(
-        x, fill(min_res-1, rn),
+        x, fill(min_res-1, length(x)),
         shape=images, hover=names, ms=5
     )
     p
