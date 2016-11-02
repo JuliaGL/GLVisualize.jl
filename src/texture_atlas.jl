@@ -31,7 +31,13 @@ function TextureAtlas(initial_size = (2048, 2048))
 end
 
 begin #basically a singleton for the textureatlas
-
+    # random list of chars we cache
+    # basically to make runtests fast, until we figure out a better way to cache
+    # newly rendered chars.
+    const local _tobe_cached = [
+        'π','∮','⋅','→','∞','∑','∏','∀','∈','ℝ','⌈','⌉','−','⌊','⌋','α','∧','β','∨','ℕ','⊆','₀',
+        '⊂','ℤ','ℚ','ℂ','⊥','≠','≡','≤','≪','⊤','⇒','⇔','₂','⇌','Ω','⌀',
+    ]
     const local _atlas_cache = Dict{WeakRef, TextureAtlas}()
     const local _cache_path = joinpath(dirname(@__FILE__), "..", ".cache", "texture_atlas.jls")
     const local _default_font = Vector{Ptr{FreeType.FT_FaceRec}}[]
@@ -74,6 +80,10 @@ begin #basically a singleton for the textureatlas
             for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
                 insert_glyph!(atlas, c, defaultfont())
             end
+            for c in _tobe_cached
+                insert_glyph!(atlas, c, defaultfont())
+            end
+
             to_cache(atlas) # cache it
             return atlas
         end
