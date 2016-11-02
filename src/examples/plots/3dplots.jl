@@ -1,4 +1,4 @@
-using Plots, PlotRecipes, RData, GLVisualize, GeometryTypes;
+using Plots, GLVisualize, GeometryTypes
 pl_size = if !isempty(GLVisualize.get_screens())
     widths(GLVisualize.current_screen())
 else
