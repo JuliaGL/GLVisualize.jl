@@ -50,7 +50,7 @@ type GLVisualizeBackend <: Compose.Backend
         img.screen = screen
         img.stroke = Compose.default_stroke_color == nothing ?
                         RGBA{Float32}(0, 0, 0, 0) : convert(RGBA{Float32},  Compose.default_stroke_color)
-        img.fill   =  Compose.default_fill_color == nothing ?
+        img.fill =  Compose.default_fill_color == nothing ?
                         RGBA{Float32}(0, 0, 0, 0) : convert(RGBA{Float32},  Compose.default_fill_color)
         img.stroke_dash = []
         img.stroke_linecap = Compose.LineCapButt()
@@ -93,7 +93,9 @@ end
 function absolute_native_units{T}(img::GLVisualizeBackend, u::Tuple{Length{:mm, T},Length{:mm, T}})
     Point2f0(u[1].value, (Measures.width(img)-u[2]).value).*Point2f0(img.ppmm)
 end
-relative_native_units{T}(img::GLVisualizeBackend, u::Tuple{Length{:mm, T},Length{:mm, T}}) = Point2f0(u[1].value, u[2].value).*Point2f0(img.ppmm)
+function relative_native_units{T}(img::GLVisualizeBackend, u::Tuple{Length{:mm, T},Length{:mm, T}})
+    Point2f0(u[1].value, u[2].value).*Point2f0(img.ppmm)
+end
 
 export absolute_native_units
 
@@ -127,7 +129,7 @@ function Compose.push_property_frame(img::GLVisualizeBackend, properties::Vector
 end
 
 function Compose.pop_property_frame(img::GLVisualizeBackend)
-    @assert !isempty(img.property_stack)
+    #@assert !isempty(img.property_stack)
     frame = pop!(img.property_stack)
 
     if frame.has_scalar_properties
@@ -138,8 +140,7 @@ function Compose.pop_property_frame(img::GLVisualizeBackend)
         img.vector_properties[propertytype] = Nullable{Compose.Property}()
         for i in length(img.property_stack):-1:1
             if haskey(img.property_stack[i].vector_properties, propertytype)
-                img.vector_properties[propertytype] =
-                    img.property_stack[i].vector_properties[propertytype]
+                img.vector_properties[propertytype] = img.property_stack[i].vector_properties[propertytype]
             end
         end
     end
@@ -151,10 +152,11 @@ end
 # than simply applied.
 function vector_properties_require_push_pop(img::GLVisualizeBackend)
     for (propertytype, property) in img.vector_properties
-        propertytype
-        if in(propertytype, [Compose.Property{Compose.FontPrimitive},
-                             Compose.Property{Compose.FontSizePrimitive},
-                             Compose.Property{Compose.ClipPrimitive}])
+        if propertytype in (
+                Compose.Property{Compose.FontPrimitive},
+                Compose.Property{Compose.FontSizePrimitive},
+                Compose.Property{Compose.ClipPrimitive}
+            )
             return true
         end
     end
@@ -162,18 +164,18 @@ function vector_properties_require_push_pop(img::GLVisualizeBackend)
 end
 
 function save_property_state(img::GLVisualizeBackend)
-    push!(img.state_stack,
-        GLVisualizePropertyState(
-            img.stroke,
-            img.fill,
-            img.stroke_dash,
-            img.stroke_linecap,
-            img.stroke_linejoin,
-            img.visible,
-            img.linewidth,
-            img.fontsize,
-            img.font,
-            img.clip))
+    push!(img.state_stack, GLVisualizePropertyState(
+        img.stroke,
+        img.fill,
+        img.stroke_dash,
+        img.stroke_linecap,
+        img.stroke_linejoin,
+        img.visible,
+        img.linewidth,
+        img.fontsize,
+        img.font,
+        img.clip
+    ))
 end
 
 
@@ -303,9 +305,9 @@ function Compose.draw{T <: Compose.CirclePrimitive}(img::GLVisualizeBackend, for
     radius = absolute_native_units(img, r)
     positions = Point2f0[absolute_native_units(img, elem.center) for elem in form.primitives]
     _view(visualize((Circle{Float32}(Point2f0(0), radius), positions),
-    	color=img.fill,
-    	stroke_color=img.stroke,
-    	visible=img.visible
+        color=img.fill,
+        stroke_color=img.stroke,
+        visible=img.visible
     ), img.screen, camera=:orthographic_pixel)
 end
 #=
@@ -314,22 +316,21 @@ function Compose.draw{T <: Compose.RectanglePrimitive}(img::GLVisualizeBackend, 
     wh = form.primitives[1].width, form.primitives[1].height
     scale = absolute_native_units(img, wh)
     _view(visualize(positions,
-    	scale=scale,
-    	shape=Cint(RECTANGLE),
-    	model=translationmatrix(Vec3f0(scale/2, 0)),
-    	style=Cint(FILLED),
-    	color=img.fill,
-    	stroke_color=img.stroke,
-    	visible=img.visible
+        scale=scale,
+        shape=Cint(RECTANGLE),
+        model=translationmatrix(Vec3f0(scale/2, 0)),
+        style=Cint(FILLED),
+        color=img.fill,
+        stroke_color=img.stroke,
+        visible=img.visible
     ), img.screen)
 end
 =#
 function Compose.draw{T}(img::GLVisualizeBackend, form::Compose.Form{T})
-
-	if vector_properties_require_push_pop(img)
+    if vector_properties_require_push_pop(img)
         for (idx, primitive) in enumerate(form.primitives)
             push_vector_properties(img, idx)
-            draw(img, primitive)
+            Compose.draw(img, primitive)
             pop_vector_properties(img)
         end
     else
@@ -352,7 +353,7 @@ end
 
 function _add_line(points::Vector{Point2f0}, color, thickness)
     c = fill(RGBA{Float32}(color), length(points))
-    robj      = visualize(points, :lines, color=c, thickness=thickness)
+    robj = visualize(points, :lines, color=c, thickness=thickness)
     _view(robj, camera=:orthographic_pixel)
 end
 function _add_line(points::LineSegment{Point2f0}, color, thickness)
@@ -374,7 +375,7 @@ function add_line(points::Vector{Point2f0}, color, thickness)
     end
 end
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.LinePrimitive)
-	N = length(prim.points)
+    N = length(prim.points)
     N <= 1 && return
     points = Point2f0[absolute_native_units(img, p) for p in prim.points]
     add_line(points, img.stroke, absolute_native_units(img, img.linewidth))
@@ -390,25 +391,26 @@ let positions    = 0,
     strokecolors = 0,
     indices      = 0
 
-function Compose.draw(img::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
-    wh = relative_native_units(img, (prim.width, prim.height))
-    xy = absolute_native_units(img, prim.corner)-Point2f0(0, wh[2])
-    stroke_width = img.stroke.alpha > 0 ? 5f0 : 0f0
-    fillcolor = img.fill
-    stroke_color = img.stroke
+    function Compose.draw(img::GLVisualizeBackend, prim::Compose.RectanglePrimitive)
+        wh = relative_native_units(img, (prim.width, prim.height))
+        xy = absolute_native_units(img, prim.corner)-Point2f0(0, wh[2])
+        stroke_width = img.stroke.alpha > 0 ? 5f0 : 0f0
+        fillcolor = img.fill
+        stroke_color = img.stroke
 
         positions = GLBuffer([xy])
         scales    = GLBuffer([wh])
         fillcolors = GLBuffer([fillcolor])
         strokecolors = GLBuffer([stroke_color])
-        _view(visualize((RECTANGLE, positions),
-        	color=fillcolors,
+        _view(visualize(
+            (RECTANGLE, positions),
+            color=fillcolors,
             scale=scales,
-        	stroke_color=strokecolors,
+            stroke_color=strokecolors,
             stroke_width=stroke_width,
         ), img.screen, camera=:orthographic_pixel)
 
-end
+    end
 end
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.PolygonPrimitive)
@@ -420,20 +422,23 @@ end
 
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.EllipsePrimitive)
-	warn("EllipsePrimitive NOT IMPLEMENTED YET")
+    warn("EllipsePrimitive NOT IMPLEMENTED YET")
     # NOT SUPPORTED YET
 end
 
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.CurvePrimitive)
-	warn("CURVE NOT IMPLEMENTED YET")
+    warn("CURVE NOT IMPLEMENTED YET")
     # NOT SUPPORTED YET
 end
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.BitmapPrimitive)
     xyz = Vec3f0(prim.corner.x.abs, prim.corner.y.abs, 0)
     scale = Vec3f0(prim.width.abs, prim.height.abs, 1)
-    _view(visualize(colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)), img.screen, camera=:orthographic_pixel)
+    _view(visualize(
+        colorim(prim.data), model=translationmatrix(xyz)*scalematrix(scale)),
+        img.screen, camera=:orthographic_pixel
+    )
 end
 
 function gen_text(text, atlas, font, position, scale, offset)
@@ -452,13 +457,13 @@ function pango_parse_markup(text)
         Int32,
         (Ptr{UInt8}, Int32, UInt32, Ptr{Ptr{Void}},
         Ptr{Ptr{UInt8}}, Ptr{UInt32}, Ptr{Void}),
-        Compat.String(text), -1, 0, c_attr_list, c_stripped_text,
+        String(text), -1, 0, c_attr_list, c_stripped_text,
         C_NULL, C_NULL
     )
     if ret == 0
         error("Could not parse pango markup.")
     end
-    str = Compat.String(c_stripped_text[1])
+    str = unsafe_string(c_stripped_text[1])
 
     # TODO: do c_stripped_text and c_attr_list need to be freed?
 
@@ -470,8 +475,8 @@ function parse_pango(text::AbstractString, scale)
     text, c_attr_list = pango_parse_markup(text)
     GLV = GLVisualize
 
-    atlas          = GLV.get_texture_atlas()
-    font           = GLV.defaultfont()
+    atlas = GLV.get_texture_atlas()
+    font = GLV.defaultfont()
 
     last_idx = 1
     last_offset = 0.0
@@ -483,7 +488,7 @@ function parse_pango(text::AbstractString, scale)
     offset          = Point2f0[]
     uv_offset_width = Vec4f0[]
     for (idx, attr) in Compose.unpack_pango_attr_list(c_attr_list)
-        current_text = Compat.String(text[last_idx:idx])
+        current_text = String(text[last_idx:idx])
         last_idx = idx+1
 
         pos, sa, oa, uvwidth = gen_text(current_text,
@@ -509,7 +514,7 @@ function parse_pango(text::AbstractString, scale)
     end
     last_scale = Vec2f0(1)
     if last_idx <= length(text)
-        current_text = Compat.String(text[last_idx:end])
+        current_text = String(text[last_idx:end])
         pos, sa, oa, uvwidth = gen_text(current_text,
             atlas, font, last_position, last_scale.*scale, last_offset
         )
@@ -525,24 +530,24 @@ end
 
 
 function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
-	pos 	= absolute_native_units(img, prim.position)
-	s1 		= absolute_native_units(img, img.fontsize)/20f0
-	s 		= Vec2f0(s1)
+    pos = absolute_native_units(img, prim.position)
+    s1 = absolute_native_units(img, img.fontsize)/20f0
+    s = Vec2f0(s1)
     positions, scales, offset, uv_offset_width = parse_pango(prim.value, s)
     atlas = GLVisualize.get_texture_atlas();
-	obj 	= visualize((DISTANCEFIELD, positions),
+    obj = visualize((DISTANCEFIELD, positions),
         distancefield=atlas.images,
         scale=scales,
         offset=offset,
         uv_offset_width=uv_offset_width,
         color=img.fill
     );
-	bb 		= value(GLAbstraction.boundingbox(obj))
-    w,h,_   = widths(bb)
-	x,y,_ 	= minimum(bb)
-    pos     -= Point2f0(x, y)
+    bb = value(GLAbstraction.boundingbox(obj))
+    w,h,_ = widths(bb)
+    x,y,_ = minimum(bb)
+    pos -= Point2f0(x, y)
     transmat = eye(Mat{4,4,Float32})
-	if prim.rot.theta != 0.0
+    if prim.rot.theta != 0.0
         pivot = Vec3f0(absolute_native_units(img, prim.rot.offset), 0)
         rot = GLAbstraction.rotationmatrix_z(Float32(-prim.rot.theta))
         transmat *= translationmatrix(pivot)*rot*translationmatrix(-pivot)
@@ -560,8 +565,8 @@ function Compose.draw(img::GLVisualizeBackend, prim::Compose.TextPrimitive)
         end
     end
     transmat *= translationmatrix(Vec3f0(pos..., 0))
-	GLAbstraction.transformation(obj, transmat)
-	_view(obj, img.screen, camera=:orthographic_pixel)
+    GLAbstraction.transformation(obj, transmat)
+    _view(obj, img.screen, camera=:orthographic_pixel)
 end
 
 

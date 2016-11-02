@@ -34,7 +34,7 @@ end
 rotation_angle = const_lift(*, timesignal, 2f0*pi)
 rotation = map(rotationmatrix_z, rotation_angle)
 
-heightfield = juliadata(256, 700, 700)
+heightfield = juliadata(256, 500, 500)
 
 # visualize the heightfield as a surface
 vis = visualize(

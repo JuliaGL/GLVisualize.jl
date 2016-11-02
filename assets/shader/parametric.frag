@@ -9,8 +9,8 @@ float rand(vec2 co){
 {{function}}
 
 uniform float jitter = 1.0;
-uniform float thickness = 20000;
-uniform int samples = 16;
+uniform float thickness = 2000;
+uniform int samples = 8;
 
 in vec2 aa_scale;
 

@@ -28,30 +28,36 @@ function _view(
         camera = robj.uniforms[:preferred_camera],
         position = Vec3f0(2), lookat=Vec3f0(0)
     )
-    if isa(camera, Camera)
+    local camsym::Symbol # make things type stable
+    if isa(camera, Symbol)
+        camsym = camera::Symbol
+        if haskey(screen.cameras, camsym)
+            real_camera = screen.cameras[camsym]
+        elseif camsym == :perspective
+            inside = screen.inputs[:mouseinside]
+            real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep=inside)
+        elseif camsym == :fixed_pixel
+            real_camera = DummyCamera(window_size=screen.area)
+        elseif camsym == :orthographic_pixel
+            inside = screen.inputs[:mouseinside]
+            real_camera = OrthographicPixelCamera(screen.inputs, keep=inside)
+        elseif camsym == :nothing
+            push!(screen, robj, :nothing)
+            return nothing
+        else
+            error("Camera symbol $camera not known")
+        end
+    elseif isa(camera, Camera)
+        camsym = gensym("Camera")
         real_camera = camera
-    elseif haskey(screen.cameras, camera)
-        real_camera = screen.cameras[camera]
-    elseif camera == :perspective
-        inside = screen.inputs[:mouseinside]
-        real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep=inside)
-    elseif camera == :fixed_pixel
-        real_camera = DummyCamera(window_size=screen.area)
-    elseif camera == :orthographic_pixel
-        inside = screen.inputs[:mouseinside]
-        real_camera = OrthographicPixelCamera(screen.inputs, keep=inside)
-    elseif camera == :nothing
-        push!(screen, robj, :nothing)
-        return nothing
     else
-         error("Method $camera not a known camera type")
+         error("$camera not a known camera type")
     end
-    camsym = Symbol(string(camera))
     screen.cameras[camsym] = real_camera
-    merge!(robj.uniforms, collect(real_camera), Dict( # add display dependant values
-        :resolution => get!(screen.inputs, :resolution, const_lift(Vec2f0, const_lift(x->Vec2f0(x.w,x.h), screen.area))),
-        :fixed_projectionview => get!(screen.cameras, :fixed_pixel, DummyCamera(window_size=screen.area)).projectionview
-    ))
+    robj.uniforms[:resolution] = get!(screen.inputs, :resolution) do
+        map(x->Vec2f0(widths(x)), screen.area)
+    end
+    collect(real_camera, robj.uniforms)
     push!(screen, robj)
     nothing
 end

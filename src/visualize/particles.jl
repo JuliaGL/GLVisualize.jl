@@ -462,6 +462,8 @@ function sprites(p, s, data)
         )
         gl_primitive        = GL_POINTS
     end
+    # Exception for intensity, to make it possible to handle intensity with a
+    # different length compared to position. Intensities will be interpolated in that case
     if position != nothing
         data[:intensity] = intensity_convert(intensity, position)
         data[:len] = const_lift(length, position)
@@ -480,13 +482,13 @@ texture coordinates in the texture atlas, widths and positions of the characters
 function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
 
     @gen_defaults! data begin
-        relative_scale = Vec2f0(1)
-        start_position = Point2f0(0)
-        atlas          = get_texture_atlas()
-        distancefield  = atlas.images
-        stroke_width   = 0f0
-        glow_width     = 0f0
-        font           = defaultfont()
+        relative_scale  = Vec2f0(1)
+        start_position  = Point2f0(0)
+        atlas           = get_texture_atlas()
+        distancefield   = atlas.images
+        stroke_width    = 0f0
+        glow_width      = 0f0
+        font            = defaultfont()
         scale_primitive = true
         position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
         offset          = const_lift(calc_offset, main, relative_scale, font, atlas)

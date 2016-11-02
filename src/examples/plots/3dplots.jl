@@ -60,11 +60,12 @@ function xy_data(x, y, i, N)
     sin(r)/r
 end
 
-surface2 = Plots.surface(Float32[xy_data(x, y, 20f0, N) for x=1:1000, y=1:1000])
+surface2 = Plots.surface(Float32[xy_data(x, y, 20f0, N) for x=1:100, y=1:100])
 surface3 = Plots.wireframe(
     Float32[xy_data(x*10, y*10, 40f0, N) for x=1:30, y=1:30],
     line=4.0
 )
 
-p = plot(surface1, surface2, surface3, p1)
+p = plot(surface1, surface2, surface3, p1, show=true)
+
 gui()

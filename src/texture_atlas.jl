@@ -7,11 +7,18 @@ type TextureAtlas
     attributes      ::Vector{Vec4f0}
     scale           ::Vector{Vec2f0}
     extent          ::Vector{FontExtent{Float64}}
-
-
 end
-function TextureAtlas(initial_size=(4096, 4096))
-    images = Texture(fill(Float16(0.0), initial_size...), minfilter=:linear, magfilter=:linear)
+function atlas_texture(data)
+    images = Texture(
+        data,
+        minfilter = :linear,
+        magfilter = :linear,
+        anisotropic = 16f0,
+    )
+end
+
+function TextureAtlas(initial_size = (2048, 2048))
+    images = atlas_texture(zeros(Float16, initial_size...))
     TextureAtlas(
         RectanglePacker(SimpleRectangle(0, 0, initial_size...)),
         Dict{Any, Int}(),
@@ -56,12 +63,14 @@ begin #basically a singleton for the textureatlas
         if isfile(_cache_path)
             return open(_cache_path) do io
                 dict = deserialize(io)
-                dict[:images] = Texture(dict[:images]) # upload to GPU
+                tex = atlas_texture(dict[:images])
+                dict[:images] = tex
                 fields = [dict[n] for n in fieldnames(TextureAtlas)]
                 TextureAtlas(fields...)
             end
         else
             atlas = TextureAtlas()
+            info("Caching fonts, this may take a while. Needed only on first run!")
             for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
                 insert_glyph!(atlas, c, defaultfont())
             end
@@ -134,50 +143,43 @@ end
 
 
 insert_glyph!(atlas::TextureAtlas, glyph::Char, font) = get!(atlas.mapping, (glyph, font)) do
-    uv, rect, extent, width_nopadd = render(atlas, glyph, font)
+    uv, extent, width_nopadd, pad = render(atlas, glyph, font)
     tex_size       = Vec2f0(size(atlas.images))
     uv_start       = Vec2f0(uv.x, uv.y)
     uv_width       = Vec2f0(uv.w, uv.h)
-    real_heightpx  = width_nopadd[2]
-    halfpadding    = (uv_width - width_nopadd) / 2f0
-    real_start     = uv_start + halfpadding # include padding
+    real_start     = uv_start + pad - 1 # include padding
+    # padd one additional pixel
     relative_start = real_start ./ tex_size # use normalized texture coordinates
-    relative_width = (real_start+width_nopadd) ./ tex_size
+    relative_width = (real_start + width_nopadd + 2) ./ tex_size
 
     uv_offset_width = Vec4f0(relative_start..., relative_width...)
-    i               = atlas.index
+    i = atlas.index
     push!(atlas.attributes, uv_offset_width)
-    push!(atlas.scale, Vec2f0(width_nopadd))
+    push!(atlas.scale, Vec2f0(width_nopadd + 2))
     push!(atlas.extent, extent)
     atlas.index = i+1
     return i
 end
 
-function sdistancefield(img, restrict_steps=2)
+function sdistancefield(img, downsample = 8, pad = 8*downsample)
     w, h = size(img)
-    w1, h1 = w, h
-
-    halfpad = 24*(2^restrict_steps) # padd so that after restrict it comes out as roughly 48 pixel
-    w, h = w+2halfpad, h+2halfpad #pad this, to avoid cuttoffs
-    in_or_out = Bool[begin
-        x, y = i-halfpad, j-halfpad
-        if checkbounds(Bool, img, x,y)
-            img[x,y] >= 1.0
-        else
-            false
-        end
-    end for i=1:w, j=1:h]
-
-    sd = sdf(in_or_out)
-    for i=1:restrict_steps
-        w1, h1 = Images.restrict_size(w1), Images.restrict_size(h1)
-        sd = Images.restrict(sd) #downsample
+    wpad = 0; hpad = 0;
+    while w % downsample != 0
+        w += 1
     end
-    sz = Vec2f0(size(img))
-    maxlen = norm(sz)
-    sw, sh = size(sd)
+    while h % downsample != 0
+        h += 1
+    end
+    w, h = w + 2pad, h + 2pad #pad this, to avoid cuttoffs
 
-    Float16[clamp(sd[i,j]/maxlen, -1, 1) for i=1:sw, j=1:sh], Vec2f0(w1, h1), (2^restrict_steps)
+    in_or_out = Array(Bool, w, h)
+    @inbounds for i=1:w, j=1:h
+        x, y = i-pad, j-pad
+        in_or_out[i,j] = checkbounds(Bool, img, x, y) && img[x,y] > 0.5*255
+    end
+    yres, xres = div(w, downsample), div(h, downsample)
+    sd = sdf(in_or_out, xres, yres)
+    map(Float16, sd)
 end
 
 function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
@@ -185,13 +187,14 @@ function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     if glyph == '\n' # don't render  newline
         glyph = ' '
     end
-    bitmap, extent = renderface(font, glyph, (164, 164))
-    restrict_steps=2
-    sd, width_nopadd, scaling_factor = sdistancefield(bitmap, restrict_steps)
-    extent = extent ./ Vec2f0(2^restrict_steps)
+    downsample = 14
+    pad = 8
+    bitmap, extent = renderface(font, glyph, (50*downsample, 50*downsample))
+    sd = sdistancefield(bitmap, downsample, downsample*pad)
+    extent = extent ./ Vec2f0(downsample)
     rect = SimpleRectangle(0, 0, size(sd)...)
-    uv   = push!(atlas.rectangle_packer, rect) #find out where to place the rectangle
+    uv = push!(atlas.rectangle_packer, rect) #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small. Resizing not implemented yet. Please file an issue at GLVisualize if you encounter this") #TODO resize surface
     atlas.images[uv.area] = sd
-    uv.area, rect, extent, width_nopadd
+    uv.area, extent, Vec2f0(size(bitmap)) ./ downsample, pad
 end
