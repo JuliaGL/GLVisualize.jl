@@ -5,6 +5,10 @@ if !isdefined(:runtests) # We use the examples to generate docs and tests
     timesignal = bounce(linspace(0.0, 1.0, 360))
 end
 
+description = """
+Coloured 3D line example.
+"""
+
 n = 400 # The number of points per line
 nloops = 20 # The number of loops
 # The scalar parameter for each line

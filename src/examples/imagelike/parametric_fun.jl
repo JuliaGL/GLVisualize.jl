@@ -5,12 +5,17 @@ if !isdefined(:runtests)
     timesignal = loop(linspace(0f0,1f0,360))
 end
 
+description = """
+This example shows how you can define a function in the OpenGL shader language,
+which will get sampled on the GPU on a per pixel basis.
+"""
+
 # create a glsl fragment shader
 parametric_func = frag"""
-    uniform float arg1; // you can add arbitrary uniforms and supply them via the keyword args
-    float function(float x) {
-     return arg1*sin(1/tan(x));
-   }
+uniform float arg1; // you can add arbitrary uniforms and supply them via the keyword args
+float function(float x) {
+    return arg1*sin(1/tan(x));
+}
 """
 # _view the function on a 1700x800 pixel plane
 paremetric = visualize(parametric_func, arg1=timesignal, dimensions=(1700, 800))

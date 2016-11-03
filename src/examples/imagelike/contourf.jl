@@ -4,6 +4,10 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = loop(linspace(0f0,1f0,360))
 end
+description = """
+Simple animated contour plot. You need to press Ctrl to move the camera.
+Most 2D camera's use the Ctrl modifier to make editing easier.
+"""
 
 # use the performance tips to speed this up
 # (http://docs.julialang.org/en/release-0.4/manual/performance-tips/)

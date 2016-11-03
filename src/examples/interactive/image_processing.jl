@@ -5,7 +5,10 @@ using GLAbstraction, GeometryTypes, GLWindow
 if !isdefined(:runtests)
 	window = glscreen()
 end
-const record_interactive = true
+description = """
+Simple slider example.
+You can drag the number to change it interactively.
+"""
 
 # loadasset loads data from the GLVisualize asset folder and is defined as
 # FileIO.load(assetpath(name))

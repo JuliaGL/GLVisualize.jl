@@ -4,6 +4,10 @@ if !isdefined(:runtests) # We use the examples to generate docs and tests
     window = glscreen()
 end
 
+description = """
+This example draws multiple equally sized lines efficiently.
+"""
+
 vx = -10:0.1:10;
 vy = -8:0.1:8;
 x = [i for i in vx, j in vy];

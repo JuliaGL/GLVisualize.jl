@@ -3,7 +3,9 @@ using GLVisualize, GeometryTypes, GLAbstraction, Colors
 if !isdefined(:runtests)
     window = glscreen()
 end
-const static_example = true
+description = """
+Showing how one can color mesh vertices.
+"""
 
 
 # one could also create a GLNormalAttributeMesh manually:

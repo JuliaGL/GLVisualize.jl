@@ -2,6 +2,13 @@
 
 using GLVisualize, GeometryTypes, Reactive, GLAbstraction, Colors, GLWindow, ModernGL
 
+description = """
+Example showing a basic interactive setup for working inside the REPL/Atom/Jupyter.
+It also shows how to not clear what has been drawn. Note that this is currently
+not working correctly and generates cool smoke like artifacts. This will
+work in the future by making the canvas creation more flexible.
+The camera is fixed, since otherwise it would smear the whole image.
+"""
 
 """
 Simulation function
@@ -130,7 +137,7 @@ function main(window, timesignal)
         RGBA(1,1,(sin(t)+1.)/2., 0.6)
     end
 
-    circle = Sphere(Point3f0(0), 2f0)
+    circle = Sphere(Point2f0(0), 0.5f0)
 
     # boundingbox is still a very expensive operation, so if you don't need it
     # you can simply set it to nothing.
@@ -166,6 +173,8 @@ if !isdefined(:runtests)
 else
     # if we get the window from the example recorder, change color!
     window.color = RGBA{Float32}(0,0,0,0)
+    window.clear = false
 end
 
 main(window, timesignal)
+window.clear = true

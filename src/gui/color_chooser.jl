@@ -10,8 +10,6 @@ function widget{T<:RGBA}(
         scale=const_lift(x->Vec2f0(x[2]), area),
         offset=Vec2f0(0),
         color=color,
-        stroke_width=1f0,
-        stroke_color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0),
         kw_args...
     )
     color_robj = color_button.children[]
@@ -31,11 +29,11 @@ function widget{T<:RGBA}(
         id, index, p0 = v0
         if dragg == Vec2f0(0) # if drag just started. Not the best way, maybe dragged should return a tuple of (draggvalue, started)
             id, index = value(m2id)
-            if id==color_robj.id
+            if id == color_robj.id
                 p0 = value(color)
             end
         else
-            if id==color_robj.id
+            if id == color_robj.id
                 mbutton = first(value(mouse_buttons_pressed))
                 if mbutton == GLFW.MOUSE_BUTTON_RIGHT # with the right button we control red and green
                     r, g = _clamp(Point2f0(p0.r, p0.g) + Point2f0(dragg/50f0))

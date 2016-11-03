@@ -3,6 +3,12 @@ if !isdefined(:runtests)
 	window = glscreen()
 end
 
+description = """
+Demonstration of loding different image formats. The blank images and the ones
+showing checkmarks should all be green. As you can see, you can also quite easily
+load and display animated images.
+"""
+
 # a few helper functions to generate images
 typealias NColor{N, T} Colorant{T, N}
 fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)

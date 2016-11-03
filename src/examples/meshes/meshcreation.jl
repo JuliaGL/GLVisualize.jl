@@ -3,7 +3,11 @@ using GLVisualize, GeometryTypes, GLAbstraction, Colors
 if !isdefined(:runtests)
 	window = glscreen()
 end
-const static_example = true
+
+description = """
+Example that will walk through the basic steps to create a mesh with colors from
+Geometry primitives.
+"""
 
 baselen = 0.4f0
 dirlen = 2f0

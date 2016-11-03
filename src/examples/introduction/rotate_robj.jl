@@ -5,11 +5,16 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = loop(linspace(0f0,1f0,360))
 end
+description = """
+Introductory example, explaining Signals, file loading and
+how to transform a visualization.
+"""
+
 # loadasset is defined in GLVisualize like this:
 # loadasset(path_segments...) = FileIO.load(assetpath(path_segments...))
 # where assetpath just looks up the file in the asset folder
 # You can load these (file types)[https://github.com/JuliaIO/FileIO.jl/blob/master/docs/registry.md]
-mesh            = loadasset("cat.obj")
+mesh = loadasset("cat.obj")
 
 # GLAbstraction.const_lift is an alias for Reactive.map, which also works for non
 # signal arguments.

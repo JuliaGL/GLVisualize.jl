@@ -6,6 +6,12 @@ if !isdefined(:runtests)
 	timesignal = loop(linspace(0f0, 1f0, 360))
 end
 
+description = """
+Example demoing the linesegment visualization and how to use indices to connect
+points with line segments. Indices can be used like this on other primitives,
+E.g. particles and the normal line type.
+"""
+
 large_sphere = HyperSphere(Point3f0(0), 1f0)
 rotation_angle = const_lift(*, timesignal, 2f0*pi)
 rotation = map(rotationmatrix_z, rotation_angle)

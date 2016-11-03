@@ -4,6 +4,12 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(linspace(0.0, 1.0, 360))
 end
+
+description = """
+This example uses the Contour.jl library to generate
+contour lines from an heightfield.
+"""
+
 # create a rotation from the time signal
 rotation = map(timesignal) do t
     rotationmatrix_z(Float32(t*2pi)) # -> 4x4 Float32 rotation matrix

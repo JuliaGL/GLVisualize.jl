@@ -1,8 +1,7 @@
 if !isdefined(:runtests)
     addprocs(1)
-else
-    eval(Main, :(remotecall_wait(include, 2, Pkg.dir("GLVisualize", "src", "examples", "parallel", "test.jl"))))
 end
+
 const workerid = workers()[]
 
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
@@ -37,12 +36,7 @@ function p_empty!()
     end
 end
 
-# start GLVisualize worker process
-@spawnat workerid begin
-    window = GLVisualize.glscreen(background=RGBA(0f0, 0f0, 0f0, 1f0))
-    @async GLWindow.renderloop(window)
-    nothing
-end
+
 
 
 function solve_particles!{N, T}(
@@ -85,7 +79,7 @@ code is written to support T == Float64 as well. So you can quickly try out both
 function main(n, T=Float32, N=3)
     p_empty!() # empty window, so that we can call main multiple times
 
-    positions = startpositions(N, T(1), n)
+    positions = startpositions(N, T(0.5), n)
     # random factor for turbulence
     s = (-1 + 2*rand(T, length(positions)))
 
@@ -102,15 +96,13 @@ function main(n, T=Float32, N=3)
         boundingbox=nothing,
     )
     # maximum number of line segments we use to trace particle trajectory
-    max_history = 50
+    max_history = 80
     # To visualize a large number of lines with the same length, Matrix{Point} is
     # the way to go.
-    lines = fill(Point{N, T}(0), max_history, length(positions))
+    lines = zeros(Point{N, T}, max_history, length(positions))
+    lines[1, :] = positions
 
-    for i=1:max_history
-        lines[i, :] = positions+(i/10)
-    end
-    lines_color = fill(RGBA{Float32}(0,0,0,0.4), max_history, length(positions))
+    lines_color = fill(RGBA{Float32}(0, 0, 0, 0), max_history, length(positions))
     linesobj = p_view(
         lines, :lines,
         color = vec(lines_color), # needs to be 1D right now, to lessen the amount of automatic conversions
@@ -119,7 +111,7 @@ function main(n, T=Float32, N=3)
     )
     t = 0.0
     dt = T(0.1)
-    wait(linesobj)
+    wait(linesobj) # wait until actually visualized
     while p_isopen()
         # lets print the times, to observe the slowing down when the velocity
         # cuttoff doesn't get reached as quickly anymore. Lucky for us that
@@ -144,12 +136,18 @@ function main(n, T=Float32, N=3)
     end
 end
 
+# start GLVisualize worker process
+@spawnat workerid begin
+    window = GLVisualize.glscreen(color=RGBA(0f0, 0f0, 0f0, 1f0))
+    @async GLWindow.renderloop(window)
+    nothing
+end
 # start main
-main(8000)
+main(10_000)
 
 # clean up process
 remotecall_fetch(workerid) do
-    GLVisualize.cleanup_old_screens()
+    GLVisualize.cleanup()
     return
 end
 nothing

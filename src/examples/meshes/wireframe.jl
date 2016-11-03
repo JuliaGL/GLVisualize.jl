@@ -3,7 +3,12 @@ using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
 if !isdefined(:runtests)
     window = glscreen()
 end
-const static_example = true
+
+description = """
+Demonstrating how wireframes can be displayed.
+"""
+
+
 
 # loadasset is defined as `loadasset(name) = load(assetphat(name))`
 # load comes from FileIO, which automatically detects the file format and loads it
@@ -21,9 +26,8 @@ colored_mesh = GLNormalVertexcolorMesh(
     color=colors
 )
 
-
-_view(visualize(colored_mesh, is_fully_opaque=false), window, camera=:perspective)
-_view(visualize(msh, :lines, thickness=1f0), window, camera=:perspective)
+_view(visualize(colored_mesh), window, camera=:perspective)
+_view(visualize(msh, :lines, thickness=0.5f0), window, camera=:perspective)
 
 if !isdefined(:runtests)
     renderloop(window)

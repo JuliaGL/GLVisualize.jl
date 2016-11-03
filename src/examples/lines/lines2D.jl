@@ -4,7 +4,13 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(linspace(0.0, 1.0, 360))
 end
+
+description = """
+Animated and coloured lines.
+"""
 const N = 2048
+
+
 function spiral(i, start_radius, offset)
     Point2f0(sin(i), cos(i)) * (start_radius + ((i/2pi)*offset))
 end

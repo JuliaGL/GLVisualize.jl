@@ -4,7 +4,12 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(linspace(0f0,1f0,360))
 end
-const interactive_example = true
+
+description = """
+This example shows how to set up a custom camera,
+animate it and display it in a second screen. The first screen
+allows you to look at the camera in the scene.
+"""
 
 """
 functions to halve some rectangle

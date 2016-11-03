@@ -48,7 +48,7 @@ function _view(
             error("Camera symbol $camera not known")
         end
     elseif isa(camera, Camera)
-        camsym = gensym("Camera")
+        camsym = :custom
         real_camera = camera
     else
          error("$camera not a known camera type")

@@ -5,6 +5,9 @@ docs from the examples.
 """
 module ExampleRunner
 
+# add one worker process for parallel examples
+#addprocs(1)
+
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
@@ -69,7 +72,7 @@ function RunnerConfig(;
         files = String[],
         exclude_dirs = [
             "gpgpu", "compose", "mouse.jl", "richtext.jl",
-            "parallel", "ExampleRunner.jl", "grids.jl",
+            "ExampleRunner.jl", "grids.jl", "parallel",
             "texthighlight.jl"
         ],
         number_of_frames = 360,
@@ -331,9 +334,13 @@ function make_tests(config)
     preserve(map(config.buttons[:rewind][2], init=0) do toggled
         runthrough = !toggled ? -1 : 0
     end)
-
+    failed = fill(false, length(config.files))
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]
+        if failed[i]
+            increase(runthrough == 0 ? 1 : runthrough)
+            continue
+        end
         try
             test_module = _test_include(path, config)
 
@@ -350,6 +357,7 @@ function make_tests(config)
             break_loop = false
             increase(runthrough)
         catch e
+            failed[i] = true
             increase(1) # skip example
             bt = catch_backtrace()
             ex = CapturedException(e, bt)
