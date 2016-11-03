@@ -149,7 +149,7 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
         ), knob_scale=9f0,
         kw_args...
     )
-    colors = to_cpu_mem(value(colormap))
+    colors = map(GLAbstraction.gl_promote(T), to_cpu_mem(value(colormap)))
     N = length(colors)
     color_tex = GLAbstraction.gl_convert(Texture, colormap)
     @assert colors == to_cpu_mem(color_tex)

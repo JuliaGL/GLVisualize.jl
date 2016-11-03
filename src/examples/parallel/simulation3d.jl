@@ -2,6 +2,12 @@ if !isdefined(:runtests)
     addprocs(1)
 end
 
+description = """
+Example showing off how to run GLVisualize in a different process
+and visualize objects created on the main process.
+"""
+
+
 const workerid = workers()[]
 
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
@@ -37,8 +43,6 @@ function p_empty!()
 end
 
 
-
-
 function solve_particles!{N, T}(
         positions::AbstractVector{Point{N, T}}, s, dt::T = T(0.01)
     )
@@ -60,6 +64,7 @@ function solve_particles!{N, T}(
     end
     positions, s
 end
+
 """
 Generic implementation of initialising `N` dimensional points on an `N` dimensional
 Sphere.

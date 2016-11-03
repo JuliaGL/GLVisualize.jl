@@ -1,64 +1,95 @@
-addprocs(1)
-@everywhere using GLVisualize, GLAbstraction, Reactive, GeometryTypes, Colors
+using GLVisualize, GLAbstraction, Reactive, GeometryTypes, Colors, GLWindow
 
-w = glscreen(color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0))
-@async renderloop(w)
+if !isdefined(:runtests)
+    window = glscreen()
+    addprocs(1)
+end
 
-@everywhere function displace(a, dir, normal, segment)
-    x, y = segment
-    a + (dir * x) + (normal * y)
-end
-@everywhere function fractal_step!(segments, idx, segment)
-    a, b = segments[Face(idx, idx+1)]
-    dir = b - a
-    normal = Point2(-dir[2], dir[1])
-    iter = (displace(a, dir, normal, segment[i + 1]) for i=1:3)
-    splice!(segments, (idx + 1):idx, iter)
-    # if idx + 2 <= length(segments)
-    #     a = segments[idx % 4]
-    # end
-    segments
-end
-@everywhere function generate_fractal(segment, iterations = 5, start = [segment ; first(segment)])
-    segment = segment ./ 100.0
-    for iters=1:iterations
-        n = length(start) - 2
-        for i=0:n
-            fractal_step!(start, i*4 + 1, segment)
-        end
+description = """
+Example showing off how to run computations in a different process and then
+visualizing them.
+"""
+
+const workerid = workers()[]
+
+
+@everywhere begin
+    using GeometryTypes
+    function spin(dir, α)
+        x, y = dir
+        Point(x*cos(α) - y*sin(α), x*sin(α) + y*cos(α))
     end
-    start
+    function fractal_step!(
+            a, b, depth, angles,
+            result = Point2f0[a], levels = Float32[depth] # tmp too not allocate
+        )
+        depth == 0 && return result, levels, b
+        N = length(angles)
+        diff = (b - a)
+        len = norm(diff) / (N - 1)
+        nth_segment = normalize(diff)
+        for n = 1:N
+            b = a + spin(nth_segment * len, angles[n]) # rotate with current angle
+            _, _, b = fractal_step!(a, b, depth-1, angles, result, levels) # recursion step
+            if n < N
+                push!(result, b)
+                push!(levels, depth)
+            end
+            nth_segment = normalize(b - a)
+            a = b
+        end
+        result, levels, b
+    end
+    function generate_fractal(angles, depth = 5)
+        tmp = zeros(Point2f0, length(angles))
+        angles = map(deg2rad, angles)
+        result, levels, b = fractal_step!(Point2f0(0,0), Point2f0(300,0), round(Int, depth), angles)
+        push!(result, b)
+        push!(levels, depth)
+        result, depth .- levels
+    end
 end
 
-segment = Point2f0[(0.0, 0.0), (25.0, 0.0), (50.0, 50.0), (75.0, 0.0), (100.0, 0.0)]
-vis, sig = GLVisualize.edit_line(
-    segment, Vec2f0(1, 1), (0, 200), w
+controles = Dict(
+    :angles => Vec4f0(0.0, 80.0, -140.0, 80.0),
+    :colormap => map(RGBA{Float32}, colormap("Blues", 10)),
+    :thickness => 0.5f0,
+    :iterations => 6,
 )
-# move a bit to the top
-set_arg!(vis, :model, translationmatrix(Vec3f0(10, 10, 0)))
-_view(vis, camera=:fixed_pixel)
+editarea, viewarea = x_partition(window.area, 30.0)
+editscreen = Screen(
+    window, area = editarea,
+    color = RGBA{Float32}(0.1f0, 0.1f0, 0.1f0, 1f0),
+    stroke = (1f0, RGBA{Float32}(0.13f0, 0.13f0, 0.13f0, 13f0))
+)
+viewscreen = Screen(window, area=viewarea, color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0))
+GLVisualize.extract_edit_menu(controles, editscreen, true)
 
 
-segment_s = map(sig) do s
-    GLAbstraction.gpu_data(vis.children[1][:vertex])
-end
-iters = Signal(5)
-init = Signal([segment ; first(segment)])
-const channel = Channel{Vector{Point2f0}}(1)
-v0 = Point2f0[0]
-put!(channel, v0)
-lines = foldp(v0, segment_s, iters, init) do v0, segment, i, start
-    if isready(channel)
-        points = take!(channel)
-        task = @async put!(channel, remotecall_fetch(generate_fractal, 2, segment, i, start))
+const channel2 = Channel{Tuple{Vector{Point2f0}, Vector{Float32}}}(1)
+v0 = (Point2f0[0,0,0,0], Float32[0,0,0,0])
+put!(channel2, v0)
+line_level = foldp(v0, controles[:angles], controles[:iterations]) do v0, angles, iter
+    if isready(channel2)
+        points = take!(channel2)
+        task = @async put!(
+            channel2,
+            remotecall_fetch(generate_fractal, workerid, angles, iter)
+        )
         return points
     end
     v0
 end
-x = visualize(
-    lines, :lines,
-    color = RGBA(1f0, 1f0, 1f0, 1.0f0),
-    thickness = 0.5f0
-)
-_view(x)
-set_arg!(x, :thickness, 0.5f0)
+
+_view(visualize(
+    map(first, line_level), :lines,
+    intensity = map(last, line_level),
+    thickness = controles[:thickness],
+    color_map = controles[:colormap],
+    color_norm = Vec2f0(0,10),
+), viewscreen, camera=:orthographic_pixel)
+
+
+if !isdefined(:runtests)
+    renderloop(window)
+end
