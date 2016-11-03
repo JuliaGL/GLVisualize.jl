@@ -14,7 +14,7 @@ function sumlengths(points)
 end
 
 intensity_convert(intensity, verts) = intensity
-function intensity_convert(intensity::VecTypes, verts)
+function intensity_convert{T}(intensity::VecOrSignal{T}, verts)
     if length(value(intensity)) == length(value(verts))
         GLBuffer(intensity)
     else
