@@ -19,9 +19,7 @@ function juliadata(max_iterations, imgx, imgy)
         c = Complex(-0.4, 0.6)
         i = 0
         for t in 0:max_iterations
-            if norm(z) > 2.0
-                break
-            end
+            norm(z) > 2.0 && break
             z = z * z + c
             i = t
         end

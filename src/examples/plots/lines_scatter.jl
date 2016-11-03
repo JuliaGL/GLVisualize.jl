@@ -4,13 +4,18 @@ pl_size = if !isempty(GLVisualize.get_screens())
 else
     (800, 500)
 end
+
+description = """
+Combining GLVisualize with Plots.jl.
+"""
+
 glvisualize(size=pl_size)
 
 ys = Vector[[sin(i*7)/x * cos(x^i) for x in linspace(0.6,5,10)] for i=1:5]
 cat = loadasset("cat.obj")
 cat = rotationmatrix_y(rad2deg(110)) * cat
 marker = Any[:circle, :d, cat, loadasset("foxy.png"), '🐱']
-marker  = reshape(marker, (1, 5))
+marker = reshape(marker, (1, 5))
 colors = reshape(colormap("Blues", 10)[4:8], (1,5))
 
 plot(

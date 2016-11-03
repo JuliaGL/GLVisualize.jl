@@ -4,7 +4,10 @@ using GLWindow, GLAbstraction, Colors
 if !isdefined(:runtests)
     window = glscreen()
 end
-const static_example = true
+
+description = """
+Example showing how to create different screens.
+"""
 
 
 ctrla, viewa = y_partition(window.area, 20)

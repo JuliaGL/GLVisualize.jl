@@ -6,6 +6,10 @@ else
 end
 glvisualize(size=pl_size)
 
+description = """
+How to create different 3D plots with Plots.jl
+"""
+
 function lorenz(t0, a, b, c, h)
     Point3f0(
         t0[1] + h * a * (t0[2] - t0[1]),
@@ -22,6 +26,7 @@ function lorenz(array::Vector, a=5.0,b=2.0,c=6.0,d=0.01)
     end
     array
 end
+
 N = 1000
 xyz = lorenz(zeros(Point3f0, N), 26., 28., 9.0, 0.01)
 x,y,z = map(first, xyz), map(x->x[2], xyz), map(last, xyz)

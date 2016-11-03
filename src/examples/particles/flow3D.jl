@@ -4,6 +4,11 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(linspace(0f0,1f0,360))
 end
+
+description = """
+Visualizing an animated 3D vector field.
+"""
+
 N = 7
 # generate some rotations
 function rotation_func(t)

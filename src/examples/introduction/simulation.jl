@@ -177,4 +177,4 @@ else
 end
 
 main(window, timesignal)
-window.clear = true
+# clean up window

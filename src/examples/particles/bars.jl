@@ -4,6 +4,11 @@ if !isdefined(:runtests)
 	window = glscreen()
     timesignal = loop(linspace(0f0, 1f0, 360))
 end
+
+description = """
+Example that creates a 2D bar plot from a 1D array of floats.
+"""
+
 const N = 87
 const range = linspace(-5f0, 5f0, N)
 

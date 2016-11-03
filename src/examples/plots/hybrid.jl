@@ -4,7 +4,10 @@ if !isdefined(:runtests)
     window = glscreen()
     timesignal = bounce(linspace(0f0,1f0,360))
 end
-
+description = """
+Showing off different line types and marker types,
+like 3D meshes, characters and images.
+"""
 plot_area, glv_area = y_partition(window.area, 50) # part parent area at 50%
 
 # create one screen for Plots.jl

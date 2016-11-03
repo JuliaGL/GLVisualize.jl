@@ -2,9 +2,13 @@ using GLVisualize, GeometryTypes, FileIO
 using GLAbstraction, Colors, Reactive
 
 if !isdefined(:runtests)
-	window = glscreen()
-	timesignal = loop(linspace(0f0,1f0,360))
+    window = glscreen()
+    timesignal = loop(linspace(0f0,1f0,360))
 end
+
+description = """
+Example that shows how to set up a camera to watch your particles better.
+"""
 
 cube = HyperRectangle(Vec3f0(0), Vec3f0(0.05))
 n = 20
@@ -54,5 +58,5 @@ _view(cubes, window, camera=camera)
 
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end
