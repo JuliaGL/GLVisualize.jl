@@ -1,7 +1,7 @@
-function button(a, window)
+function button(a, screen)
     robj = visualize(a).children[]
-    const m2id = mouse2id(window)
-    is_pressed = droprepeats(map(window.inputs[:key_pressed]) do isclicked
+    const m2id = mouse2id(screen)
+    is_pressed = droprepeats(map(screen.inputs[:key_pressed]) do isclicked
         isclicked && value(m2id).id == robj.id
     end)
 
@@ -13,14 +13,14 @@ function button(a, window)
 end
 
 
-function toggle_button(a::Signal, b::Composable, window)
-    toggle(b, window, signal=a)
+function toggle_button(a::Signal, b::Composable, screen)
+    toggle(b, screen, signal=a)
     b, a
 end
 
-function toggle_button(a, b, window)
+function toggle_button(a, b, screen)
     id = Signal(0)
-    ab_bool = toggle(id, window)
+    ab_bool = toggle(id, screen)
     a_b = map(ab_bool) do aORb
         aORb ? a : b
     end
@@ -29,7 +29,7 @@ function toggle_button(a, b, window)
     robj, ab_bool
 end
 
-function toggle(ispressed::Signal{Bool}, window, default=true; signal=Signal(default))
+function toggle(ispressed::Signal{Bool}, screen, default=true; signal=Signal(default))
     preserve(map(ispressed) do ispressed
         ispressed && push!(signal, !Bool(value(signal)))
         nothing
@@ -37,30 +37,31 @@ function toggle(ispressed::Signal{Bool}, window, default=true; signal=Signal(def
     signal
 end
 
-function toggle{T<:Union{Int, Tuple, RenderObject}}(id1::Union{Signal{T}, T}, window, default=true; signal=Signal(default))
-    is_clicked = droprepeats(map(window.inputs[:mouse_buttons_pressed]) do mbp
+function toggle{T<:Union{Int, Tuple, RenderObject}}(id1::Union{Signal{T}, T}, screen, default=true; signal=Signal(default))
+    m2id = mouse2id(screen)
+    is_clicked = droprepeats(map(screen.inputs[:mouse_buttons_pressed]) do mbp
         if GLAbstraction.singlepressed(mbp, GLFW.MOUSE_BUTTON_LEFT)
-            id2 = value(mouse2id(window))
+            id2 = value(m2id)
             return is_same_id(id2, value(id1))
         end
         false
     end)
-    toggle(is_clicked, window, default; signal=signal)
+    toggle(is_clicked, screen, default; signal=signal)
 end
 
-function toggle(robj::RenderObject, window, default=true; signal=Signal(default))
-    toggle(robj, window, default, signal=signal)
+function toggle(robj::RenderObject, screen, default=true; signal=Signal(default))
+    toggle(robj, screen, default, signal=signal)
 end
 
-function toggle(c::Context, window, default=true; signal=Signal(default))
-    toggle(map(x->x.id, tuple(GLAbstraction.extract_renderable(c)...)), window, default, signal=signal)
+function toggle(c::Context, screen, default=true; signal=Signal(default))
+    toggle(map(x->x.id, tuple(GLAbstraction.extract_renderable(c)...)), screen, default, signal=signal)
 end
 
 
-function add_drag(w, range, point_id, slider_length, slideridx_s)
-    m2id = mouse2id(w)
+function add_drag(screen, range, point_id, slider_length, slideridx_s)
+    m2id = mouse2id(screen)
     # interaction
-    @materialize mouse_buttons_pressed, mouseposition = w.inputs
+    @materialize mouse_buttons_pressed, mouseposition = screen.inputs
     isoverpoint = const_lift(is_same_id, m2id, point_id)
     # single left mousekey pressed (while no other mouse key is pressed)
     key_pressed = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
@@ -87,7 +88,7 @@ function add_play(slideridx_s, play_signal, range, rate=30.0)
 end
 
 function slider(
-        range, window;
+        range, screen;
         startidx::Int=1,
         play_signal=Signal(false), slider_length=50mm,
         icon_size=Signal(54)
@@ -99,7 +100,7 @@ function slider(
     slider_s = map(slideridx_s) do idx
         range[clamp(idx, 1, length(range))]
     end
-    add_drag(window, range, point_id, slider_length, slideridx_s)
+    add_drag(screen, range, point_id, slider_length, slideridx_s)
     add_play(slideridx_s, play_signal, range)
     bb = map(icon_size) do is
         AABB(Vec3f0(0), Vec3f0(slider_length, is, 1))
@@ -134,13 +135,13 @@ function slider(
     slider_s, Context(point_robj, line)
 end
 
-function play_slider(window, icon_size=Signal(54), range=1:360;
+function play_slider(screen, icon_size=Signal(54), range=1:360;
     slider_length=200)
     play_button, play_stop_signal = GLVisualize.toggle_button(
-        loadasset("checked.png"), loadasset("unchecked.png"), window
+        loadasset("checked.png"), loadasset("unchecked.png"), screen
     )
     play_s = map(!, play_stop_signal)
-    slider_s, slider_w = slider(range, window,
+    slider_s, slider_w = slider(range, screen,
         startidx=1, play_signal=play_s,
         slider_length=slider_length
     )

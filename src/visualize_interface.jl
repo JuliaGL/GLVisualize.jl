@@ -24,23 +24,26 @@ visualize(c::Context, s::Symbol=:default; kw_args...) = c
 #
 
 function _view(
-        robj::RenderObject, screen=current_screen();
+        robj::RenderObject, screen = current_screen();
         camera = robj.uniforms[:preferred_camera],
         position = Vec3f0(2), lookat=Vec3f0(0)
     )
+    global _camera_counter
     local camsym::Symbol # make things type stable
+    mouseinside = screen.inputs[:mouseinside]
+    ishidden = screen.hidden
     if isa(camera, Symbol)
         camsym = camera::Symbol
         if haskey(screen.cameras, camsym)
             real_camera = screen.cameras[camsym]
         elseif camsym == :perspective
-            inside = screen.inputs[:mouseinside]
-            real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep=inside)
+            keep = map((a, b) -> !a && b, ishidden, mouseinside)
+            real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep = keep)
         elseif camsym == :fixed_pixel
             real_camera = DummyCamera(window_size=screen.area)
         elseif camsym == :orthographic_pixel
-            inside = screen.inputs[:mouseinside]
-            real_camera = OrthographicPixelCamera(screen.inputs, keep=inside)
+            keep = map((a, b) -> !a && b, ishidden, mouseinside)
+            real_camera = OrthographicPixelCamera(screen.inputs, keep = keep)
         elseif camsym == :nothing
             push!(screen, robj, :nothing)
             return nothing

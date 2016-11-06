@@ -1,8 +1,8 @@
-include(joinpath(dirname(@__FILE__), "..", "src", "examples", "ExampleRunner.jl"))
+include(Pkg.dir("GLVisualize", "examples", "ExampleRunner.jl"))
 using ExampleRunner
 
 files = [
-    Pkg.dir("GLVisualize", "src", "examples"),
+    Pkg.dir("GLVisualize", "examples"),
     Pkg.dir("GLVisualize", "test", "summary.jl"),
 ]
 # Create an examplerunner, that displays all examples in the example folder, plus
