@@ -10,7 +10,7 @@ files = [
 config = ExampleRunner.RunnerConfig(
     record=false,
     files = files,
-    resolution = (800, 700)
+    resolution = (100, 87)
 )
 
 ExampleRunner.run(config)

@@ -58,7 +58,7 @@ viewscreen = Screen(
     window, area = viewarea,
     color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0)
 )
-iconsize = 25
+iconsize = 2mm
 
 function labeled_slider(range, window)
     kw_args = [
@@ -68,7 +68,7 @@ function labeled_slider(range, window)
     visual, signal = slider(range, window; kw_args...)
     text = visualize(
         map(string, signal), # convert to string
-        relative_scale = Vec2f0(0.5),
+        relative_scale = Vec2f0(0.05mm),
         color = RGBA(1f0, 1f0, 1f0, 1f0)
     )
     # put in list and visualize so it will get displayed side to side
@@ -84,13 +84,13 @@ iterations_v, iterations_s = labeled_slider(1:11, edit_screen)
 cmap_v, cmap_s = widget(
     map(RGBA{Float32}, colormap("Blues", 5)),
     edit_screen;
-    area = (7 * iconsize, iconsize/2),
+    area = (8 * iconsize, iconsize/2),
     knob_scale = 4f0,
 )
 
 thickness_v, thickness_s = widget(
     Signal(0.4f0), edit_screen,
-    text_scale = Vec2f0(0.5),
+    text_scale = Vec2f0(0.05mm),
     range = 0f0:0.05f0:20f0
 )
 
@@ -119,7 +119,7 @@ controles = [
 ]
 
 _view(
-    visualize(controles, text_scale = 3mm),
+    visualize(controles, text_scale = 1mm),
     edit_screen, camera = :fixed_pixel
 )
 angle_vec1 = foldp(Array(Tuple{Float32, Float32}, 4), line_s) do angles, line

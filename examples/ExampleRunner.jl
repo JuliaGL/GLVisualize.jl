@@ -11,7 +11,7 @@ module ExampleRunner
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
-import GLVisualize: toggle_button, slider, button
+import GLVisualize: toggle_button, slider, button, mm
 
 include("mouse.jl")
 
@@ -238,6 +238,8 @@ function RunnerConfig(;
         thumbnail = true,
         rootscreen = glscreen(resolution=resolution)
     )
+    w, h = resolution
+    resize!(rootscreen, w*mm, h*mm)
     if !hasplots
         push!(exclude_dirs, "plots")
         push!(exclude_dirs, "summary.jl")
