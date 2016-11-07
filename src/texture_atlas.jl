@@ -197,7 +197,7 @@ function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     if glyph == '\n' # don't render  newline
         glyph = ' '
     end
-    downsample = 14
+    downsample = 5
     pad = 8
     bitmap, extent = renderface(font, glyph, (50*downsample, 50*downsample))
     sd = sdistancefield(bitmap, downsample, downsample*pad)
