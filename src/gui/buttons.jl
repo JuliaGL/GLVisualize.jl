@@ -1,11 +1,11 @@
-function button(a, screen)
-    robj = visualize(a).children[]
+function button(a, screen; kw_args...)
+    robj = visualize(a; kw_args...).children[]
     const m2id = mouse2id(screen)
     is_pressed = droprepeats(map(screen.inputs[:key_pressed]) do isclicked
         isclicked && value(m2id).id == robj.id
     end)
 
-    robj[:model] = const_lift(is_pressed, robj[:model], boundingbox(robj)) do ip, old, bb
+    robj[:model] = const_lift(is_pressed, robj[:model]) do ip, old
         ip && return old
         scalematrix(Vec3f0(0.95))*old
     end
@@ -89,9 +89,10 @@ end
 
 function slider(
         range, screen;
-        startidx::Int=1,
-        play_signal=Signal(false), slider_length=50mm,
-        icon_size=Signal(54)
+        startidx::Int = 1,
+        play_signal = Signal(false), slider_length = 50mm,
+        icon_size = Signal(54),
+        kw_args...
     )
     startpos = 2.1mm
     height = value(icon_size)
@@ -109,8 +110,9 @@ function slider(
         Point2f0[(startpos, is/2), (slider_length, is/2)]
     end
     line = visualize(
-        line_pos, :linesegment,
-        boundingbox=bb, thickness=0.9mm
+        line_pos, :linesegment;
+        boundingbox = bb,
+        kw_args...
     ).children[]
     i = Signal(0)
     pos = Point2f0[(0, 0)]
@@ -126,17 +128,21 @@ function slider(
     end
     point_robj = visualize(
         (Circle, position),
-        scale_primitive=true,
-        offset=offset, scale=knob_scale,
-        boundingbox=bb
+        scale_primitive = true,
+        offset = offset,
+        scale = knob_scale,
+        boundingbox = bb
     ).children[]
+
     push!(point_id, (point_robj.id, line.id))
 
-    slider_s, Context(point_robj, line)
+    Context(point_robj, line), slider_s
 end
 
-function play_slider(screen, icon_size=Signal(54), range=1:360;
-    slider_length=200)
+function play_slider(
+        screen, icon_size = Signal(54), range = 1:360;
+        slider_length = 200
+    )
     play_button, play_stop_signal = GLVisualize.toggle_button(
         loadasset("checked.png"), loadasset("unchecked.png"), screen
     )
@@ -145,5 +151,5 @@ function play_slider(screen, icon_size=Signal(54), range=1:360;
         startidx=1, play_signal=play_s,
         slider_length=slider_length
     )
-    slider_s, slider_w, play_button
+    slider_w, play_button, Context(point_robj, line)
 end

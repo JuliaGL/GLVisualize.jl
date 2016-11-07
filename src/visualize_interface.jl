@@ -20,7 +20,10 @@ Always returns a context, which can be displayed on a window via view(::Context,
 visualize(main::ANY, s::Symbol=:default; kw_args...) = visualize(main, Style{s}(), Dict{Symbol, Any}(kw_args))::Context
 visualize(main::ANY, s::Style, data::Dict) = assemble_shader(default(main, s, data))::Context
 visualize(c::Composable, s::Symbol=:default; kw_args...) = Context(c)
+visualize(c::Composable, s::Style, data::Dict) = Context(c)
+
 visualize(c::Context, s::Symbol=:default; kw_args...) = c
+visualize(c::Context, s::Style, data::Dict) = c
 #
 
 function _view(

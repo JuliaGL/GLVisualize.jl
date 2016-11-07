@@ -12,13 +12,13 @@ You can drag with right and left mouse click on the color to change it:
 """
 
 color_a = Signal(RGBA{Float32}(1,0,0,0.7))
-color_s, a_v = widget(color_a, window)
+a_v, color_s = widget(color_a, window)
 
 color_b = Signal(RGBA{Float32}(0,1,0,0.7))
-color_s, b_v = widget(color_b, window)
+b_v, color_s = widget(color_b, window)
 
 color_c = Signal(RGBA{Float32}(0,0,1,0.7))
-color_s, c_v = widget(color_c, window)
+c_v, color_s = widget(color_c, window)
 edit_screen = Screen(window, area=map(window.area) do a
     SimpleRectangle(0,0,60,a.h)
 end)

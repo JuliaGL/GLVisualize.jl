@@ -1,32 +1,20 @@
-function point_attribs(mh, points_robj, line_robj)
-    isoverpoints, isoverlines = mh[1] == points_robj.id, mh[1] == line_robj.id
-    points_robj[:glow_color] = isoverpoints ? RGBA{Float32}(0.9,.1,0.2,0.9) : RGBA{Float32}(0.,0.,0.,0.)
-    points_robj[:visible] = isoverpoints || isoverlines
-end
-function point_edit(past, mousediff_index, point_gpu)
-    mousediff_past, index_past = past
-    mousediff, index = mousediff_index
-    if checkbounds(Bool, point_gpu, index)
-        point_gpu[index] = point_gpu[index] - eltype(point_gpu)(mousediff-mousediff_past)
-    end
-    mousediff_index
-end
 function edit_line(
         line, direction_restriction::Vec2f0, clampto, window;
-        color=default(RGBA{Float32}), knob_scale=9f0, kw_args...
+        knob_scale = 9f0,
+        knob_color = RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
+        kw_args...
     )
     mouse_hover = mouse2id(window)
     inds = reinterpret(Cuint, collect(partition(Cuint(0):Cuint(length(line)-1),2,1)))
     line_robj = visualize(
         line, :linesegment;
-        color=color, thickness=1f0,
-        indices=inds,
+        indices = inds,
         kw_args...
     ).children[]
     point_gpu = line_robj[:vertex]
     points = visualize(
         (Circle{Float32}(Point2f0(0), knob_scale), point_gpu);
-        color=RGBA{Float32}(0.7, 0.7, 0.7, 1.0),
+        color = knob_color,
         kw_args...
     )
     point_robj = points.children[]
@@ -71,21 +59,20 @@ end
 
 
 function widget{T}(
-        points::Vector{Point{2,T}}, window;
-        color=default(RGBA), kw_args...
+        line::Vector{Point{2,T}}, window;
+        direction_restriction = Vec2f0(1),
+        clampto = (-Inf, Inf),
+        kw_args...
     )
-    line = visualize(points, :lines; thickness=2f0, kw_args...)
-    line_robj = line.children[]
-    point_gpu = line_robj[:vertex]
-    points = visualize(
-        (Circle(Point2f0(0), 8f0), point_gpu);
-        glow_width=2f0, kw_args...
+    vis, sig = edit_line(
+        line, direction_restriction, clampto, window;
+        kw_args...
     )
-    points_robj = points.children[]
-    preserve(const_lift(point_attribs, window.inputs[:mouse_hover], points_robj, line_robj))
-    mousediff_index = dragged_on(points_robj, MOUSE_LEFT, window)
-    preserve(foldp(point_edit, mousediff_index.value, mousediff_index, Signal(point_gpu)))
-    Context(line, points)
+    pos_gpu = vis.children[2][:position]
+    line_s = map(sig) do _
+        gpu_data(pos_gpu)
+    end
+    vis, line_s
 end
 
 function mouse_drag_diff(past, drag_index)
@@ -146,7 +133,8 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
             RGBA{Float32}(0.41796875,0.78125,0.1796875),
             RGBA{Float32}(0.1796875,0.41796875,0.78125),
             RGBA{Float32}(0.9,0.9,0.9)
-        ), knob_scale=9f0,
+        ),
+        knob_scale = 9f0,
         kw_args...
     )
     colors = map(GLAbstraction.gl_promote(T), to_cpu_mem(value(colormap)))
@@ -162,7 +150,7 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
         c_i, diff = edit_line(
             c_channel, dir_restrict,
             (0, scale[2]), window, color=slider_colors[i],
-            knob_scale=knob_scale
+            knob_scale = knob_scale
         )
         preserve(const_lift(edit_color, color_tex, colors, diff, i, scale[2]))
         c_i
@@ -173,5 +161,5 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
         primitive=SimpleRectangle{Float32}(0, scale[2]+6, scale[1], 10),
         kw_args...
     )
-    color_tex, Context(tex, vis...)
+    Context(tex, vis...), color_tex
 end

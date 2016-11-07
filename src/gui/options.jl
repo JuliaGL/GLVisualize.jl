@@ -14,7 +14,7 @@ function widget{T<:Union{Bool, UInt8}}(tick::Signal{T}, window;
     end
     robj = visualize(icon; primitive=SimpleRectangle(0,0,area[2],area[2]), kw_args...)
     robj, togl = toggle_button(tick, robj, window)
-    togl, robj
+    robj, togl
 end
 
 
@@ -74,5 +74,5 @@ function widget{T<:AbstractVector}(choices::Signal{T}, window;
         end
         idx
     end
-    map(getindex, choices, selected, typ=eltype(choices_v)), visual
+    visual, map(getindex, choices, selected, typ=eltype(choices_v))
 end

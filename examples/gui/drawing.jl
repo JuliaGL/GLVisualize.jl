@@ -9,7 +9,7 @@ end
 
 color_a = Signal(RGBA{Float32}(1,0,0,1))
 iconsize = 54
-color_s, a_v = widget(color_a, window, area=(iconsize, iconsize))
+color_v, color_s = widget(color_a, window, area=(iconsize, iconsize))
 edit_screen = Screen(window, area=map(window.area) do a
     SimpleRectangle(0, 0, a.w, iconsize)
 end)
@@ -31,16 +31,16 @@ paint_screen = plt.o.children[1]
 buttobj, button_s = GLVisualize.button(loadasset("unchecked.png"), edit_screen)
 
 # create a slider for the linewidth
-slider_s, slider_w = GLVisualize.slider(
+slider_w, slider_s = GLVisualize.slider(
     linspace(0.5f0, 20f0, 100), edit_screen,
-    play_signal = Signal(false),
-    slider_length = 4*iconsize,
+    thickness = 10f0,
+    slider_length = 4 * iconsize,
     icon_size = Signal(iconsize)
 )
 
 # view and position them with layout!
 _view(
-    layout!(SimpleRectangle{Float32}(0, 0, iconsize, iconsize), a_v),
+    layout!(SimpleRectangle{Float32}(0, 0, iconsize, iconsize), color_v),
     edit_screen, camera=:fixed_pixel
 )
 _view(
@@ -58,8 +58,8 @@ _view(
 const linebuffer = Signal(fill(Point2f0(NaN), 4))
 const colorbuffer = Signal(fill(value(color_s), 4))
 const lineobj = visualize(
-    linebuffer, :lines, color=colorbuffer,
-    thickness=slider_s
+    linebuffer, :lines, color = colorbuffer,
+    thickness = slider_s
 )
 _view(lineobj, paint_screen, camera=:perspective)
 

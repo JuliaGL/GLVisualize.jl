@@ -68,8 +68,8 @@ function calc_val{T<:Integer}(sval::T, val, range)
 end
 function widget{T <: FixedVector}(
         slider_value::Signal{T}, window;
-        numberwidth=5, range=range_default(T),
-        text_scale=Vec2f0(1),
+        numberwidth = 5, range = range_default(T),
+        text_scale = Vec2f0(1),
         kw_args...
     )
     last_x = 0f0
@@ -77,8 +77,8 @@ function widget{T <: FixedVector}(
     gap = (GLVisualize.glyph_scale!(' ')[1]*text_scale[1]*2f0)
     le_tuple = ntuple(length(value(slider_value))) do i
         number_s = map(getindex, slider_value, Signal(i))
-        num_s, vizz = widget(number_s, window;
-            numberwidth=numberwidth, range=range,
+        vizz, num_s = widget(number_s, window;
+            numberwidth = numberwidth, range = range,
             text_scale = text_scale, scale_primitive=true,
             kw_args...
         )
@@ -94,12 +94,12 @@ function widget{T <: FixedVector}(
         vizz
     end
 
-    map(T, le_sigs...), Context(le_tuple...)
+    Context(le_tuple...), map(T, le_sigs...)
 end
 function widget{T <: Real}(
         slider_value::Signal{T}, window;
-        text_scale=Vec2f0(1),
-        numberwidth=5, range=range_default(T), kw_args...
+        text_scale = Vec2f0(1),
+        numberwidth = 5, range = range_default(T), kw_args...
     )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     startvalue        = value(slider_value)
@@ -109,7 +109,8 @@ function widget{T <: Real}(
         color = RGBA{Float32}(0.1, 0.1, 0.1),
         glow_color = RGBA{Float32}(0.97, 0.97, 0.97),
         stroke_color = RGBA{Float32}(0.97, 0.97, 0.97),
-        scale_primitive=true,kw_args...
+        scale_primitive = true,
+        kw_args...
     )
     bb         = value(boundingbox(vizz))
     mini, maxi = minimum(bb)-5f0, widths(bb)+10f0
@@ -137,5 +138,5 @@ function widget{T <: Real}(
         push!(slider_value, calc_val(v0, dragg[1], range))
         v0
     end)
-    return slider_value, Context(bb_vizz, slider_robj)
+    Context(bb_vizz, slider_robj), slider_value
 end

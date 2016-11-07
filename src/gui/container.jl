@@ -31,7 +31,7 @@ function extract_edit_menu(
         label = string(k)
         s = makesignal2(v)
         if applicable(widget, s, edit_screen)
-            sig, vis = widget(s, edit_screen,
+            vis, sig = widget(s, edit_screen,
                 visible=isvisible, text_scale=widget_text,
                 area=(screen_w, icon_size),
                 knob_scale = knob_scale

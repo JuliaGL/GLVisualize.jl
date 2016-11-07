@@ -130,7 +130,7 @@ function create_screens(rootscreen)
     end
     iconsize = size(imgs[1][1], 1) / 4
 
-    code_s, code_toggle = widget(
+    code_toggle, code_s = widget(
         Signal(["code", "visual"]),
         control_screen, area = (4*iconsize, iconsize),
         text_scale = Vec2f0(0.5)
@@ -190,7 +190,7 @@ function create_screens(rootscreen)
 
     play_button, play_stop_signal = buttons[:play]
     play_s = map(!, play_stop_signal)
-    slider_s, slider_w = slider(
+    slider_w, slider_s = slider(
         linspace(0f0, 1f0, 360/3), control_screen,
         play_signal=play_s,
         slider_length=4*iconsize,

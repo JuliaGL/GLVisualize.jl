@@ -5,9 +5,6 @@ using Plots; glvisualize(size=(800, 300))
 
 
 function benchscatter(timings, names, images; n=30)
-    for (i, ts) in enumerate(timings)
-
-    end
     yposs, xposs = Vector{Float64}[], Vector{Float64}[]
     binss, scales = Vector{Float64}[], Vector{Float64}[]
     x = 1; dist = -0.5:0.0001:0.5
@@ -73,9 +70,9 @@ end
 function summarize(window, config)
     # These are allowed to fail, since they depend on not installed packages
     allowed_to_fail = ("mesh_edit.jl", "billiard.jl")
-    open(homedir()*"/results.jls", "w") do io
-        serialize(io, config.attributes)
-    end
+    # open(homedir()*"/results.jls", "w") do io
+    #     serialize(io, config.attributes)
+    # end
     allowed_failures = filter(config.attributes) do k, dict
         !dict[:success] && (basename(k) in allowed_to_fail)
     end

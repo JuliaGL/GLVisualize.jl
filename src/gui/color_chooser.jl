@@ -46,5 +46,5 @@ function widget{T<:RGBA}(
         end
         return id, index, p0
     end)
-    return color, color_button
+    color_button, color
 end
