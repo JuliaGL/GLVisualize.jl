@@ -118,8 +118,12 @@ function summarize(window, config)
                 abs(t-m) < w # filter out outliers in a too primitive manner
             end
             # take 200 samples, not including the first (JIT, yo)
-            push!(times, ts[2:min(201, length(ts))]) # for ms
-            push!(success_thumbs, rotl90(v[:thumbnail]))
+            push!(times, ts[2:min(201, length(ts))]) # for m
+            img = rotl90(v[:thumbnail])
+            for x in 1:size(img, 2)
+                img[:, x] = reverse(view(img, 1:size(img, 1), x))
+            end
+            push!(success_thumbs, img)
         end
     end
     benchplot = benchscatter(times, benchmark_names, success_thumbs)

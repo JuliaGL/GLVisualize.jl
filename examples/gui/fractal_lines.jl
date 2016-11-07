@@ -35,14 +35,18 @@ function fractal_step!(
     result, levels, b
 end
 
+const T = Float64
+const P = Point{2, T}
+
 function generate_fractal(angles, depth = 5)
-    tmp = zeros(Point2f0, length(angles))
-    angles = map(x-> (deg2rad(x[1]), x[2]), angles)
-    result, levels, b = fractal_step!(Point2f0(0,0), Point2f0(300,0), round(Int, depth), angles)
+    tmp = zeros(P, length(angles))
+    angles = map(x-> (deg2rad(T(x[1])), T(x[2])), angles)
+    result, levels, b = fractal_step!(P(0,0), P(300,0), round(Int, depth), angles)
     push!(result, b)
     push!(levels, depth)
     result, depth .- levels
 end
+
 
 editarea, viewarea = x_partition(window.area, 30.0)
 edit_screen = Screen(
@@ -55,20 +59,27 @@ viewscreen = Screen(
     color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0)
 )
 iconsize = 25
-kw_args = [
-    (:slider_length, 6 * iconsize),
-    (:icon_size, Signal(iconsize)),
-]
-range = 0.0f0:0.5:360f0
 
-a_angle_v, a_angle_s = slider(range, edit_screen; kw_args...)
-b_angle_v, b_angle_s = slider(range, edit_screen; kw_args...)
-c_angle_v, c_angle_s = slider(range, edit_screen; kw_args...)
-d_angle_v, d_angle_s = slider(range, edit_screen; kw_args...)
+function labeled_slider(range, window)
+    kw_args = [
+        (:slider_length, 7 * iconsize),
+        (:icon_size, Signal(iconsize)),
+    ]
+    visual, signal = slider(range, window; kw_args...)
+    text = visualize(
+        map(string, signal), # convert to string
+        relative_scale = Vec2f0(0.5),
+        color = RGBA(1f0, 1f0, 1f0, 1f0)
+    )
+    # put in list and visualize so it will get displayed side to side
+    # direction = first dimension --> x dimension
+    visualize([visual, text],  direction = 1, gap = Vec3f0(3mm, 0, 0)), signal
+end
+angles = ntuple(4) do i
+    labeled_slider(0.0:1.0:360.0, edit_screen)
+end
 
-minimum(value(boundingbox(d_angle_v)))
-
-iterations_v, iterations_s = slider(1:11, edit_screen; kw_args...)
+iterations_v, iterations_s = labeled_slider(1:11, edit_screen)
 
 cmap_v, cmap_s = widget(
     map(RGBA{Float32}, colormap("Blues", 5)),
@@ -96,10 +107,10 @@ line_v, line_s = widget(segments, edit_screen)
 center_v, center_s = button("⛶", edit_screen)
 
 controles = [
-    "angle 1" => a_angle_v,
-    "angle 2" => b_angle_v,
-    "angle 3" => c_angle_v,
-    "angle 4" => d_angle_v,
+    "angle 1" => angles[1][1],
+    "angle 2" => angles[2][1],
+    "angle 3" => angles[3][1],
+    "angle 4" => angles[4][1],
     "iterations" => iterations_v,
     "colormap" => cmap_v,
     "thickness" => thickness_v,
@@ -133,7 +144,7 @@ angle_vec1 = foldp(Array(Tuple{Float32, Float32}, 4), line_s) do angles, line
     angles
 end
 
-angle_s = (a_angle_s, b_angle_s, c_angle_s, d_angle_s)
+angle_s = map(last, angles)
 anglevec2 = foldp(Array(Tuple{Float32, Float32}, 4), angle_s...) do angles, s...
     for i=1:4
         angles[i] = s[i], 1.0
@@ -172,4 +183,17 @@ end)
 
 if !isdefined(:runtests)
     renderloop(window)
+    # clean up signals
+    for (v, s) in angles
+        close(s, false)
+    end
+    close(center_s, false)
+    close(thickness_s, false)
+    close(iterations_s, false)
+    close(iterations_s, false)
 end
+
+# you can change angles directly like this:
+# you need to start the renderloop asynchronously then though: @async renderloop(window)
+# And then of course, don't clean up the signals before you are done
+#push!(angles[3][2], 220f0)

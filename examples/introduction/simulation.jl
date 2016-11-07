@@ -37,7 +37,7 @@ end
 """
 Clears the image of the window to `color`
 """
-function clear_frame!(window, color=RGB(0.2,0.2,0.2))
+function clear_frame!(window, color = RGB(0.2,0.2,0.2))
     glClearColor(red(color), green(color), blue(color), 1)
     GLWindow.clear_all!(window)
 end
@@ -58,7 +58,10 @@ function init(res=(800,800))
     # giving the window a transparent background color makes it transparent to
     # the previous frame. It's arguable, if that's really how things should be,
     # but that's how it currently works ;)
-    window = glscreen("vortex", resolution=res, color=RGB(0.2,0.2,0.2), clear=false)
+    window = glscreen(
+        "vortex", resolution = res,
+        color = RGB(0.2,0.2,0.2), clear = false
+    )
     timesignal = Signal(0.0)
     speed = Signal(1/30)
 
@@ -145,8 +148,8 @@ function main(window, timesignal)
     # visualize((primitive, positions), keyword_arguments...)
     viewable = visualize(
         (circle, position),
-        boundingbox=nothing,
-        color=color
+        boundingbox = nothing,
+        color = color
     )
     # reset is basically the antagonist of _view
     reset!(window) # when you reset the window here, you can call main multiple times

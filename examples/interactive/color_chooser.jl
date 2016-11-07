@@ -7,8 +7,8 @@ end
 description = """
 Simple example showing how to create color choosers.
 You can drag with right and left mouse click on the color to change it:
-↔ right ↦ red   | ↔ left ↦ blue
-↕ right ↦ green | ↕ left ↦ alpha
+↔ right → red     | ↔ left → blue
+↕ right → green | ↕ left → alpha
 """
 
 color_a = Signal(RGBA{Float32}(1,0,0,0.7))

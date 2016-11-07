@@ -5,6 +5,21 @@ pretty_print{T}(x::Matrix{T}) = string("Matrix{", T, "}")
 pretty_print(x::DataType) = string(x.name.name)
 pretty_print(x) = string(x)
 
+print_type(x::Function) = string(x.env.name)
+print_type(x::Symbol) = string(":", x)
+function print_type{T<:Tuple}(x::Type{T})
+    "($(join(map(print_type, x.parameters), ", ")))"
+end
+function print_type(x::TypeVar)
+    string(x.name)
+end
+print_type(x::TypeName) = print_type(x.name)
+print_type(x) = print_type(x.name)
+function print_type(x::Union)
+    "Union{$(join(map(print_type, x.types), " "))}"
+end
+
+
 s_length(x::Symbol) = length(string(x))
 
 const default_kwargs_docs = Dict(
@@ -12,13 +27,13 @@ const default_kwargs_docs = Dict(
     :position_x => "must be `Vector{Float}` or `Float` or `nothing`",
     :position_y => "must be `Vector{Float}` or `Float` or `nothing`",
     :position_z => "must be `Vector{Float}` or `Float` or `nothing`",
-    
+
     :scale => "must be `Vector{Vec}` or `Vec`",
     :scale_x => "must be `Vector{Float}` or `Float` or `nothing`",
     :scale_y => "must be `Vector{Float}` or `Float` or `nothing`",
     :scale_z => "must be `Vector{Float}` or `Float` or `nothing`",
     :color => "Must be a Colorant",
-    
+
 
     :model => "Must be`Mat4f0`. Scales, rotates and positions the object",
     :preferred_camera => "Preferred camera",
@@ -32,7 +47,7 @@ function get_docs(arg1, style=:default)
     doc = get(data, :doc_string, Dict())
     targets = get(data, :gl_convert_targets, Dict())
     # we don't want to have these in the docs, so remove them
-    delete!(data, :doc_string) 
+    delete!(data, :doc_string)
     delete!(data, :gl_convert_targets)
 
     maxlen = maximum(map(s_length, keys(data)))
@@ -56,4 +71,43 @@ function get_docs(arg1, style=:default)
     end
     seekstart(io)
     Markdown.parse(io)
+end
+
+function get_doc(dict, sig)
+    for (k, v) in dict
+        k == sig && return v.text[1]
+    end
+    ""
+end
+_tuple(x) = (x,)
+_tuple(x::Core.SimpleVector) = tuple(x...)
+_tuple(x::Tuple) = x
+_tuple{T<:Tuple}(x::Type{T}) = tuple(x.parameters...)
+
+function all_docs()
+    method_table = methods(GLVisualize._default)
+    metadict = Docs.meta(GLVisualize)
+    default_docs = metadict[Base.Docs.Binding(GLVisualize, :_default)].docs
+
+    for method in method_table
+        sig = (method.sig.parameters[2:end]...,)
+        tvars = _tuple(method.tvars)
+        sparam = if !isempty(tvars)
+            string("{", join(map(x-> string(x), tvars), ", "), "}")
+        else
+            ""
+        end
+        docstr = get_doc(default_docs, Tuple{sig...})
+        arg1 = print_type(sig[1])
+        arg2 = sig[2].parameters[1]
+        arg2 = if isa(arg2,  TypeVar) #
+            ""
+        else
+            string(", :", arg2)
+        end
+        print(docstr)
+        println("visualize", sparam, "(", arg1, arg2, ")")
+        println()
+    end
+
 end

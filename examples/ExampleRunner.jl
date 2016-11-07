@@ -430,7 +430,7 @@ function make_tests(config)
             frames = 0
             while !break_loop && isopen(config.rootscreen)
                 render_fr(config, timings); frames += 1
-                (runthrough != 0 && frames > 10) && break # render one 10 if running through
+                (runthrough != 0 && frames > 1) && break # render one 10 if running through
             end
             record_thumbnail(config) # record thumbnail in the end
 
@@ -455,6 +455,7 @@ function make_tests(config)
             empty!(window)
             empty!(config.buttons[:timesignal].actions)
             window.color = RGBA{Float32}(1,1,1,1)
+            window.clear = true
             GLVisualize.empty_screens!()
             GLVisualize.add_screen(window) # make window default again!
             for (k, s) in window.inputs
