@@ -24,7 +24,7 @@ plot(
     color = colors,
     line = ([:dot :dash :dashdot :solid :dot], [1 2 3 4 5]),
     marker = marker,
-    markersize = [5 10 1000 10 15],
+    markersize = [5 10 20 10 15],
     markercolor = reshape(colormap("RdBu", 5), (1,5)),
     markerstrokewidth = [1 0.1 0 2 4],
     markerstrokecolor = [:blue :blue :black :blue :white],
