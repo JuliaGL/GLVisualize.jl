@@ -69,7 +69,7 @@ function labeled_slider(range, window)
     visual, signal = slider(range, window; kw_args...)
     text = visualize(
         map(string, signal), # convert to string
-        relative_scale = Vec2f0(0.4),
+        relative_scale = 5mm,
         color = RGBA(1f0, 1f0, 1f0, 1f0)
     )
     # put in list and visualize so it will get displayed side to side
@@ -91,7 +91,7 @@ cmap_v, cmap_s = widget(
 
 thickness_v, thickness_s = widget(
     Signal(0.4f0), edit_screen,
-    text_scale = Vec2f0(0.4),
+    text_scale = 5mm,
     range = 0f0:0.05f0:20f0
 )
 
@@ -107,7 +107,7 @@ segments = Point2f0[
 # But I don't really feel like restricting the user here ;)
 line_v, line_s = widget(segments, edit_screen)
 
-center_v, center_s = button("⛶", relative_scale = Vec2f0(1), edit_screen)
+center_v, center_s = button("⛶", relative_scale = iconsize, edit_screen)
 
 controles = [
     "angle 1" => angles[1][1],
@@ -124,7 +124,7 @@ controles = [
 
 _view(visualize(
     controles,
-    text_scale = 3mm,
+    text_scale = 4mm,
     width = 8iconsize
 ), edit_screen, camera = :fixed_pixel)
 
@@ -161,7 +161,7 @@ anglevec2 = foldp(Array(Tuple{Float32, Float32}, 4), angle_s...) do angles, s...
     angles
 end
 anglevec = merge(angle_vec1, anglevec2)
-@show value(anglevec)
+
 it1_points = map(anglevec) do angles
     generate_fractal(angles, 1)[1] ./ 7f0
 end

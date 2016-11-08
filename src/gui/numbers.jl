@@ -69,12 +69,12 @@ end
 function widget{T <: FixedVector}(
         slider_value::Signal{T}, window;
         numberwidth = 5, range = range_default(T),
-        text_scale = Vec2f0(1),
+        text_scale = 4mm,
         kw_args...
     )
     last_x = 0f0
     le_sigs = []
-    gap = (GLVisualize.glyph_scale!(' ')[1]*text_scale[1]*2f0)
+    gap = text_scale * 2f0 # 2 characters gap
     le_tuple = ntuple(length(value(slider_value))) do i
         number_s = map(getindex, slider_value, Signal(i))
         vizz, num_s = widget(number_s, window;
@@ -86,7 +86,7 @@ function widget{T <: FixedVector}(
         bb = value(boundingbox(vizz))
         w = widths(bb)
         min = minimum(bb)
-        trans = Signal(translationmatrix(Vec3f0(last_x, 0, 0)-min))
+        trans = Signal(translationmatrix(Vec3f0(last_x, 0, 0) - min))
         for elem in vizz.children
             elem[:model] = trans
         end
@@ -98,7 +98,7 @@ function widget{T <: FixedVector}(
 end
 function widget{T <: Real}(
         slider_value::Signal{T}, window;
-        text_scale = Vec2f0(1),
+        text_scale = 4mm,
         numberwidth = 5, range = range_default(T), kw_args...
     )
     @materialize mouse_buttons_pressed, mouseposition = window.inputs

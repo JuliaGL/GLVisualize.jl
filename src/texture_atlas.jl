@@ -128,27 +128,30 @@ function glyph_index!(atlas::TextureAtlas, c::Char, font)
     end
 end
 
-glyph_scale!(c::Char) = glyph_scale!(get_texture_atlas(), c, defaultfont())
+glyph_scale!(c::Char, scale) = glyph_scale!(get_texture_atlas(), c, defaultfont(), scale)
 glyph_uv_width!(c::Char) = glyph_uv_width!(get_texture_atlas(), c, defaultfont())
 
 function glyph_uv_width!(atlas::TextureAtlas, c::Char, font)
     atlas.attributes[glyph_index!(atlas, c, font)]
 end
-function glyph_scale!(atlas::TextureAtlas, c::Char, font)
-    atlas.scale[glyph_index!(atlas, c, font)]
+function glyph_scale!(atlas::TextureAtlas, c::Char, font, scale)
+    atlas.scale[glyph_index!(atlas, c, font)] .* (scale * 0.02)
 end
 function glyph_extent!(atlas::TextureAtlas, c::Char, font)
     atlas.extent[glyph_index!(atlas, c, font)]
 end
 
 function bearing(extent)
-     Point2f0(extent.horizontal_bearing[1], -(extent.scale[2]-extent.horizontal_bearing[2]))
+    Point2f0(
+        extent.horizontal_bearing[1],
+        -(extent.scale[2] - extent.horizontal_bearing[2])
+    )
 end
-function glyph_bearing!{T}(atlas::TextureAtlas, c::Char, font, scale::T)
-    T(bearing(atlas.extent[glyph_index!(atlas, c, font)])) .* scale
+function glyph_bearing!(atlas::TextureAtlas, c::Char, font, scale)
+    bearing(atlas.extent[glyph_index!(atlas, c, font)]) .* (scale * 0.02)
 end
-function glyph_advance!{T}(atlas::TextureAtlas, c::Char, font, scale::T)
-    T(atlas.extent[glyph_index!(atlas, c, font)].advance) .* scale
+function glyph_advance!(atlas::TextureAtlas, c::Char, font, scale)
+    atlas.extent[glyph_index!(atlas, c, font)].advance .* (scale * 0.02)
 end
 
 

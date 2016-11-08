@@ -114,7 +114,7 @@ function create_screens(rootscreen)
     control_area, message_area = x_partition_abs(tool_area, 5iconsize) # 5 columns
 
     toolbar = Screen(rootscreen,
-        area=tool_area, color = RGBA(0.95f0, 0.95f0, 0.95f0, 1.0f0)
+        area = tool_area, color = RGBA(0.95f0, 0.95f0, 0.95f0, 1.0f0)
     )
     messagescreen = Screen(toolbar, area = message_area)
     control_screen = Screen(toolbar, area = control_area)
@@ -132,6 +132,7 @@ function create_screens(rootscreen)
 
     code_toggle, code_s = widget(
         Signal(["code", "visual"]),
+        relative_scale = 9mm,
         control_screen, area = (4*iconsize, iconsize),
     )
 
@@ -158,8 +159,9 @@ function create_screens(rootscreen)
     end
     _view(visualize(
         map(first, text_color),
-        relative_scale = Vec2f0(0.5), color = map(last, text_color)
-    ), messagescreen, camera=:orthographic_pixel)
+        color = map(last, text_color),
+        relative_scale = 4mm
+    ), messagescreen, camera = :orthographic_pixel)
 
     text_color = map(text_signals[:codepath]) do codepath
         if isfile(codepath)
@@ -172,10 +174,13 @@ function create_screens(rootscreen)
     end
     _view(visualize(
         map(first, text_color), color = map(last, text_color),
-        relative_scale = Vec2f0(0.5)
-    ), code_screen, camera=:orthographic_pixel)
+        relative_scale = 4mm
+    ), code_screen, camera = :orthographic_pixel)
 
-    set_arg!(code_toggle, :model, translationmatrix(Vec3f0(1, iconsize*2+2, 0)))
+    set_arg!(
+        code_toggle, :model,
+        translationmatrix(Vec3f0(1, iconsize * 2 + 2, 0))
+    )
     _view(code_toggle, control_screen, camera=:fixed_pixel)
 
     # create buttons
@@ -190,17 +195,17 @@ function create_screens(rootscreen)
     play_button, play_stop_signal = buttons[:play]
     play_s = map(!, play_stop_signal)
     slider_w, slider_s = slider(
-        linspace(0f0, 1f0, 360/3), control_screen,
-        play_signal=play_s,
-        slider_length=4*iconsize,
-        icon_size=Signal(iconsize)
+        linspace(0f0, 1f0, 120), control_screen,
+        play_signal = play_s,
+        slider_length = 4*iconsize,
+        icon_size = Signal(iconsize)
     )
     buttons[:timesignal] = slider_s
 
     set_arg!(slider_w.children[1], :stroke_width, 0f0)
     set_arg!(slider_w.children[1], :stroke_color, RGBA(1f0, 1f0, 1f0, 1f0))
     set_arg!(slider_w.children[2], :thickness, 0.8f0)
-    set_arg!(slider_w.children[2], :color,RGBA(0.7f0, 0.7f0, 0.7f0, 1f0))
+    set_arg!(slider_w.children[2], :color, RGBA(0.7f0, 0.7f0, 0.7f0, 1f0))
 
     _view(slider_w, control_screen, camera=:fixed_pixel)
     last_x = 0f0
@@ -213,7 +218,7 @@ function create_screens(rootscreen)
         ratio = _w / _h
         x_width = ratio * iconsize # we have half widthed icons
         place = SimpleRectangle{Float32}(
-            last_x+1, last_y+1, 
+            last_x+1, last_y+1,
             x_width, iconsize
         )
         layout!(place, b)
@@ -244,6 +249,7 @@ function RunnerConfig(;
     )
     w, h = resolution
     resize!(rootscreen, w*mm, h*mm)
+    yield() # let screen area signal arrive
     if !hasplots
         push!(exclude_dirs, "plots")
         push!(exclude_dirs, "summary.jl")
@@ -407,6 +413,10 @@ function make_tests(config)
     function increase(x = runthrough)
         x = x == 0 ? 1 : x
         i = max(i+x, 1)
+        if i <= length(failed) && failed[i]
+            increase(x)
+        end
+        i
     end
 
     preserve(map(config.buttons[:back][2], init=0) do clicked
@@ -425,9 +435,6 @@ function make_tests(config)
     failed = fill(false, length(config.files))
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]
-        if failed[i]
-            increase(); continue
-        end
         try
             test_module = _test_include(path, config)
 

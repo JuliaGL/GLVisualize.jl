@@ -16,13 +16,12 @@ function extract_edit_menu(
         icon_size=32, knob_scale=1.6mm
     )
     lines = Point2f0[]
-    screen_w = edit_screen.area.value.w-round(Int, 10mm)
+
+    screen_w = widths(edit_screen)[1] - round(Int, 10mm)
+
     labels = String[]
-    glyph_scale = GLVisualize.glyph_scale!('X')
     pos = 1mm
-    scale = 2mm ./ glyph_scale
-    widget_text = scale .* 1.2f0
-    glyph_height = round(Int, glyph_scale[2]*scale[2])
+    widget_text = 4mm
     atlas = GLVisualize.get_texture_atlas()
     font = GLVisualize.defaultfont()
     textpositions = Point2f0[]
@@ -32,8 +31,9 @@ function extract_edit_menu(
         s = makesignal2(v)
         if applicable(widget, s, edit_screen)
             vis, sig = widget(s, edit_screen,
-                visible=isvisible, text_scale=widget_text,
-                area=(screen_w, icon_size),
+                visible = isvisible,
+                text_scale = widget_text,
+                area = (screen_w, icon_size),
                 knob_scale = knob_scale
             )
             edit_dict[k] = sig
@@ -47,21 +47,22 @@ function extract_edit_menu(
 
             push!(labels, label)
             append!(textpositions,
-                GLVisualize.calc_position(label, Point2f0(1mm, pos), scale, font, atlas)
+                GLVisualize.calc_position(label, Point2f0(1mm, pos), widget_text, font, atlas)
             )
-            pos += glyph_height + 4mm
+            pos += widget_text + 4mm
             push!(lines, Point2f0(0, pos-2mm), Point2f0(screen_w, pos-2mm))
 
         end
     end
     _view(visualize(
-            join(labels), position=textpositions,
-            color=RGBA{Float32}(0.8, 0.8, 0.8, 1.0),
-            relative_scale=scale
-        ), edit_screen, camera=:fixed_pixel
-    )
+        join(labels), position = textpositions,
+        color = RGBA{Float32}(0.8, 0.8, 0.8, 1.0),
+        relative_scale = widget_text
+    ), edit_screen, camera=:fixed_pixel)
+
     _view(visualize(
-        lines, :linesegment, thickness=0.25mm, color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0)
+        lines, :linesegment, thickness = 0.25mm,
+        color = RGBA{Float32}(0.9, 0.9, 0.9, 1.0)
     ), edit_screen, camera=:fixed_pixel)
 
     pos

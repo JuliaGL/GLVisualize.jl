@@ -48,20 +48,14 @@ end
 function visualize{T <: Pair}(
         dict::Union{Vector{T}, Dict}, s::Style, data::Dict
     )
-    lines = Point2f0[]
     screen_w = get(data, :width, 100mm)
-    text_size = get(data, :text_scale, 2mm)
-    gap = get(data, :text_scale, 1mm)
-    labels = String[]
-    glyph_scale = GLVisualize.glyph_scale!('X')
-    pos = 1mm
-    scale = text_size ./ glyph_scale
-    widget_text = scale .* 1.2f0
-    glyph_height = round(Int, glyph_scale[2]*scale[2])
-    atlas = GLVisualize.get_texture_atlas()
-    font = GLVisualize.defaultfont()
+    text_scale = get(data, :text_scale, 4mm)
+    gap = get(data, :gap, 1mm)
+
+    atlas = GLVisualize.get_texture_atlas(); font = GLVisualize.defaultfont()
+    robjs = []; lines = Point2f0[]; labels = String[]; pos = 1mm
     textpositions = Point2f0[]
-    robjs = []
+
     for (k, v) in dict
         label = string(k)
         vis = visualize(v, s, data)
@@ -72,20 +66,22 @@ function visualize{T <: Pair}(
         GLAbstraction.translate!(vis, Vec3f0(2mm, pos, 0) + to_origin)
         pos += round(Int, height) + gap
         push!(labels, label)
-        append!(textpositions,
-            GLVisualize.calc_position(label, Point2f0(gap, pos), scale, font, atlas)
-        )
-        pos += glyph_height + 4mm
-        push!(lines, Point2f0(0, pos-2mm), Point2f0(screen_w, pos-2mm))
+        append!(textpositions, GLVisualize.calc_position(
+            label, Point2f0(gap, pos), text_scale, font, atlas
+        ))
+        pos += text_scale + 4mm
+        push!(lines, Point2f0(0, pos - 2mm), Point2f0(screen_w, pos - 2mm))
         push!(robjs, vis)
     end
     label_vis = visualize(
         join(labels), position = textpositions,
         color = RGBA{Float32}(0.8, 0.8, 0.8, 1.0),
-        relative_scale = scale
+        relative_scale = text_scale
     )
+
     line_vis = visualize(
-        lines, :linesegment, thickness=0.25mm, color=RGBA{Float32}(0.9, 0.9, 0.9, 1.0)
+        lines, :linesegment, thickness = 0.25mm,
+        color = RGBA{Float32}(0.9, 0.9, 0.9, 1.0)
     )
     Context(label_vis, line_vis, robjs...)
 end

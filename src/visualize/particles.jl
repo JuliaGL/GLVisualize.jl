@@ -293,8 +293,7 @@ primitive_shape(x::Shape) = x
 Extracts the scale from a primitive.
 """
 primitive_scale(prim::GeometryPrimitive) = Vec2f0(widths(prim))
-primitive_scale(::Shape) = Vec2f0(40)
-primitive_scale(c::Char) = Vec2f0(glyph_scale!(c))
+primitive_scale(::Union{Shape, Char}) = Vec2f0(40)
 primitive_scale(c) = Vec2f0(0.1)
 
 """
@@ -428,7 +427,9 @@ function sprites(p, s, data)
 
         rotation    = Vec3f0(0,0,1)          => GLBuffer
         offset      = primitive_offset(p[1], scale) => GLBuffer
-
+    end
+    if isa(p[1], Char) # correct dimensions
+        data[:scale] = Vec2f0(glyph_scale!(p[1], scale))
     end
     inst = _Instances(
         position, position_x, position_y, position_z,
@@ -436,7 +437,7 @@ function sprites(p, s, data)
         rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
-        intensity = nothing => GLBuffer
+        intensity        = nothing => GLBuffer
         color_map        = nothing => Texture
         color_norm       = nothing
         color            = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
@@ -458,7 +459,7 @@ function sprites(p, s, data)
         shader           = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "sprites.geom",
             "sprites.vert", "distance_shape.frag",
-            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
+            view = Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
         )
         gl_primitive        = GL_POINTS
     end
@@ -479,10 +480,10 @@ end
 Transforms text into a particle system of sprites, by inferring the
 texture coordinates in the texture atlas, widths and positions of the characters.
 """
-function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
+function _default{S <: AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
 
     @gen_defaults! data begin
-        relative_scale  = Vec2f0(1)
+        relative_scale  = 4mm #
         start_position  = Point2f0(0)
         atlas           = get_texture_atlas()
         distancefield   = atlas.images
@@ -493,10 +494,10 @@ function _default{S<:AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
         position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
         offset          = const_lift(calc_offset, main, relative_scale, font, atlas)
         uv_offset_width = const_lift(main) do str
-            Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
+            Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
         end
         scale           = const_lift(main, relative_scale) do str, s
-            Vec2f0[glyph_scale!(atlas, c, font).*s for c=str]
+            Vec2f0[glyph_scale!(atlas, c, font, s)  for c = str]
         end
     end
 

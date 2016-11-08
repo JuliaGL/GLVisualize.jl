@@ -38,8 +38,7 @@ task, imgsig = async_map(myfilter, startvalue, Signal(img), slider_s)
 # visualize the image signal
 image_renderable = visualize(
     imgsig,
-    model=translationmatrix(Vec3f0(50,100,0)),
-    is_fully_opaque=false
+    model = translationmatrix(Vec3f0(50,100,0))
 )
 
 w = widths(value(boundingbox(slider)))

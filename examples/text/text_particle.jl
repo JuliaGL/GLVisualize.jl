@@ -38,7 +38,7 @@ end
 # create some funcy scale change
 scale = map(timesignal) do t
     circular = sin(t*pi)
-    Vec2f0(1+circular*0.5,1+circular*0.5)
+    (1 + circular * 0.5) * 20f0
 end
 const len = length(s)
 
@@ -54,12 +54,12 @@ stroke_color = RGBA{Float32}[RGBA{Float32}(0,0,0, i/len) for i=1:len]
 # you could also pass positions as a keyword argument or make
 # the scale/rotation per glyph by supplying a Vector of them.
 textvizz = visualize(s,
-    model=translationmatrix(Vec3f0(0,600,0)), # move this up, since the text starts at 0 and goes down from there
-    rotation=rotation,
-    color=color,
-    stroke_color=stroke_color,
+    model = translationmatrix(Vec3f0(0,600,0)), # move this up, since the text starts at 0 and goes down from there
+    rotation = rotation,
+    color = color,
+    stroke_color = stroke_color,
     stroke_width = 1f0,
-    relative_scale=scale
+    relative_scale = scale
 )
 
 _view(textvizz, window)

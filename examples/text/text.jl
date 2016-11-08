@@ -37,9 +37,10 @@ s = map(π_signal) do π
 end
 
 # _view and visualize it!
-_view(visualize(s,
-    model=translationmatrix(Vec3f0(0,600,0)), # move this up, since the text starts at 0 and goes down from there
-), window)
+_view(visualize(s), window, camera = :orthographic_pixel)
+
+# text won't come out centered by default, so lets center it!
+#center!(window, :orthographic_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)
