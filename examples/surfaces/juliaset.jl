@@ -36,12 +36,12 @@ end
 rotation_angle = const_lift(*, timesignal, 2f0*pi)
 rotation = map(rotationmatrix_z, rotation_angle)
 
-heightfield = juliadata(256, 500, 500)
+heightfield = juliadata(256, 250, 250)
 
 # visualize the heightfield as a surface
 vis = visualize(
     heightfield, :surface,
-    model=rotation
+    model = rotation
 )
 
 # display it on the window
