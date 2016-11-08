@@ -308,7 +308,7 @@ function render_fr(config, timings)
 end
 
 function record_thumbnail(config, approx_size=128)
-    if config.thumbnail
+    if config.thumbnail && isopen(config.window)
         thumb = screenbuffer(config.window)
         w,h = size(thumb)
         minlen = min(w,h)

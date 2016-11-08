@@ -89,9 +89,7 @@ function _default{P<:AllPrimitives, T<:Vec, N}(
         scalevec = Vec3f0(ntuple(i->step(grid.dims[i]), 3)).*Vec3f0(0.4,0.4, 1/value(color_norm)[2]*4)
     end
     if P <: Char # we need to preserve proportion of the glyph
-        glyphscale = primitive_scale(primitive)
-        glyphscale /= max(glyphscale...)
-        scalevec = Vec2f0(scalevec).*glyphscale
+        scalevec = Vec2f0(glyph_scale!(primitive, scalevec[1]))
         @gen_defaults! data begin # for chars we need to make sure they're centered
             offset = -scalevec/2f0
         end
@@ -273,7 +271,7 @@ _default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_
     color_norm   = nothing  => Vec2f0
     intensity = nothing  => GLBuffer
     point_size   = 2f0
-    #boundingbox  = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
+    #boundingbox = ParticleBoundingBox(position, Vec3f0(1), SimpleRectangle(-point_size/2,-point_size/2, point_size, point_size))
     prerender    = ()->glPointSize(point_size)
     shader       = GLVisualizeShader("fragment_output.frag", "dots.vert", "dots.frag")
     gl_primitive = GL_POINTS
@@ -426,10 +424,11 @@ function sprites(p, s, data)
         scale_z     = nothing                => GLBuffer
 
         rotation    = Vec3f0(0,0,1)          => GLBuffer
-        offset      = primitive_offset(p[1], scale) => GLBuffer
     end
-    if isa(p[1], Char) # correct dimensions
-        data[:scale] = Vec2f0(glyph_scale!(p[1], scale))
+    # TODO don't make this dependant on some shady type dispatch
+    if isa(p[1], Char) && !isa(scale, Vec) # correct dimensions
+        scale = Vec2f0(glyph_scale!(p[1], scale))
+        data[:scale] = scale
     end
     inst = _Instances(
         position, position_x, position_y, position_z,
@@ -437,21 +436,22 @@ function sprites(p, s, data)
         rotation, SimpleRectangle{Float32}(0,0,1,1)
     )
     @gen_defaults! data begin
-        intensity        = nothing => GLBuffer
-        color_map        = nothing => Texture
-        color_norm       = nothing
-        color            = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
+        offset          = primitive_offset(p[1], scale) => GLBuffer
+        intensity       = nothing => GLBuffer
+        color_map       = nothing => Texture
+        color_norm      = nothing
+        color           = (color_map == nothing ? default(RGBA, s) : nothing) => GLBuffer
 
-        glow_color       = RGBA{Float32}(0,0,0,0) => GLBuffer
-        stroke_color     = RGBA{Float32}(0,0,0,0) => GLBuffer
-        stroke_width     = 0f0
-        glow_width       = 0f0
-        uv_offset_width  = primitive_uv_offset_width(p[1]) => GLBuffer
+        glow_color      = RGBA{Float32}(0,0,0,0) => GLBuffer
+        stroke_color    = RGBA{Float32}(0,0,0,0) => GLBuffer
+        stroke_width    = 0f0
+        glow_width      = 0f0
+        uv_offset_width = primitive_uv_offset_width(p[1]) => GLBuffer
 
-        image            = nothing => Texture
-        distancefield    = primitive_distancefield(p[1]) => Texture
-        indices          = const_lift(length, p[2]) => to_indices
-        boundingbox      = const_lift(GLBoundingBox, inst)
+        image           = nothing => Texture
+        distancefield   = primitive_distancefield(p[1]) => Texture
+        indices         = const_lift(length, p[2]) => to_indices
+        boundingbox     = const_lift(GLBoundingBox, inst)
         # rotation and billboard don't go along
         billboard        = rotation == Vec3f0(0,0,1) => "if `billboard` == true, particles will always face camera"
         preferred_camera = :orthographic_pixel
@@ -461,7 +461,7 @@ function sprites(p, s, data)
             "sprites.vert", "distance_shape.frag",
             view = Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
         )
-        gl_primitive        = GL_POINTS
+        gl_primitive = GL_POINTS
     end
     # Exception for intensity, to make it possible to handle intensity with a
     # different length compared to position. Intensities will be interpolated in that case
@@ -481,7 +481,6 @@ Transforms text into a particle system of sprites, by inferring the
 texture coordinates in the texture atlas, widths and positions of the characters.
 """
 function _default{S <: AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
-
     @gen_defaults! data begin
         relative_scale  = 4mm #
         start_position  = Point2f0(0)

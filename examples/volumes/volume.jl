@@ -22,7 +22,6 @@ _view(vol, window)
 
 
 if !isdefined(:runtests)
-    @async renderloop(window)
+    renderloop(window)
 end
 
-s = window.inputs[:mouseposition]
