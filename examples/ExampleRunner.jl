@@ -109,8 +109,9 @@ const text_signals = Dict(
 
 function create_screens(rootscreen)
     # partition screen into 4 areas at 15% and 17%
-    tool_area, view_area = y_partition(rootscreen.area, 15)
-    control_area, message_area = x_partition(tool_area, 17)
+    iconsize = 10mm
+    tool_area, view_area = y_partition_abs(rootscreen.area, 3iconsize) # three rows
+    control_area, message_area = x_partition_abs(tool_area, 5iconsize) # 5 columns
 
     toolbar = Screen(rootscreen,
         area=tool_area, color = RGBA(0.95f0, 0.95f0, 0.95f0, 1.0f0)
@@ -128,7 +129,6 @@ function create_screens(rootscreen)
         img = map(RGBA{U8}, loadasset(path))
         img, flipdim(img, 1)
     end
-    iconsize = size(imgs[1][1], 1) / 4
 
     code_toggle, code_s = widget(
         Signal(["code", "visual"]),

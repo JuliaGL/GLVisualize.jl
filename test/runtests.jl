@@ -8,9 +8,9 @@ files = [
 # Create an examplerunner, that displays all examples in the example folder, plus
 # a runtest specific summary.
 config = ExampleRunner.RunnerConfig(
-    record=false,
+    record = false,
     files = files,
-    resolution = (100, 87)
+    resolution = (190, 190)
 )
 
 ExampleRunner.run(config)

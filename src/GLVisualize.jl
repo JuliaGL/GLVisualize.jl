@@ -72,8 +72,8 @@ export visualize # Visualize an object
 export visualize_default # get the default parameter for a visualization
 
 include("utils.jl")
-export y_partition
-export x_partition
+export y_partition, y_partition_abs
+export x_partition, x_partition_abs
 export loop, bounce
 export clicked, dragged_on, is_hovering
 export OR, AND, isnotempty

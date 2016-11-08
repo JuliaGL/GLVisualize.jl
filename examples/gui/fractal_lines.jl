@@ -47,8 +47,9 @@ function generate_fractal(angles, depth = 5)
     result, depth .- levels
 end
 
+iconsize = 8mm
 
-editarea, viewarea = x_partition(window.area, 30.0)
+editarea, viewarea = x_partition_abs(window.area, 8 * iconsize)
 edit_screen = Screen(
     window, area = editarea,
     color = RGBA{Float32}(0.1f0, 0.1f0, 0.1f0, 1f0),
@@ -58,17 +59,17 @@ viewscreen = Screen(
     window, area = viewarea,
     color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0)
 )
-iconsize = 2mm
 
 function labeled_slider(range, window)
     kw_args = [
-        (:slider_length, 7 * iconsize),
-        (:icon_size, Signal(iconsize)),
+        (:slider_length, 6 * iconsize),
+        (:icon_size, Signal(iconsize / 2)),
+        (:knob_scale, 3mm),
     ]
     visual, signal = slider(range, window; kw_args...)
     text = visualize(
         map(string, signal), # convert to string
-        relative_scale = Vec2f0(0.05mm),
+        relative_scale = Vec2f0(0.4),
         color = RGBA(1f0, 1f0, 1f0, 1f0)
     )
     # put in list and visualize so it will get displayed side to side
@@ -84,27 +85,29 @@ iterations_v, iterations_s = labeled_slider(1:11, edit_screen)
 cmap_v, cmap_s = widget(
     map(RGBA{Float32}, colormap("Blues", 5)),
     edit_screen;
-    area = (8 * iconsize, iconsize/2),
-    knob_scale = 4f0,
+    area = (7.5 * iconsize, iconsize/3),
+    knob_scale = 2mm,
 )
 
 thickness_v, thickness_s = widget(
     Signal(0.4f0), edit_screen,
-    text_scale = Vec2f0(0.05mm),
+    text_scale = Vec2f0(0.4),
     range = 0f0:0.05f0:20f0
 )
 
 segments = Point2f0[
     (0.0, 0.0),
     (2 * iconsize, 0.0),
-    (4 * iconsize, iconsize),
-    (6 * iconsize, -iconsize),
-    (8 * iconsize, 0.0)
+    (4 * iconsize, iconsize /  2),
+    (6 * iconsize, iconsize / -2),
+    (7 * iconsize, 0.0)
 ]
 
+# we could restrict the movement of the points with the kw_arg clampto
+# But I don't really feel like restricting the user here ;)
 line_v, line_s = widget(segments, edit_screen)
 
-center_v, center_s = button("⛶", edit_screen)
+center_v, center_s = button("⛶", relative_scale = Vec2f0(1), edit_screen)
 
 controles = [
     "angle 1" => angles[1][1],
@@ -118,11 +121,14 @@ controles = [
     "center cam" => center_v
 ]
 
-_view(
-    visualize(controles, text_scale = 1mm),
-    edit_screen, camera = :fixed_pixel
-)
-angle_vec1 = foldp(Array(Tuple{Float32, Float32}, 4), line_s) do angles, line
+
+_view(visualize(
+    controles,
+    text_scale = 3mm,
+    width = 8iconsize
+), edit_screen, camera = :fixed_pixel)
+
+function to_anglelengths(angles, line)
     diff0 = Point2f0(1, 0)
     v1 = first(line)
     maxlen = 0
@@ -143,6 +149,9 @@ angle_vec1 = foldp(Array(Tuple{Float32, Float32}, 4), line_s) do angles, line
     end
     angles
 end
+v0 = to_anglelengths(Array(Tuple{Float32, Float32}, 4), value(line_s))
+
+angle_vec1 = foldp(to_anglelengths, v0, line_s)
 
 angle_s = map(last, angles)
 anglevec2 = foldp(Array(Tuple{Float32, Float32}, 4), angle_s...) do angles, s...
@@ -152,7 +161,7 @@ anglevec2 = foldp(Array(Tuple{Float32, Float32}, 4), angle_s...) do angles, s...
     angles
 end
 anglevec = merge(angle_vec1, anglevec2)
-
+@show value(anglevec)
 it1_points = map(anglevec) do angles
     generate_fractal(angles, 1)[1] ./ 7f0
 end
@@ -176,10 +185,15 @@ _view(visualize(
 ), viewscreen, camera = :fixed_pixel)
 
 const cam = viewscreen.cameras[:orthographic_pixel]
-s = preserve(map(center_s, init = nothing) do clicked
-    clicked && center!(cam, AABB{Float32}(value(line_pos)))
+
+s = preserve(map(center_s) do clicked
+    clicked && center!(cam, AABB(value(line_pos)))
     nothing
 end)
+
+# center won't get executed before the first time the center button is clicked.
+# we still want to start centered ;)
+center!(cam, AABB(value(line_pos)))
 
 if !isdefined(:runtests)
     renderloop(window)

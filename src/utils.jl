@@ -67,6 +67,25 @@ end
 
 
 
+function y_partition_abs(area, amount)
+    p = const_lift(area) do r
+        (
+            SimpleRectangle{Int}(0, 0, r.w, amount),
+            SimpleRectangle{Int}(0, amount, r.w, r.h - amount)
+        )
+    end
+    return map(first, p), map(last, p)
+end
+function x_partition_abs(area, amount)
+    p = const_lift(area) do r
+        (
+            SimpleRectangle{Int}(0, 0, amount, r.h),
+            SimpleRectangle{Int}(amount, 0, r.w - amount, r.h)
+        )
+    end
+    return map(first, p), map(last, p)
+end
+
 function y_partition(area, percent)
     amount = percent / 100.0
     p = const_lift(area) do r
@@ -75,7 +94,7 @@ function y_partition(area, percent)
             SimpleRectangle{Int}(0, round(Int, r.h*amount), r.w, round(Int, r.h*(1-amount)))
         )
     end
-    return const_lift(first, p), const_lift(last, p)
+    return map(first, p), map(last, p)
 end
 function x_partition(area, percent)
     amount = percent / 100.0
@@ -85,7 +104,7 @@ function x_partition(area, percent)
             SimpleRectangle{Int}(round(Int, r.w*amount), 0, round(Int, r.w*(1-amount)), r.h)
         )
     end
-    return const_lift(first, p), const_lift(last, p)
+    return map(first, p), map(last, p)
 end
 
 

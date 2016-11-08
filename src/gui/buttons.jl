@@ -90,12 +90,14 @@ end
 function slider(
         range, screen;
         startidx::Int = 1,
-        play_signal = Signal(false), slider_length = 50mm,
+        play_signal = Signal(false),
+        slider_length = 50mm,
         icon_size = Signal(54),
+        startpos = 2.1mm,
+        knob_scale = map(is-> Vec2f0(is/3), icon_size),
         kw_args...
     )
-    startpos = 2.1mm
-    height = value(icon_size)
+
     point_id = Signal((0,0))
     slideridx_s = Signal(startidx)
     slider_s = map(slideridx_s) do idx
@@ -121,16 +123,15 @@ function slider(
         pos[1] = (x, 0)
         pos
     end
-    knob_scale = map(is->Vec2f0(is/3), icon_size)
-    offset = map(line_pos, icon_size) do lp, is
+    offset = const_lift(line_pos, knob_scale) do lp, ks
         p = first(lp)
-        Vec2f0(p - (is/6)) # - minus half knob scale
+        Vec2f0(p - (ks / 2)) # - minus half knob scale
     end
     point_robj = visualize(
         (Circle, position),
         scale_primitive = true,
         offset = offset,
-        scale = knob_scale,
+        scale = const_lift(Vec2f0, knob_scale),
         boundingbox = bb
     ).children[]
 

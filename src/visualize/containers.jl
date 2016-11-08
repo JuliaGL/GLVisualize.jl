@@ -51,6 +51,7 @@ function visualize{T <: Pair}(
     lines = Point2f0[]
     screen_w = get(data, :width, 100mm)
     text_size = get(data, :text_scale, 2mm)
+    gap = get(data, :text_scale, 1mm)
     labels = String[]
     glyph_scale = GLVisualize.glyph_scale!('X')
     pos = 1mm
@@ -69,10 +70,10 @@ function visualize{T <: Pair}(
         mini = minimum(bb)
         to_origin = -Vec3f0(mini[1], mini[2], 0)
         GLAbstraction.translate!(vis, Vec3f0(2mm, pos, 0) + to_origin)
-        pos += round(Int, height) + 1mm
+        pos += round(Int, height) + gap
         push!(labels, label)
         append!(textpositions,
-            GLVisualize.calc_position(label, Point2f0(1mm, pos), scale, font, atlas)
+            GLVisualize.calc_position(label, Point2f0(gap, pos), scale, font, atlas)
         )
         pos += glyph_height + 4mm
         push!(lines, Point2f0(0, pos-2mm), Point2f0(screen_w, pos-2mm))
