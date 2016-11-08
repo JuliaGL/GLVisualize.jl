@@ -407,7 +407,7 @@ to_toggle(v0, b) = !v0
 
 
 function make_tests(config)
-    i = 1; window = config.window; break_loop = false
+    i = 1; frames = 0; window = config.window; break_loop = false
     runthrough = 0 # -1, backwards, 0 no running, 1 forward
 
     function increase(x = runthrough)
@@ -426,10 +426,14 @@ function make_tests(config)
         clicked && (break_loop = true; increase(1))
     end)
 
-    preserve(map(config.buttons[:fastforward][2], init=0) do toggled
+    preserve(map(config.buttons[:fastforward][2], init = 0) do toggled
+        # reset frames, so we loop a few times longer before loading next example
+        # this will keep the buttons responsive
+        frames = 0
         runthrough = !toggled ? 1 : 0
     end)
-    preserve(map(config.buttons[:rewind][2], init=0) do toggled
+    preserve(map(config.buttons[:rewind][2], init = 0) do toggled
+        frames = 0
         runthrough = !toggled ? -1 : 0
     end)
     failed = fill(false, length(config.files))
@@ -443,7 +447,7 @@ function make_tests(config)
             frames = 0
             while !break_loop && isopen(config.rootscreen)
                 render_fr(config, timings); frames += 1
-                (runthrough != 0 && frames > 1) && break # render one 10 if running through
+                (runthrough != 0 && frames > 20) && break # render one 10 if running through
             end
             record_thumbnail(config) # record thumbnail in the end
 
