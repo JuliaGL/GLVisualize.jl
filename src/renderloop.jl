@@ -38,10 +38,14 @@ end
 
 
 
-function get_dpi(window)
+function get_scaled_dpi(window)
     monitor = GLFW.GetPrimaryMonitor()
     props = GLWindow.MonitorProperties(monitor)
-    max(props.dpi...)# we do not start fiddling with differently scaled xy dpi's
+    # it seems like small displays with high dpi make mm look quite big.
+    # so lets scale it a bit. 518 is a bit arbitrary, but the scale of my
+    # big screen and seems to yield good results.
+    scaling = props.physicalsize[1] / 518
+    min(props.dpi...) * scaling # we do not start fiddling with differently scaled xy dpi's
 end
 
 
@@ -65,7 +69,7 @@ function glscreen(name="GLVisualize";
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
     GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
-    global const pixel_per_mm = get_dpi(screen)/25.4
+    global const pixel_per_mm = get_scaled_dpi(screen) / 25.4
     screen
 end
 

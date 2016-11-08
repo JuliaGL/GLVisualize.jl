@@ -133,7 +133,6 @@ function create_screens(rootscreen)
     code_toggle, code_s = widget(
         Signal(["code", "visual"]),
         control_screen, area = (4*iconsize, iconsize),
-        text_scale = Vec2f0(0.5)
     )
 
     # set up code and view screen
@@ -159,7 +158,7 @@ function create_screens(rootscreen)
     end
     _view(visualize(
         map(first, text_color),
-        relative_scale = Vec2f0(0.28), color = map(last, text_color)
+        relative_scale = Vec2f0(0.5), color = map(last, text_color)
     ), messagescreen, camera=:orthographic_pixel)
 
     text_color = map(text_signals[:codepath]) do codepath
@@ -210,11 +209,16 @@ function create_screens(rootscreen)
         b, s = buttons[k]
         push!(preserved_signals, s)
 
-        _w,_h,_ = widths(value(boundingbox(b)))
-        place = SimpleRectangle{Float32}(last_x+1, last_y+1, _w/4, _h/4)
+        _w, _h, _ = widths(value(boundingbox(b)))
+        ratio = _w / _h
+        x_width = ratio * iconsize # we have half widthed icons
+        place = SimpleRectangle{Float32}(
+            last_x+1, last_y+1, 
+            x_width, iconsize
+        )
         layout!(place, b)
         _view(b, control_screen, camera=:fixed_pixel)
-        last_x += (_w/4) + 2
+        last_x += x_width + 0.5mm
     end
 
     toolbar, code_screen, view_screen, buttons
