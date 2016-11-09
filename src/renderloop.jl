@@ -11,7 +11,13 @@ end
 let screen_list = WeakRef[]
     global current_screen, add_screen, get_screens, empty_screens!
     clean!() = filter!(_is_alive, screen_list)
-    current_screen() = (clean!(); last(screen_list).value)
+    function current_screen()
+        clean!()
+        if isempty(screen_list) 
+            error("No screen available. Consider creating one with the function glscreen()")
+        end
+        last(screen_list).value
+    end
     add_screen(screen) = push!(screen_list, WeakRef(screen))
     get_screens() = (clean!(); map(x->x.value, screen_list))
     empty_screens!() = empty!(screen_list)
@@ -41,9 +47,10 @@ end
 function get_scaled_dpi(window)
     monitor = GLFW.GetPrimaryMonitor()
     props = GLWindow.MonitorProperties(monitor)
+
     # it seems like small displays with high dpi make mm look quite big.
     # so lets scale it a bit. 518 is a bit arbitrary, but the scale of my
-    # big screen and seems to yield good results.
+    # screen on which I test everything, hence it will make you see things as I do.
     scaling = props.physicalsize[1] / 518
     min(props.dpi...) * scaling # we do not start fiddling with differently scaled xy dpi's
 end
