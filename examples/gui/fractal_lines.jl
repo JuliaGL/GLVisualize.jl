@@ -44,29 +44,35 @@ function generate_fractal(angles, depth = 5)
     result, levels, b = fractal_step!(P(0,0), P(300,0), round(Int, depth), angles)
     push!(result, b)
     push!(levels, depth)
+    mini, maxi = extrema(result)
+    w = 1 ./ maximum(maxi - mini)
+    map!(result) do p
+        1000 * (p - mini) .* w
+    end
     result, depth .- levels
 end
 
 iconsize = 8mm
 
-editarea, viewarea = x_partition_abs(window.area, 8 * iconsize)
+
+editarea, viewarea = x_partition_abs(window.area, round(Int, 8.2 * iconsize))
 edit_screen = Screen(
     window, area = editarea,
-    color = RGBA{Float32}(0.1f0, 0.1f0, 0.1f0, 1f0),
+    color = RGBA{Float32}(0.0f0, 0.0f0, 0.0f0, 1f0),
     stroke = (1f0, RGBA{Float32}(0.13f0, 0.13f0, 0.13f0, 13f0))
 )
 viewscreen = Screen(
     window, area = viewarea,
-    color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0)
+    color = RGBA(0.0f0, 0.0f0, 0.0f0, 1f0)
 )
 
 function labeled_slider(range, window)
-    kw_args = [
-        (:slider_length, 6 * iconsize),
-        (:icon_size, Signal(iconsize / 2)),
-        (:knob_scale, 3mm),
-    ]
-    visual, signal = slider(range, window; kw_args...)
+    visual, signal = slider(
+        range, window;
+        slider_length = 6 * iconsize,
+        icon_size = Signal(iconsize / 2),
+        knob_scale = 3mm,
+    )
     text = visualize(
         map(string, signal), # convert to string
         relative_scale = 5mm,
@@ -86,7 +92,7 @@ cmap_v, cmap_s = widget(
     map(RGBA{Float32}, colormap("Blues", 5)),
     edit_screen;
     area = (7.5 * iconsize, iconsize/3),
-    knob_scale = 2mm,
+    knob_scale = 1.5mm,
 )
 
 thickness_v, thickness_s = widget(
@@ -163,7 +169,7 @@ end
 anglevec = merge(angle_vec1, anglevec2)
 
 it1_points = map(anglevec) do angles
-    generate_fractal(angles, 1)[1] ./ 7f0
+    generate_fractal(angles, 1)[1] ./ 100f0
 end
 
 line_level = map(anglevec, iterations_s) do angles, iter
