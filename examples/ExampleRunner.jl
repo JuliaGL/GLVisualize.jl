@@ -261,7 +261,7 @@ function RunnerConfig(;
     control_screen, code_screen, view_screen, buttons = create_screens(rootscreen)
 
     if isempty(files)
-        push!(files, Pkg.dir("GLVisualize", "src", "examples")) # make sure we have something to show
+        push!(files, GLVisualize.dir("src", "examples")) # make sure we have something to show
     end
     files = flatten_paths(files, exclude_dirs)
 

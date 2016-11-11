@@ -43,12 +43,25 @@ typealias GLBoundingBox AABB{Float32}
 
 export renderloop
 
-function assetpath(folders...)
-    path = joinpath(dirname(@__FILE__), "..", "assets", folders...)
+"""
+Replacement of Pkg.dir("GLVisualize") --> GLVisualize.dir, 
+returning the correct path
+"""
+dir(dirs...) = joinpath(dirname(@__FILE__), "..", dirs...)
+
+"""
+returns path relative to the assets folder
+"""
+assetpath(folders...) = dir("assets", folders...)
+"""
+Loads a file from the asset folder
+"""
+function loadasset(folders...; kw_args...)
+    path = assetpath(folders...)
     isfile(path) || isdir(path) || error("Could not locate file at $path")
-    path
+    load(path; kw_args...)
 end
-loadasset(folders...; kw_args...) = load(assetpath(folders...); kw_args...)
+
 export assetpath, loadasset
 
 include("FreeTypeAbstraction.jl")

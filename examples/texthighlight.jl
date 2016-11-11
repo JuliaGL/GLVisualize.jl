@@ -40,7 +40,7 @@ function highlight_text(path, T = Themes.DefaultTheme)
     )
 end
 # T = Themes.GitHubTheme
-# str, colors = highlight_text(Pkg.dir("GLVisualize", "src", "examples", "ExampleRunner.jl"), T)
+# str, colors = highlight_text(GLVisualize.dir("src", "examples", "ExampleRunner.jl"), T)
 # w.color=css2color(Themes.theme(T).base.bg)
 # empty!(w);GLAbstraction.empty_shader_cache!()
 # _view(visualize(str, color=colors))

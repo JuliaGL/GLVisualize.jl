@@ -11,10 +11,10 @@ ExampleRunner.run(
 )
 
 #Pkg.dir("GLVisualizeDocs", "docs", "media")
-include(Pkg.dir("GLVisualize", "src", "examples", "ExampleRunner.jl"))
+include(GLVisualize.dir("src", "examples", "ExampleRunner.jl"))
 using ExampleRunner
 files = [
-   Pkg.dir("GLVisualize", "src", "examples", "parallel", "simulation3d.jl"),
+   GLVisualize.dir("src", "examples", "parallel", "simulation3d.jl"),
 ]
 # Create an examplerunner, that displays all examples in the example folder, plus
 # a runtest specific summary.

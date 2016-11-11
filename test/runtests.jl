@@ -1,9 +1,11 @@
-include(Pkg.dir("GLVisualize", "examples", "ExampleRunner.jl"))
+using GLVisualize
+
+include(GLVisualize.dir("examples", "ExampleRunner.jl"))
 using ExampleRunner
 
 files = [
-    Pkg.dir("GLVisualize", "examples"),
-    Pkg.dir("GLVisualize", "test", "summary.jl"),
+    GLVisualize.dir("examples"),
+    GLVisualize.dir("test", "summary.jl"),
 ]
 # Create an examplerunner, that displays all examples in the example folder, plus
 # a runtest specific summary.

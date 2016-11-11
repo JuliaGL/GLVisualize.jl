@@ -28,7 +28,7 @@ blacklist = [
     "ExampleRunner", "ImageMagick", "Contour", "MeshIO"
 ]
 pc = SnoopCompile.format_userimg(data[end:-1:1,2], blacklist=blacklist)
-SnoopCompile.write(Pkg.dir("GLVisualize", "precompile", "glv_userimg.jl"), pc)
+SnoopCompile.write(GLVisualize.dir("precompile", "glv_userimg.jl"), pc)
 
 #=
 real	0m13.712s
@@ -39,6 +39,6 @@ sys	0m0.176s
 include(joinpath(JULIA_HOME, "..", "..", "contrib", "build_sysimg.jl"))
 build_sysimg(default_sysimg_path(), "native", nothing; force=true)
 
-userimg_path = Pkg.dir("GLVisualize", "precompile", "userimg.jl")
+userimg_path = GLVisualize.dir("precompile", "userimg.jl")
 
 build_sysimg(default_sysimg_path(), "native", userimg_path; force=true)
