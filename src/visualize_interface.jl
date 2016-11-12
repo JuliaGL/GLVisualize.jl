@@ -60,8 +60,8 @@ function _view(
          error("$camera not a known camera type")
     end
     screen.cameras[camsym] = real_camera
-    robj.uniforms[:resolution] = get!(screen.inputs, :resolution) do
-        map(x->Vec2f0(widths(x)), screen.area)
+    robj.uniforms[:resolution] = map(screen.area) do area
+        Vec2f0(widths(area))
     end
     collect(real_camera, robj.uniforms)
     push!(screen, robj)
