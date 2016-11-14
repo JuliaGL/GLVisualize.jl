@@ -443,7 +443,7 @@ end
 
 function gen_text(text, atlas, font, position, scale, offset)
     pos = GLVisualize.calc_position(text, position, scale, font, atlas)
-    s = Vec2f0[GLVisualize.glyph_scale!(atlas, c, font) .* scale for c in text]
+    s = Vec2f0[GLVisualize.glyph_scale!(atlas, c, font, scale) for c in text]
     off = GLVisualize.calc_offset(text, scale, font, atlas) .+ Point2f0(0, offset)
     uvwidth = Vec4f0[GLVisualize.glyph_uv_width!(atlas, c, font) for c in text]
     pos, s, off, uvwidth
