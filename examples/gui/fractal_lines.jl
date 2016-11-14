@@ -49,7 +49,8 @@ function generate_fractal(angles, depth = 5)
     map!(result) do p
         1000 * (p - mini) .* w
     end
-    result, depth .- levels
+    # invert
+    result, levels
 end
 
 iconsize = 8mm
@@ -115,7 +116,7 @@ line_v, line_s = widget(segments, edit_screen)
 
 center_v, center_s = button("⛶", relative_scale = iconsize, edit_screen)
 
-controles = [
+controls = [
     "angle 1" => angles[1][1],
     "angle 2" => angles[2][1],
     "angle 3" => angles[3][1],
@@ -129,7 +130,7 @@ controles = [
 
 
 _view(visualize(
-    controles,
+    controls,
     text_scale = 4mm,
     width = 8iconsize
 ), edit_screen, camera = :fixed_pixel)

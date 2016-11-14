@@ -21,7 +21,9 @@ mesh = loadasset("cat.obj")
 # Reactive.map takes a function and signals like the one created via `loop` (or just Signal(x))
 # as an argument, applies the function to the signals whenever they update and
 # returns a new signal.
+
 rotation_angle  = const_lift(*, timesignal, 2f0*pi)
+
 # the cat needs some rotation on the x axis to stand straight
 # so we start off with a rotation of 90 degrees
 start_rotation  = Signal(rotationmatrix_x(deg2rad(90f0)))
@@ -38,7 +40,7 @@ final_rotation  = map(*, start_rotation, rotation)
 # argument and then visualization dependant many keywords to customize the visualization.
 # for all parameters Signals can be used and thus the visualization becomes animated
 
-robj = visualize(mesh, model=final_rotation)
+robj = visualize(mesh, model = final_rotation)
 
 
 _view(robj, window)

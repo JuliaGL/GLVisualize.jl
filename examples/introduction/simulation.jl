@@ -74,7 +74,7 @@ function init(res=(800,800))
             push!(timesignal, value(timesignal)+0.01)
             render_frame(window)
             swapbuffers(window)
-            pollevents()
+            poll_glfw()
             yield()
             sleep(value(speed))
         end

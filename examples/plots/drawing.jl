@@ -1,7 +1,7 @@
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
 using FixedSizeArrays, GLAbstraction, GLFW
-import GLAbstraction: to_worldspace, singlepressed
-
+import GLAbstraction: imagespace, singlepressed
+import GLVisualize: moving_average
 
 if !isdefined(:runtests)
     window = glscreen()
@@ -33,7 +33,7 @@ buttobj, button_s = GLVisualize.button(loadasset("unchecked.png"), edit_screen)
 # create a slider for the linewidth
 slider_w, slider_s = GLVisualize.slider(
     linspace(0.5f0, 20f0, 100), edit_screen,
-    thickness = 10f0,
+    thickness = 2f0,
     slider_length = 4 * iconsize,
     icon_size = Signal(iconsize)
 )
@@ -84,14 +84,20 @@ function imagespace(pos, camera)
 end
 camera = paint_screen.cameras[:perspective]
 
+const history = Point2f0[] # preallocate history for moving average
+
 s = map(mouseposition, mouse_buttons_pressed, init=nothing) do mp, mbp
     l0, c0 = map(value, (linebuffer, colorbuffer))
     if singlepressed(mbp, GLFW.MOUSE_BUTTON_LEFT) && value(mouseinside)
         p = imagespace(mp, camera)
-        push!(linebuffer, push!(l0, p))
-        push!(colorbuffer, push!(c0, value(color_s)))
+        keep, p = moving_average(p, 1.5f0, history)
+        if keep
+            push!(linebuffer, push!(l0, p))
+            push!(colorbuffer, push!(c0, value(color_s)))
+        end
     else
         if !isnan(last(l0)) # only push one NaN to seperate
+            empty!(history) # reset
             push!(linebuffer, push!(l0, Point2f0(NaN)))
             push!(colorbuffer, push!(c0, value(color_s)))
         end

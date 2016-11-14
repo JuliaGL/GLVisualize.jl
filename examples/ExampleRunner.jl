@@ -6,7 +6,7 @@ docs from the examples.
 module ExampleRunner
 
 # add one worker process for parallel examples
-#addprocs(1)
+addprocs(1)
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
@@ -29,18 +29,16 @@ end
 
 include("texthighlight.jl")
 
-function flatten_paths(files::Vector, excludes, paths = String[])
+function flatten_paths(files::Vector, paths = String[])
     for file in files
-        flatten_paths(file, excludes, paths)
+        flatten_paths(file, paths)
     end
     paths
 end
-function flatten_paths(path::AbstractString, excludes, paths = String[])
+function flatten_paths(path::AbstractString, paths = String[])
     if isdir(path)
-        if !(basename(path) in excludes)
-            flatten_paths(map(x-> joinpath(path, x), readdir(path)), excludes, paths)
-        end
-    elseif isfile(path) && endswith(path, ".jl") && !(basename(path) in excludes)
+            flatten_paths(map(x-> joinpath(path, x), readdir(path)), paths)
+    elseif isfile(path) && endswith(path, ".jl")
         push!(paths, path)
     end
     paths
@@ -111,7 +109,7 @@ function create_screens(rootscreen)
     # partition screen into 4 areas at 15% and 17%
     iconsize = 10mm
     tool_area, view_area = y_partition_abs(rootscreen.area, 3iconsize) # three rows
-    control_area, message_area = x_partition_abs(tool_area, 5iconsize) # 5 columns
+    control_area, message_area = x_partition_abs(tool_area, 4.5iconsize) # 4.5 columns
 
     toolbar = Screen(rootscreen,
         area = tool_area, color = RGBA(0.95f0, 0.95f0, 0.95f0, 1.0f0)
@@ -194,6 +192,7 @@ function create_screens(rootscreen)
 
     play_button, play_stop_signal = buttons[:play]
     play_s = map(!, play_stop_signal)
+
     slider_w, slider_s = slider(
         linspace(0f0, 1f0, 120), control_screen,
         play_signal = play_s,
@@ -235,8 +234,8 @@ function RunnerConfig(;
         make_docs = true,
         files = String[],
         exclude_dirs = [
-            "gpgpu", "compose", "mouse.jl", "richtext.jl",
-            "ExampleRunner.jl", "grids.jl", "parallel",
+            "parallel", "compose", "mouse.jl", "richtext.jl",
+            "ExampleRunner.jl", "grids.jl",
             "texthighlight.jl"
         ],
         number_of_frames = 360,
@@ -261,9 +260,12 @@ function RunnerConfig(;
     control_screen, code_screen, view_screen, buttons = create_screens(rootscreen)
 
     if isempty(files)
-        push!(files, GLVisualize.dir("src", "examples")) # make sure we have something to show
+        push!(files, flatten_paths(GLVisualize.dir("examples"))) # make sure we have something to show
     end
-    files = flatten_paths(files, exclude_dirs)
+    files = filter(files) do file
+        !(basename(file) in exclude_dirs) &&
+        !(basename(dirname(file)) in exclude_dirs)
+    end
 
     RunnerConfig(
         resolution,
@@ -295,17 +297,6 @@ function Base.getindex(x::RunnerConfig, sym::Symbol)
     dict[sym]
 end
 
-function render_fr(config, timings)
-    tic()
-    render_frame(config.rootscreen)
-    pollevents()
-    swapbuffers(config.rootscreen)
-    yield() # yield in timings? Seems fair
-    t = toq()
-    if length(timings) < 1000
-        push!(timings, t)
-    end
-end
 
 function record_thumbnail(config, approx_size=128)
     if config.thumbnail && isopen(config.window)
@@ -406,6 +397,8 @@ end
 to_toggle(v0, b) = !v0
 
 
+import GLWindow: poll_reactive, poll_glfw, sleep_pessimistic
+
 function make_tests(config)
     i = 1; frames = 0; window = config.window; break_loop = false
     runthrough = 0 # -1, backwards, 0 no running, 1 forward
@@ -437,6 +430,7 @@ function make_tests(config)
         runthrough = !toggled ? -1 : 0
     end)
     failed = fill(false, length(config.files))
+    Reactive.stop() # stop Reactive! We be pollin' ourselves!
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]
         try
@@ -446,11 +440,24 @@ function make_tests(config)
             timings = Float64[]
             frames = 0
             while !break_loop && isopen(config.rootscreen)
-                render_fr(config, timings); frames += 1
-                (runthrough != 0 && frames > 20) && break # render one 10 if running through
+                tic()
+                poll_glfw()
+                if Base.n_avail(Reactive._messages) > 0
+                    poll_reactive()
+                    poll_reactive() # two times for secondary signals
+                    render_frame(config.rootscreen)
+                    swapbuffers(config.rootscreen)
+                    yield() # yield in timings? Seems fair
+                end
+                frames += 1
+                t = toq()
+                if length(timings) < 1000
+                    push!(timings, t)
+                end
+                GLWindow.sleep_pessimistic((1/60) - t)
+                (runthrough != 0 && frames > 20) && break
             end
             record_thumbnail(config) # record thumbnail in the end
-
             config[:timings] = timings
             break_loop = false
             runthrough != 0 && increase()

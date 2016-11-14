@@ -50,12 +50,7 @@ const workerid = workers()[]
     end
 end
 
-controles = Dict(
-    :angles => Vec4f0(0.0, 80.0, -140.0, 80.0),
-    :colormap => map(RGBA{Float32}, colormap("Blues", 10)),
-    :thickness => 0.5f0,
-    :iterations => 6,
-)
+
 editarea, viewarea = x_partition(window.area, 30.0)
 editscreen = Screen(
     window, area = editarea,
@@ -63,13 +58,22 @@ editscreen = Screen(
     stroke = (1f0, RGBA{Float32}(0.13f0, 0.13f0, 0.13f0, 13f0))
 )
 viewscreen = Screen(window, area=viewarea, color = RGBA(0.1f0, 0.1f0, 0.1f0, 1f0))
-GLVisualize.extract_edit_menu(controles, editscreen, true)
+
+controls = [
+    :angles => Vec4f0(0.0, 80.0, -140.0, 80.0),
+    :colormap => map(RGBA{Float32}, colormap("Blues", 10)),
+    :thickness => 0.5f0,
+    :iterations => 6,
+]
+
+menu, controls = GLVisualize.extract_edit_menu(controls, editscreen, true)
+_view(menu, editscreen, camera = :fixed_pixel)
 
 
 const channel2 = Channel{Tuple{Vector{Point2f0}, Vector{Float32}}}(1)
 v0 = (Point2f0[0,0,0,0], Float32[0,0,0,0])
 put!(channel2, v0)
-line_level = foldp(v0, controles[:angles], controles[:iterations]) do v0, angles, iter
+line_level = foldp(v0, controls[:angles], controls[:iterations]) do v0, angles, iter
     if isready(channel2)
         points = take!(channel2)
         task = @async put!(
@@ -84,8 +88,8 @@ end
 _view(visualize(
     map(first, line_level), :lines,
     intensity = map(last, line_level),
-    thickness = controles[:thickness],
-    color_map = controles[:colormap],
+    thickness = controls[:thickness],
+    color_map = controls[:colormap],
     color_norm = Vec2f0(0,10),
 ), viewscreen, camera=:orthographic_pixel)
 
