@@ -26,7 +26,7 @@ function extract_edit_menu{T <: Pair}(
     widget_text = 4mm
     visses = Pair{String, Context{GLAbstraction.DeviceUnit}}[]
     K = keytype(edit_dict)
-    signal_dict = Dict{K, Signal}()
+    signal_dict = Dict{K, Any}()
     for (k, v) in edit_dict
         filter_fun(k, v) || continue
         label = string(k)

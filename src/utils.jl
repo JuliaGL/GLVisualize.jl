@@ -68,19 +68,21 @@ end
 
 
 function y_partition_abs(area, amount)
+    a = round(Int, amount)
     p = const_lift(area) do r
         (
-            SimpleRectangle{Int}(0, 0, r.w, amount),
-            SimpleRectangle{Int}(0, amount, r.w, r.h - amount)
+            SimpleRectangle{Int}(0, 0, r.w, a),
+            SimpleRectangle{Int}(0, a, r.w, r.h - a)
         )
     end
     return map(first, p), map(last, p)
 end
 function x_partition_abs(area, amount)
+    a = round(Int, amount)
     p = const_lift(area) do r
         (
-            SimpleRectangle{Int}(0, 0, amount, r.h),
-            SimpleRectangle{Int}(amount, 0, r.w - amount, r.h)
+            SimpleRectangle{Int}(0, 0, a, r.h),
+            SimpleRectangle{Int}(a, 0, r.w - a, r.h)
         )
     end
     return map(first, p), map(last, p)
@@ -219,4 +221,25 @@ function color_lookup(cmap, value, color_norm)
     index = scaled * (length(cmap)-1)
     i_a, i_b = floor(Int, index)+1, ceil(Int, index)+1
     mix_linearly(cmap[i_a], cmap[i_b], scaled)
+end
+
+
+"""
+Creates a moving average and discards values to close together.
+If discarded return (false, p), if smoothed, (true, smoothed_p).
+"""
+function moving_average(p, cutoff,  history, n = 5)
+    if length(history) > 0
+        if norm(p - history[end]) < cutoff
+            return false, p # don't keep point
+        end
+    end
+    if length(history) == 5
+        # maybe better to just keep a current index
+        history[1:5] = circshift(view(history, 1:5), -1)
+        history[end] = p
+    else
+        push!(history, p)
+    end
+    true, sum(history) ./ length(history)# smooth
 end

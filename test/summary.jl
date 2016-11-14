@@ -141,7 +141,7 @@ function summarize(window, config)
     _view(imgs, glvis_screen)
 
     Plots.hover(imgs, benchmark_names, glvis_screen)
-    renderloop(window)
+    GLWindow.waiting_renderloop(window)
 
     if !isempty(failures)
         error("Tests not passed with $(length(failures)) failures")

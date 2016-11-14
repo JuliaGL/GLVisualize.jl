@@ -119,7 +119,7 @@ function slider(
     i = Signal(0)
     pos = Point2f0[(0, 0)]
     position = map(slideridx_s) do idx
-        x = ((idx-1)/length(range-1))*slider_length
+        x = ((idx-1)/length(range-1)) * slider_length
         pos[1] = (x, 0)
         pos
     end
@@ -148,9 +148,10 @@ function play_slider(
         loadasset("checked.png"), loadasset("unchecked.png"), screen
     )
     play_s = map(!, play_stop_signal)
-    slider_s, slider_w = slider(range, screen,
-        startidx=1, play_signal=play_s,
-        slider_length=slider_length
+    slider_s, slider_w = slider(
+        range, screen,
+        startidx = 1, play_signal = play_s,
+        slider_length = slider_length
     )
     slider_w, play_button, Context(point_robj, line)
 end
