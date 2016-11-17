@@ -4,8 +4,12 @@ import GLAbstraction: singlepressed, imagespace
 import GLVisualize: moving_average
 
 if !isdefined(:runtests)
-    window = glscreen(resolution = (500, 500))
+    window = glscreen()
 end
+
+description = """
+Drawing lines and then adding symmetrie to them.
+"""
 
 window.color = RGBA(0f0, 0f0, 0f0, 1f0)
 
@@ -20,7 +24,6 @@ function angle_between(a, b)
     b = normalize(b)
     atan2(cross(a, b), dot(a, b))
 end
-
 
 
 symmetry_lines = foldp(Point2f0[], linebuffer) do v0, lines
@@ -43,8 +46,9 @@ end
 
 const lineobj = visualize(
     symmetry_lines, :lines,
-    color = RGBA(0.6f0, 0.6f0, 0.6f0, 1f0),
-    thickness = 1f0
+    color = RGBA(0.8f0, 0.8f0, 0.8f0, 1f0),
+    thickness = 1.5f0,
+    boundingbox = AABB{Float32}(value(window.area)) # boundingbox for center!
 )
 _view(lineobj, window, camera = :orthographic_pixel)
 
@@ -52,7 +56,6 @@ _view(lineobj, window, camera = :orthographic_pixel)
 
 camera = window.cameras[:orthographic_pixel]
 const history = Point2f0[]
-
 s = map(mouseposition, mouse_buttons_pressed, init = nothing) do mp, mbp
     l0 = value(linebuffer)
     if singlepressed(mbp, GLFW.MOUSE_BUTTON_LEFT) && value(mouseinside) && isempty(value(buttons_pressed))
@@ -75,5 +78,5 @@ preserve(s)
 # the function one time, which
 
 if !isdefined(:runtests)
-    @async renderloop(window)
+    renderloop(window)
 end
