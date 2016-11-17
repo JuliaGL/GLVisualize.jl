@@ -10,15 +10,15 @@ end
 color_a = Signal(RGBA{Float32}(1,0,0,1))
 iconsize = 54
 color_v, color_s = widget(color_a, window, area=(iconsize, iconsize))
-edit_screen = Screen(window, area=map(window.area) do a
+edit_screen = Screen(window, area = map(window.area) do a
     SimpleRectangle(0, 0, a.w, iconsize)
 end)
-paint_screen = Screen(window, area=map(window.area) do a
+paint_screen = Screen(window, area = map(window.area) do a
     SimpleRectangle(0, iconsize, a.w, a.h-iconsize)
 end)
 GLVisualize.add_screen(paint_screen)
 
-using Plots; glvisualize(size=widths(paint_screen))
+using Plots; glvisualize(size = widths(paint_screen))
 
 plt = plot(rand(100));
 gui() # tell Plots.jl to plot this in a window
@@ -65,23 +65,6 @@ _view(lineobj, paint_screen, camera=:perspective)
 
 @materialize mouseposition, mouse_buttons_pressed, mouseinside = paint_screen.inputs
 
-function imagespace(pos, camera)
-    # Setup transformation matrix
-    pv = value(camera.projectionview)
-    inv_pv = inv(pv)
-    width, height = widths(value(camera.window_size)) # get pixel resolution
-
-    x, y = pos
-    # transform to normalized device coordinates [-1, 1]
-    device_space = Vec4f0(
-        2 * (x/width)  - 1,
-        2 * (y/height) - 1,
-        0.0,
-        1.0
-    )
-    pos = inv_pv * device_space
-    Point2f0(pos[1], pos[2]) / pos[4]
-end
 camera = paint_screen.cameras[:perspective]
 
 const history = Point2f0[] # preallocate history for moving average
@@ -106,8 +89,8 @@ s = map(mouseposition, mouse_buttons_pressed, init=nothing) do mp, mbp
 end
 # preserve signals, so that it doesn't get garbage collected.
 preserve(s)
-# we need to define init, because otherwise it will be initialised by calling
-# the function one time, which
+
+# reset buffers
 s2 = map(button_s) do clicked
     if clicked
         push!(linebuffer, fill(Point2f0(NaN), 4))
