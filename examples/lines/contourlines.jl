@@ -22,21 +22,29 @@ z = Float32[sin(1.3*x)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x) for x in xran
 mini = minimum(z)
 maxi = maximum(z)
 color_ramp = map(x->RGBA{Float32}(x, 1.0), colormap("Blues"))
+points = Point3f0[]
+colors = RGBA{Float32}[]
 
 for h in mini:0.2f0:maxi
-    c = contour(xrange, yrange, z, h)
+    c = Contour.contour(xrange, yrange, z, h)
     for elem in c.lines
-        points = map(elem.vertices) do p
-            Point3f0(p, h)
+        c = color_lookup(color_ramp, h, mini, maxi)
+        for p in elem.vertices
+            push!(points, Point3f0(p[1], p[2], h))
+            push!(colors, c)
         end
-        line_renderable = visualize(
-            points, :lines,
-            color=color_lookup(color_ramp, h, mini, maxi),
-            model=rotation
-        )
-        _view(line_renderable, window, camera=:perspective)
+        # we can seperate colors with NaN's (might change soon!)
+        push!(points, Point3f0(NaN32))
+        push!(colors, c)
     end
 end
+
+line_renderable = visualize(
+    points, :lines,
+    color = colors,
+    model = rotation
+)
+_view(line_renderable, window, camera=:perspective)
 
 if !isdefined(:runtests)
     renderloop(window)
