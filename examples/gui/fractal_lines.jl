@@ -1,3 +1,6 @@
+# This example was inspired by this great blog post:
+# https://cre8math.com/2015/10/04/creating-fractals/
+
 using GLVisualize, GLAbstraction, Reactive, GeometryTypes, Colors, GLWindow
 import GLVisualize: slider, mm, button
 
