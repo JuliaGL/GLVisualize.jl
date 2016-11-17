@@ -1,6 +1,7 @@
 if !isdefined(:runtests)
     addprocs(1)
 end
+srand(888)
 
 description = """
 Example showing off how to run GLVisualize in a different process
@@ -58,7 +59,7 @@ function solve_particles!{N, T}(
             d = posj - posi
             distsq = dot(d, d) + T(1)
             vel = vel .+ (mask .* (s[j]*reverse(d)/distsq))
-            any(x-> abs(x)>T(0.8), vel) && break # restrict velocity
+            any(x-> abs(x) > T(0.8), vel) && break # restrict velocity
         end
         positions[i] = posi .+ dt*vel
     end
@@ -86,7 +87,7 @@ function main(n, T=Float32, N=3)
 
     positions = startpositions(N, T(0.5), n)
     # random factor for turbulence
-    s = (-1 + 2*rand(T, length(positions)))
+    s = (-1 + 2 * rand(T, length(positions)))
 
     # boundingbox is an expensive operation, so if you don't need it
     # you can simply set it to nothing.
@@ -95,24 +96,29 @@ function main(n, T=Float32, N=3)
     # Note that we use p_view here, to visualize it on the worker process
     pointobj = p_view(
         (Circle(Point2f0(0), 0.01f0), positions),
-        color=RGBA(1f0, 1f0, 1f0, 0.6f0),
-        stroke_color=RGBA(1f0, 1f0, 1f0, 1f0),
-        stroke_width=0.001f0,
-        boundingbox=nothing,
+        color = RGBA(1f0, 1f0, 1f0, 0.6f0),
+        stroke_color = RGBA(1f0, 1f0, 1f0, 1f0),
+        stroke_width = 0.001f0,
+        boundingbox = nothing,
     )
     # maximum number of line segments we use to trace particle trajectory
     max_history = 80
     # To visualize a large number of lines with the same length, Matrix{Point} is
     # the way to go.
-    lines = zeros(Point{N, T}, max_history, length(positions))
-    lines[1, :] = positions
-
+    lines = fill(Point{N, T}(NaN), max_history, length(positions))
     lines_color = fill(RGBA{Float32}(0, 0, 0, 0), max_history, length(positions))
+
+    lines[1, :] = positions
+    lines_color[1, :] = RGBA{Float32}(1, 1, 1, 0.2)
+
     linesobj = p_view(
         lines, :lines,
         color = vec(lines_color), # needs to be 1D right now, to lessen the amount of automatic conversions
-        boundingbox=nothing,
-        thickness=0.1
+        boundingbox = nothing,
+        # this is an internal detail, need to figure out a better API
+        # this makes the lines ignore NaN to seperate multiple lines
+        startend = nothing,
+        thickness = 0.5f0
     )
     t = 0.0
     dt = T(0.1)
@@ -125,7 +131,7 @@ function main(n, T=Float32, N=3)
         @time solve_particles!(positions, s, dt)
 
         # this seems a lot faster than circshift(lines, (1, 0))
-        c = RGBA{Float32}(1, 1, (sin(t)+1.)/2., 0.5)
+        c = RGBA{Float32}(1, 1, (sin(t)+1.)/2., 0.2)
         for (i, p) in enumerate(positions)
             lines[:, i] = circshift(view(lines, :, i), 1)
             lines[1, i] = p
@@ -143,7 +149,7 @@ end
 
 # start GLVisualize worker process
 @spawnat workerid begin
-    window = GLVisualize.glscreen(color=RGBA(0f0, 0f0, 0f0, 1f0))
+    window = GLVisualize.glscreen(color = RGBA(0f0, 0f0, 0f0, 1f0))
     @async GLWindow.renderloop(window)
     nothing
 end
