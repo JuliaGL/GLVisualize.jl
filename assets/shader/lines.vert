@@ -9,7 +9,7 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
 
 
 in float lastlen;
-in float startend;
+{{startend_type}} startend;
 
 {{color_type}}      color;
 {{color_map_type}}  color_map;
@@ -37,13 +37,16 @@ vec4 getindex(sampler1D tex, int index);
 vec4 to_vec4(vec3 v){return vec4(v, 1);}
 vec4 to_vec4(vec2 v){return vec4(v, 0, 1);}
 
+int get_startend(float se){return int(se);}
+int get_startend(Nothing se){return 2;}
+
 
 void main()
 {
     g_lastlen = lastlen;
     int index = gl_VertexID;
     g_id = uvec2(objectid, index+1);
-    g_startend = int(startend);
+    g_startend = get_startend(startend);
     g_color = _color(color, intensity, color_map, color_norm, index, dims.x*dims.y);
     g_line_connections = uint(index/dims.x);
     gl_Position = projection*view*model*to_vec4(vertex);
