@@ -21,6 +21,27 @@ function intensity_convert{T}(intensity::VecOrSignal{T}, verts)
         Texture(intensity)
     end
 end
+
+
+dist(a, b) = abs(a-b)
+mindist(x, a, b) = min(dist(a, x), dist(b, x))
+function gappy(x, ps)
+    n = length(ps)
+    x <= first(ps) && return first(ps) - x
+    for j=1:(n-1)
+        p0 = ps[j]
+        p1 = ps[min(j+1, n)]
+        if p0 <= x && p1 >= x
+            return mindist(x, p0, p1) * (isodd(j) ? 1 : -1)
+        end
+    end
+    return last(ps) - x
+end
+function ticks(points, resolution)
+    Float16[gappy(x, points) for x = linspace(first(points),last(points), resolution)]
+end
+
+
 function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
     pv = value(position)
     p_vec = if isa(position, GPUArray)
@@ -35,14 +56,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
             end
         end
     end
-    _startend = const_lift(p_vec) do vec
-        l = length(vec)
-        map(1:l) do i
-            (i == 1 || isnan(vec[max(i-1, 1)])) && return Float32(0) # start
-            (i == l || isnan(vec[min(i+1, l)])) && return Float32(1) # end
-            Float32(2) # segment
-        end
-    end
+
     @gen_defaults! data begin
         dims::Vec{2, Int32} = const_lift(position) do p
             sz = ndims(p) == 1 ? (length(p), 1) : size(p)
@@ -61,11 +75,25 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         indices             = const_lift(length, p_vec) => to_indices
         shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
-        startend            = _startend => GLBuffer
+        startend            = const_lift(p_vec) do vec
+            l = length(vec)
+            map(1:l) do i
+                (i == 1 || isnan(vec[max(i-1, 1)])) && return Float32(0) # start
+                (i == l || isnan(vec[min(i+1, l)])) && return Float32(1) # end
+                Float32(2) # segment
+            end
+        end => GLBuffer
     end
     if pattern != nothing
+        if !isa(pattern, Texture)
+            if !isa(pattern, Vector)
+                error("Pattern needs to be a Vector of floats")
+            end
+            tex = GLAbstraction.Texture(ticks(pattern, 100), x_repeat = :repeat)
+            data[:pattern] = tex
+        end
         @gen_defaults! data begin
-            pattern_length = last(pattern)
+            pattern_length = Float32(last(pattern))
             lastlen   = const_lift(sumlengths, p_vec) => GLBuffer
             maxlength = const_lift(last, lastlen)
         end
@@ -89,10 +117,20 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
         fxaa                = false
         indices             = const_lift(length, positions) => to_indices
         preferred_camera    = :orthographic_pixel
+        # TODO update boundingbox
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
         shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "line_segment.vert", "line_segment.geom", "lines.frag")
         gl_primitive        = GL_LINES
     end
+    if !isa(pattern, Texture) && pattern != nothing
+        if !isa(pattern, Vector)
+            error("Pattern needs to be a Vector of floats")
+        end
+        tex = GLAbstraction.Texture(ticks(pattern, 100), x_repeat = :repeat)
+        data[:pattern] = tex
+        data[:pattern_length] = Float32(last(pattern))
+    end
+    data
 end
 
 function _default{T <: AbstractFloat}(positions::Vector{T}, range::Range, s::style"lines", data::Dict)
