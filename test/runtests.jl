@@ -7,7 +7,9 @@ import ExampleRunner: flatten_paths
 files = [
     "introduction/rotate_robj.jl",
     "introduction/screens.jl",
-    "introduction/simulation.jl",
+    "plots/3dplots.jl",
+    "plots/lines_scatter.jl",
+    "plots/hybrid.jl",
     "camera/camera.jl",
     "gui/color_chooser.jl",
     "gui/image_processing.jl",
@@ -17,9 +19,6 @@ files = [
     "plots/drawing.jl",
     "interactive/graph_editing.jl",
     "interactive/mario_game.jl",
-    "plots/3dplots.jl",
-    "plots/lines_scatter.jl",
-    "plots/hybrid.jl",
     "text/text_particle.jl",
 ]
 
@@ -32,7 +31,7 @@ push!(files, GLVisualize.dir("test", "summary.jl"))
 config = ExampleRunner.RunnerConfig(
     record = false,
     files = files,
-    resolution = (190, 190)
+    resolution = (210, 210)
 )
 
 ExampleRunner.run(config)

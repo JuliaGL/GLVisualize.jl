@@ -468,7 +468,7 @@ function make_tests(config)
                 end
             end
         catch e
-            failed[i] = true
+            #failed[i] = true
             increase() # skip example
             bt = catch_backtrace()
             ex = CapturedException(e, bt)
