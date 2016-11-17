@@ -492,6 +492,12 @@ function _default{S <: AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
         scale_primitive = true
         position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
         offset          = const_lift(calc_offset, main, relative_scale, font, atlas)
+        prerender       = () -> begin
+            glDisable(GL_DEPTH_TEST)
+            glDepthMask(GL_TRUE)
+            glDisable(GL_CULL_FACE)
+            enabletransparency()
+        end
         uv_offset_width = const_lift(main) do str
             Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
         end
