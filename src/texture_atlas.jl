@@ -98,7 +98,7 @@ begin #basically a singleton for the textureatlas
         end
         open(_cache_path, "w") do io
             dict = Dict(
-                [n => getfield(atlas, n) for n in fieldnames(atlas)]
+                [(n, getfield(atlas, n)) for n in fieldnames(atlas)]
             )
             dict[:images] = gpu_data(dict[:images])
             serialize(io, dict)

@@ -15,7 +15,6 @@ keytype{K}(::AbstractVector{Pair{K}}) = K
 keytype(x) = Any
 
 
-
 function extract_edit_menu{T <: Pair}(
         edit_dict::Union{AbstractVector{T}, Dict}, edit_screen, isvisible;
         mm = 3.71f0, filter_fun = (k, v_v) -> true,
