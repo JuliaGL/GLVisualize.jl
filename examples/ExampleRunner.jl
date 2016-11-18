@@ -452,7 +452,7 @@ function make_tests(config)
                 end
                 frames += 1
                 t = toq()
-                if length(timings) < 1000
+                if length(timings) < 1000 && frames > 2
                     push!(timings, t)
                 end
                 GLWindow.sleep_pessimistic((1/60) - t)
