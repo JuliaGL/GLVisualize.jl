@@ -119,7 +119,7 @@ line_v, line_s = widget(segments, edit_screen)
 
 center_v, center_s = button("⛶", relative_scale = iconsize, edit_screen)
 
-controls = [
+controls = Pair[
     "angle 1" => angles[1][1],
     "angle 2" => angles[2][1],
     "angle 3" => angles[3][1],

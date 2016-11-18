@@ -37,7 +37,7 @@ primitives = GLNormalMesh[
     HyperRectangle(Vec3f0(0), Vec3f0(1))
 ]
 
-w = [
+w = Pair[
     :a => 24f0,
     :b => 10f0,
     :c => 6.0f0,

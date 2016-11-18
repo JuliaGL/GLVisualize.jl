@@ -71,7 +71,10 @@ begin #basically a singleton for the textureatlas
                 dict = deserialize(io)
                 tex = atlas_texture(dict[:images])
                 dict[:images] = tex
-                fields = [dict[n] for n in fieldnames(TextureAtlas)]
+                fields = map(fieldnames(TextureAtlas)) do n
+                    v = dict[n]
+                    isa(v, Vector) ? copy(v) : v # otherwise there seems to be a problem with resizing
+                end
                 TextureAtlas(fields...)
             end
         else
@@ -95,7 +98,7 @@ begin #basically a singleton for the textureatlas
         end
         open(_cache_path, "w") do io
             dict = Dict(
-                n => getfield(atlas, n) for n in fieldnames(atlas)
+                [n => getfield(atlas, n) for n in fieldnames(atlas)]
             )
             dict[:images] = gpu_data(dict[:images])
             serialize(io, dict)

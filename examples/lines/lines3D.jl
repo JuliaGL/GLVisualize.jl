@@ -15,14 +15,14 @@ nloops = 20 # The number of loops
 TL = linspace(-2f0 * pi, 2f0 * pi, n)
 # We create a list of positions and connections, each describing a line.
 # We will collapse them in one array before plotting.
-xyz    = Point3f0[]
+xyz = Point3f0[]
 intensities = Float32[]
 
 
 # Create each line one after the other in a loop
 for i = 1:nloops
     append!(xyz, [Point3f0(sin(t), cos((2 + .02 * i) * t), cos((3 + .03 * i) * t)) for t in TL])
-    append!(intensities, (i for t in TL))
+    append!(intensities, fill(i, length(TL)))
 end
 
 # map comes from Reactive.jl and allows you to map any Signal to another.
