@@ -20,11 +20,23 @@ include("mouse.jl")
 const installed_pkgs = Pkg.installed()
 
 const hasplots = get(installed_pkgs, "Plots", v"0") > v"0.9.3"
+const is_04 = VERSION.minor == 4
+
 if !hasplots
+    message = is_04 ? "0.5 only" : "not installed"
+    message = "Plots.jl is $message, excluding a lot of interesting examples from the tests
+    and a nice summary.\n"
+    if !is_04
+        message *= "Please consider doing: `Pkg.add(\"Plots\"); Pkg.checkout(\"Plots\", \"dev\")`"
+    end
+    warn(message)
+end
+
+if is_04
     warn("
-        Plots.jl is not installed, excluding a lot of interesting examples from the test
-        and a nice summary.
-        Please consider doing: `Pkg.add(\"Plots\"); Pkg.checkout(\"Plots\", \"dev\")`
+        This is the last version of GLVisualize supporting 0.4.
+        GLVisualize already contains a few constructs which only perform optimally
+        on 0.5. We recommend upgrading to 0.5 as soon as possible.
     ")
 end
 
