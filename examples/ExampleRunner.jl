@@ -6,12 +6,13 @@ docs from the examples.
 module ExampleRunner
 
 # add one worker process for parallel examples
-addprocs(1)
 
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
 import GLVisualize: toggle_button, slider, button, mm
+
+import Compat: String, UTF8String
 
 include("mouse.jl")
 
@@ -35,7 +36,7 @@ function flatten_paths(files::Vector, paths = String[])
     end
     paths
 end
-function flatten_paths(path::AbstractString, paths = String[])
+function flatten_paths(path::String, paths = String[])
     if isdir(path)
             flatten_paths(map(x-> joinpath(path, x), readdir(path)), paths)
     elseif isfile(path) && endswith(path, ".jl")
@@ -99,9 +100,9 @@ function clean_up_signals!(signal)
 end
 
 const text_signals = Dict(
-    :title => Signal("Nothing to show"),
-    :message => Signal("\n"),
-    :codepath => Signal(""),
+    :title => Signal(UTF8String, "Nothing to show"),
+    :message => Signal(UTF8String, "\n"),
+    :codepath => Signal(UTF8String, ""),
 )
 
 
@@ -451,7 +452,7 @@ function make_tests(config)
                 end
                 frames += 1
                 t = toq()
-                if length(timings) < 1000
+                if length(timings) < 1000 && frames > 2
                     push!(timings, t)
                 end
                 GLWindow.sleep_pessimistic((1/60) - t)

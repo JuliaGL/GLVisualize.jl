@@ -22,10 +22,9 @@ import ColorVectorSpace
 
 import Images
 using Base.Markdown
+
 using Compat
-import Compat.unsafe_wrap
-import Compat.String
-import Compat.unsafe_string
+import Compat: unsafe_wrap, unsafe_string, String, view, UTF8String
 
 import Base: merge, convert, show
 
@@ -44,7 +43,7 @@ typealias GLBoundingBox AABB{Float32}
 export renderloop
 
 """
-Replacement of Pkg.dir("GLVisualize") --> GLVisualize.dir, 
+Replacement of Pkg.dir("GLVisualize") --> GLVisualize.dir,
 returning the correct path
 """
 dir(dirs...) = joinpath(dirname(@__FILE__), "..", dirs...)

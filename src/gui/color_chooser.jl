@@ -7,9 +7,9 @@ function widget{T<:RGBA}(
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     color_button = visualize(
         (ROUNDED_RECTANGLE, zeros(Point2f0, 1));
-        scale=const_lift(x->Vec2f0(x[2]), area),
-        offset=Vec2f0(0),
-        color=color,
+        scale = const_lift(x->Vec2f0(x[2]), area),
+        offset = Vec2f0(0),
+        color = color,
         kw_args...
     )
     color_robj = color_button.children[]

@@ -3,6 +3,8 @@ using Highlights.Format
 using Highlights.Tokens
 using Highlights.Themes
 
+import Compat: readstring
+
 css2color(str) = parse(RGBA{Float32}, string("#", str))
 function style2color(style, default)
     if Themes.has_fg(style) && !isempty(style.fg)
@@ -27,7 +29,7 @@ function render_str(
         t = Tokens.__TOKENS__[token.value.value]
         str = SubString(ctx.source, token.first, token.last)
         print(io, str)
-        append!(colors, repeated(tocolor[t], length(str)))
+        append!(colors, fill(tocolor[t], length(str)))
     end
     takebuf_string(io), colors
 end

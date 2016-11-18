@@ -13,7 +13,7 @@ let screen_list = WeakRef[]
     clean!() = filter!(_is_alive, screen_list)
     function current_screen()
         clean!()
-        if isempty(screen_list) 
+        if isempty(screen_list)
             error("No screen available. Consider creating one with the function glscreen()")
         end
         last(screen_list).value
@@ -35,10 +35,13 @@ end
 immutable Millimeter
 end
 global const mm = Millimeter()
-function Base.:(*)(x::Millimeter, y::Number)
+
+import Base: *
+
+function (*)(x::Millimeter, y::Number)
     round(Int, y * pixel_per_mm)
 end
-function Base.:(*)(x::Number, y::Millimeter)
+function (*)(x::Number, y::Millimeter)
     round(Int, x * pixel_per_mm)
 end
 
@@ -97,7 +100,7 @@ function fold_loop(v0, _)
     val, range, index = v0
     val = range[index]
     index += 1
-    index>length(range) && (index = 1)
+    index > length(range) && (index = 1)
     (val, range, index)
 end
 
