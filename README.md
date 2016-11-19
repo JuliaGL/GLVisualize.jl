@@ -7,14 +7,13 @@ Its focus is on performance and allowing to display animations/interactions as s
 Please run:
 ```Julia
 Pkg.add("GLVisualize")
-Pkg.checkout("GLVisualize")
-Pkg.checkout("GLAbstraction")
-Pkg.checkout("GLWindow")
 Pkg.test("GLVisualize")
 ```
-I've updated the tests to show some statistics and cover all examples:
 
-![glvisualize_tests](https://cloud.githubusercontent.com/assets/1010467/19108202/19984852-8af0-11e6-8fc2-d6fc2828d34c.png)
+Running the tests will walk you through all examples. 
+I made a recording of me giving a descriptions for every example:
+
+[![glvisualize_tests](https://cloud.githubusercontent.com/assets/1010467/19108202/19984852-8af0-11e6-8fc2-d6fc2828d34c.png)](https://www.youtube.com/watch?v=WYX31vIkrd4&t=6s)
 
 
 #### GLVisualize can be used as a backend for [Plots.jl](https://github.com/tbreloff/Plots.jl/)
@@ -29,7 +28,7 @@ Support for hovers and unicode:
 
 Image marker type and hover:
 
-[<img src="https://cloud.githubusercontent.com/assets/1010467/18789986/5caf3a34-81ad-11e6-8c58-d0a4b40ccce3.png" width="489">](https://vimeo.com/181942008 "Image Cloud")
+[<img src="https://cloud.githubusercontent.com/assets/1010467/20456657/234e63dc-ae7b-11e6-9beb-fe49ea064aa8.png" width="489">](https://vimeo.com/181942008 "Image Cloud")
 
 #### [GLPlot.jl](https://github.com/SimonDanisch/GLPlot.jl), a GUI for plotting with GLVisualize
 GLPlot allows you to interact with your plots and create GUI elements.
