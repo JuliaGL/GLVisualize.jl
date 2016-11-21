@@ -5,18 +5,26 @@ using Highlights.Themes
 
 import Compat: readstring
 
-css2color(str) = parse(RGBA{Float32}, string("#", str))
+if !isdefined(Highlights.Themes, :has_fg)
+    has_fg(style) = style.fg.active
+    css2color(c) = RGBA{Float32}(c.r/255, c.g/255, c.b/255, 1)
+else
+    import Highlights.Themes: has_fg
+    css2color(str) = parse(RGBA{Float32}, string("#", str))
+end
+
 function style2color(style, default)
-    if Themes.has_fg(style) && !isempty(style.fg)
+    if has_fg(style)
         css2color(style.fg)
     else
         default
     end
 end
+
 function render_str(
         ctx::Format.Context, theme::Format.Theme
     )
-    defaultcolor = if Themes.has_fg(theme.base)
+    defaultcolor = if has_fg(theme.base)
         css2color(theme.base.fg)
     else
         RGBA(0f0, 0f0, 0f0, 1f0)
