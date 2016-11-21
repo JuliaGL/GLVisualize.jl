@@ -4,19 +4,13 @@ using Colors, Plots
 using Plots; glvisualize(size=(800, 300))
 
 
-function benchscatter(timings, names, images; n=30)
+function benchscatter(timings, names, images; n = 30)
     yposs, xposs = Vector{Float64}[], Vector{Float64}[]
     binss, scales = Vector{Float64}[], Vector{Float64}[]
     x = 1; dist = -0.5:0.0001:0.5
     min_res = 100
 
     for ts in timings
-        # If benchmarks
-        ts = if length(ts) < 300
-            append!(ts, fill(0.0, 300 - length(ts)))
-        elseif length(ts) > 300
-            resize!(ts, 300) # resampling would be more accurate, I suppose
-        end
         bins = zeros(n); mini, maxi = minimum(ts), maximum(ts)
         w = max(maxi - mini, 1)
         min_res = min(mini, min_res)
@@ -111,14 +105,13 @@ function summarize(window, config)
         if haskey(v, :timings) && haskey(v, :thumbnail)
             push!(benchmark_names, basename(k))
             ts = v[:timings] .* 1000.0
-            m = median(ts)
-            mini, maxi = minimum(ts), maximum(ts)
-            w = (maxi - mini)/2
-            filter!(ts) do t
-                abs(t-m) < w # filter out outliers in a too primitive manner
+            ts = if length(ts) < 300
+                append!(ts, fill(0.0, 300 - length(ts)))
+            elseif length(ts) > 300
+                resize!(ts, 300) # resampling would be more accurate, I suppose
             end
-            # take 200 samples, not including the first (JIT, yo)
-            push!(times, ts[2:min(201, length(ts))]) # for m
+            # take 300 samples, not including the first (JIT, yo)
+            push!(times, ts) # for m
             img = rotl90(v[:thumbnail])
             for x in 1:size(img, 2)
                 img[:, x] = reverse(view(img, 1:size(img, 1), x))
