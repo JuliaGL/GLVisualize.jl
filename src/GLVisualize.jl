@@ -128,5 +128,6 @@ export get_docs
 
 #include("../precompile/glv_userimg.jl")
 
+include("parallel.jl")
 
 end # module
