@@ -23,6 +23,7 @@ in uvec2 g_id[];
 flat out int  f_primitive_index;
 flat out vec2 f_scale;
 flat out vec4 f_color;
+flat out vec4 f_bg_color;
 flat out vec4 f_stroke_color;
 flat out vec4 f_glow_color;
 flat out uvec2 f_id;
@@ -87,6 +88,7 @@ void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
     f_uv_offset       = uv_offset;
     f_primitive_index = g_primitive_index[0];
     f_color           = g_color[0];
+    f_bg_color        = vec4(g_color[0].rgb, 0);
     f_stroke_color    = g_stroke_color[0];
     f_glow_color      = g_glow_color[0];
     f_id              = g_id[0];

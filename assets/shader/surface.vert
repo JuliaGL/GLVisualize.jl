@@ -36,6 +36,9 @@ vec4 get_color(vec4 color, float _intensity, Nothing color_map, Nothing color_no
 vec4 get_color(Nothing color, float _intensity, sampler1D color_map, vec2 color_norm, int index){
     return color_lookup(_intensity, color_map, color_norm);
 }
+vec4 get_color(sampler2D color, float _intensity, Nothing b, Nothing c, int index){
+    return vec4(0); // we fetch the color in fragment shader
+}
 
 uniform vec3 scale;
 
@@ -53,10 +56,11 @@ uniform uint objectid;
 uniform float stroke_width;
 flat out uvec2 o_id;
 out vec4 o_color;
-
+out vec2 o_uv;
 
 flat out vec2            f_scale;
 flat out vec4            f_color;
+flat out vec4            f_bg_color;
 flat out vec4            f_stroke_color;
 flat out vec4            f_glow_color;
 flat out int             f_primitive_index;
@@ -71,33 +75,38 @@ void main()
     vec2 offset = vertices;
     ivec2 offseti = ivec2(offset);
     ivec2 dims = textureSize(position_z, 0);
-    float glow_stroke = stroke_width;
-    vec2 final_scale = ((scale.xy)/(scale.xy-glow_stroke));
-    if(offset.x == 0){
-        f_uv.x = -0.95;
-    }else{
-        f_uv.x = 0.95;
-    }
-    if(offset.y == 0){
-        f_uv.y = -0.95;
-    }else{
-        f_uv.y = 0.95;
-    }
+    vec2 final_scale = ((scale.xy)/(scale.xy-stroke_width));
+
+    const float uv_w = 0.9;
+
     vec3 pos;
     {{position_calc}}
     //pos           += vec3(scale.xy*vertices, 0.0);
-    o_color        = (get_color(color, pos.z, color_map, color_norm, index));
-    vec3 normalvec = getnormal(position_z, linear_index(dims, index1D));
+    o_color        = get_color(color, pos.z, color_map, color_norm, index);
     o_id           = uvec2(objectid, index1D+1);
-    f_id           = o_id;
-    f_uv_offset    = vec2(0);
-    f_color        = o_color;
-    f_stroke_color = stroke_color;
-    f_glow_color   = glow_color;
-    f_scale        = vec2(-stroke_width, 0)/scale.xy;
+
     if(wireframe){
-        gl_Position = projection*view*model*vec4(pos, 1);
+        if(offset.x == 0){
+            f_uv.x = -uv_w;
+        }else{
+            f_uv.x = uv_w;
+        }
+        if(offset.y == 0){
+            f_uv.y = -uv_w;
+        }else{
+            f_uv.y = uv_w;
+        }
+        f_id           = o_id;
+        f_uv_offset    = vec2(0);
+        f_color        = o_color;
+        f_bg_color     = o_color;
+        f_stroke_color = stroke_color;
+        f_glow_color   = glow_color;
+        f_scale        = vec2(-0.1, 0);
+        gl_Position    = projection * view * model * vec4(pos, 1);
     }else{
-        render(pos, normalvec, view*model, projection, light);
+        o_uv = linear_index(dims, index1D);
+        vec3 normalvec = vec3(0, 0, 1);
+        render(pos, normalvec, view * model, projection, light);
     }
 }

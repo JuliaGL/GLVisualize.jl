@@ -2,7 +2,12 @@ function _default{M<:GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::
     @gen_defaults! data begin
         main = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shader = GLVisualizeShader("fragment_output.frag", "util.vert", "attribute_mesh.vert", "standard.frag")
+        lighting = true
+        color = nothing
+        shader = GLVisualizeShader(
+            "fragment_output.frag", "util.vert", "attribute_mesh.vert", "standard.frag",
+            view = Dict("light_calc" => light_calc(lighting))
+        )
     end
 end
 
@@ -11,14 +16,23 @@ function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
         main = mesh
         color = default(RGBA{Float32}, s)
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shader = GLVisualizeShader("fragment_output.frag", "util.vert", "standard.vert", "standard.frag")
+        lighting = true
+        shader = GLVisualizeShader(
+            "fragment_output.frag", "util.vert", "standard.vert", "standard.frag",
+            view = Dict("light_calc" => light_calc(lighting))
+        )
     end
 end
 function _default{M<:GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
         main = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shader = GLVisualizeShader("fragment_output.frag", "util.vert", "vertexcolor.vert", "standard.frag")
+        lighting = true
+        color = nothing
+        shader = GLVisualizeShader(
+            "fragment_output.frag", "util.vert", "vertexcolor.vert", "standard.frag",
+            view = Dict("light_calc" => light_calc(lighting))
+        )
     end
 end
 

@@ -43,6 +43,28 @@ end
 _extrema(x::AABB) = Vec2f0(minimum(x)[3], maximum(x)[3])
 nothing_or_vec(x) = x
 nothing_or_vec(x::Array) = vec(x)
+
+function normal_calc(x::Bool)
+    if x
+        "getnormal(position_z, linear_index(dims, index1D));"
+    else
+        "vec3(0, 0, 1);"
+    end
+end
+function light_calc(x::Bool)
+    if x
+        """
+        vec3 L      = normalize(o_lightdir);
+        vec3 N      = normalize(o_normal);
+        vec3 light1 = blinnphong(N, o_vertex, L, color.rgb);
+        vec3 light2 = blinnphong(N, o_vertex, -L, color.rgb);
+        color       = vec4(light1 + light2 * 0.4, color.a);
+        """
+    else
+        ""
+    end
+end
+
 function surface(main, s::Style{:surface}, data::Dict)
     @gen_defaults! data begin
         primitive::GLMesh2D = SimpleRectangle(0f0,0f0,1f0,1f0)
@@ -62,19 +84,26 @@ function surface(main, s::Style{:surface}, data::Dict)
         wireframe        = false
         image            = nothing => Texture
         distancefield    = nothing => Texture
+        normal           = false
+        lighting         = normal
     end
     @gen_defaults! data begin
-        color      = (wireframe ? RGBA{Float32}(0,0,0,0) : nothing) => "must be single color value, must be nothing for color_map"
-        color_map  = (!wireframe ? default(Vector{RGBA}, s) : nothing) => (Texture,
+        color      = (wireframe ? RGBA{Float32}(0,0,0,0) : nothing) => (Texture,
+            "must be single color value, must be nothing for color_map")
+        color_map  = (!wireframe && color == nothing ? default(Vector{RGBA}, s) : nothing) => (Texture,
         "must be `Vector{Color}`, `color` must be nothing")
-        color_norm = (!wireframe ? const_lift(_extrema, boundingbox) : nothing) => begin
+        color_norm = (!wireframe && color_map != nothing ? const_lift(_extrema, boundingbox) : nothing) => begin
             "normalizes the heightvalues before looking up color in `color_map`."
         end
         instances  = const_lift(x->(size(x,1)-1) * (size(x,2)-1), main) => "number of planes used to render the surface"
         shader     = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "surface.vert",
             value(wireframe) ? "distance_shape.frag" : "standard.frag",
-            view=Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, Texture))
+            view = Dict(
+                "position_calc" => position_calc(position, position_x, position_y, position_z, Texture),
+                "normal_calc" => normal_calc(normal),
+                "light_calc" => light_calc(lighting),
+            )
         )
     end
 end

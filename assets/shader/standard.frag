@@ -1,14 +1,35 @@
 {{GLSL_VERSION}}
 
+struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
+    bool _; //empty structs are not allowed
+};
+
 in vec3 o_normal;
 in vec3 o_lightdir;
 in vec3 o_vertex;
 in vec4 o_color;
+in vec2 o_uv;
 flat in uvec2 o_id;
 
+{{color_type}} color;
 
-vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
-{
+vec4 get_color(vec4 color, vec2 uv){
+    return color;
+}
+
+vec4 get_color(Nothing color, vec2 uv){
+    return o_color;
+}
+vec4 get_color(samplerBuffer color, vec2 uv){
+    return o_color;
+}
+
+vec4 get_color(sampler2D color, vec2 uv){
+    return texture(color, uv);
+}
+
+vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color){
+
     float diff_coeff = max(dot(L,N), 0.0);
 
     // specular coefficient
@@ -29,12 +50,11 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color)
 void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
-    vec3 L      = normalize(o_lightdir);
-    vec3 N      = normalize(o_normal);
-    vec3 light1 = blinnphong(N, o_vertex, L, o_color.rgb);
-    vec3 light2 = blinnphong(N, o_vertex, -L, o_color.rgb);
+    vec4 color = get_color(color, o_uv);
+    {{light_calc}}
+
     write2framebuffer(
-        vec4(light1+light2*0.4, o_color.a),
+        color,
         o_id
     );
 }

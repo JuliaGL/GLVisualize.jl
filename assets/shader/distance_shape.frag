@@ -28,6 +28,7 @@ uniform bool            transparent_picking;
 
 flat in vec2            f_scale;
 flat in vec4            f_color;
+flat in vec4            f_bg_color;
 flat in vec4            f_stroke_color;
 flat in vec4            f_glow_color;
 flat in uvec2           f_id;
@@ -76,7 +77,7 @@ void fill(vec4 fillcolor, Nothing image, vec2 uv, float infill, inout vec4 color
     color = mix(color, fillcolor, infill);
 }
 void fill(vec4 c, sampler2D image, vec2 uv, float infill, inout vec4 color){
-    color = mix(color, texture(image, uv), infill);
+    color.rgba = mix(color, texture(image, uv), infill);
 }
 void fill(vec4 c, sampler2DArray image, vec2 uv, float infill, inout vec4 color){
     color = mix(color, texture(image, vec3(uv, f_primitive_index)), infill);
@@ -126,7 +127,7 @@ void main(){
     float half_stroke = -f_scale.x;
     float inside_start = max(half_stroke, 0.0);
     float inside = aastep(inside_start, signed_distance);
-    vec4 final_color = vec4((inside >= 0) ? f_color.rgb : f_stroke_color.rgb, 0);
+    vec4 final_color = f_bg_color;
 
     fill(f_color, image, f_uv_offset, inside, final_color);
     stroke(f_stroke_color, signed_distance, half_stroke, final_color);

@@ -2,7 +2,7 @@
 
 in vec3 vertices;
 in vec3 normals;
-in vec4 color;
+in vec4 vertex_color;
 
 uniform vec3 light[4];
 
@@ -17,7 +17,7 @@ flat out uvec2 o_id;
 
 void main()
 {
-	o_id = uvec2(objectid, 0);
-	o_color = color;
-	render(vertices, normals, view*model, projection, light);
+    o_id = uvec2(objectid, 0);
+    o_color = vertex_color;
+    render(vertices, normals, view*model, projection, light);
 }
