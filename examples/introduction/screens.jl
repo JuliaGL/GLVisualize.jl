@@ -24,8 +24,8 @@ textscreen = Screen(
 )
 
 viewscreen = Screen(
-    window, name=:viewscreen,
-    area=viewa
+    window, name = :viewscreen,
+    area = viewa
 )
 # create first screen with window as the parent screen
 # and a different area.
@@ -41,7 +41,7 @@ screen3D = Screen(
 )
 
 # create something to look at!
-bars = visualize(rand(Float32, 10,10))
+bars = visualize(rand(Float32, 10, 10))
 points = visualize([rand(Point2f0) * 1000 for i=1:50], scale = Vec2f0(40))
 text = visualize("Bottom Screen! =)", color = RGBA(1f0, 1f0, 1f0))
 

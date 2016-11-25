@@ -1,4 +1,4 @@
-using Plots, GLVisualize, GeometryTypes
+using Plots, GLVisualize, GeometryTypes, Colors
 pl_size = if !isempty(GLVisualize.get_screens())
     widths(GLVisualize.current_screen())
 else
@@ -29,13 +29,13 @@ end
 
 N = 1000
 xyz = lorenz(zeros(Point3f0, N), 26., 28., 9.0, 0.01)
-x,y,z = map(first, xyz), map(x->x[2], xyz), map(last, xyz)
+x,y,z = map(first, xyz), map(x-> x[2], xyz), map(last, xyz)
 p1 = plot(x,y,z,
     line=0.5,
-    marker=(:circle, 0.4), ms=linspace(2.0, 10.0, N),
-    markercolor=colormap("RdBu", N),
-    leg=false,
-    grid=false
+    marker=(:circle, 0.4), ms = linspace(2.0, 10.0, N),
+    markercolor = colormap("RdBu", N),
+    leg = false,
+    grid = false
 )
 
 dphi, dtheta = pi/200.0f0, pi/200.0f0
@@ -59,18 +59,18 @@ surface1 = Plots.surface(x,y,z)
 
 
 function xy_data(x, y, i, N)
-    x = ((x/N)-0.5)*i
-    y = ((y/N)-0.5)*i
-    r = sqrt(x*x + y*y)
-    sin(r)/r
+    x = ((x / N)-0.5) * i
+    y = ((y / N)-0.5) * i
+    r = sqrt(x * x + y * y)
+    sin(r) / r
 end
 
 surface2 = Plots.surface(Float32[xy_data(x, y, 20f0, N) for x=1:100, y=1:100])
 surface3 = Plots.wireframe(
-    Float32[xy_data(x*10, y*10, 40f0, N) for x=1:30, y=1:30],
-    line=4.0
+    Float32[xy_data(x * 10, y * 10, 40f0, N) for x=1:30, y=1:30],
+    line = 4.0
 )
 
-p = plot(surface1, surface2, surface3, p1, show=true)
+p = plot(surface1, surface2, surface3, p1, show = true)
 
 gui()

@@ -20,7 +20,6 @@ sphere_mesh = GLNormalVertexcolorMesh(
     vertices=vertices, faces=faces,
     color=colors
 )
-
 _view(visualize(sphere_mesh), window)
 
 if !isdefined(:runtests)

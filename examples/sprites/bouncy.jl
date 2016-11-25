@@ -9,7 +9,6 @@ description = """
 Animating some billboard particles in 2D.
 """
 
-
 n = 30
 const border = 50f0
 function bounce_particles(pos_velo, _)
