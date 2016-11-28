@@ -4,6 +4,9 @@ GLVisualize is an interactive 2D/3D visualization library completely written in 
 Its focus is on performance and allowing to display animations/interactions as smooth as possible.
 
 #### Installation of GLVisualize
+You need OpenGL 3.3, which should be available on most computers nowadays. 
+If you get an error like [this](https://github.com/JuliaGL/GLVisualize.jl/issues/129), please try updating your system/video driver.
+
 Please run:
 ```Julia
 Pkg.add("GLVisualize")
