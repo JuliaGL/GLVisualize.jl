@@ -115,14 +115,17 @@ function _Instances(position, scale, rotation, primitive)
     const_lift(Instances, primitive, p, s, r)
 end
 
-immutable GridZRepeat{G,T,N} <: AbstractArray{Point{3,T}, N}
+immutable GridZRepeat{G, T, N} <: AbstractArray{Point{3, T}, N}
     grid::G
     z::Array{T, N}
 end
 Base.size(g::GridZRepeat) = size(g.z)
 Base.size(g::GridZRepeat, i) = size(g.z, i)
 Base.linearindexing{T<:GridZRepeat}(::Type{T}) = Base.LinearFast()
-Base.getindex{G,T}(g::GridZRepeat{G,T}, i) = Point{3, T}(g.grid[i], g.z[i])
+function Base.getindex{G,T}(g::GridZRepeat{G, T}, i)
+    pxy = g.grid[i]
+    Point{3, T}(pxy[1], pxy[2], g.z[i])
+end
 
 
 
@@ -132,11 +135,11 @@ Base.getindex{G,T}(g::GridZRepeat{G,T}, i) = Point{3, T}(g.grid[i], g.z[i])
 function ArrayOrStructOfArray{T}(::Type{T}, array::Void, a, elements...)
     StructOfArrays(T, a, elements...)
 end
-function ArrayOrStructOfArray{T}(::Type{T}, array::FixedVector, a, elements...)
+function ArrayOrStructOfArray{T}(::Type{T}, array::StaticVector, a, elements...)
     StructOfArrays(T, a, elements...)
 end
-function ArrayOrStructOfArray{T}(::Type{T}, scalar::FixedVector, a::Void, elements::Void...)
-    ScalarRepeat(transformation_convert(T, scalar))
+function ArrayOrStructOfArray{T}(::Type{T}, scalar::StaticVector, a::Void, elements::Void...)
+    ScalarRepeat(transform_convert(T, scalar))
 end
 function ArrayOrStructOfArray{T1,T2}(::Type{T1}, array::Array{T2}, a::Void, elements::Void...)
     array
@@ -154,29 +157,7 @@ function ArrayOrStructOfArray{T}(::Type{T}, array::Array)
     array
 end
 
-function transformation_convert{T1,T2}(
-        PT::Type{Point{3, T1}}, v::FixedVector{1,T2}
-    )
-    PT(v[1], T1(0), T1(0))
-end
-function transformation_convert{T1,T2}(
-        VT::Type{Vec{3, T1}}, v::FixedVector{1, T2}
-    )
-    VT(v[1], T1(0), T1(1))
-end
 
-function transformation_convert{T1,T2}(
-        PT::Type{Point{3, T1}}, v::FixedVector{2,T2}
-    )
-    PT(v[1], v[2], T1(0))
-end
-function transformation_convert{T1,T2}(
-        VT::Type{Vec{3, T1}}, v::FixedVector{2, T2}
-    )
-    VT(v[1], v[2], T1(1))
-end
-transformation_convert{T}(::Type{T}, scalar) = T(scalar)
-transformation_convert{T<:FixedVector}(::Type{T}, v::T) = v
 
 
 immutable TransformationIterator{T,S,R}
@@ -201,15 +182,17 @@ function done(t::TransformationIterator, state)
     done(t.rotation, state[3]))::Bool
 end
 
+import GeometryTypes: transform_convert
+
 function next(t::TransformationIterator, state)
     _translation, st = next(t.translation, state[1])
     _scale, ss = next(t.scale, state[2])
     _rotation, sr = next(t.rotation, state[3])
 
-    translation = transformation_convert(Point3f0, _translation)
-    scale = transformation_convert(Vec3f0, _scale)
-    rotation = transformation_convert(Vec3f0, _rotation)
-    v,u = FixedSizeArrays.normalize(rotation), Vec3f0(0,0,1)
+    translation = Point3f0(transform_convert(Vec3f0, _translation))
+    scale = Vec3f0(transform_convert(Point3f0, _scale))
+    rotation = Vec3f0(transform_convert(Point3f0, _rotation))
+    v,u = normalize(rotation), Vec3f0(0,0,1)
     # Unfortunately, we have to check for when u == -v, as u + v
     # in this case will be (0, 0, 0), which cannot be normalized.
     T = Float32
@@ -217,22 +200,23 @@ function next(t::TransformationIterator, state)
     if (u == -v)
         # 180 degree rotation around any orthogonal vector
         other = (abs(dot(u, Vec{3, T}(1,0,0))) < 1.0) ? Vec{3, T}(1,0,0) : Vec{3, T}(0,1,0)
-        q = Quaternions.qrotation(FixedSizeArrays.normalize(cross(u, other)), T(180))
+        q = Quaternions.qrotation(normalize(cross(u, other)), T(180))
     else
-        half = FixedSizeArrays.normalize(u+v)
+        half = normalize(u+v)
         vc = cross(u, half)
         q = Quaternions.Quaternion(dot(u, half), vc[1], vc[2], vc[3])
     end
-    ((translation, scale, Mat{4,4,T}(q)), (st, ss, sr))
+    ((translation, scale, Mat4{T}(q)), (st, ss, sr))
 end
 
 
 
-immutable Intensity{N, T} <: FixedVector{N, T}
-    _::NTuple{N, T}
+immutable Intensity{T} <: FieldVector{T}
+    i::T
 end
-typealias GLIntensity Intensity{1, Float32}
-export Intensity,GLIntensity
+
+typealias GLIntensity Intensity{Float32}
+export Intensity, GLIntensity
 
 NOT(x) = !x
 

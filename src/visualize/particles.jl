@@ -31,20 +31,21 @@ end
 Vectors of floats are treated as barplots, so they get a HyperRectangle as
 default primitive.
 """
-function _default{T<:AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict)
+function _default{T <: AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict)
     _default((centered(HyperRectangle{2, Float32}), main), s, data)
 end
 """
 Matrices of floats are represented as 3D barplots with cubes as primitive
 """
-function _default{T<:AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict)
+function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict)
     _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(1.0)), main), s, data)
 end
 """
 Vectors of n-dimensional points get ndimensional rectangles as default
 primitives. (Particles)
 """
-function _default{N, T}(main::VecTypes{Point{N, T}}, s::Style, data::Dict)
+function _default{P <: Point}(main::VecTypes{P}, s::Style, data::Dict)
+    N = length(P)
     @gen_defaults! data begin
         scale = N == 2 ? Vec2f0(30) : Vec3f0(0.03) # for 2D points we assume they're in pixels
     end

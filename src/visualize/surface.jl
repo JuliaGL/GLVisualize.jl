@@ -167,22 +167,22 @@ function _position_calc{T<:AbstractFloat}(
 """
 end
 
-function _position_calc{T<:AbstractFloat}(
+function _position_calc{T <: AbstractFloat}(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{TextureBuffer}
     )
     "pos = vec3(texelFetch(position_x, index).x, position_y, position_z);"
 end
-function _position_calc{T<:AbstractFloat}(
+function _position_calc{T <: AbstractFloat}(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{GLBuffer}
     )
     "pos = vec3(position_x, position_y, position_z);"
 end
-function _position_calc{T<:FixedVector}(
+function _position_calc{T <: StaticVector}(
         position_xyz::VecTypes{T}, target::Type{TextureBuffer}
     )
     "pos = texelFetch(position, index).xyz;"
 end
-function _position_calc{T<:FixedVector}(
+function _position_calc{T <: StaticVector}(
         position_xyz::VecTypes{T}, target::Type{GLBuffer}
     )
     len = length(T)

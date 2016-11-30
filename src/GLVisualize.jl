@@ -6,7 +6,7 @@ using GLFW
 using GLWindow
 using GLAbstraction
 using ModernGL
-using FixedSizeArrays
+using StaticArrays
 using GeometryTypes
 using ColorTypes
 using Colors

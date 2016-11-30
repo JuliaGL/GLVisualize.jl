@@ -5,7 +5,6 @@ using GLFW
 using GLWindow
 using GLAbstraction
 using ModernGL
-using FixedSizeArrays
 using GeometryTypes
 using ColorTypes
 using Colors

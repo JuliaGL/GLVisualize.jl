@@ -1,5 +1,5 @@
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
-using FixedSizeArrays, GLAbstraction, GLFW
+using GLAbstraction, GLFW
 import GLAbstraction: singlepressed, imagespace
 import GLVisualize: moving_average
 

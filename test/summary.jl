@@ -1,6 +1,6 @@
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
-using Colors, Plots
+using Colors, Plots, StaticArrays
 using Plots; glvisualize(size=(800, 300))
 
 
@@ -125,7 +125,7 @@ function summarize(window, config)
     len = length(success_thumbs)-1
     w = 64
     positions = Point2f0[((i%rows)*w*1.05, div(i, rows)*w*1.05) for i=0:len]
-    positions = positions .+ Point2f0(w/2, 0)
+    positions = positions .+ Scalar(Point2f0(w/2, 0))
 
     imgs = visualize(
         (success_thumbs, positions),
