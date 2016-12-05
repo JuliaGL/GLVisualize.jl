@@ -41,8 +41,7 @@ function render_str(
     end
     takebuf_string(io), colors
 end
-function highlight_text(path, T = Themes.DefaultTheme)
-    src = readstring(path)
+function highlight_text(src::AbstractString, T = Themes.DefaultTheme)
     io = IOBuffer()
     render_str(
         Highlights.Compiler.lex(src, Lexers.JuliaLexer),
