@@ -176,7 +176,7 @@ function create_screens(rootscreen)
 
     text_color = map(text_signals[:codepath]) do codepath
         if isfile(codepath)
-            code, colors = highlight_text(codepath)
+            code, colors = highlight_text(readstring(codepath))
         else
             txt = "error: file $codepath not found"
             colors = fill(RGBA(0f0,0f0,0f0,1f0), length(txt))

@@ -48,16 +48,3 @@ function highlight_text(src::AbstractString, T = Themes.DefaultTheme)
         Themes.theme(T)
     )
 end
-# T = Themes.GitHubTheme
-# str, colors = highlight_text(GLVisualize.dir("src", "examples", "ExampleRunner.jl"), T)
-# w.color=css2color(Themes.theme(T).base.bg)
-# empty!(w);GLAbstraction.empty_shader_cache!()
-# _view(visualize(str, color=colors))
-#
-#
-#
-# a = GLVisualize.get_texture_atlas()
-# using FileIO
-# img = GLAbstraction.gpu_data(a.images)
-# x = img
-# save(homedir()*"/test.png", map(Images.Clamp01NaN(x), x))
