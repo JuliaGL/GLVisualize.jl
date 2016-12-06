@@ -1,4 +1,4 @@
-function _default{M<:GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default{M <: GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
         main = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
@@ -11,7 +11,7 @@ function _default{M<:GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::
     end
 end
 
-function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default{M <: GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
         main = mesh
         color = default(RGBA{Float32}, s)
@@ -23,7 +23,7 @@ function _default{M<:GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
         )
     end
 end
-function _default{M<:GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default{M <: GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
         main = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
@@ -41,7 +41,7 @@ function _default(mesh::GLNormalColorMesh, s::Style, data::Dict)
     _default(GLNormalMesh(mesh), s, data)
 end
 
-function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
+function _default{M <: GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
     @gen_defaults! data begin
         primitive::GLPlainMesh = main
         color = default(RGBA, s, 1)
@@ -50,5 +50,14 @@ function _default{M<:GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
         gridsteps = Vec3f0(5)
         boundingbox = const_lift(GLBoundingBox, mesh)
         shader = GLVisualizeShader("fragment_output.frag", "grid.vert", "grid.frag")
+    end
+end
+
+function _default{M <: GLPlainMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+    @gen_defaults! data begin
+        primitive::GLPlainMesh = mesh
+        color = default(RGBA, s, 1)
+        boundingbox = const_lift(GLBoundingBox, mesh)
+        shader = GLVisualizeShader("fragment_output.frag", "plain.vert", "plain.frag")
     end
 end
