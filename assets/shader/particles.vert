@@ -34,7 +34,7 @@ uniform int len;
 
 flat out uvec2 o_id;
      out vec4  o_color;
-
+out vec2 o_uv;
 
 {{position_type}} position;
 {{position_x_type}} position_x;
@@ -128,6 +128,7 @@ void main(){
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
     o_color    = _color(color, intensity, color_map, color_norm, index, len);
     V *= scale;
+    o_uv = vec2(0.0);
     rotate(rotation, index, V, N);
     render(pos + V, N, view*model, projection, light);
 }

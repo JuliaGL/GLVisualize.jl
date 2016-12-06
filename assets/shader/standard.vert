@@ -10,13 +10,13 @@ void render(vec3 vertices, vec3 normals, mat4 viewmodel, mat4 projection, vec3 l
 
 uniform uint objectid;
 flat out uvec2 o_id;
+out vec2 o_uv;
 out vec4 o_color;
 
 void main()
 {
 	o_id = uvec2(objectid, gl_VertexID+1);
+	o_uv = vec2(0);
 	o_color = color;
 	render(vertices, normals, view*model, projection, light);
 }
-
-
