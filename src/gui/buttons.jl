@@ -140,6 +140,14 @@ function slider(
     Context(point_robj, line), slider_s
 end
 
+
+function widget{T <: Range}(
+        r::Signal{T}, screen::Screen;
+        args...
+    )
+    slider(value(r), screen; args...)
+end
+
 function play_slider(
         screen, icon_size = Signal(54), range = 1:360;
         slider_length = 200
