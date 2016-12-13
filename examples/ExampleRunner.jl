@@ -10,7 +10,7 @@ module ExampleRunner
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
-import GLVisualize: toggle_button, slider, button, mm
+import GLVisualize: toggle_button, slider, button, mm, create_video_stream, add_frame!
 
 import Compat: String, UTF8String
 
@@ -19,7 +19,7 @@ include("mouse.jl")
 
 const installed_pkgs = Pkg.installed()
 
-const hasplots = get(installed_pkgs, "Plots", v"0") > v"0.9.3"
+const hasplots = false# get(installed_pkgs, "Plots", v"0") > v"0.9.3"
 const is_04 = VERSION.minor == 4
 
 if !hasplots
@@ -444,6 +444,7 @@ function make_tests(config)
     end)
     failed = fill(false, length(config.files))
     Reactive.stop() # stop Reactive! We be pollin' ourselves!
+    io = nothing
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]
         try
@@ -451,7 +452,25 @@ function make_tests(config)
 
             display_msg(test_module, config)
             timings = Float64[]
-            frames = 0
+            frames = 0;
+            yield()
+            sleep(0.3)
+
+            poll_glfw()
+            poll_reactive()
+            poll_reactive()
+            yield()
+            sleep(0.3)
+            io, buffer = if config.record
+                name = basename(config.current_file)[1:end-3]
+                name = name * ".mkv"
+                name = joinpath(config.screencast_folder, name)
+                @show name
+                create_video_stream(name, config.rootscreen)
+            else
+                nothing, nothing
+            end
+            sleep(0.3)
             while !break_loop && isopen(config.rootscreen)
                 tic()
                 poll_glfw()
@@ -460,13 +479,14 @@ function make_tests(config)
                     poll_reactive() # two times for secondary signals
                     render_frame(config.rootscreen)
                     swapbuffers(config.rootscreen)
-                    yield() # yield in timings? Seems fair
                 end
                 frames += 1
                 t = toq()
                 if length(timings) < 1000 && frames > 2
                     push!(timings, t)
                 end
+                config.record && add_frame!(io, config.rootscreen, buffer)
+                yield() # yield in timings? Seems fair
                 GLWindow.sleep_pessimistic((1/60) - t)
                 (runthrough != 0 && frames > 20) && break
             end
@@ -489,6 +509,9 @@ function make_tests(config)
             config[:success] = false
             config[:exception] = ex
         finally
+            if config.record && io != nothing
+                close(io)
+            end
             empty!(window)
             empty!(config.buttons[:timesignal].actions)
             window.color = RGBA{Float32}(1,1,1,1)
