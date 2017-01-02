@@ -22,7 +22,7 @@ files = [
     "text/text_particle.jl",
 ]
 
-map!(x-> GLVisualize.dir("examples", x), files)
+map!(x-> GLVisualize.dir("examples", x), files, files)
 files = union(files, flatten_paths(GLVisualize.dir("examples")))
 push!(files, GLVisualize.dir("test", "summary.jl"))
 
