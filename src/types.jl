@@ -211,9 +211,11 @@ end
 
 
 
-immutable Intensity{T} <: FieldVector{T}
+immutable Intensity{T <: AbstractFloat} <: FieldVector{T}
     i::T
 end
+@inline Intensity{T <: AbstractFloat}(i::NTuple{1, T}) = Intensity{T}(i[1])
+@inline (::Type{I}){I <: Intensity}(i::Intensity) = I(i.i)
 
 typealias GLIntensity Intensity{Float32}
 export Intensity, GLIntensity
