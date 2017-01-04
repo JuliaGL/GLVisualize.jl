@@ -1,7 +1,6 @@
 __precompile__(true)
 module GLVisualize
 
-using Compat
 using GLFW
 using GLWindow
 using GLAbstraction
@@ -18,16 +17,15 @@ using Packing
 using SignedDistanceFields
 using FreeType
 using Iterators
-import ColorVectorSpace
-
-import Images
 using Base.Markdown
 
-using Compat
-import Compat: unsafe_wrap, unsafe_string, String, view, UTF8String
+import ColorVectorSpace
+import Images
 
 import Base: merge, convert, show
 
+using Compat
+import Compat: unsafe_wrap, unsafe_string, String, view, UTF8String
 
 if VERSION < v"0.5.0-dev+4612"
     function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
@@ -37,8 +35,14 @@ else
     import Base: view
 end
 
-typealias GLBoundingBox AABB{Float32}
+if VERSION >= v"0.6.0-dev.1015"
+    using Base.Iterators: Repeated, repeated
+else
+    using Base.Repeated
+end
 
+
+typealias GLBoundingBox AABB{Float32}
 
 export renderloop
 
@@ -52,6 +56,7 @@ dir(dirs...) = joinpath(dirname(@__FILE__), "..", dirs...)
 returns path relative to the assets folder
 """
 assetpath(folders...) = dir("assets", folders...)
+
 """
 Loads a file from the asset folder
 """

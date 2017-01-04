@@ -39,7 +39,7 @@ function render_str(
         print(io, str)
         append!(colors, fill(tocolor[t], length(str)))
     end
-    takebuf_string(io), colors
+    String(take!(io)), colors
 end
 function highlight_text(src::AbstractString, T = Themes.DefaultTheme)
     io = IOBuffer()

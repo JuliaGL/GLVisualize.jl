@@ -143,7 +143,7 @@ end
 
 
 iter_or_array(x) = repeated(x)
-iter_or_array(x::Base.Repeated) = x
+iter_or_array(x::Repeated) = x
 iter_or_array(x::Array) = x
 iter_or_array(x::Vector{Ptr{FreeType.FT_FaceRec}}) = repeated(x)
 
