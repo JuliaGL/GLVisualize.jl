@@ -6,7 +6,7 @@ function std_checkbox()
 end
 
 function widget{T<:Union{Bool, UInt8}}(tick::Signal{T}, window;
-        checkbox=std_checkbox(), area=(50, 50),
+        checkbox = std_checkbox(), area=(50, 50),
         kw_args...
     )
     icon = map(tick) do t
@@ -25,12 +25,12 @@ function choice_visual(x; kw_args...)
     visualize(x; kw_args...)
 end
 
-function widget{T<:Enum}(enum::Signal{T}, window;
-        text_scale=Vec2f0(1), kw_args...
+function widget{T <: Enum}(enum::Signal{T}, window;
+        kw_args...
     )
     all_enums = collect(instances(T))
-    i0 = findfirst(x->x==value(enum), all_enums)
-    choice_widget(all_enums, window; start_idx=i0, text_scale=text_scale, kw_args...)
+    i0 = findfirst(x-> x==value(enum), all_enums)
+    widget(Signal(all_enums), window; kw_args...)
 end
 
 
@@ -42,35 +42,41 @@ function myscale!(robj, target)
     wt = Vec2f0(wt1, wt2)
     t = translationmatrix(-minimum(bb))
     t2 = translationmatrix(minimum(target))
-    sm = minimum((1f0./w) .* wt)
+    sm = minimum((1f0 ./ w) .* wt)
     s = scalematrix(Vec3f0(sm, sm, 1))
     m = t2*s*t
     set_arg!(robj, :model, m)
     set_arg!(robj, :boundingbox, Signal(m*bb))
 end
 
-function widget{T<:AbstractVector}(choices::Signal{T}, window;
-        text_scale=Vec2f0(1), start_idx=1, area=(150, 30), kw_args...
+function widget{T <: AbstractVector}(choices::Signal{T}, window;
+        text_scale = 4mm, start_idx = 1, area = (150, 30), kw_args...
     )
     choices_v = value(choices)
-    show_area = SimpleRectangle{Float32}(0,0, area...)
+    show_area = SimpleRectangle{Float32}(0, 0, area...)
     vizzes = map(enumerate(choices_v)) do i_c
         i, c = i_c
         vis = choice_visual(c;
-            relative_scale=text_scale,
-            preferred_camera=:fixed_pixel,
+            relative_scale = text_scale,
+            preferred_camera = :fixed_pixel,
             kw_args...
         )
-        set_arg!(vis, :visible, i==start_idx)
-        myscale!(vis, AABB{Float32}(Vec3f0(5,5,0), Vec3f0(area..., 1)-Vec3f0(5,5,0)))
-        vis
+        vs = vis.children[][:visible]
+        vs2 = Signal(i == start_idx)
+
+        vis.children[][:visible] = map(vs, vs2) do a, b
+            !a ? false : b # only use parent visibility for hiding, not for showing
+        end
+        push!(vs2, i == start_idx) # doesn't seem to take the correct value otherwise
+        myscale!(vis, AABB{Float32}(Vec3f0(5, 5, 0), Vec3f0(area..., 1) - Vec3f0(5,5,0)))
+        vis, vs2
     end
-    vis = visualize(show_area, color=RGBA{Float32}(0.95, 0.95, 0.95, 0.4)).children[]
-    visual = Context(vis, vizzes...)
+    vis = visualize(show_area, color = RGBA{Float32}(0.95, 0.95, 0.95, 0.4)).children[]
+    visual = Context(vis, map(first, vizzes)...)
     selected = foldp(start_idx, toggle(visual, window)) do i0, _
-        idx = mod1(i0+1, length(vizzes))
-        for i=1:length(vizzes)
-            set_arg!(vizzes[i], :visible, i==idx)
+        idx = mod1(i0 + 1, length(vizzes))
+        for i = 1:length(vizzes)
+            push!(vizzes[i][2], i == idx)
         end
         idx
     end

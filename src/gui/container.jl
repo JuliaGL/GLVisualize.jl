@@ -16,8 +16,8 @@ keytype(x) = Any
 
 
 function extract_edit_menu(
-        edit_dict, edit_screen, isvisible;
-        mm = 3.71f0, icon_size = 32, knob_scale = 1.6mm
+        edit_dict, edit_screen, isvisible = Signal(true);
+        icon_size = 32, knob_scale = 1.6mm
     )
 
     screen_w = widths(edit_screen)[1] - round(Int, 10mm)
