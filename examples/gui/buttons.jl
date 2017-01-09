@@ -23,7 +23,7 @@ end
 # step through the `time`
 function lorenz(array::Vector, a = 5.0 ,b = 2.0, c = 6.0, d = 0.01)
     t0 = Point3f0(0.1, 0, 0)
-    for i=eachindex(array)
+    for i = eachindex(array)
         t0 = lorenz(t0, a,b,c,d)
         array[i] = t0
     end
