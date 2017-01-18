@@ -64,7 +64,7 @@ function widget{T <: AbstractVector}(choices::Signal{T}, window;
         vs = vis.children[][:visible]
         vs2 = Signal(i == start_idx)
 
-        vis.children[][:visible] = map(vs, vs2) do a, b
+        vis.children[][:visible] = const_lift(vs, vs2) do a, b
             !a ? false : b # only use parent visibility for hiding, not for showing
         end
         push!(vs2, i == start_idx) # doesn't seem to take the correct value otherwise

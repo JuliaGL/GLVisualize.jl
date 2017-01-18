@@ -1,27 +1,48 @@
 GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, Images.data(img))
 
-_default{T <: Colorant, X}(main::Images.Image{T, 2, X}, s::Style, d::Dict) = _default(Images.data(main), s, d)
+function _default{T <: Colorant, X}(main::Images.Image{T, 2, X}, s::Style, d::Dict)
+    props = main.properties
+    if haskey(props, "spatialorder")
+        so = props["spatialorder"]
+        get!(d, :spatialorder, join(so, ""))
+    end
+    _default(Images.data(main), s, d)
+end
 _default{T <: Colorant, X}(main::Signal{Images.Image{T, 2, X}}, s::Style, d::Dict) = _default(const_lift(Images.data, main), s, d)
 
 """
 A matrix of colors is interpreted as an image
 """
-_default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults! data begin
-    image                 = main => (Texture, "image, can be a Texture or Array of colors")
-    primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
-    boundingbox           = GLBoundingBox(primitive)
-    preferred_camera      = :orthographic_pixel
-    fxaa                  = false
-    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
+function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
+    @gen_defaults! data begin
+        spatialorder = "xy"
+    end
+    if !(spatialorder in ("xy", "yx"))
+        error("Spatial order only accepts \"xy\" or \"yz\" as a value. Found: $spatialorder")
+    end
+    @gen_defaults! data begin
+        image                 = main => (Texture, "image, can be a Texture or Array of colors")
+        primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
+        boundingbox           = GLBoundingBox(primitive)
+        preferred_camera      = :orthographic_pixel
+        fxaa                  = false
+        shader                = GLVisualizeShader(
+            "fragment_output.frag", "uv_vert.vert", "texture.frag",
+            view = Dict("uv_swizzle" => "o_uv.$(spatialorder)")
+        )
+    end
 end
 function _default{T <: Colorant}(main::VecTypes{T}, ::Style, data::Dict)
     @gen_defaults! data begin
         image                 = main => (Texture, "image, can be a Texture or Array of colors")
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, length(value(main)), 50f0) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
-        boundingbox           = GLBoundingBox(primitive)
+        boundingbox           = const_lift(GLBoundingBox, primitive)
         preferred_camera      = :orthographic_pixel
         fxaa                  = false
-        shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
+        shader                = GLVisualizeShader(
+            "fragment_output.frag", "uv_vert.vert", "texture.frag",
+            view = Dict("uv_swizzle" => "o_uv.xy")
+        )
     end
 end
 
@@ -103,6 +124,9 @@ Takes a 3D image and decides if it is a volume or an animated Image.
 function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict)
     props = img.properties
     if haskey(props, "timedim")
+        if haskey(props, "spatialorder")
+            get!(data, :spatialorder, join(props["spatialorder"], ""))
+        end
         timedim = props["timedim"]
         video_signal = const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
         return _default(video_signal, s, data)
@@ -134,7 +158,7 @@ _default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
     boundingbox           = GLBoundingBox(primitive)
     fxaa                  = false
     shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", view=Dict(
-         "function" => Compat.String(func.source)
+         "function" => String(func.source)
      ))
 end
 
