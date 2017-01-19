@@ -243,3 +243,64 @@ function moving_average(p, cutoff,  history, n = 5)
     end
     true, sum(history) ./ length(history)# smooth
 end
+
+function layoutlinspace(n::Integer)
+    if n == 1
+        1:1
+    else
+        linspace(1/n, 1, n)
+    end
+end
+xlayout(x::Int) = zip(layoutlinspace(x), Iterators.repeated(""))
+function xlayout{T <: AbstractFloat}(x::AbstractVector{T})
+    zip(x, Iterators.repeated(""))
+end
+
+function xlayout{T <: AbstractString}(x::AbstractVector{T})
+    zip(layoutlinspace(length(x)), x)
+end
+function ylayout(x::AbstractVector)
+    zip(layoutlinspace(length(x)), x)
+end
+function IRect(x, y , w, h)
+    SimpleRectangle(
+        round(Int, x),
+        round(Int, y),
+        round(Int, w),
+        round(Int, h),
+    )
+end
+
+
+
+function layoutscreens(parent, layout; kw_args...)
+    reverse!(layout) # we start from bottom to top, while lists are written top to bottom
+    lastw, lasth = 0, 0
+    result = Vector{Screen}[]
+    for (h, xlist) in ylayout(layout)
+        result_x = Screen[]
+        for (w, title) in xlayout(xlist)
+            area = map(parent.area) do area
+                wp = widths(area)
+                xmin = wp[1] * lastw
+                ymin = wp[2] * lasth
+                xmax = wp[1] * w
+                ymax = wp[2] * h
+                xmax = max(xmin, xmax)
+                xmin = min(xmin, xmax)
+                ymax = max(ymin, ymax)
+                ymin = min(ymin, ymax)
+                IRect(xmin, ymin, xmax - xmin, ymax - ymin)
+            end
+            lastw = w
+            screen = Screen(parent; area = area, kw_args...)
+            push!(result_x, screen)
+            if !isempty(title)
+                #title_screen = Screen(screen, )
+            end
+        end
+        lastw = 0; lasth = h
+        push!(result, result_x)
+    end
+    result
+end
