@@ -271,7 +271,18 @@ function IRect(x, y , w, h)
     )
 end
 
-
+function laytout_rect(area, lastw, lasth, w, h)
+    wp = widths(area)
+    xmin = wp[1] * lastw
+    ymin = wp[2] * lasth
+    xmax = wp[1] * w
+    ymax = wp[2] * h
+    xmax = max(xmin, xmax)
+    xmin = min(xmin, xmax)
+    ymax = max(ymin, ymax)
+    ymin = min(ymin, ymax)
+    IRect(xmin, ymin, xmax - xmin, ymax - ymin)
+end
 
 function layoutscreens(parent, layout; kw_args...)
     reverse!(layout) # we start from bottom to top, while lists are written top to bottom
@@ -280,18 +291,7 @@ function layoutscreens(parent, layout; kw_args...)
     for (h, xlist) in ylayout(layout)
         result_x = Screen[]
         for (w, title) in xlayout(xlist)
-            area = map(parent.area) do area
-                wp = widths(area)
-                xmin = wp[1] * lastw
-                ymin = wp[2] * lasth
-                xmax = wp[1] * w
-                ymax = wp[2] * h
-                xmax = max(xmin, xmax)
-                xmin = min(xmin, xmax)
-                ymax = max(ymin, ymax)
-                ymin = min(ymin, ymax)
-                IRect(xmin, ymin, xmax - xmin, ymax - ymin)
-            end
+            area = const_lift(laytout_rect, parent.area, lastw, lasth, w, h)
             lastw = w
             screen = Screen(parent; area = area, kw_args...)
             push!(result_x, screen)
