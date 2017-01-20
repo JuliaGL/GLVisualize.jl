@@ -22,7 +22,9 @@ function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
     end
     @gen_defaults! data begin
         image                 = main => (Texture, "image, can be a Texture or Array of colors")
-        primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
+        primitive::GLUVMesh2D = const_lift(main) do im
+            SimpleRectangle{Float32}(0f0, 0f0, size(im)...)
+        end => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
         boundingbox           = const_lift(GLBoundingBox, primitive)
         preferred_camera      = :orthographic_pixel
         fxaa                  = false
