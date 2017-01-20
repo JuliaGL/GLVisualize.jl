@@ -256,7 +256,7 @@ function xlayout{T <: AbstractFloat}(x::AbstractVector{T})
     zip(x, Iterators.repeated(""))
 end
 
-function xlayout{T <: AbstractString}(x::AbstractVector{T})
+function xlayout(x::AbstractVector)
     zip(layoutlinspace(length(x)), x)
 end
 function ylayout(x::AbstractVector)
@@ -271,7 +271,7 @@ function IRect(x, y , w, h)
     )
 end
 
-function laytout_rect(area, lastw, lasth, w, h)
+function layout_rect(area, lastw, lasth, w, h)
     wp = widths(area)
     xmin = wp[1] * lastw
     ymin = wp[2] * lasth
@@ -284,20 +284,42 @@ function laytout_rect(area, lastw, lasth, w, h)
     IRect(xmin, ymin, xmax - xmin, ymax - ymin)
 end
 
-function layoutscreens(parent, layout; kw_args...)
-    reverse!(layout) # we start from bottom to top, while lists are written top to bottom
+function layoutscreens(parent, layout;
+        title_height = 6mm, text_color = default(RGBA),
+        background_color = RGBA(1f0, 1f0, 1f0), stroke_color = RGBA(0f0, 0f0, 0f0, 0.4f0),
+        kw_args...
+    )
+    layout = reverse(layout) # we start from bottom to top, while lists are written top to bottom
     lastw, lasth = 0, 0
     result = Vector{Screen}[]
     for (h, xlist) in ylayout(layout)
         result_x = Screen[]
         for (w, title) in xlayout(xlist)
-            area = const_lift(laytout_rect, parent.area, lastw, lasth, w, h)
-            lastw = w
+            area = const_lift(layout_rect, parent.area, lastw, lasth, w, h)
+
             screen = Screen(parent; area = area, kw_args...)
             push!(result_x, screen)
-            if !isempty(title)
-                #title_screen = Screen(screen, )
+            if !isempty(value(title))
+                tarea = map(area) do area
+                    IRect(0, area.h - title_height, area.w, title_height)
+                end
+                title_screen = Screen(screen, area = tarea, color = background_color)
+                robj = visualize(
+                    title, relative_scale = title_height * 0.7,
+                    direction = 1, gap = Vec3f0(1mm, 0, 0),# in case it's a list!
+                    color = text_color
+                )
+                gap = title_height * 0.15
+                GLAbstraction.transform!(robj, translationmatrix(Vec3f0(gap, gap, 0)))
+                _view(robj, title_screen, camera = :fixed_pixel)
+                if stroke_color != nothing
+                    _view(visualize(
+                        map(a-> Point2f0[(0, 0), (a.w, 0)], area), :linesegment,
+                        thickness = 1f0, color = stroke_color
+                    ), title_screen, camera = :fixed_pixel)
+                end
             end
+            lastw = w
         end
         lastw = 0; lasth = h
         push!(result, result_x)
