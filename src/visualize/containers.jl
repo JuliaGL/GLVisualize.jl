@@ -9,12 +9,18 @@ function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, data::Dict)
     @gen_defaults! data begin
         scale    = Vec3f0(1) #axis of 3D dimension, can be signed
     end
-    for ind=1:length(grid)
-        robj     = grid[ind].children[]
-        bb_s     = boundingbox(robj)
-        w        = const_lift(widths, bb_s)
+    for ind = 1:length(grid)
+        robj = grid[ind]
+        bb_s = boundingbox(robj)
+        w = const_lift(widths, bb_s)
         model_scale = const_lift(max_xyz_inv, w, Vec{N, Int}(1)...)
-        robj[:model] = const_lift(grid_translation, scale, model_scale, bb_s, robj[:model], ind2sub(size(grid), ind)...) # update transformation matrix
+        set_arg!(robj, :model,
+            const_lift(
+                grid_translation, scale,
+                model_scale, bb_s, transformation(robj),
+                ind2sub(size(grid), ind)...
+            ) # update transformation matrix
+        )
     end
     Context(grid...)
 end
