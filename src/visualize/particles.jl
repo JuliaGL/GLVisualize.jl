@@ -244,12 +244,12 @@ function meshparticle(p, s, data)
 
         instances   = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)
-        lighting    = true
+        shading    = true
         shader      = GLVisualizeShader(
             "util.vert", "particles.vert", "fragment_output.frag", "standard.frag",
             view = Dict(
                 "position_calc" => position_calc(position, position_x, position_y, position_z, TextureBuffer),
-                "light_calc" => light_calc(lighting)
+                "light_calc" => light_calc(shading)
             )
         )
     end
