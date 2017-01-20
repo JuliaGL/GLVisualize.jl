@@ -38,6 +38,7 @@ const default_kwargs_docs = Dict(
     :model => "Must be`Mat4f0`. Scales, rotates and positions the object",
     :preferred_camera => "Preferred camera",
     :light => "Light to illuminate the model",
+    :shading => "Accepts true or false. When true, uses blinn phong shading, otherwise flat"
 )
 function get_docs(arg1, style=:default)
     s = Style{style}()
