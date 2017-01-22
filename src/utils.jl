@@ -262,6 +262,11 @@ end
 function ylayout(x::AbstractVector)
     zip(layoutlinspace(length(x)), x)
 end
+function ylayout{T <: Tuple}(x::AbstractVector{T})
+    sizes = map(first, x)
+    values = map(last, x)
+    zip(sizes, values)
+end
 function IRect(x, y , w, h)
     SimpleRectangle(
         round(Int, x),

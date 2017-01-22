@@ -18,13 +18,13 @@ function toggle_button(a::Signal, b::Composable, screen)
     b, a
 end
 
-function toggle_button(a, b, screen)
+function toggle_button(a, b, screen; kw_args...)
     id = Signal(0)
     ab_bool = toggle(id, screen)
     a_b = map(ab_bool) do aORb
         aORb ? a : b
     end
-    robj = visualize(a_b)
+    robj = visualize(a_b; kw_args...)
     push!(id, robj.children[].id)
     robj, ab_bool
 end
