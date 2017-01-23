@@ -163,3 +163,24 @@ function play_slider(
     )
     slider_w, play_button, Context(point_robj, line)
 end
+
+
+function labeled_slider(
+        range, window;
+        text_scale = 5mm,
+        text_color = RGBA(0f0, 0f0, 0f0, 1f0),
+        kw_args...
+    )
+    visual, signal = slider(
+        range, window;
+        kw_args...
+    )
+    text = visualize(
+        map(string, signal), # convert to string
+        relative_scale = text_scale,
+        color = text_color
+    )
+    # put in list and visualize so it will get displayed side to side
+    # direction = first dimension --> x dimension
+    visualize([visual, text],  direction = 1, gap = Vec3f0(3mm, 0, 0)), signal
+end
