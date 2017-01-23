@@ -1,14 +1,14 @@
 GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, Images.data(img))
 
-function _default{T <: Colorant, X}(main::Images.Image{T, 2, X}, s::Style, d::Dict)
-    props = main.properties
+function _default{T <: Colorant, X}(main::TOrSignal{Images.Image{T, 2, X}}, s::Style, d::Dict)
+    props = value(main).properties # TODO update this if signal
     if haskey(props, "spatialorder")
         so = props["spatialorder"]
         get!(d, :spatialorder, join(so, ""))
     end
-    _default(Images.data(main), s, d)
+    _default(const_lift(Images.data, main), s, d)
 end
-_default{T <: Colorant, X}(main::Signal{Images.Image{T, 2, X}}, s::Style, d::Dict) = _default(const_lift(Images.data, main), s, d)
+
 
 """
 A matrix of colors is interpreted as an image
