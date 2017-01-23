@@ -147,14 +147,18 @@ function widget{T <: Range}(
     )
     slider(value(r), screen; args...)
 end
+function playbutton(screen; icon_size = 10mm)
+    play_button, play_stop_signal = GLVisualize.toggle_button(
+        loadasset("play.png"), loadasset("pause.png"), screen,
+        primitive = IRect(0, 0, icon_size, icon_size)
+    )
+end
 
 function play_slider(
         screen, icon_size = Signal(54), range = 1:360;
         slider_length = 200
     )
-    play_button, play_stop_signal = GLVisualize.toggle_button(
-        loadasset("checked.png"), loadasset("unchecked.png"), screen
-    )
+    play_button, play_stop_signal = playbutton(screen)
     play_s = map(!, play_stop_signal)
     slider_s, slider_w = slider(
         range, screen,
