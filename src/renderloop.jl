@@ -61,7 +61,7 @@ end
 
 
 
-function glscreen(name="GLVisualize";
+function glscreen(name = "GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
         debugging = false,
         clear = true,

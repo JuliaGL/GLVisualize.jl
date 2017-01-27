@@ -94,7 +94,7 @@ With play, you can slice a 3D array along `timedim` at time `t`.
 This can be used to treat a 3D array like a video and create an image stream from it.
 """
 function play{T}(array::Array{T, 3}, timedim::Integer, t::Integer)
-    index = ntuple(dim->dim==timedim ? t : Colon(), Val{3})
+    index = ntuple(dim-> dim == timedim ? t : Colon(), Val{3})
     array[index...]
 end
 """
@@ -114,8 +114,8 @@ which will be reused for better performance.
 """
 function play{T}(buffer::Array{T, 2}, video_stream, t)
     eof(video_stream) && seekstart(video_stream)
-    w,h     = size(buffer)
-    buffer     = reinterpret(UInt8, buffer, (3, w,h))
+    w, h = size(buffer)
+    buffer = reinterpret(UInt8, buffer, (3, w,h))
     read!(video_stream, buffer) # looses type and shape
     return reinterpret(T, buffer, (w,h))
 end
@@ -154,7 +154,7 @@ float function(float x) {
 """
 _default(func::String, s::Style{:shader}, data::Dict) = @gen_defaults! data begin
     color                 = default(RGBA, s)  => Texture
-    dimensions            = (120f0,120f0)
+    dimensions            = (120f0, 120f0)
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
