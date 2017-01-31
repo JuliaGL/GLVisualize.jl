@@ -15,7 +15,7 @@ A matrix of colors is interpreted as an image
 """
 function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
     @gen_defaults! data begin
-        spatialorder = "xy"
+        spatialorder = "yx"
     end
     if !(spatialorder in ("xy", "yx"))
         error("Spatial order only accepts \"xy\" or \"yz\" as a value. Found: $spatialorder")
@@ -59,7 +59,7 @@ function _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict)
     x, y, xw, yh = first(ranges[1]), first(ranges[2]), last(ranges[1]), last(ranges[2])
     @gen_defaults! data begin
         intensity             = main => Texture
-        color_map             = default(Vector{RGBA{U8}},s) => Texture
+        color_map             = default(Vector{RGBA{N0f8}},s) => Texture
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(x, y, xw-x, yh-y)
         color_norm            = const_lift(extrema2f0, main)
         stroke_width::Float32 = 0.05f0
@@ -143,6 +143,16 @@ function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Di
 end
 
 """
+Displays 3D array as movie with 3rd dimension as time dimension
+"""
+function _default{T <: Colorant}(img::AbstractArray{T, 3}, s::Style, data::Dict)
+    # TODO axis array and stuff
+    video_signal = const_lift(play, img, 3, loop(1:size(img, 3)))
+    return _default(video_signal, s, data)
+end
+
+
+"""
 Takes a shader as a parametric function. The shader should contain a function stubb
 like this:
 ```GLSL
@@ -166,11 +176,11 @@ end
 
 
 #Volumes
-typealias VolumeElTypes Union{Colorant, AbstractFloat}
+typealias VolumeElTypes Union{Gray, AbstractFloat, Intensity}
 
 const default_style = Style{:default}()
 
-function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::Dict)
+function _default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::Dict)
     data = @gen_defaults! data begin
         isovalue  = 0.5f0
         algorithm = IsoValue
@@ -194,7 +204,7 @@ end
     glCullFace(GL_FRONT)
 end
 
-_default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
+_default{T <: VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
     intensities      = main => Texture
     dimensions       = Vec3f0(1)
     hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
@@ -211,8 +221,8 @@ _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_de
     isovalue         = 0.5f0
     isorange         = 0.01f0
     shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
-    # prerender        = VolumePrerender()
-    # postrender       = () -> begin
-    #     glDisable(GL_CULL_FACE)
-    # end
+    prerender        = VolumePrerender()
+    postrender       = () -> begin
+        glDisable(GL_CULL_FACE)
+    end
 end

@@ -20,6 +20,14 @@ using Iterators
 using Base.Markdown
 
 import ColorVectorSpace
+if isdefined(FixedPointNumbers, :N0f8)
+    import FixedPointNumbers: N0f8
+else
+    const N0f8 = FixedPointNumbers.UFixed8
+end
+
+export N0f8
+
 import Images
 
 import Base: merge, convert, show

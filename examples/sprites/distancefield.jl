@@ -30,7 +30,7 @@ dfield = map(timesignal) do t
     tpi = (2pi*t)+0.2
     Float32[xy_data(x,y,tpi)+0.5f0 for x=1:n2, y=1:n2]
 end
-Base.rand(m::MersenneTwister, ::Type{U8}) = U8(rand(m, UInt8))
+Base.rand(m::MersenneTwister, ::Type{N0f8}) = N0f8(rand(m, UInt8))
 Base.rand{T <: Colorant}(m::MersenneTwister, ::Type{T}) = T(ntuple(x->rand(m, eltype(T)), Val{length(T)})...)
 
 distfield = visualize((DISTANCEFIELD, positions),
