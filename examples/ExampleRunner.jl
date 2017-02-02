@@ -137,8 +137,8 @@ function create_screens(rootscreen)
         "play.png", "pause.png"
     ]
     imgs = map(paths) do path
-        img = map(RGBA{U8}, loadasset(path))
-        img, flipdim(img, 1)
+        img = convert(Matrix{RGBA{N0f8}}, loadasset(path))
+        img, flipdim(img, 2)
     end
 
     code_toggle, code_s = widget(
@@ -227,14 +227,14 @@ function create_screens(rootscreen)
         push!(preserved_signals, s)
 
         _w, _h, _ = widths(value(boundingbox(b)))
-        ratio = _w / _h
+        ratio = _h / _w
         x_width = ratio * iconsize # we have half widthed icons
         place = SimpleRectangle{Float32}(
-            last_x+1, last_y+1,
+            last_x + 1, last_y + 1,
             x_width, iconsize
         )
         layout!(place, b)
-        _view(b, control_screen, camera=:fixed_pixel)
+        _view(b, control_screen, camera = :fixed_pixel)
         last_x += x_width + 0.5mm
     end
 

@@ -17,7 +17,7 @@ function create_video(frames::Vector, name, screencap_folder, resample_steps=0, 
             for x=1:resample_steps
                 resampled = Images.restrict(resampled)
             end
-            frame = map(RGB{U8}, resampled)
+            frame = map(RGB{N0f8}, resampled)
             save(joinpath(path, "$name$i.png"), frame, true)
         end
         len = length(frames)
@@ -63,13 +63,13 @@ function create_video_stream(path, window)
     tex = GLWindow.framebuffer(window).color
     res = size(tex)
     io, process = open(`ffmpeg -f rawvideo -pixel_format rgb24 -s:v $(res[1])x$(res[2]) -i pipe:0 -vf vflip -y $path`, "w")
-    io, Array(RGB{U8}, res) # tmp buffer
+    io, Array(RGB{N0f8}, res) # tmp buffer
 end
+
 function add_frame!(io, window, buffer)
     #codec = `-codec:v libvpx -quality good -cpu-used 0 -b:v 500k -qmin 10 -qmax 42 -maxrate 500k -bufsize 1000k -threads 8`
     tex = GLWindow.framebuffer(window).color
-
-    write(io, map(RGB{U8}, gpu_data(tex)))
+    write(io, map(RGB{N0f8}, gpu_data(tex)))
 end
 
 function webm_batchconvert(oldpath, newpath, scale = 0.5)

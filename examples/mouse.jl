@@ -40,7 +40,7 @@ end
 function add_mouse(window)
     @materialize mouseposition, mouse_buttons_pressed = window.inputs
     model_matrix = map(transmat, mouseposition, mouse_buttons_pressed)
-    cursor = map(RGBA{U8}, loadasset("cursor.png"))
+    cursor = map(RGBA{N0f8}, loadasset("cursor.png"))
     w,h = size(cursor)
     ratio = Float32(w/h)
     w, h = ratio*15f0, 15f0

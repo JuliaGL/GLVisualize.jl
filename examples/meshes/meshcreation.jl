@@ -35,8 +35,8 @@ sphere = Sphere{Float32}(Point3f0(0), 2f0)
 vertices = decompose(Point3f0, sphere, 50)
 faces = decompose(GLTriangle, sphere, 50)
 
-# create a few colors, can be U8 or Float32
-colors = RGBA{U8}[RGBA{U8}(rand(), rand(), rand(), 1.) for i=1:5]
+# create a few colors, can be N0f8 or Float32
+colors = RGBA{N0f8}[RGBA{N0f8}(rand(), rand(), rand(), 1.) for i=1:5]
 # assign every vertice a random index into the color array (0-based indexes)
 attribute_id = rand(0f0:4f0, length(vertices))
 

@@ -33,7 +33,7 @@ barsvis = visualize(
     heightfield,
     scale_x = 0.07,
     scale_y = 0.07,
-    color_map=map(RGBA{U8}, colormap("Blues")),
+    color_map=map(RGBA{N0f8}, colormap("Blues")),
     color_norm=Vec2f0(0,1),
     ranges=(range, range),
     boundingbox=Signal(AABB{Float32}(mini, maxi))

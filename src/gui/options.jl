@@ -1,6 +1,6 @@
 
 function std_checkbox()
-    map(x->map(RGBA{U8}, x),
+    map(x->map(RGBA{N0f8}, x),
         (loadasset("checked.png"), loadasset("unchecked.png"))
     )
 end

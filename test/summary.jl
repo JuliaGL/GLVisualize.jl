@@ -100,7 +100,7 @@ function summarize(window, config)
     #     hover=map(string, ystat)
     # )
     benchmark_names = String[]; times = Vector{Float64}[]
-    success_thumbs = Matrix{RGB{U8}}[]
+    success_thumbs = Matrix{RGB{N0f8}}[]
     for (k,v) in successfull
         if haskey(v, :timings) && haskey(v, :thumbnail)
             push!(benchmark_names, basename(k))
