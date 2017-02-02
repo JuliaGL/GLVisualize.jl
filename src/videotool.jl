@@ -65,10 +65,10 @@ function create_video_stream(path, window)
     io, process = open(`ffmpeg -f rawvideo -pixel_format rgb24 -s:v $(res[1])x$(res[2]) -i pipe:0 -vf vflip -y $path`, "w")
     io, Array(RGB{N0f8}, res) # tmp buffer
 end
+
 function add_frame!(io, window, buffer)
     #codec = `-codec:v libvpx -quality good -cpu-used 0 -b:v 500k -qmin 10 -qmax 42 -maxrate 500k -bufsize 1000k -threads 8`
     tex = GLWindow.framebuffer(window).color
-
     write(io, map(RGB{N0f8}, gpu_data(tex)))
 end
 

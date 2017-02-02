@@ -25,7 +25,7 @@ Applies a gaussian filter to `img` and converts it to RGBA{N0f8}
 function myfilter(img, sigma)
     img = Images.imfilter_gaussian(img, [sigma, sigma])
     # map color compononts and clamp them
-    map(x-> RGB{N0f8}(mapc(x-> clamp(x, 0, 1), x)), img)
+    clamp01.(img)
 end
 
 

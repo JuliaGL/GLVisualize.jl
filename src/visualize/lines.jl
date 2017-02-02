@@ -71,7 +71,7 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
         pattern             = nothing
         fxaa                = false
         preferred_camera    = :orthographic_pixel
-        boundingbox         = GLBoundingBox(to_cpu_mem(value(p_vec)))
+        boundingbox         = const_lift(x-> GLBoundingBox(to_cpu_mem(x)), value(p_vec))
         indices             = const_lift(length, p_vec) => to_indices
         shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY

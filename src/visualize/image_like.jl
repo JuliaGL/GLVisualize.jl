@@ -163,7 +163,7 @@ float function(float x) {
 ```
 """
 _default(func::String, s::Style{:shader}, data::Dict) = @gen_defaults! data begin
-    color                 = default(RGBA, s)  => Texture
+    color                 = default(RGBA, s) => Texture
     dimensions            = (120f0, 120f0)
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
