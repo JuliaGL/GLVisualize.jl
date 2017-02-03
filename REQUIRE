@@ -1,7 +1,7 @@
 julia 0.5
 
 GLWindow 0.3
-GLAbstraction 0.3
+GLAbstraction 0.3.1
 GeometryTypes 0.2
 Compat 0.9.5
 
