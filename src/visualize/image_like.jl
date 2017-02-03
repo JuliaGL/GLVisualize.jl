@@ -20,10 +20,17 @@ function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
     if !(spatialorder in ("xy", "yx"))
         error("Spatial order only accepts \"xy\" or \"yz\" as a value. Found: $spatialorder")
     end
+    ranges = get(data, :ranges) do
+        const_lift(main, spatialorder) do m, s
+            (0:size(m, s == "xy" ? 1 : 2), 0:size(m, s == "xy" ? 2 : 1))
+        end
+    end
     @gen_defaults! data begin
-        image                 = main => (Texture, "image, can be a Texture or Array of colors")
-        primitive::GLUVMesh2D = const_lift(main) do im
-            SimpleRectangle{Float32}(0f0, 0f0, size(im)...)
+        image = main => (Texture, "image, can be a Texture or Array of colors")
+        primitive::GLUVMesh2D = const_lift(ranges) do r
+            x, y = minimum(r[1]), minimum(r[2])
+            xmax, ymax = maximum(r[1]), maximum(r[2])
+            SimpleRectangle{Float32}(x, y, xmax - x, ymax - y)
         end => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
         boundingbox           = const_lift(GLBoundingBox, primitive)
         preferred_camera      = :orthographic_pixel
