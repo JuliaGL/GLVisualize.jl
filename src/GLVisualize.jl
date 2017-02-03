@@ -20,13 +20,8 @@ using Iterators
 using Base.Markdown
 
 import ColorVectorSpace
-if isdefined(FixedPointNumbers, :N0f8)
-    import FixedPointNumbers: N0f8
-else
-    const N0f8 = FixedPointNumbers.UFixed8
-end
-
-export N0f8
+import GLAbstraction: N0f8
+export N0f8 # reexport for examples/tests
 
 import Images
 
@@ -35,13 +30,6 @@ import Base: merge, convert, show
 using Compat
 import Compat: unsafe_wrap, unsafe_string, String, view, UTF8String
 
-if VERSION < v"0.5.0-dev+4612"
-    function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
-        checkbounds(Bool, size(array), indexes...)
-    end
-else
-    import Base: view
-end
 
 if VERSION >= v"0.6.0-dev.1015"
     using Base.Iterators: Repeated, repeated
