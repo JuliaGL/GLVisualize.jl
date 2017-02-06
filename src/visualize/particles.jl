@@ -428,6 +428,7 @@ function sprites(p, s, data)
         scale_z     = nothing                => GLBuffer
 
         rotation    = Vec3f0(0,0,1)          => GLBuffer
+        image       = nothing => Texture
     end
     # TODO don't make this dependant on some shady type dispatch
     if isa(p[1], Char) && !isa(scale, Vec) # correct dimensions
@@ -452,7 +453,6 @@ function sprites(p, s, data)
         glow_width      = 0f0
         uv_offset_width = primitive_uv_offset_width(p[1]) => GLBuffer
 
-        image           = nothing => Texture
         distancefield   = primitive_distancefield(p[1]) => Texture
         indices         = const_lift(length, p[2]) => to_indices
         boundingbox     = const_lift(GLBoundingBox, inst)

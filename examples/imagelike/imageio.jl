@@ -28,6 +28,7 @@ x = Any[
     loadasset("mario", "stand", "right.png"),
     loadasset("mario", "jump", "left.gif"),
 ]
+x = map(x-> convert(Array{eltype(x), ndims(x)}, x), x)
 
 # visualize all images and convert the array to be a vector of element type context
 # This shouldn't be necessary, but it seems map is not able to infer the type alone

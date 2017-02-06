@@ -227,7 +227,7 @@ function create_screens(rootscreen)
         push!(preserved_signals, s)
 
         _w, _h, _ = widths(value(boundingbox(b)))
-        ratio = _h / _w
+        ratio = _w / _h
         x_width = ratio * iconsize # we have half widthed icons
         place = SimpleRectangle{Float32}(
             last_x + 1, last_y + 1,

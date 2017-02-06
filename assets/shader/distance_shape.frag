@@ -77,10 +77,10 @@ void fill(vec4 fillcolor, Nothing image, vec2 uv, float infill, inout vec4 color
     color = mix(color, fillcolor, infill);
 }
 void fill(vec4 c, sampler2D image, vec2 uv, float infill, inout vec4 color){
-    color.rgba = mix(color, texture(image, uv), infill);
+    color.rgba = mix(color, texture(image, uv.yx), infill);
 }
 void fill(vec4 c, sampler2DArray image, vec2 uv, float infill, inout vec4 color){
-    color = mix(color, texture(image, vec3(uv, f_primitive_index)), infill);
+    color = mix(color, texture(image, vec3(uv.yx, f_primitive_index)), infill);
 }
 
 

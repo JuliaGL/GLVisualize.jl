@@ -1,4 +1,4 @@
-GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, Images.data(img))
+GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, convert(Matrix, img))
 
 function _default{T <: Colorant, X}(main::TOrSignal{Images.Image{T, 2, X}}, s::Style, d::Dict)
     props = value(main).properties # TODO update this if signal
@@ -6,7 +6,7 @@ function _default{T <: Colorant, X}(main::TOrSignal{Images.Image{T, 2, X}}, s::S
         so = props["spatialorder"]
         get!(d, :spatialorder, join(so, ""))
     end
-    _default(const_lift(Images.data, main), s, d)
+    _default(const_lift(x-> convert(Matrix, x), main), s, d)
 end
 
 
