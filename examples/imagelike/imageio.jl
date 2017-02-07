@@ -22,13 +22,25 @@ arrays = map((RGBA{N0f8}, RGBA{Float32}, RGB{N0f8}, RGB{Float32}, BGRA{N0f8}, BG
 loaded_imgs = map(x->loadasset("test_images", x), readdir(assetpath("test_images")))
 
 # combine them all into one array and add an animated gif and a few other images
+
+# backward compatible imconvert
+imconvert(im) = im
+if isdefined(:Image)
+    function imconvert(im::Image)
+        if ndims(im) == 2
+            convert(Array{eltype(im), ndims(im)}, im)
+        else
+            permutedims(im.data, (2, 1, 3))
+        end
+    end
+end
 x = Any[
     arrays..., loaded_imgs...,
     loadasset("kittens-look.gif"),
     loadasset("mario", "stand", "right.png"),
     loadasset("mario", "jump", "left.gif"),
 ]
-x = map(x-> convert(Array{eltype(x), ndims(x)}, x), x)
+x = map(imconvert, x)
 
 # visualize all images and convert the array to be a vector of element type context
 # This shouldn't be necessary, but it seems map is not able to infer the type alone

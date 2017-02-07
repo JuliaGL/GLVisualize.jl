@@ -17,8 +17,15 @@ racoon = loadasset("racoon.png")
 img = convert(Matrix{RGBA{Float32}}, racoon)
 
 # create a slider that goes from 1-20 in 0.1 steps
-slider, slider_s = widget(Signal(1f0), range=1f0:0.1f0:20f0, window)
+slider, slider_s = widget(Signal(1f0), range = 1f0:0.1f0:20f0, window)
 
+if !isdefined(:clamp01)
+    function clamp01(color)
+        mapc(color) do c
+            clamp(c, 0, 1)
+        end
+    end
+end
 """
 Applies a gaussian filter to `img` and converts it to RGBA{N0f8}
 """
