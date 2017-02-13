@@ -6,6 +6,7 @@ immutable StructOfArrays{T,N,U<:Tuple} <: AbstractArray{T,N}
     arrays::U
 end
 
+
 type ScalarRepeat{T}
     scalar::T
 end
