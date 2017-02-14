@@ -418,7 +418,7 @@ import GLWindow: poll_reactive, poll_glfw, sleep_pessimistic
 function make_tests(config)
     i = 1; frames = 0; window = config.window; break_loop = false
     # start in run through when recording images
-    runthrough = record_image ? 1 : 0 # -1, backwards, 0 no running, 1 forward
+    runthrough = config.record_image ? 1 : 0 # -1, backwards, 0 no running, 1 forward
 
     function increase(x = runthrough)
         x = x == 0 ? 1 : x
@@ -489,6 +489,7 @@ function make_tests(config)
                     name = basename(config.current_file)[1:end-3]
                     name = joinpath(config.screencast_folder, name * ".png")
                     GLWindow.screenshot(config.rootscreen, path = name)
+                    break
                 end
                 config.record && add_frame!(io, config.rootscreen, buffer)
                 yield() # yield in timings? Seems fair
