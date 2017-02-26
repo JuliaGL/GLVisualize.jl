@@ -232,6 +232,7 @@ immutable Intensity{N, T} <: FixedVector{N, T}
     _::NTuple{N, T}
 end
 typealias GLIntensity Intensity{1, Float32}
+(::Type{Intensity{1,T}}){T,Tc}(x::Color{Tc,1}) = Intensity{1,T}(gray(x))
 export Intensity,GLIntensity
 
 NOT(x) = !x

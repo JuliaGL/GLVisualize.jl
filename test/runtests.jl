@@ -1,3 +1,5 @@
+include("micro.jl")
+
 using GLVisualize
 include(GLVisualize.dir("examples", "ExampleRunner.jl"))
 using ExampleRunner
