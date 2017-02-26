@@ -322,13 +322,23 @@ primitive_distancefield(::Char) = get_texture_atlas().images
 
 
 
-"""
-Particles with an image as primitive
-"""
-function _default{Pr <: Images.Image, P <: Point}(
+if isdefined(Images, :ImageAxes)
+    """
+    Particles with an image as primitive
+    """
+    function _default{Pr <: HasAxesArray, P <: Point}(
         p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
     )
-    _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
+        _default((const_lift(img -> gl_convert(img), p[1]), p[2]), s, data)
+    end
+else
+    include_string("""
+    function _default{Pr <: Images.Image, P <: Point}(
+            p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
+        )
+        _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
+    end
+    """)
 end
 function _default{C <: Colorant, P <: Point}(
         p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict

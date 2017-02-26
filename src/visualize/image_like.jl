@@ -1,15 +1,3 @@
-GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, convert(Matrix, img))
-
-function _default{T <: Colorant, X}(main::TOrSignal{Images.Image{T, 2, X}}, s::Style, d::Dict)
-    props = value(main).properties # TODO update this if signal
-    if haskey(props, "spatialorder")
-        so = props["spatialorder"]
-        get!(d, :spatialorder, join(so, ""))
-    end
-    _default(const_lift(x-> convert(Matrix, x), main), s, d)
-end
-
-
 """
 A matrix of colors is interpreted as an image
 """
@@ -97,25 +85,19 @@ end
 
 export play
 """
-With play, you can slice a 3D array along `timedim` at time `t`.
+    play(img, timedim, t)
+
+Slice a 3D array along axis `timedim` at time `t`.
 This can be used to treat a 3D array like a video and create an image stream from it.
 """
 function play{T}(array::Array{T, 3}, timedim::Integer, t::Integer)
     index = ntuple(dim-> dim == timedim ? t : Colon(), Val{3})
     array[index...]
 end
+
 """
-Turns an Image into a video stream
-"""
-function play{T<:Colorant, X}(img::Images.Image{T, 3, X})
-    props = img.properties
-    if haskey(props, "timedim")
-        timedim = props["timedim"]
-        return const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
-    end
-    error("Image has no time channel")
-end
-"""
+    play(buffer, video_stream, t)
+
 Plays a video stream from VideoIO.jl. You need to supply the image `buffer`,
 which will be reused for better performance.
 """
@@ -127,35 +109,114 @@ function play{T}(buffer::Array{T, 2}, video_stream, t)
     return reinterpret(T, buffer, (w,h))
 end
 
-"""
-Takes a 3D image and decides if it is a volume or an animated Image.
-"""
-function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict)
-    props = img.properties
-    if haskey(props, "timedim")
-        if haskey(props, "spatialorder")
-            get!(data, :spatialorder, join(props["spatialorder"], ""))
+# If the user is using the new Images, ImageAxes will be loaded
+if isdefined(Images, :ImageAxes)
+    unwrap(img::Images.ImageMeta) = unwrap(data(img))
+    unwrap(img::AxisArray) = unwrap(img.data)
+    unwrap(img::AbstractArray) = img
+
+    GLAbstraction.gl_convert{T}(::Type{T}, img::AbstractArray) = _gl_convert(T, unwrap(img))
+    _gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
+
+    """
+        play(img)
+
+    Turns an Image into a video stream
+    """
+    function play{T}(img::HasAxesArray{T, 3})
+        ax = timeaxis(img)
+        if timeaxis(img) != nothing
+            return const_lift(play, unwrap(img), timedim(img), loop(1:length(ax)))
         end
-        timedim = props["timedim"]
-        video_signal = const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
-        return _default(video_signal, s, data)
-    elseif haskey(props, "pixelspacing")
-        spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
-        pdims   = Vec3f0(size(img))
+        error("Image has no time axis: axes(img) = $(axes(img))")
+    end
+
+    """
+    Takes a 3D image and decides if it is a volume or an animated Image.
+    """
+    function _default{T}(img::HasAxesArray{T,3}, s::Style, data::Dict)
+        # We could do this as a @traitfn, except that those don't
+        # currently mix well with non-trait specialization.
+        if timeaxis(img) != nothing
+            data[:spatialorder] = "yx"
+            timedim = timedim(img)
+            video_signal = const_lift(play, unwrap(img), timedim, loop(1:size(img, timedim)))
+            return _default(video_signal, s, data)
+        else
+            ps = pixelspacing(img)
+            spacing = Vec3f0(map(x->x/maximum(ps), ps))
+            pdims   = Vec3f0(map(length, indices(img)))
+            dims    = pdims .* spacing
+            dims    = dims/maximum(dims)
+            data[:dimensions] = dims
+            _default(unwrap(img), s, data)
+        end
+    end
+
+    function _default{T}(img::HasAxesArray{T,2}, s::Style, data::Dict)
+        ps = pixelspacing(img)
+        spacing = Vec2f0(map(x->x/maximum(ps), ps))
+        pdims   = Vec2f0(map(length, indices(img)))
         dims    = pdims .* spacing
         dims    = dims/maximum(dims)
         data[:dimensions] = dims
+        _default(unwrap(img), s, data)
     end
-    _default(img.data, s, data)
-end
 
-"""
-Displays 3D array as movie with 3rd dimension as time dimension
-"""
-function _default{T <: Colorant}(img::AbstractArray{T, 3}, s::Style, data::Dict)
-    # TODO axis array and stuff
-    video_signal = const_lift(play, img, 3, loop(1:size(img, 3)))
-    return _default(video_signal, s, data)
+    """
+    Displays 3D array as movie with 3rd dimension as time dimension
+    """
+    function _default{T}(img::AbstractArray{T, 3}, s::Style, data::Dict)
+        video_signal = const_lift(play, unwrap(img), 3, loop(1:size(img, 3)))
+        return _default(video_signal, s, data)
+    end
+else
+    include_string("""
+    GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, convert(Matrix, img))
+
+    function _default{T <: Colorant, X}(main::TOrSignal{Images.Image{T, 2, X}}, s::Style, d::Dict)
+        props = value(main).properties # TODO update this if signal
+        if haskey(props, "spatialorder")
+            so = props["spatialorder"]
+            get!(d, :spatialorder, join(so, ""))
+        end
+        _default(const_lift(x-> convert(Matrix, x), main), s, d)
+    end
+
+    function play{T<:Colorant, X}(img::Images.Image{T, 3, X})
+        props = img.properties
+        if haskey(props, "timedim")
+            timedim = props["timedim"]
+            return const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
+        end
+        error("Image has no time channel")
+    end
+
+    function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict)
+        props = img.properties
+        if haskey(props, "timedim")
+            if haskey(props, "spatialorder")
+                get!(data, :spatialorder, join(props["spatialorder"], ""))
+            end
+            timedim = props["timedim"]
+            video_signal = const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
+            return _default(video_signal, s, data)
+        elseif haskey(props, "pixelspacing")
+            spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
+            pdims   = Vec3f0(size(img))
+            dims    = pdims .* spacing
+            dims    = dims/maximum(dims)
+            data[:dimensions] = dims
+        end
+        _default(img.data, s, data)
+    end
+
+    function _default{T <: Colorant}(img::AbstractArray{T, 3}, s::Style, data::Dict)
+        # TODO axis array and stuff
+        video_signal = const_lift(play, img, 3, loop(1:size(img, 3)))
+        return _default(video_signal, s, data)
+    end
+    """)
 end
 
 
