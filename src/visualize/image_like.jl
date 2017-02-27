@@ -13,6 +13,7 @@ function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
             (0:size(m, s == "xy" ? 1 : 2), 0:size(m, s == "xy" ? 2 : 1))
         end
     end
+    delete!(data, :ranges)
     @gen_defaults! data begin
         image = main => (Texture, "image, can be a Texture or Array of colors")
         primitive::GLUVMesh2D = const_lift(ranges) do r
@@ -134,7 +135,7 @@ if isdefined(Images, :ImageAxes)
     """
     Takes a 3D image and decides if it is a volume or an animated Image.
     """
-    function _default{T}(img::HasAxesArray{T,3}, s::Style, data::Dict)
+    function _default{T}(img::HasAxesArray{T, 3}, s::Style, data::Dict)
         # We could do this as a @traitfn, except that those don't
         # currently mix well with non-trait specialization.
         if timeaxis(img) != nothing
@@ -144,7 +145,7 @@ if isdefined(Images, :ImageAxes)
             return _default(video_signal, s, data)
         else
             ps = pixelspacing(img)
-            spacing = Vec3f0(map(x->x/maximum(ps), ps))
+            spacing = Vec3f0(map(x-> x / maximum(ps), ps))
             pdims   = Vec3f0(map(length, indices(img)))
             dims    = pdims .* spacing
             dims    = dims/maximum(dims)
@@ -152,15 +153,18 @@ if isdefined(Images, :ImageAxes)
             _default(unwrap(img), s, data)
         end
     end
-
-    function _default{T}(img::HasAxesArray{T,2}, s::Style, data::Dict)
-        ps = pixelspacing(img)
-        spacing = Vec2f0(map(x->x/maximum(ps), ps))
-        pdims   = Vec2f0(map(length, indices(img)))
-        dims    = pdims .* spacing
-        dims    = dims/maximum(dims)
-        data[:dimensions] = dims
-        _default(unwrap(img), s, data)
+    function _default{T <: AxisMatrix}(img::TOrSignal{T}, s::Style, data::Dict)
+        @gen_defaults! data begin
+            ranges = const_lift(img) do img
+                ps = pixelspacing(img)
+                spacing = Vec2f0(map(x-> x / maximum(ps), ps))
+                pdims   = Vec2f0(map(length, indices(img)))
+                dims    = pdims .* spacing
+                dims    = dims / maximum(dims)
+                (0:dims[1], 0:dims[2])
+            end
+        end
+        _default(const_lift(unwrap, img), s, data)
     end
 
     """
