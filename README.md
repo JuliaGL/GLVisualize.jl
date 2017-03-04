@@ -60,7 +60,8 @@ Note that the CPU version takes around 60 seconds for every iteration. GPU accel
 # Documentation
 
 
-Please visit [glvisualize.com](http://www.glvisualize.com/)
+Please visit [glvisualize.com](http://www.glvisualize.com/) . 
+Example code on the website is out of date, pleaser refer to [examples folder](https://github.com/JuliaGL/GLVisualize.jl/tree/master/examples) to get the newest versions.
 
 
 Known problems:
