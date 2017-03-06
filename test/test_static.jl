@@ -18,7 +18,7 @@ function create_mosaic(io, folder, width = 150)
     end
 end
 
-full_folder = ENV["GLVISUALIZE_SCREENCAST_PATH"]
+full_folder = ENV["CI_REPORT_DIR"]
 
 files = [
     "introduction/rotate_robj.jl",
@@ -111,11 +111,4 @@ open(joinpath(full_folder, "report.md"), "w") do io
     else
         println(io, "No failures! :)")
     end
-end
-
-open(joinpath(full_folder, "message.txt"), "w") do io
-    success = count(kd-> kd[2][:success], config.attributes)
-    fails = length(config.files) - success
-    print(io, "$success tests completed successfully, $fails failed. [Full report](")
-    println(io, "https://github.com/SimiDCI/GLVisualizeCI.jl/blob/master/reports/$(joinpath(basename(full_folder), "report.md")))")
 end
