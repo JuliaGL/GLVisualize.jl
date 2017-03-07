@@ -10,6 +10,10 @@ if isheadless()
         run(`git fetch origin`)
         run(`git checkout sd/warn`)
     end
+    cd(Pkg.dir("GLAbstraction")) do
+        run(`git fetch origin`)
+        run(`git checkout sd/linenumbers`)
+    end
     include("test_static.jl")
 else
     include("test_interactive.jl")
