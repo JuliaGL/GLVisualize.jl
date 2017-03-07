@@ -1,4 +1,7 @@
-Pkg.checkout("GLFW", "sd/warn")
+cd(Pkg.dir("GLFW")) do
+    run(`git fetch origin`)
+    run(`git checkout sd/warn`)
+end
 using GLVisualize
 include(GLVisualize.dir("examples", "ExampleRunner.jl"))
 using ExampleRunner
