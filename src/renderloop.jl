@@ -68,14 +68,15 @@ function glscreen(name = "GLVisualize";
         color = RGBA(1,1,1,1),
         stroke = (0f0, color),
         hidden = false,
-        visible = true
+        visible = true,
+        focus = true
     )
     cleanup()
     screen = Screen(
         name,
         resolution = resolution, debugging = debugging,
         clear = clear, color = color, stroke = stroke,
-        hidden = hidden, visible = visible,
+        hidden = hidden, visible = visible, focus = focus
     )
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
