@@ -18,8 +18,13 @@ function create_mosaic(io, folder, width = 150)
     end
 end
 
-full_folder = ENV["CI_REPORT_DIR"]
-
+if haskey(ENV, "CI_REPORT_DIR")
+    full_folder = ENV["CI_REPORT_DIR"]
+    recording = true
+else
+    recording = false
+    full_folder = ""
+end
 files = [
     "introduction/rotate_robj.jl",
     "introduction/screens.jl",
@@ -71,9 +76,11 @@ for path in config.files
         yield()
         render_frame(config.rootscreen)
         swapbuffers(config.rootscreen)
-        name = basename(path)[1:end-3]
-        name = joinpath(config.screencast_folder, name * ".jpg")
-        GLWindow.screenshot(config.rootscreen, path = name)
+        if recording
+            name = basename(path)[1:end-3]
+            name = joinpath(config.screencast_folder, name * ".jpg")
+            GLWindow.screenshot(config.rootscreen, path = name)
+        end
     catch e
         #failed[i] = true
         bt = catch_backtrace()
@@ -96,19 +103,21 @@ for path in config.files
     end
     yield()
 end
-open(joinpath(full_folder, "report.md"), "w") do io
-    failures = filter(config.attributes) do k, dict
-        !dict[:success]
-    end
-    println(io, "### Test Images:")
-    create_mosaic(io, full_folder)
-    if !isempty(failures)
-        println(io, "### Failures:")
-        for (k, dict) in failures
-            println(io, "file: $k")
-            println(io, "$(dict[:exception])")
+if recording
+    open(joinpath(full_folder, "report.md"), "w") do io
+        failures = filter(config.attributes) do k, dict
+            !dict[:success]
         end
-    else
-        println(io, "No failures! :)")
+        println(io, "### Test Images:")
+        create_mosaic(io, full_folder)
+        if !isempty(failures)
+            println(io, "### Failures:")
+            for (k, dict) in failures
+                println(io, "file: $k")
+                println(io, "$(dict[:exception])")
+            end
+        else
+            println(io, "No failures! :)")
+        end
     end
 end

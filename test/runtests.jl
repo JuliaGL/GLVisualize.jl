@@ -7,7 +7,7 @@ import ExampleRunner: flatten_paths
 function isheadless()
     get(ENV, "TRAVIS", "") == "true" ||
     get(ENV, "APPVEYOR", "") == "true" ||
-    get(ENV, "CI", "") == "true" ||
+    get(ENV, "CI", "") == "true"
 end
 
 if isheadless()
