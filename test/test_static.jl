@@ -6,9 +6,12 @@ using GLAbstraction, GLWindow, Colors
 using FileIO, GeometryTypes, Reactive, Images
 
 function image_url(path)
-    path, name = splitdir(path)
-    path, dir = splitdir(path)
-    "https://github.com/SimiDCI/GLVisualizeCI.jl/blob/master/reports/$(joinpath(dir, name))?raw=true"
+    path, img = splitdir(path)
+    path, imgfolder = splitdir(path)
+    path, pr = splitdir(path)
+    path, package = splitdir(path)
+    path, ci = splitdir(path)
+    "https://github.com/SimiDCI/GLVisualizeCI.jl/blob/master/reports/$ci/$package/$pr/$imgfolder/$img?raw=true"
 end
 
 function create_mosaic(io, folder, width = 150)
@@ -67,6 +70,9 @@ config = ExampleRunner.RunnerConfig(
 )
 window = config.window
 
+imgpath = joinpath(full_folder, "images")
+isdir(imgpath) || mkdir(imgpath)
+
 for path in config.files
     isopen(config.rootscreen) || break
     try
@@ -80,7 +86,7 @@ for path in config.files
         swapbuffers(config.rootscreen)
         if recording
             name = basename(path)[1:end-3]
-            name = joinpath(config.screencast_folder, name * ".jpg")
+            name = joinpath(imgpath, name * ".jpg")
             GLWindow.screenshot(config.rootscreen, path = name)
         end
     catch e
@@ -105,21 +111,24 @@ for path in config.files
     end
     yield()
 end
+failures = filter(config.attributes) do k, dict
+    !dict[:success]
+end
 if recording
     open(joinpath(full_folder, "report.md"), "w") do io
-        failures = filter(config.attributes) do k, dict
-            !dict[:success]
-        end
         println(io, "### Test Images:")
         create_mosaic(io, full_folder)
         if !isempty(failures)
             println(io, "### Failures:")
             for (k, dict) in failures
                 println(io, "file: $k")
-                println(io, "$(dict[:exception])")
+                Base.showerror(io, "$(dict[:exception])")
+                println("\n")
             end
         else
             println(io, "No failures! :)")
         end
     end
 end
+
+isempty(failures) || error("Tests did not pass!")
