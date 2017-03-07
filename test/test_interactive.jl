@@ -1,3 +1,8 @@
+using GLVisualize
+include(GLVisualize.dir("examples", "ExampleRunner.jl"))
+using ExampleRunner
+import ExampleRunner: flatten_paths
+
 files = [
     "introduction/rotate_robj.jl",
     "introduction/screens.jl",

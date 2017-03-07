@@ -1,3 +1,5 @@
+using GLVisualize
+include(GLVisualize.dir("examples", "ExampleRunner.jl"))
 using ExampleRunner
 importall ExampleRunner
 using GLAbstraction, GLWindow, Colors
