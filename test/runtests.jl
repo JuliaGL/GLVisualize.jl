@@ -8,7 +8,7 @@ if isheadless()
     # need this branch right now!
     cd(Pkg.dir("GLFW")) do
         run(`git fetch origin`)
-        run(`git checkout sd/warn`)
+        run(`git checkout error-handling`)
     end
     cd(Pkg.dir("GLAbstraction")) do
         run(`git fetch origin`)
