@@ -5,14 +5,10 @@ function isheadless()
 end
 
 if isheadless()
-    # need this branch right now!
-    cd(Pkg.dir("GLFW")) do
-        run(`git fetch origin`)
-        run(`git checkout error-handling`)
-    end
+    # need this branch for better coverage report!
     cd(Pkg.dir("GLAbstraction")) do
         run(`git fetch origin`)
-        run(`git checkout sd/linenumbers`)
+        run(`git checkout master`)
     end
     include("test_static.jl")
 else
