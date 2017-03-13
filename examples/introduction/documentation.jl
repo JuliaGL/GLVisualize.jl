@@ -8,4 +8,6 @@ get_docs(rand(Float32, 32, 32))
 get_docs(rand(Float32, 32, 32), :surface)
 
 # prints all visualization methods available with some documenation if available
-all_docs()
+io = IOBuffer()
+all_docs(io)
+String(take!(io)) # TODO test it returns the correct string!

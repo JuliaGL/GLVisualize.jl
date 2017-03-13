@@ -85,7 +85,7 @@ _tuple(x::Core.SimpleVector) = tuple(x...)
 _tuple(x::Tuple) = x
 _tuple{T<:Tuple}(x::Type{T}) = tuple(x.parameters...)
 
-function all_docs()
+function all_docs(io = STDOUT)
     method_table = methods(GLVisualize._default)
     metadict = Docs.meta(GLVisualize)
     default_docs = metadict[Base.Docs.Binding(GLVisualize, :_default)].docs
@@ -106,9 +106,9 @@ function all_docs()
         else
             string(", :", arg2)
         end
-        print(docstr)
-        println("visualize", sparam, "(", arg1, arg2, ")")
-        println()
+        print(io, docstr)
+        println(io, "visualize", sparam, "(", arg1, arg2, ")")
+        println(io)
     end
 
 end
