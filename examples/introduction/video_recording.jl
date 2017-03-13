@@ -17,8 +17,9 @@ else
 end
 
 name = path * "/test.mkv"
+
+# create a stream to which we can add frames
 io, buffer = GLVisualize.create_video_stream(name, window)
-println("io created")
 for i=1:10 # record 10 frames
     # do something
     GLAbstraction.set_arg!(kitty, :color, RGBA{Float32}(1, 0, 1-(i/10), i/10))
@@ -31,7 +32,7 @@ for i=1:10 # record 10 frames
     # add the frame from the current window
     GLVisualize.add_frame!(io, window, buffer)
 end
-println("recording done!")
+# closing the stream will trigger writing the video!
 close(io)
 
 # clean up, only when we're not recording this!
