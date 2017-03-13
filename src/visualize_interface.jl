@@ -43,7 +43,7 @@ function _view(
             keep = map((a, b) -> !a && b, ishidden, mouseinside)
             real_camera = PerspectiveCamera(screen.inputs, position, lookat, keep = keep)
         elseif camsym == :fixed_pixel
-            real_camera = DummyCamera(window_size=screen.area)
+            real_camera = DummyCamera(window_size = screen.area)
         elseif camsym == :orthographic_pixel
             keep = map((a, b) -> !a && b, ishidden, mouseinside)
             real_camera = OrthographicPixelCamera(screen.inputs, keep = keep)
