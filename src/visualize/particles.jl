@@ -505,7 +505,7 @@ function _default{S <: AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
         uv_offset_width = const_lift(main) do str
             Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
         end
-        scale           = const_lift(main, relative_scale) do str, s
+        scale = const_lift(main, relative_scale) do str, s
             Vec2f0[glyph_scale!(atlas, c, font, s)  for c = str]
         end
     end

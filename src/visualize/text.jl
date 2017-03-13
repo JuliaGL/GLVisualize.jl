@@ -3,7 +3,7 @@ immutable SpriteElem{N,T}
     offset::Vec{2,T}
     uv_offset_width::Vec{4,T}
     position::Point{N, T}
-    color::RGBA{Float32}
+    color::RGBA{N0f8}
     scale::Vec{2,T}
 end
 type Text
