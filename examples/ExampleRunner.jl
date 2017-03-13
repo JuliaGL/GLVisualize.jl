@@ -10,7 +10,7 @@ module ExampleRunner
 using GLAbstraction, GLWindow, GLVisualize
 using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
-import GLVisualize: toggle_button, slider, button, mm
+import GLVisualize: toggle_button, slider, button, mm, create_video_stream, add_frame!
 
 import Compat: String, UTF8String
 
@@ -19,7 +19,7 @@ include("mouse.jl")
 
 const installed_pkgs = Pkg.installed()
 
-const hasplots = get(installed_pkgs, "Plots", v"0") > v"0.9.3"
+const hasplots = false# get(installed_pkgs, "Plots", v"0") > v"0.9.3"
 const is_04 = VERSION.minor == 4
 
 if !hasplots
@@ -67,6 +67,7 @@ type RunnerConfig
     resampling
     screencast_folder
     record
+    record_image
     thumbnail
     rootscreen
     window
@@ -256,6 +257,7 @@ function RunnerConfig(;
         resampling = 0,
         screencast_folder = pwd(),
         record = true,
+        record_image = false,
         thumbnail = true,
         rootscreen = glscreen(resolution=resolution)
     )
@@ -290,6 +292,7 @@ function RunnerConfig(;
         resampling,
         screencast_folder,
         record,
+        record_image,
         thumbnail,
         rootscreen,
         view_screen,
@@ -414,7 +417,8 @@ import GLWindow: poll_reactive, poll_glfw, sleep_pessimistic
 
 function make_tests(config)
     i = 1; frames = 0; window = config.window; break_loop = false
-    runthrough = 0 # -1, backwards, 0 no running, 1 forward
+    # start in run through when recording images
+    runthrough = config.record_image ? 1 : 0 # -1, backwards, 0 no running, 1 forward
 
     function increase(x = runthrough)
         x = x == 0 ? 1 : x
@@ -444,6 +448,7 @@ function make_tests(config)
     end)
     failed = fill(false, length(config.files))
     Reactive.stop() # stop Reactive! We be pollin' ourselves!
+    io = nothing
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]
         try
@@ -451,7 +456,21 @@ function make_tests(config)
 
             display_msg(test_module, config)
             timings = Float64[]
-            frames = 0
+            frames = 0;
+            poll_glfw()
+            poll_reactive()
+            poll_reactive()
+            yield()
+
+            io, buffer = if config.record
+                name = basename(config.current_file)[1:end-3]
+                name = name * ".mkv"
+                name = joinpath(config.screencast_folder, name)
+                create_video_stream(name, config.rootscreen)
+            else
+                nothing, nothing
+            end
+
             while !break_loop && isopen(config.rootscreen)
                 tic()
                 poll_glfw()
@@ -460,13 +479,20 @@ function make_tests(config)
                     poll_reactive() # two times for secondary signals
                     render_frame(config.rootscreen)
                     swapbuffers(config.rootscreen)
-                    yield() # yield in timings? Seems fair
                 end
                 frames += 1
                 t = toq()
                 if length(timings) < 1000 && frames > 2
                     push!(timings, t)
                 end
+                if config.record_image
+                    name = basename(config.current_file)[1:end-3]
+                    name = joinpath(config.screencast_folder, name * ".png")
+                    GLWindow.screenshot(config.rootscreen, path = name)
+                    break
+                end
+                config.record && add_frame!(io, config.rootscreen, buffer)
+                yield() # yield in timings? Seems fair
                 GLWindow.sleep_pessimistic((1/60) - t)
                 (runthrough != 0 && frames > 20) && break
             end
@@ -489,6 +515,9 @@ function make_tests(config)
             config[:success] = false
             config[:exception] = ex
         finally
+            if config.record && io != nothing
+                close(io)
+            end
             empty!(window)
             empty!(config.buttons[:timesignal].actions)
             window.color = RGBA{Float32}(1,1,1,1)

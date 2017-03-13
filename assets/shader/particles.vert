@@ -88,6 +88,7 @@ vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int i
 {{color_norm_type}} color_norm;
 // constant color!
 vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
+vec4 _color(vec3 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
 // only a samplerBuffer, this means we have a color per particle
 vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
 // no color, but intensities a color map and color norm. Color will be based on intensity!
