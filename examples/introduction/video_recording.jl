@@ -1,4 +1,4 @@
-using Colors, GLVisualize, GLAbstraction, GL
+using Colors, GLVisualize, GLAbstraction
 
 if !isdefined(:runtests)
     window = glscreen()
