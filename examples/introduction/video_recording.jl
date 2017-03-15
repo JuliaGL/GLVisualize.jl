@@ -11,12 +11,15 @@ _view(kitty, window)
 
 # save video to report dir, or in some tmp dir we'll delete later
 path = if haskey(ENV, "CI_REPORT_DIR")
-    ENV["CI_REPORT_DIR"]
+    ENV["CI_REPORT_DIR"] * "/videorecord.mkv"
 else
-    mktempdir()
+    homedir()
 end
-
-name = path * "/test.mkv"
+name = ""
+while true # for some reason, folder retured by mktempdir isn't usable -.-
+    name = path * "/$(randstring()).mkv"
+    isfile(name) || break
+end
 
 # create a stream to which we can add frames
 io, buffer = GLVisualize.create_video_stream(name, window)
@@ -35,11 +38,10 @@ end
 # closing the stream will trigger writing the video!
 close(io)
 
-# clean up, only when we're not recording this!
-if !haskey(ENV, "CI_REPORT_DIR")
-    rm(path, force = true, recursive = true)
-end
-
 if !isdefined(:runtests)
     renderloop(window)
+end
+# clean up, only when we're not recording this!
+if !haskey(ENV, "CI_REPORT_DIR")
+    rm(name)
 end
