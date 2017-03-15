@@ -1,5 +1,3 @@
-include("micro.jl")
-
 function isheadless()
     get(ENV, "TRAVIS", "") == "true" ||
     get(ENV, "APPVEYOR", "") == "true" ||

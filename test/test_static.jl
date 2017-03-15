@@ -1,5 +1,10 @@
 using GLVisualize
+include("micro.jl")
 include(GLVisualize.dir("examples", "ExampleRunner.jl"))
+
+
+@show GLVisualize._downsample_rate
+
 using ExampleRunner
 importall ExampleRunner
 using GLAbstraction, GLWindow, Colors

@@ -197,7 +197,9 @@ function sdistancefield(img, downsample = 8, pad = 8*downsample)
     sd = sdf(in_or_out, xres, yres)
     map(Float16, sd)
 end
+
 const _downsample_rate = parse(Int, get(ENV, "GLVISUALIZE_DOWNSAMPLE_RATE", "5"))
+
 function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     #select_font_face(cc, font)
     if glyph == '\n' # don't render  newline

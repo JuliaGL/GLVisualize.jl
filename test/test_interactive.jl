@@ -32,5 +32,5 @@ config = ExampleRunner.RunnerConfig(
     files = files,
     resolution = (210, 210)
 )
-
+include("micro.jl")
 ExampleRunner.run(config)
