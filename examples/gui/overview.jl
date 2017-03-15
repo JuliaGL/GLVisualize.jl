@@ -1,7 +1,7 @@
 using GLVisualize, Colors, GeometryTypes, Reactive, GLAbstraction, GLFW, GLWindow
 import GLVisualize: mm
 
-w = glscreen(); @async GLWindow.waiting_renderloop(w)
+window = glscreen(); @async GLWindow.waiting_renderloop(window)
 text_scale = 6mm
 function text_with_background(txt;
         background_color = RGBA(1f0, 1f0, 1f0, 1f0), gap = 1mm,
@@ -36,15 +36,15 @@ x = text_with_background(
     size = (8*text_scale, text_scale)
 )
 GLAbstraction.translate!(x, Vec3f0(4mm, 4mm, 0))
-_view(x, w, camera = :fixed_pixel)
+_view(x, window, camera = :fixed_pixel)
 
 ids = (map(x-> x.id, extract_renderable(x))..., )
-@materialize mouse_buttons_pressed, buttons_pressed, unicode_input = w.inputs
+@materialize mouse_buttons_pressed, buttons_pressed, unicode_input = window.inputs
 mouseclick = const_lift(GLAbstraction.singlepressed, mouse_buttons_pressed, GLFW.MOUSE_BUTTON_LEFT)
 const enterkey = Set([GLFW.KEY_ENTER])
 text_edit = droprepeats(foldp(false, doubleclick(mouseclick, 0.2), buttons_pressed) do v0, clicked, kb
     kb == enterkey && return false
-    clicked && is_same_id(value(mouse2id(w)), ids) && return !v0
+    clicked && is_same_id(value(mouse2id(window)), ids) && return !v0
     v0
 end)
 backspace = Set([GLFW.KEY_BACKSPACE])
@@ -87,7 +87,7 @@ txt_edit_s = foldp((false, [' '], 1), unicode_input, text_edit, ctrl_buttons) do
     move(num) = (cursor = clamp(cursor + num, 0, length(str)))
     if edit
         if !was_edit && isempty(ctrl)# reset
-            id, idx = value(mouse2id(w))
+            id, idx = value(mouse2id(window))
             empty!(str)
             append!(str, string(value(slider_val)))
             @show id idx
@@ -158,6 +158,6 @@ _view(visualize(
     relative_scale = 5mm,
 ), camera = :fixed_pixel)
 
-
-GLWindow.renderloop(w)
-#Profile.print()
+if !isdefined(:runtests)
+    renderloop(window)
+end
