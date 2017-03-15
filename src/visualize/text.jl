@@ -202,7 +202,7 @@ texttext<current pos>texttext\n
 texttext<finds this pos>text\n
 =#
 function down_after_newline(text, current_position)
-    i     = current_position
+    i = current_position
     pnl = previous_newline(text, i)
     nnl = next_newline(text, i)
     nl_distance = i-pnl # distance from previous newline
