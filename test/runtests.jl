@@ -7,6 +7,7 @@ function isheadless()
 end
 
 if isheadless()
+    ENV["GLVISUALIZE_DOWNSAMPLE_RATE"] = 1
     # need this branch for better coverage report!
     cd(Pkg.dir("GLAbstraction")) do
         run(`git fetch origin`)
