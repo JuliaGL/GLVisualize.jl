@@ -1,7 +1,10 @@
 using GLVisualize, Colors, GeometryTypes, Reactive, GLAbstraction, GLFW, GLWindow
 import GLVisualize: mm
 
-window = glscreen(); @async GLWindow.waiting_renderloop(window)
+if !isdefined(:runtests)
+    window = glscreen()
+end
+
 text_scale = 6mm
 function text_with_background(txt;
         background_color = RGBA(1f0, 1f0, 1f0, 1f0), gap = 1mm,
