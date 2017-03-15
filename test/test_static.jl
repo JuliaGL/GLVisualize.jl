@@ -70,8 +70,10 @@ config = ExampleRunner.RunnerConfig(
 )
 window = config.window
 
-imgpath = joinpath(full_folder, "images")
-isdir(imgpath) || mkdir(imgpath)
+if recording
+    imgpath = joinpath(full_folder, "images")
+    isdir(imgpath) || mkdir(imgpath)
+end
 
 for path in config.files
     isopen(config.rootscreen) || break
@@ -117,7 +119,7 @@ end
 if recording
     open(joinpath(full_folder, "report.md"), "w") do io
         println(io, "### Test Images:")
-        create_mosaic(io, full_folder)
+        create_mosaic(io, imgpath)
         if !isempty(failures)
             println(io, "### Failures:")
             for (k, dict) in failures

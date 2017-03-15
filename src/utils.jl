@@ -2,10 +2,14 @@
 Determines if of Image Type
 """
 function isa_image{T<:Matrix}(x::Type{T})
-    eltype(T) <: Union{Colorant, AbstractFloat}
+    eltype(T) <: Union{Colorant, Colors.Fractional}
 end
 isa_image(x::Matrix) = isa_image(typeof(x))
-isa_image(x::Images.Image) = true
+if !isdefined(Images, :ImageAxes)
+    include_string("""
+    isa_image(x::Images.Image) = true
+    """)
+end
 isa_image(x) = false
 
 # Splits a dictionary in two dicts, via a condition

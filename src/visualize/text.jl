@@ -371,6 +371,82 @@ function textedit_signals(inputs, background, text)
     preserve(foldp(visualize_selection, 0:0, selection,    Signal(background[:style_index])))
     const_lift(Compat.String, text_sig), selection
 end
+
+
+"""
+Displayes an array of points with text labels. This should get moved into GLVisualize!
+usage:
+```
+    points = Signal(Point2f0[(0, 0), (100, 100), (200, 200)]) # Doesn't need to be a signal
+    labels = Signal(["label", "string", "α ∧ ¬β"]) # Doesn't need to be a signal
+    annotated_text(points, labels)
+```
+"""
+function annotated_text(
+        points, labels_s;
+        color = RGBA(0f0,0f0,0f0,1f0),
+        scale = 5mm,
+        base_offset = Point2f0(scale / 2)
+    )
+    # make this work for Signal(points) as well as constant points
+    points_s = isa(points, Signal) ? points : Signal(points)
+    font, atlas = GLVisualize.defaultfont(), GLVisualize.get_texture_atlas()
+    # to display a text particle system, one needs
+    # 1, glyph segmentation_centroids, offset to the bottom, position in the texture atlas
+    # and the scale of the glyph. Then for bg labels, we also save a width
+    v0 = (Point2f0[], Point2f0[], Vec4f0[], Vec2f0[], Vec2f0[])
+    text = map(points_s) do points
+        labels = value(labels_s)
+        if length(labels) != length(points)
+            error("""
+                Colors, labels and points must have the same length! Found:
+                Points: $(length(points)), labels: $(length(labels))""")
+        end
+        n = mapreduce(length, +, labels)
+        rpoints, offsets, uv_widths, scales, widths = v0
+        if length(labels) != length(widths)
+            resize!(widths, length(labels))
+        end
+        if n != length(rpoints) # only resize if size changed
+            resize!(rpoints, n); resize!(offsets, n)
+            resize!(uv_widths, n); resize!(scales, n)
+        end
+        idx = 1
+        # glyph height of a long glyph
+        glyph_height = glyph_scale!(atlas, '|', font, scale)[2]
+        for (i, (start_pos, label)) in enumerate(zip(points, labels))
+            last_pos = start_pos .+ base_offset
+            for c in label # calculate segmentation_centroids for each character/glyph
+                rpoints[idx] = last_pos
+                last_pos = calc_position(last_pos, start_pos, atlas, c, font, scale)
+                offsets[idx] = glyph_bearing!(atlas, c, font, scale)
+                uv_widths[idx] = glyph_uv_width!(atlas, c, font)
+                scales[idx] = glyph_scale!(atlas, c, font, scale)
+                idx += 1
+            end
+            # calculate label lengths + extra width
+            widths[i] = Vec2f0(last_pos[1] - start_pos[1] + 1mm, glyph_height + 1mm)
+        end
+        rpoints, offsets, uv_widths, scales, widths
+    end
+    viz = visualize(
+        (DISTANCEFIELD, map(x->x[1], text)), # render segmentation_centroids as a distance field particle type
+        offset = map(x->x[2], text),
+        uv_offset_width = map(x->x[3], text),
+        scale = map(x->x[4], text),
+        color = color,
+        # drop down to low level opengl, to always render over image! (there should be a better API for this)
+        prerender = () -> begin
+            glDisable(GL_DEPTH_TEST)
+            glDepthMask(GL_TRUE)
+            glDisable(GL_CULL_FACE)
+            enabletransparency()
+        end,
+        distancefield = atlas.images
+    )
+    viz, map(last, text) # return viz and widths
+end
+
 # # i must be a valid character index
 # function next_newline(text, i::Integer)
 #     res = findnext(isnewline, text, i)
