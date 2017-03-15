@@ -19,6 +19,7 @@ else
         name = path * "/$(randstring()).mkv"
         isfile(name) || break
     end
+    name
 end
 
 # only try recording when ffmpeg is installed
