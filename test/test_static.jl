@@ -129,7 +129,7 @@ if recording
             println(io, "### Failures:")
             for (k, dict) in failures
                 println(io, "file: $k")
-                Base.showerror(io, "$(dict[:exception])")
+                Base.showerror(io, dict[:exception])
                 println("\n")
             end
         else
