@@ -23,7 +23,7 @@ function create_mosaic(io, folder, width = 150)
     images = filter(x-> endswith(x, ".jpg"), readdir(folder))
     for im in images
         println(io, """<img src="$(image_url(joinpath(folder, im)))"
-            alt="$(im)" width=$(width)px"/>
+            alt="$(im)" width=$(width)px/>
         """)
     end
 end
