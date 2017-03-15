@@ -11,16 +11,16 @@ kitty = visualize(loadasset("cat.obj"))
 _view(kitty, window)
 
 # save video to report dir, or in some tmp dir we'll delete later
-path = if haskey(ENV, "CI_REPORT_DIR")
+name = if haskey(ENV, "CI_REPORT_DIR")
     ENV["CI_REPORT_DIR"] * "/videorecord.mkv"
 else
-    homedir()
+    path = homedir()
+    while true # for some reason, folder retured by mktempdir isn't usable -.-
+        name = path * "/$(randstring()).mkv"
+        isfile(name) || break
+    end
 end
-name = ""
-while true # for some reason, folder retured by mktempdir isn't usable -.-
-    name = path * "/$(randstring()).mkv"
-    isfile(name) || break
-end
+
 # only try recording when ffmpeg is installed
 if success(`ffmpeg -h`)
     # create a stream to which we can add frames
