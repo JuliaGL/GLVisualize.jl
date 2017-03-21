@@ -32,6 +32,19 @@ const int num_ligth_samples = 16;
 const float lscale = max_distance / float(num_ligth_samples);
 const float density_factor = 9;
 
+const float eps = 0.0001;
+bool intersect(vec3 ray_origin, vec3 ray_dir, vec3 center, vec3 normal, out vec3 intersect){
+    float denom = dot(normal, ray_dir);
+    if (abs(denom) > eps) // if not orthogonal
+    {
+        float t = dot(center - ray_origin, normal) / denom;
+        if (t >= 0){
+
+            return true; // you might want to allow an epsilon here too
+        }
+    }
+    return false;
+}
 float _normalize(float val, float from, float to)
 {
     return (val-from) / (to - from);
@@ -61,14 +74,15 @@ float GetDensity(vec3 pos)
 vec3 gennormal(vec3 uvw, vec3 gradient_delta)
 {
     vec3 a,b;
-    a.x = texture(intensities, uvw -vec3(gradient_delta.x,0.0,0.0) ).r;
-    b.x = texture(intensities, uvw +vec3(gradient_delta.x,0.0,0.0) ).r;
-    a.y = texture(intensities, uvw -vec3(0.0,gradient_delta.y,0.0) ).r;
-    b.y = texture(intensities, uvw +vec3(0.0,gradient_delta.y,0.0) ).r;
-    a.z = texture(intensities, uvw -vec3(0.0,0.0,gradient_delta.z) ).r;
-    b.z = texture(intensities, uvw +vec3(0.0,0.0,gradient_delta.z) ).r;
+    a.x = texture(intensities, uvw - vec3(gradient_delta.x,0.0,0.0) ).r;
+    b.x = texture(intensities, uvw + vec3(gradient_delta.x,0.0,0.0) ).r;
+    a.y = texture(intensities, uvw - vec3(0.0,gradient_delta.y,0.0) ).r;
+    b.y = texture(intensities, uvw + vec3(0.0,gradient_delta.y,0.0) ).r;
+    a.z = texture(intensities, uvw - vec3(0.0,0.0,gradient_delta.z) ).r;
+    b.z = texture(intensities, uvw + vec3(0.0,0.0,gradient_delta.z) ).r;
     return normalize(a - b);
 }
+
 vec3 blinn_phong(vec3 N, vec3 V, vec3 L, vec3 diffuse)
 {
     // material properties
@@ -163,9 +177,9 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
 
 vec4 mip(vec3 front, vec3 dir, float stepsize)
 {
-    vec3  stepsize_dir = dir * stepsize;
-    vec3  pos = front;
-    int   i = 0;
+    vec3 stepsize_dir = dir * stepsize;
+    vec3 pos = front;
+    int i = 0;
     pos += stepsize_dir;//apply first, to padd
     float maximum = 0.0;
     for (i; i < num_samples && !is_outside(pos); ++i, pos += stepsize_dir)
