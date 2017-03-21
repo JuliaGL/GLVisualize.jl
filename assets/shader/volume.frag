@@ -20,6 +20,7 @@ uniform vec3 eyeposition;
 
 uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
+uniform mat4 modelinv;
 uniform int algorithm;
 uniform float isovalue;
 uniform float isorange;
@@ -39,8 +40,8 @@ bool intersect(vec3 ray_origin, vec3 ray_dir, vec3 center, vec3 normal, out vec3
     {
         float t = dot(center - ray_origin, normal) / denom;
         if (t >= 0){
-
-            return true; // you might want to allow an epsilon here too
+            intersect.xyz = ray_origin + (ray_dir * t);
+            return true;
         }
     }
     return false;
@@ -199,7 +200,7 @@ void main()
 {
     vec4 color;
     vec3 dir = normalize(frag_vert - eyeposition);
-
+    dir = vec3(modelinv * vec4(dir, 0));
     if(algorithm == 0)
         color = isosurface(frag_uv, dir, step_size);
     else if(algorithm == 1)
