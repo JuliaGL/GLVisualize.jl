@@ -29,7 +29,7 @@ visualize(c::Context, s::Style, data::Dict) = c
 function _view(
         robj::RenderObject, screen = current_screen();
         camera = robj.uniforms[:preferred_camera],
-        position = Vec3f0(2), lookat=Vec3f0(0)
+        position = Vec3f0(2), lookat = Vec3f0(0)
     )
     global _camera_counter
     local camsym::Symbol # make things type stable
