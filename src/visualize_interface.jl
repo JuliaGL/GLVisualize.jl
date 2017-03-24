@@ -68,7 +68,7 @@ function _view(
     nothing
 end
 
-_view(robjs::Vector, screen=current_screen(); kw_args...) = for robj in robjs
+_view(robjs::Vector, screen = current_screen(); kw_args...) = for robj in robjs
     _view(robj, screen; kw_args...)
 end
-_view(c::Composable, screen=current_screen(); kw_args...) = _view(extract_renderable(c), screen; kw_args...)
+_view(c::Composable, screen = current_screen(); kw_args...) = _view(extract_renderable(c), screen; kw_args...)
