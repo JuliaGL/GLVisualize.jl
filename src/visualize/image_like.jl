@@ -276,25 +276,29 @@ end
     glCullFace(GL_FRONT)
 end
 
-_default{T <: VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
-    intensities      = main => Texture
-    dimensions       = Vec3f0(1)
-    hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
-    light_position   = Vec3f0(0.25, 1.0, 3.0)
-    light_intensity  = Vec3f0(15.0)
+function _default{T <: VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict)
+    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
+    @gen_defaults! data begin
+        intensities      = main => Texture
+        dimensions       = Vec3f0(1)
+        hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
+        light_position   = Vec3f0(0.25, 1.0, 3.0)
+        light_intensity  = Vec3f0(15.0)
+        modelinv        = modelinv
 
-    color_map        = default(Vector{RGBA}, s) => Texture
-    color_norm       = color_map == nothing ? nothing : const_lift(extrema2f0, main)
-    color            = color_map == nothing ? default(RGBA, s) : nothing
+        color_map        = default(Vector{RGBA}, s) => Texture
+        color_norm       = color_map == nothing ? nothing : const_lift(extrema2f0, main)
+        color            = color_map == nothing ? default(RGBA, s) : nothing
 
-    algorithm        = MaximumIntensityProjection
-    boundingbox      = hull
-    absorption       = 1f0
-    isovalue         = 0.5f0
-    isorange         = 0.01f0
-    shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
-    prerender        = VolumePrerender()
-    postrender       = () -> begin
-        glDisable(GL_CULL_FACE)
+        algorithm        = MaximumIntensityProjection
+        boundingbox      = hull
+        absorption       = 1f0
+        isovalue         = 0.5f0
+        isorange         = 0.01f0
+        shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
+        prerender        = VolumePrerender()
+        postrender       = () -> begin
+            glDisable(GL_CULL_FACE)
+        end
     end
 end
