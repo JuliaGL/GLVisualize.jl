@@ -84,8 +84,8 @@ function surface(main, s::Style{:surface}, data::Dict)
         wireframe        = false
         image            = nothing => Texture
         distancefield    = nothing => Texture
-        normal           = false
-        lighting         = normal
+        shading         = true
+        normal           = shading
     end
     @gen_defaults! data begin
         color      = (wireframe ? RGBA{Float32}(0,0,0,0) : nothing) => (Texture,
@@ -102,7 +102,7 @@ function surface(main, s::Style{:surface}, data::Dict)
             view = Dict(
                 "position_calc" => position_calc(position, position_x, position_y, position_z, Texture),
                 "normal_calc" => normal_calc(normal),
-                "light_calc" => light_calc(lighting),
+                "light_calc" => light_calc(shading),
             )
         )
     end

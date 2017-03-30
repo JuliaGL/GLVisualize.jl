@@ -14,9 +14,11 @@ uniform uint objectid;
 
 out vec4 o_color;
 flat out uvec2 o_id;
+out vec2 o_uv;
 
 void main()
 {
+    o_uv = vec2(0.0);
     o_id = uvec2(objectid, 0);
     o_color = vertex_color;
     render(vertices, normals, view*model, projection, light);

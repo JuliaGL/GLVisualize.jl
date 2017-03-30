@@ -18,13 +18,13 @@ function toggle_button(a::Signal, b::Composable, screen)
     b, a
 end
 
-function toggle_button(a, b, screen)
+function toggle_button(a, b, screen; kw_args...)
     id = Signal(0)
     ab_bool = toggle(id, screen)
     a_b = map(ab_bool) do aORb
         aORb ? a : b
     end
-    robj = visualize(a_b)
+    robj = visualize(a_b; kw_args...)
     push!(id, robj.children[].id)
     robj, ab_bool
 end
@@ -140,13 +140,25 @@ function slider(
     Context(point_robj, line), slider_s
 end
 
+
+function widget{T <: Range}(
+        r::Signal{T}, screen::Screen;
+        args...
+    )
+    slider(value(r), screen; args...)
+end
+function playbutton(screen; icon_size = 10mm)
+    play_button, play_stop_signal = GLVisualize.toggle_button(
+        loadasset("play.png"), loadasset("pause.png"), screen,
+        primitive = IRect(0, 0, icon_size, icon_size)
+    )
+end
+
 function play_slider(
         screen, icon_size = Signal(54), range = 1:360;
         slider_length = 200
     )
-    play_button, play_stop_signal = GLVisualize.toggle_button(
-        loadasset("checked.png"), loadasset("unchecked.png"), screen
-    )
+    play_button, play_stop_signal = playbutton(screen)
     play_s = map(!, play_stop_signal)
     slider_s, slider_w = slider(
         range, screen,

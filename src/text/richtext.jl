@@ -58,8 +58,8 @@ end
 Inserts code with highlighting
 """
 function insert!(text::RichText, code::Code,
-        position=text.cursor,
-        color_scheme=color_scheme(text, code)
+        position = text.cursor,
+        color_scheme = color_scheme(text, code)
     )
 
 end
@@ -67,7 +67,7 @@ end
 """
 Inlines any `object` in `area` at `position`.
 """
-function insert!(text::RichText, object, position=text.cursor, area=nothing)
+function insert!(text::RichText, object, position = text.cursor, area = nothing)
 
 end
 

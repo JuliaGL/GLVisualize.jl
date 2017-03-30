@@ -74,7 +74,7 @@ for verb in ["jump", "walk", "stand"], dir in ["left", "right"]
     end
     path = assetpath("mario", verb, pic)
     sequence = read_sequence(path)
-    gif = map(img->map(RGBA{U8}, img), sequence)
+    gif = map(img->convert(Matrix{RGBA{N0f8}}, img), sequence)
     mario_images[verb*dir] = play(gif)
 end
 function mario2image(mario, images=mario_images)

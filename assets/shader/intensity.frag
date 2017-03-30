@@ -6,7 +6,7 @@ in vec2 o_uv;
 uniform sampler1D color_map;
 uniform vec2 color_norm;
 uniform float stroke_width;
-uniform float stroke_color;
+uniform vec4 stroke_color;
 uniform float levels;
 
 vec4 getindex(sampler2D image, vec2 uv){return texture(image, uv);}
@@ -35,7 +35,6 @@ void main(){
         color = vec4(0);
     }else{
         i = _normalize(i, color_norm.x, color_norm.y);
-        vec4 stroke_color = vec4(1,1,1,1);
         float lines = i*levels;
         lines = abs(fract(lines-0.5));
         float half_stroke = stroke_width*0.5;

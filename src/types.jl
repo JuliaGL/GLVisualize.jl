@@ -219,6 +219,7 @@ end
 
 typealias GLIntensity Intensity{Float32}
 export Intensity, GLIntensity
+(::Type{Intensity{1,T}}){T,Tc}(x::Color{Tc,1}) = Intensity{1,T}(gray(x))
 
 NOT(x) = !x
 

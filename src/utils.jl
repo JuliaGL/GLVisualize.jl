@@ -2,10 +2,14 @@
 Determines if of Image Type
 """
 function isa_image{T<:Matrix}(x::Type{T})
-    eltype(T) <: Union{Colorant, AbstractFloat}
+    eltype(T) <: Union{Colorant, Colors.Fractional}
 end
 isa_image(x::Matrix) = isa_image(typeof(x))
-isa_image(x::Images.Image) = true
+if !isdefined(Images, :ImageAxes)
+    include_string("""
+    isa_image(x::Images.Image) = true
+    """)
+end
 isa_image(x) = false
 
 # Splits a dictionary in two dicts, via a condition
@@ -242,4 +246,92 @@ function moving_average(p, cutoff,  history, n = 5)
         push!(history, p)
     end
     true, sum(history) ./ length(history)# smooth
+end
+
+function layoutlinspace(n::Integer)
+    if n == 1
+        1:1
+    else
+        linspace(1/n, 1, n)
+    end
+end
+xlayout(x::Int) = zip(layoutlinspace(x), Iterators.repeated(""))
+function xlayout{T <: AbstractFloat}(x::AbstractVector{T})
+    zip(x, Iterators.repeated(""))
+end
+
+function xlayout(x::AbstractVector)
+    zip(layoutlinspace(length(x)), x)
+end
+function ylayout(x::AbstractVector)
+    zip(layoutlinspace(length(x)), x)
+end
+function ylayout{T <: Tuple}(x::AbstractVector{T})
+    sizes = map(first, x)
+    values = map(last, x)
+    zip(sizes, values)
+end
+function IRect(x, y , w, h)
+    SimpleRectangle(
+        round(Int, x),
+        round(Int, y),
+        round(Int, w),
+        round(Int, h),
+    )
+end
+
+function layout_rect(area, lastw, lasth, w, h)
+    wp = widths(area)
+    xmin = wp[1] * lastw
+    ymin = wp[2] * lasth
+    xmax = wp[1] * w
+    ymax = wp[2] * h
+    xmax = max(xmin, xmax)
+    xmin = min(xmin, xmax)
+    ymax = max(ymin, ymax)
+    ymin = min(ymin, ymax)
+    IRect(xmin, ymin, xmax - xmin, ymax - ymin)
+end
+
+function layoutscreens(parent, layout;
+        title_height = 6mm, text_color = default(RGBA),
+        background_color = RGBA(1f0, 1f0, 1f0), stroke_color = RGBA(0f0, 0f0, 0f0, 0.4f0),
+        kw_args...
+    )
+    layout = reverse(layout) # we start from bottom to top, while lists are written top to bottom
+    lastw, lasth = 0, 0
+    result = Vector{Screen}[]
+    for (h, xlist) in ylayout(layout)
+        result_x = Screen[]
+        for (w, title) in xlayout(xlist)
+            area = const_lift(layout_rect, parent.area, lastw, lasth, w, h)
+
+            screen = Screen(parent; area = area, kw_args...)
+            push!(result_x, screen)
+            if !isempty(value(title))
+                tarea = map(area) do area
+                    IRect(0, area.h - title_height, area.w, title_height)
+                end
+                title_screen = Screen(screen, area = tarea, color = background_color)
+                robj = visualize(
+                    title, relative_scale = title_height * 0.7,
+                    direction = 1, gap = Vec3f0(1mm, 0, 0),# in case it's a list!
+                    color = text_color
+                )
+                gap = title_height * 0.15
+                GLAbstraction.transform!(robj, translationmatrix(Vec3f0(gap, gap, 0)))
+                _view(robj, title_screen, camera = :fixed_pixel)
+                if stroke_color != nothing
+                    _view(visualize(
+                        map(a-> Point2f0[(0, 0), (a.w, 0)], area), :linesegment,
+                        thickness = 1f0, color = stroke_color
+                    ), title_screen, camera = :fixed_pixel)
+                end
+            end
+            lastw = w
+        end
+        lastw = 0; lasth = h
+        push!(result, result_x)
+    end
+    result
 end

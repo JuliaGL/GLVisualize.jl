@@ -1,27 +1,46 @@
-GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, Images.data(img))
-
-_default{T <: Colorant, X}(main::Images.Image{T, 2, X}, s::Style, d::Dict) = _default(Images.data(main), s, d)
-_default{T <: Colorant, X}(main::Signal{Images.Image{T, 2, X}}, s::Style, d::Dict) = _default(const_lift(Images.data, main), s, d)
-
 """
 A matrix of colors is interpreted as an image
 """
-_default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict) = @gen_defaults! data begin
-    image                 = main => (Texture, "image, can be a Texture or Array of colors")
-    primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, size(value(main))...) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
-    boundingbox           = GLBoundingBox(primitive)
-    preferred_camera      = :orthographic_pixel
-    fxaa                  = false
-    shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
+function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
+    @gen_defaults! data begin
+        spatialorder = "yx"
+    end
+    if !(spatialorder in ("xy", "yx"))
+        error("Spatial order only accepts \"xy\" or \"yz\" as a value. Found: $spatialorder")
+    end
+    ranges = get(data, :ranges) do
+        const_lift(main, spatialorder) do m, s
+            (0:size(m, s == "xy" ? 1 : 2), 0:size(m, s == "xy" ? 2 : 1))
+        end
+    end
+    delete!(data, :ranges)
+    @gen_defaults! data begin
+        image = main => (Texture, "image, can be a Texture or Array of colors")
+        primitive::GLUVMesh2D = const_lift(ranges) do r
+            x, y = minimum(r[1]), minimum(r[2])
+            xmax, ymax = maximum(r[1]), maximum(r[2])
+            SimpleRectangle{Float32}(x, y, xmax - x, ymax - y)
+        end => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
+        boundingbox           = const_lift(GLBoundingBox, primitive)
+        preferred_camera      = :orthographic_pixel
+        fxaa                  = false
+        shader                = GLVisualizeShader(
+            "fragment_output.frag", "uv_vert.vert", "texture.frag",
+            view = Dict("uv_swizzle" => "o_uv.$(spatialorder)")
+        )
+    end
 end
 function _default{T <: Colorant}(main::VecTypes{T}, ::Style, data::Dict)
     @gen_defaults! data begin
         image                 = main => (Texture, "image, can be a Texture or Array of colors")
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, length(value(main)), 50f0) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
-        boundingbox           = GLBoundingBox(primitive)
+        boundingbox           = const_lift(GLBoundingBox, primitive)
         preferred_camera      = :orthographic_pixel
         fxaa                  = false
-        shader                = GLVisualizeShader("fragment_output.frag", "uv_vert.vert", "texture.frag")
+        shader                = GLVisualizeShader(
+            "fragment_output.frag", "uv_vert.vert", "texture.frag",
+            view = Dict("uv_swizzle" => "o_uv.xy")
+        )
     end
 end
 
@@ -36,7 +55,7 @@ function _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict)
     x, y, xw, yh = first(ranges[1]), first(ranges[2]), last(ranges[1]), last(ranges[2])
     @gen_defaults! data begin
         intensity             = main => Texture
-        color_map             = default(Vector{RGBA{U8}},s) => Texture
+        color_map             = default(Vector{RGBA{N0f8}},s) => Texture
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(x, y, xw-x, yh-y)
         color_norm            = const_lift(extrema2f0, main)
         stroke_width::Float32 = 0.05f0
@@ -67,54 +86,143 @@ end
 
 export play
 """
-With play, you can slice a 3D array along `timedim` at time `t`.
+    play(img, timedim, t)
+
+Slice a 3D array along axis `timedim` at time `t`.
 This can be used to treat a 3D array like a video and create an image stream from it.
 """
 function play{T}(array::Array{T, 3}, timedim::Integer, t::Integer)
-    index = ntuple(dim->dim==timedim ? t : Colon(), Val{3})
+    index = ntuple(dim-> dim == timedim ? t : Colon(), Val{3})
     array[index...]
 end
+
 """
-Turns an Image into a video stream
-"""
-function play{T<:Colorant, X}(img::Images.Image{T, 3, X})
-    props = img.properties
-    if haskey(props, "timedim")
-        timedim = props["timedim"]
-        return const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
-    end
-    error("Image has no time channel")
-end
-"""
+    play(buffer, video_stream, t)
+
 Plays a video stream from VideoIO.jl. You need to supply the image `buffer`,
 which will be reused for better performance.
 """
 function play{T}(buffer::Array{T, 2}, video_stream, t)
     eof(video_stream) && seekstart(video_stream)
-    w,h     = size(buffer)
-    buffer     = reinterpret(UInt8, buffer, (3, w,h))
+    w, h = size(buffer)
+    buffer = reinterpret(UInt8, buffer, (3, w,h))
     read!(video_stream, buffer) # looses type and shape
     return reinterpret(T, buffer, (w,h))
 end
 
-"""
-Takes a 3D image and decides if it is a volume or an animated Image.
-"""
-function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict)
-    props = img.properties
-    if haskey(props, "timedim")
-        timedim = props["timedim"]
-        video_signal = const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
-        return _default(video_signal, s, data)
-    elseif haskey(props, "pixelspacing")
-        spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
-        pdims   = Vec3f0(size(img))
-        dims    = pdims .* spacing
-        dims    = dims/maximum(dims)
-        data[:dimensions] = dims
+# If the user is using the new Images, ImageAxes will be loaded
+if isdefined(Images, :ImageAxes)
+    unwrap(img::Images.ImageMeta) = unwrap(data(img))
+    unwrap(img::AxisArray) = unwrap(img.data)
+    unwrap(img::AbstractArray) = img
+
+    GLAbstraction.gl_convert{T}(::Type{T}, img::AbstractArray) = _gl_convert(T, unwrap(img))
+    _gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
+
+    """
+        play(img)
+
+    Turns an Image into a video stream
+    """
+    function play{T}(img::HasAxesArray{T, 3})
+        ax = timeaxis(img)
+        if timeaxis(img) != nothing
+            return const_lift(play, unwrap(img), timedim(img), loop(1:length(ax)))
+        end
+        error("Image has no time axis: axes(img) = $(axes(img))")
     end
-    _default(img.data, s, data)
+
+    """
+    Takes a 3D image and decides if it is a volume or an animated Image.
+    """
+    function _default{T}(img::HasAxesArray{T, 3}, s::Style, data::Dict)
+        # We could do this as a @traitfn, except that those don't
+        # currently mix well with non-trait specialization.
+        if timeaxis(img) != nothing
+            data[:spatialorder] = "yx"
+            timedim = timedim(img)
+            video_signal = const_lift(play, unwrap(img), timedim, loop(1:size(img, timedim)))
+            return _default(video_signal, s, data)
+        else
+            ps = pixelspacing(img)
+            spacing = Vec3f0(map(x-> x / maximum(ps), ps))
+            pdims   = Vec3f0(map(length, indices(img)))
+            dims    = pdims .* spacing
+            dims    = dims/maximum(dims)
+            data[:dimensions] = dims
+            _default(unwrap(img), s, data)
+        end
+    end
+    function _default{T <: AxisMatrix}(img::TOrSignal{T}, s::Style, data::Dict)
+        @gen_defaults! data begin
+            ranges = const_lift(img) do img
+                ps = pixelspacing(img)
+                spacing = Vec2f0(map(x-> x / maximum(ps), ps))
+                pdims   = Vec2f0(map(length, indices(img)))
+                dims    = pdims .* spacing
+                dims    = dims / maximum(dims)
+                (0:dims[1], 0:dims[2])
+            end
+        end
+        _default(const_lift(unwrap, img), s, data)
+    end
+
+    """
+    Displays 3D array as movie with 3rd dimension as time dimension
+    """
+    function _default{T}(img::AbstractArray{T, 3}, s::Style, data::Dict)
+        video_signal = const_lift(play, unwrap(img), 3, loop(1:size(img, 3)))
+        return _default(video_signal, s, data)
+    end
+else
+    include_string("""
+    GLAbstraction.gl_convert{T}(::Type{T}, img::Images.Image) = gl_convert(T, convert(Matrix, img))
+
+    function _default{T <: Colorant, X}(main::TOrSignal{Images.Image{T, 2, X}}, s::Style, d::Dict)
+        props = value(main).properties # TODO update this if signal
+        if haskey(props, "spatialorder")
+            so = props["spatialorder"]
+            get!(d, :spatialorder, join(so, ""))
+        end
+        _default(const_lift(x-> convert(Matrix, x), main), s, d)
+    end
+
+    function play{T<:Colorant, X}(img::Images.Image{T, 3, X})
+        props = img.properties
+        if haskey(props, "timedim")
+            timedim = props["timedim"]
+            return const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
+        end
+        error("Image has no time channel")
+    end
+
+    function _default{T<:Colorant, X}(img::Images.Image{T, 3, X}, s::Style, data::Dict)
+        props = img.properties
+        if haskey(props, "timedim")
+            if haskey(props, "spatialorder")
+                get!(data, :spatialorder, join(props["spatialorder"], ""))
+            end
+            timedim = props["timedim"]
+            video_signal = const_lift(play, img.data, timedim, loop(1:size(img, timedim)))
+            return _default(video_signal, s, data)
+        elseif haskey(props, "pixelspacing")
+            spacing = Vec3f0(map(float, img.properties["pixelspacing"]))
+            pdims   = Vec3f0(size(img))
+            dims    = pdims .* spacing
+            dims    = dims/maximum(dims)
+            data[:dimensions] = dims
+        end
+        _default(img.data, s, data)
+    end
+
+    function _default{T <: Colorant}(img::AbstractArray{T, 3}, s::Style, data::Dict)
+        # TODO axis array and stuff
+        video_signal = const_lift(play, img, 3, loop(1:size(img, 3)))
+        return _default(video_signal, s, data)
+    end
+    """)
 end
+
 
 """
 Takes a shader as a parametric function. The shader should contain a function stubb
@@ -126,25 +234,25 @@ float function(float x) {
 }
 ```
 """
-_default(func::Shader, s::Style, data::Dict) = @gen_defaults! data begin
-    color                 = default(RGBA, s)  => Texture
-    dimensions            = (120f0,120f0)
+_default(func::String, s::Style{:shader}, data::Dict) = @gen_defaults! data begin
+    color                 = default(RGBA, s) => Texture
+    dimensions            = (120f0, 120f0)
     primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0,0f0, dimensions...)
     preferred_camera      = :orthographic_pixel
     boundingbox           = GLBoundingBox(primitive)
     fxaa                  = false
     shader                = GLVisualizeShader("fragment_output.frag", "parametric.vert", "parametric.frag", view=Dict(
-         "function" => Compat.String(func.source)
+         "function" => func
      ))
 end
 
 
 #Volumes
-typealias VolumeElTypes Union{Colorant, AbstractFloat}
+typealias VolumeElTypes Union{Gray, AbstractFloat, Intensity}
 
 const default_style = Style{:default}()
 
-function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::Dict)
+function _default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::Dict)
     data = @gen_defaults! data begin
         isovalue  = 0.5f0
         algorithm = IsoValue
@@ -168,7 +276,7 @@ end
     glCullFace(GL_FRONT)
 end
 
-_default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
+_default{T <: VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_defaults! data begin
     intensities      = main => Texture
     dimensions       = Vec3f0(1)
     hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
@@ -185,8 +293,8 @@ _default{T<:VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict) = @gen_de
     isovalue         = 0.5f0
     isorange         = 0.01f0
     shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
-    # prerender        = VolumePrerender()
-    # postrender       = () -> begin
-    #     glDisable(GL_CULL_FACE)
-    # end
+    prerender        = VolumePrerender()
+    postrender       = () -> begin
+        glDisable(GL_CULL_FACE)
+    end
 end

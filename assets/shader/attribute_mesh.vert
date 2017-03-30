@@ -15,9 +15,11 @@ uniform uint objectid;
 
 out vec4 o_color;
 flat out uvec2 o_id;
+out vec2 o_uv;
 
 void main()
 {
+	o_uv = vec2(0.0);
 	o_id = uvec2(objectid, attribute_id+1);
 	o_color = texelFetch(attributes, int(attribute_id), 0);
 	render(vertices, normals, view*model, projection, light);

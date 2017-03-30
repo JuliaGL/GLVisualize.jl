@@ -14,21 +14,25 @@ You can drag the number to change it interactively.
 # FileIO.load(assetpath(name))
 racoon = loadasset("racoon.png")
 # Convert to RGBA{Float32}. Float for filtering and 32 because it fits the GPU better
-img = map(RGBA{Float32}, racoon)
+img = convert(Matrix{RGBA{Float32}}, racoon)
+
 # create a slider that goes from 1-20 in 0.1 steps
-slider, slider_s = widget(Signal(1f0), range=1f0:0.1f0:20f0, window)
+slider, slider_s = widget(Signal(1f0), range = 1f0:0.1f0:20f0, window)
 
-# performant conversion to RGBAU8, implemted with a functor
-# in 0.5 anonymous functions offer the same speed, so this wouldn't be needed
-immutable ClampRGBAU8 end
-@compat (::ClampRGBAU8)(x) = RGBA{U8}(clamp(comp1(x), 0,1), clamp(comp2(x), 0,1), clamp(comp3(x), 0,1), clamp(alpha(x), 0,1))
-
+if !isdefined(:clamp01)
+    function clamp01(color)
+        mapc(color) do c
+            clamp(c, 0, 1)
+        end
+    end
+end
 """
-Applies a gaussian filter to `img` and converts it to RGBA{U8}
+Applies a gaussian filter to `img` and converts it to RGBA{N0f8}
 """
 function myfilter(img, sigma)
     img = Images.imfilter_gaussian(img, [sigma, sigma])
-    map(ClampRGBAU8(), img).data
+    # map color compononts and clamp them
+    clamp01.(img)
 end
 
 

@@ -106,7 +106,7 @@ void main()
         gl_Position    = projection * view * model * vec4(pos, 1);
     }else{
         o_uv = linear_index(dims, index1D);
-        vec3 normalvec = vec3(0, 0, 1);
+        vec3 normalvec = {{normal_calc}};
         render(pos, normalvec, view * model, projection, light);
     }
 }

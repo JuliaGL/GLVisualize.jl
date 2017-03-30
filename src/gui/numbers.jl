@@ -11,7 +11,7 @@ function printforslider(x::StaticVector, numberwidth=5)
         printforslider(io, elem, numberwidth)
         print(io, " ")
     end
-    takebuf_string(io)
+    String(take!(io))
 end
 function num2glstring(x, numberwidth)
     str   = printforslider(x, numberwidth)

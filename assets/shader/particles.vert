@@ -34,7 +34,7 @@ uniform int len;
 
 flat out uvec2 o_id;
      out vec4  o_color;
-
+out vec2 o_uv;
 
 {{position_type}} position;
 {{position_x_type}} position_x;
@@ -88,6 +88,7 @@ vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int i
 {{color_norm_type}} color_norm;
 // constant color!
 vec4 _color(vec4 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
+vec4 _color(vec3 color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
 // only a samplerBuffer, this means we have a color per particle
 vec4 _color(samplerBuffer color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len);
 // no color, but intensities a color map and color norm. Color will be based on intensity!
@@ -128,6 +129,7 @@ void main(){
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
     o_color    = _color(color, intensity, color_map, color_norm, index, len);
     V *= scale;
+    o_uv = vec2(0.0);
     rotate(rotation, index, V, N);
     render(pos + V, N, view*model, projection, light);
 }

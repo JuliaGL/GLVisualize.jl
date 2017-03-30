@@ -1,7 +1,6 @@
 __precompile__(true)
 module GLVisualize
 
-using Compat
 using GLFW
 using GLWindow
 using GLAbstraction
@@ -18,27 +17,35 @@ using Packing
 using SignedDistanceFields
 using FreeType
 using Iterators
+using Base.Markdown
+using Compat   # in preparation for Julia 0.6
+
 import ColorVectorSpace
+import GLAbstraction: N0f8
+export N0f8 # reexport for examples/tests
 
 import Images
-using Base.Markdown
+# Are we using the new Images?
+if isdefined(Images, :ImageAxes)
+    using AxisArrays, ImageAxes
+    @compat const HasAxesArray{T, N} = Union{AxisArray{T, N}, Images.ImageMetadata.ImageMetaAxis{T, N}}
+    @compat const AxisMatrix{T} = HasAxesArray{T, 2}
+end
+
+import Base: merge, convert, show
 
 using Compat
 import Compat: unsafe_wrap, unsafe_string, String, view, UTF8String
 
-import Base: merge, convert, show
 
-
-if VERSION < v"0.5.0-dev+4612"
-    function Base.checkbounds(::Type{Bool}, array::AbstractArray, indexes...)
-        checkbounds(Bool, size(array), indexes...)
-    end
+if VERSION >= v"0.6.0-dev.1015"
+    using Base.Iterators: Repeated, repeated
 else
-    import Base: view
+    using Base.Repeated
 end
 
-typealias GLBoundingBox AABB{Float32}
 
+typealias GLBoundingBox AABB{Float32}
 
 export renderloop
 
@@ -52,6 +59,7 @@ dir(dirs...) = joinpath(dirname(@__FILE__), "..", dirs...)
 returns path relative to the assets folder
 """
 assetpath(folders...) = dir("assets", folders...)
+
 """
 Loads a file from the asset folder
 """

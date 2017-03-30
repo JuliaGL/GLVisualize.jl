@@ -13,15 +13,19 @@ flat in uvec2 o_id;
 
 {{color_type}} color;
 
+vec4 get_color(vec3 color, vec2 uv){
+    return vec4(color, 1.0 + (0.0 * uv)); // we must prohibit uv from getting into dead variable removal
+}
+
 vec4 get_color(vec4 color, vec2 uv){
-    return color;
+    return color + uv.x * 0.0; // we must prohibit uv from getting into dead variable removal
 }
 
 vec4 get_color(Nothing color, vec2 uv){
-    return o_color;
+    return o_color + uv.x * 0.0;
 }
 vec4 get_color(samplerBuffer color, vec2 uv){
-    return o_color;
+    return o_color + uv.x * 0.0;
 }
 
 vec4 get_color(sampler2D color, vec2 uv){

@@ -23,7 +23,7 @@ end
 # step through the `time`
 function lorenz(array::Vector, a = 5.0 ,b = 2.0, c = 6.0, d = 0.01)
     t0 = Point3f0(0.1, 0, 0)
-    for i=eachindex(array)
+    for i = eachindex(array)
         t0 = lorenz(t0, a,b,c,d)
         array[i] = t0
     end
@@ -66,7 +66,7 @@ N = n1*n2
 args = map(value, (w[:a], w[:b], w[:c], w[:d]))
 v0 = lorenz(zeros(Point3f0, N), args...)
 positions = foldp(lorenz, v0, w[:a], w[:b], w[:c], w[:d])
-scales = const_lift(Vec3f0, w[:scale])
+scales = map(Vec3f0, w[:scale])
 rotations = map(diff, positions)
 rotations = map(x-> push!(x, x[end]), rotations)
 cmap = map((a,b)->[a,b], w[:colora], w[:colorb])

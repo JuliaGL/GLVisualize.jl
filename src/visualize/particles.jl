@@ -245,12 +245,12 @@ function meshparticle(p, s, data)
 
         instances   = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)
-        lighting    = true
+        shading    = true
         shader      = GLVisualizeShader(
             "util.vert", "particles.vert", "fragment_output.frag", "standard.frag",
             view = Dict(
                 "position_calc" => position_calc(position, position_x, position_y, position_z, TextureBuffer),
-                "light_calc" => light_calc(lighting)
+                "light_calc" => light_calc(shading)
             )
         )
     end
@@ -323,13 +323,23 @@ primitive_distancefield(::Char) = get_texture_atlas().images
 
 
 
-"""
-Particles with an image as primitive
-"""
-function _default{Pr <: Images.Image, P <: Point}(
+if isdefined(Images, :ImageAxes)
+    """
+    Particles with an image as primitive
+    """
+    function _default{Pr <: HasAxesArray, P <: Point}(
         p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
     )
-    _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
+        _default((const_lift(img -> gl_convert(img), p[1]), p[2]), s, data)
+    end
+else
+    include_string("""
+    function _default{Pr <: Images.Image, P <: Point}(
+            p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
+        )
+        _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
+    end
+    """)
 end
 function _default{C <: Colorant, P <: Point}(
         p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
@@ -429,6 +439,7 @@ function sprites(p, s, data)
         scale_z     = nothing                => GLBuffer
 
         rotation    = Vec3f0(0,0,1)          => GLBuffer
+        image       = nothing => Texture
     end
     # TODO don't make this dependant on some shady type dispatch
     if isa(p[1], Char) && !isa(scale, Vec) # correct dimensions
@@ -453,7 +464,6 @@ function sprites(p, s, data)
         glow_width      = 0f0
         uv_offset_width = primitive_uv_offset_width(p[1]) => GLBuffer
 
-        image           = nothing => Texture
         distancefield   = primitive_distancefield(p[1]) => Texture
         indices         = const_lift(length, p[2]) => to_indices
         boundingbox     = const_lift(GLBoundingBox, inst)

@@ -15,9 +15,8 @@ keytype{K}(::AbstractVector{Pair{K}}) = K
 keytype(x) = Any
 
 
-function extract_edit_menu{T <: Pair}(
-        edit_dict::Union{AbstractVector{T}, Dict}, edit_screen, isvisible;
-        mm = 3.71f0, filter_fun = (k, v_v) -> true,
+function extract_edit_menu(
+        edit_dict, edit_screen, isvisible = Signal(true);
         icon_size = 32, knob_scale = 1.6mm
     )
 
@@ -28,7 +27,6 @@ function extract_edit_menu{T <: Pair}(
     K = keytype(edit_dict)
     signal_dict = Dict{K, Any}()
     for (k, v) in edit_dict
-        filter_fun(k, v) || continue
         label = UTF8String(string(k))
         s = makesignal2(v)
         if applicable(widget, s, edit_screen)

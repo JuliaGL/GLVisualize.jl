@@ -38,6 +38,7 @@ const default_kwargs_docs = Dict(
     :model => "Must be`Mat4f0`. Scales, rotates and positions the object",
     :preferred_camera => "Preferred camera",
     :light => "Light to illuminate the model",
+    :shading => "Accepts true or false. When true, uses blinn phong shading, otherwise flat"
 )
 function get_docs(arg1, style=:default)
     s = Style{style}()
@@ -84,7 +85,7 @@ _tuple(x::Core.SimpleVector) = tuple(x...)
 _tuple(x::Tuple) = x
 _tuple{T<:Tuple}(x::Type{T}) = tuple(x.parameters...)
 
-function all_docs()
+function all_docs(io = STDOUT)
     method_table = methods(GLVisualize._default)
     metadict = Docs.meta(GLVisualize)
     default_docs = metadict[Base.Docs.Binding(GLVisualize, :_default)].docs
@@ -105,9 +106,9 @@ function all_docs()
         else
             string(", :", arg2)
         end
-        print(docstr)
-        println("visualize", sparam, "(", arg1, arg2, ")")
-        println()
+        print(io, docstr)
+        println(io, "visualize", sparam, "(", arg1, arg2, ")")
+        println(io)
     end
 
 end

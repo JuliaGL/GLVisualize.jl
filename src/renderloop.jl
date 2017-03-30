@@ -37,12 +37,13 @@ end
 global const mm = Millimeter()
 
 import Base: *
+const pixel_per_mm = Ref(3.7)
 
 function (*)(x::Millimeter, y::Number)
-    round(Int, y * pixel_per_mm)
+    round(Int, y * pixel_per_mm[])
 end
 function (*)(x::Number, y::Millimeter)
-    round(Int, x * pixel_per_mm)
+    round(Int, x * pixel_per_mm[])
 end
 
 
@@ -60,26 +61,27 @@ end
 
 
 
-function glscreen(name="GLVisualize";
+function glscreen(name = "GLVisualize";
         resolution = GLWindow.standard_screen_resolution(),
         debugging = false,
         clear = true,
         color = RGBA(1,1,1,1),
         stroke = (0f0, color),
         hidden = false,
-        visible = true
+        visible = true,
+        focus = true
     )
     cleanup()
     screen = Screen(
         name,
         resolution = resolution, debugging = debugging,
         clear = clear, color = color, stroke = stroke,
-        hidden = hidden, visible = visible,
+        hidden = hidden, visible = visible, focus = focus
     )
     add_screen(screen)
     GLWindow.add_complex_signals!(screen) #add the drag events and such
     GLFW.MakeContextCurrent(GLWindow.nativewindow(screen))
-    global const pixel_per_mm = get_scaled_dpi(screen) / 25.4
+    pixel_per_mm[] = get_scaled_dpi(screen) / 25.4
     screen
 end
 

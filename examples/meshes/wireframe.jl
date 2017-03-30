@@ -1,5 +1,4 @@
 using GLVisualize, GeometryTypes, ModernGL, GLAbstraction, Colors, FileIO
-
 if !isdefined(:runtests)
     window = glscreen()
 end
