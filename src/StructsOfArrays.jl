@@ -26,7 +26,7 @@ Base.done(sr::ScalarRepeat, i) = false
     is_ts = length(T.types) == 1 && T.types[1] <: Tuple
     :($is_ts)
 end
-struct_eltypes{T}(struct::T) = struct_eltypes(T)
+struct_eltypes{T}(::T) = struct_eltypes(T)
 function struct_eltypes{T}(::Type{T})
     if is_tuple_struct(T) #special case tuple types (E.g. FixedSizeVectors)
         return eltypes = T.types[1].parameters
