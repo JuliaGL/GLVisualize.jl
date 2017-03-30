@@ -15,12 +15,12 @@ function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
     end
     delete!(data, :ranges)
     @gen_defaults! data begin
-        image = main => (Texture, "image, can be a Texture or Array of colors")
+        image = main -> (Texture, "image, can be a Texture or Array of colors")
         primitive::GLUVMesh2D = const_lift(ranges) do r
             x, y = minimum(r[1]), minimum(r[2])
             xmax, ymax = maximum(r[1]), maximum(r[2])
             SimpleRectangle{Float32}(x, y, xmax - x, ymax - y)
-        end => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
+        end
         boundingbox           = const_lift(GLBoundingBox, primitive)
         preferred_camera      = :orthographic_pixel
         fxaa                  = false
