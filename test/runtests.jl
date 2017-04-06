@@ -1,9 +1,9 @@
-# for pkg in ("GLAbstraction", "GeometryTypes", "GLWindow")
-#     Pkg.checkout(pkg, "sd/staticarrays")
-# end
-# Pkg.checkout("ModernGL", "sd/v06")
-# Pkg.checkout("StaticArrays", "sd/fixedsizearrays")
-# Pkg.clone("https://github.com/JuliaGraphics/FreeTypeAbstraction.jl.git")
+for pkg in ("GLAbstraction", "GeometryTypes", "GLWindow")
+    Pkg.checkout(pkg, "sd/staticarrays")
+end
+Pkg.checkout("ModernGL", "sd/v06")
+Pkg.checkout("StaticArrays", "sd/fixedsizearrays")
+Pkg.clone("https://github.com/JuliaGraphics/FreeTypeAbstraction.jl.git")
 
 include("micro.jl")
 
