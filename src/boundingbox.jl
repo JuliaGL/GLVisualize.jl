@@ -32,8 +32,8 @@ function transform(translation, scale, rotation, points)
         rv = rotation*Vec4f0(x[1], x[2], x[3], 1f0)
         x = Vec3f0(rv[1], rv[2], rv[3])
         x = Vec3f0(translation)+x
-        _min = min(_min, x)
-        _max = max(_max, x)
+        _min = min.(_min, x)
+        _max = max.(_max, x)
     end
     AABB{Float32}(_min, _max-_min)
 end

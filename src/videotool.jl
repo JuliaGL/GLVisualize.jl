@@ -31,6 +31,6 @@ function webm_batchconvert(oldpath, newpath, scale = 0.5)
         f = joinpath(oldpath, file)
         name, ext = splitext(file)
         out = joinpath(newpath, name * ".webm")
-        run(`ffmpeg -i $f -c:v libvpx-vp9 -threads 16 -b:v 2000k -c:a libvorbis -threads 16 -vf scale=iw*$scale:ih*$scale $out`)
+        run(`ffmpeg -i $f -c:v libvpx-vp9 -threads 16 -b:v 2000k -c:a libvorbis -threads 16 -vf scale=iw$("*")$scale:ih$("*")$scale $out`)
     end
 end

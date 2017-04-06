@@ -1,4 +1,4 @@
-julia 0.5
+julia 0.6-
 
 GLWindow 0.3
 GLAbstraction 0.3.1

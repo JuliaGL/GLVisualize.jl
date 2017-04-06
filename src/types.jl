@@ -75,8 +75,8 @@ import Base: getindex, length, next, start, done
 to_cpu_mem(x) = x
 to_cpu_mem(x::GPUArray) = gpu_data(x)
 
-typealias ScaleTypes Union{Vector, Vec, AbstractFloat, Void, Grid}
-typealias PositionTypes Union{Vector, Point, AbstractFloat, Void, Grid}
+@compat const ScaleTypes = Union{Vector, Vec, AbstractFloat, Void, Grid}
+@compat const PositionTypes = Union{Vector, Point, AbstractFloat, Void, Grid}
 
 type ScalarRepeat{T}
     scalar::T
@@ -121,7 +121,8 @@ immutable GridZRepeat{G, T, N} <: AbstractArray{Point{3, T}, N}
 end
 Base.size(g::GridZRepeat) = size(g.z)
 Base.size(g::GridZRepeat, i) = size(g.z, i)
-Base.linearindexing{T<:GridZRepeat}(::Type{T}) = Base.LinearFast()
+Base.IndexStyle(::Type{<:GridZRepeat}) = Base.LinearFast()
+
 function Base.getindex{G,T}(g::GridZRepeat{G, T}, i)
     pxy = g.grid[i]
     Point{3, T}(pxy[1], pxy[2], g.z[i])
@@ -215,11 +216,11 @@ immutable Intensity{T <: AbstractFloat} <: FieldVector{T}
     i::T
 end
 @inline Intensity{T <: AbstractFloat}(i::NTuple{1, T}) = Intensity{T}(i[1])
-@inline (::Type{I}){I <: Intensity}(i::Intensity) = I(i.i)
+@inline (::Type{Intensity{T}}){T <: AbstractFloat}(i::Intensity) = I(i.i)
+(::Type{Intensity{T}}){T <: AbstractFloat, Tc}(x::Color{Tc, 1}) = Intensity{T}(gray(x))
 
-typealias GLIntensity Intensity{Float32}
+@compat const GLIntensity = Intensity{Float32}
 export Intensity, GLIntensity
-(::Type{Intensity{T}}){T,Tc}(x::Color{Tc,1}) = Intensity{T}(gray(x))
 
 NOT(x) = !x
 

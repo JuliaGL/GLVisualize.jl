@@ -54,7 +54,7 @@ end
 This code should be executed only one time per julia session!!
 If you accidantly close the window, you can call this again.
 """
-function init(res=(800,800))
+function init(res = (800,800))
     # giving the window a transparent background color makes it transparent to
     # the previous frame. It's arguable, if that's really how things should be,
     # but that's how it currently works ;)

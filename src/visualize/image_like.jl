@@ -15,7 +15,7 @@ function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
     end
     delete!(data, :ranges)
     @gen_defaults! data begin
-        image = main -> (Texture, "image, can be a Texture or Array of colors")
+        image = main => (Texture, "image, can be a Texture or Array of colors")
         primitive::GLUVMesh2D = const_lift(ranges) do r
             x, y = minimum(r[1]), minimum(r[2])
             xmax, ymax = maximum(r[1]), maximum(r[2])
@@ -248,7 +248,7 @@ end
 
 
 #Volumes
-typealias VolumeElTypes Union{Gray, AbstractFloat, Intensity}
+@compat const VolumeElTypes = Union{Gray, AbstractFloat, Intensity}
 
 const default_style = Style{:default}()
 

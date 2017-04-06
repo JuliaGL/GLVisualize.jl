@@ -1,4 +1,5 @@
 module StructsOfArrays
+using Compat
 
 export StructOfArrays, ScalarRepeat
 
@@ -68,7 +69,7 @@ function StructOfArrays(T::Type, a, rest...)
     StructOfArrays{T, N, arrtuple}(arrays)
 end
 
-Base.linearindexing{T<:StructOfArrays}(::Type{T}) = Base.LinearFast()
+@compat Base.IndexStyle(::Type{<:StructOfArrays}) = IndexLinear()
 
 @generated function Base.similar{T}(A::StructOfArrays, ::Type{T}, dims::Dims)
     if isbits(T) && length(T.types) > 1
