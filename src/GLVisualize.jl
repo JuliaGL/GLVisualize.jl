@@ -19,10 +19,12 @@ using FreeType
 using Iterators
 using Base.Markdown
 using Compat   # in preparation for Julia 0.6
+using FreeTypeAbstraction
 
 import ColorVectorSpace
 import GLAbstraction: N0f8
 export N0f8 # reexport for examples/tests
+using Base.Iterators: filter
 
 import Images
 # Are we using the new Images?
@@ -45,7 +47,7 @@ else
 end
 
 
-typealias GLBoundingBox AABB{Float32}
+@compat const GLBoundingBox = AABB{Float32}
 
 export renderloop
 
@@ -71,8 +73,6 @@ end
 
 export assetpath, loadasset
 
-include("FreeTypeAbstraction.jl")
-using .FreeTypeAbstraction
 
 include("StructsOfArrays.jl")
 using .StructsOfArrays
