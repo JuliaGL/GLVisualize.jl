@@ -1,4 +1,4 @@
-using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
+using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO, Compat
 if !isdefined(:runtests)
 	window = glscreen()
 end
