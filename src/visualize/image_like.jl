@@ -248,7 +248,7 @@ end
 
 
 #Volumes
-typealias VolumeElTypes Union{Gray, AbstractFloat, Intensity}
+const VolumeElTypes = Union{Gray, AbstractFloat, Intensity}
 
 const default_style = Style{:default}()
 
