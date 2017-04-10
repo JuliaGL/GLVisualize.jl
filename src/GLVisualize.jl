@@ -46,8 +46,7 @@ else
     using Base.Repeated
 end
 
-
-@compat const GLBoundingBox = AABB{Float32}
+const GLBoundingBox = AABB{Float32}
 
 export renderloop
 

@@ -9,10 +9,10 @@ the most sense for the datatype.
 =#
 
 #3D primitives
-@compat const Primitives3D = Union{AbstractGeometry{3}, AbstractMesh}
+const Primitives3D = Union{AbstractGeometry{3}, AbstractMesh}
 #2D primitives AKA sprites, since they are shapes mapped onto a 2D rectangle
-@compat const Sprites = Union{AbstractGeometry{2}, Shape, Char, Type}
-@compat const AllPrimitives = Union{AbstractGeometry, Shape, Char}
+const Sprites = Union{AbstractGeometry{2}, Shape, Char, Type}
+const AllPrimitives = Union{AbstractGeometry, Shape, Char}
 
 
 """

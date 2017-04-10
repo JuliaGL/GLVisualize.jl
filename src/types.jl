@@ -75,8 +75,8 @@ import Base: getindex, length, next, start, done
 to_cpu_mem(x) = x
 to_cpu_mem(x::GPUArray) = gpu_data(x)
 
-@compat const ScaleTypes = Union{Vector, Vec, AbstractFloat, Void, Grid}
-@compat const PositionTypes = Union{Vector, Point, AbstractFloat, Void, Grid}
+const ScaleTypes = Union{Vector, Vec, AbstractFloat, Void, Grid}
+const PositionTypes = Union{Vector, Point, AbstractFloat, Void, Grid}
 
 type ScalarRepeat{T}
     scalar::T
@@ -221,6 +221,7 @@ end
 
 @compat const GLIntensity = Intensity{Float32}
 export Intensity, GLIntensity
+
 
 NOT(x) = !x
 
