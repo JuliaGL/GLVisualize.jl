@@ -4,7 +4,7 @@ end
 Pkg.checkout("ModernGL", "sd/v06")
 Pkg.checkout("StaticArrays", "sd/fixedsizearrays")
 Pkg.clone("https://github.com/JuliaGraphics/FreeTypeAbstraction.jl.git")
-
+Pkg.checkout("FreeTypeAbstraction", "sd/v06")
 include("micro.jl")
 
 function isheadless()
