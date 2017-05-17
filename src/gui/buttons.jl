@@ -166,7 +166,7 @@ function play_slider(
         slider_length = slider_length
     )
     viz = visualize([play_button, slider_s], direction = 1)
-    slider_w, viz
+    viz, slider_w
 end
 
 

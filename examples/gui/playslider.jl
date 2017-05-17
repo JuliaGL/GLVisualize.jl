@@ -22,7 +22,7 @@ function xy_data(x,y,i, N)
 end
 surf(i, N) = Float32[xy_data(x, y, i, N) for x=1:N, y=1:N]
 
-slider_value, play_viz = play_slider(
+play_viz, slider_value = play_slider(
     edit_screen, iconsize, linspace(1f0, 50f0, 100)
 )
 color_viz, color_s = widget(RGBA{Float32}.(colormap("Blues", 7)), edit_screen)
