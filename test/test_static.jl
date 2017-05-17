@@ -1,5 +1,10 @@
 using GLVisualize
+include("micro.jl")
 include(GLVisualize.dir("examples", "ExampleRunner.jl"))
+
+
+@show GLVisualize._downsample_rate
+
 using ExampleRunner
 importall ExampleRunner
 using GLAbstraction, GLWindow, Colors
@@ -18,7 +23,7 @@ function create_mosaic(io, folder, width = 150)
     images = filter(x-> endswith(x, ".jpg"), readdir(folder))
     for im in images
         println(io, """<img src="$(image_url(joinpath(folder, im)))"
-            alt="$(im)" width=$(width)px"/>
+            alt="$(im)" width=$(width)px/>
         """)
     end
 end
@@ -124,7 +129,7 @@ if recording
             println(io, "### Failures:")
             for (k, dict) in failures
                 println(io, "file: $k")
-                Base.showerror(io, "$(dict[:exception])")
+                Base.showerror(io, dict[:exception])
                 println("\n")
             end
         else

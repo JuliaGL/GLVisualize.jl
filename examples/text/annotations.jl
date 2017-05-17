@@ -1,4 +1,6 @@
 using GLVisualize, GeometryTypes, Colors, GLAbstraction, Reactive, Images, ModernGL
+import GLVisualize: mm, calc_position, glyph_bearing!, glyph_uv_width!, glyph_scale!
+
 import GLVisualize: mm, annotated_text
 
 if !isdefined(:runtests)
@@ -32,13 +34,13 @@ fbuffer = foldp(rand(RGB{N0f8}, 500, 500), timesignal) do v0, t
     end
 end
 frame_viz = visualize(fbuffer)
-
 # instead of circle you can also use unicode charactes (e.g. '+')
 position_viz = visualize(
     (Circle{Float32}(0, 1.5mm), positions),
     color = RGBA(1f0, 0f0, 0f0, 0.6f0)
 )
 gpu_position = position_viz.children[][:position]
+
 bg_viz = visualize(
     (ROUNDED_RECTANGLE, gpu_position),
     scale = widths,

@@ -1,4 +1,5 @@
 using GLVisualize
+include("micro.jl")
 include(GLVisualize.dir("examples", "ExampleRunner.jl"))
 using ExampleRunner
 import ExampleRunner: flatten_paths

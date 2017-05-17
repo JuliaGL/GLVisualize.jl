@@ -190,7 +190,7 @@ function sdistancefield(img, downsample = 8, pad = 8*downsample)
 
     in_or_out = Array(Bool, w, h)
     @inbounds for i=1:w, j=1:h
-        x, y = i-pad, j-pad
+        x, y = i - pad, j - pad
         in_or_out[i,j] = checkbounds(Bool, img, x, y) && img[x,y] > 0.5*255
     end
     yres, xres = div(w, downsample), div(h, downsample)
@@ -198,13 +198,15 @@ function sdistancefield(img, downsample = 8, pad = 8*downsample)
     map(Float16, sd)
 end
 
+const _downsample_rate = parse(Int, get(ENV, "GLVISUALIZE_DOWNSAMPLE_RATE", "5"))
+
 function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     #select_font_face(cc, font)
     if glyph == '\n' # don't render  newline
         glyph = ' '
     end
-    downsample = 5
-    pad = 8
+    downsample = _downsample_rate
+    pad = 20
     bitmap, extent = renderface(font, glyph, (50*downsample, 50*downsample))
     sd = sdistancefield(bitmap, downsample, downsample*pad)
     extent = extent ./ Vec2f0(downsample)

@@ -93,35 +93,36 @@ function widget{T <: FixedVector}(
         last_x += w[1] + gap
         vizz
     end
-
     Context(le_tuple...), map(T, le_sigs...)
 end
 function widget{T <: Real}(
         slider_value::Signal{T}, window;
         text_scale = 4mm,
-        numberwidth = 5, range = range_default(T), kw_args...
-    )
-    @materialize mouse_buttons_pressed, mouseposition = window.inputs
-    startvalue        = value(slider_value)
-    slider_value_str  = map(printforslider, slider_value)
-    vizz              = visualize(
-        slider_value_str; relative_scale=text_scale,
+        numberwidth = 5, range = range_default(T),
         color = RGBA{Float32}(0.1, 0.1, 0.1),
         glow_color = RGBA{Float32}(0.97, 0.97, 0.97),
         stroke_color = RGBA{Float32}(0.97, 0.97, 0.97),
-        scale_primitive = true,
         kw_args...
     )
-    bb         = value(boundingbox(vizz))
+    @materialize mouse_buttons_pressed, mouseposition = window.inputs
+    startvalue = value(slider_value)
+    slider_value_str = map(printforslider, slider_value)
+    slider_robj = visualize(
+        slider_value_str;
+        relative_scale = text_scale,
+        color = color, glow_color = glow_color, stroke_color = stroke_color,
+        scale_primitive = true,
+        kw_args...
+    ).children[]
+    bb = value(boundingbox(slider_robj))
     mini, maxi = minimum(bb)-5f0, widths(bb)+10f0
-    bb_rect    = SimpleRectangle{Float32}(mini[1],mini[2], maxi[1], maxi[2])
-    bb_vizz    = visualize(
+    bb_rect = SimpleRectangle{Float32}(mini[1], mini[2], maxi[1], maxi[2])
+    bb_vizz = visualize(
         bb_rect;
-        color=RGBA{Float32}(0.97, 0.97, 0.97, 0.4),
-        offset=Vec2f0(0), kw_args...
+        color = RGBA{Float32}(0.97, 0.97, 0.97, 0.4),
+        offset = Vec2f0(0), kw_args...
     ).children[]
 
-    slider_robj = vizz.children[]
     # current tuple of renderobject id and index into the gpu array
     m2id = GLWindow.mouse2id(window)
     ids = (slider_robj.id, bb_vizz.id)

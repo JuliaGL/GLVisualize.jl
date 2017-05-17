@@ -3,7 +3,7 @@ immutable SpriteElem{N,T}
     offset::Vec{2,T}
     uv_offset_width::Vec{4,T}
     position::Point{N, T}
-    color::RGBA{Float32}
+    color::RGBA{N0f8}
     scale::Vec{2,T}
 end
 type Text
@@ -202,7 +202,7 @@ texttext<current pos>texttext\n
 texttext<finds this pos>text\n
 =#
 function down_after_newline(text, current_position)
-    i     = current_position
+    i = current_position
     pnl = previous_newline(text, i)
     nnl = next_newline(text, i)
     nl_distance = i-pnl # distance from previous newline

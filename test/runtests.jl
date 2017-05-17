@@ -1,5 +1,3 @@
-include("micro.jl")
-
 function isheadless()
     get(ENV, "TRAVIS", "") == "true" ||
     get(ENV, "APPVEYOR", "") == "true" ||
@@ -7,6 +5,7 @@ function isheadless()
 end
 
 if isheadless()
+    ENV["GLVISUALIZE_DOWNSAMPLE_RATE"] = 1
     # need this branch for better coverage report!
     include("test_static.jl")
 else

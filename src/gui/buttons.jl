@@ -1,15 +1,27 @@
-function button(a, screen; kw_args...)
+function button(
+        a, screen;
+        background_color = RGBA(1f0, 1f0, 1f0, 0.0f0),
+        gap = 0.5mm,
+        kw_args...
+    )
     robj = visualize(a; kw_args...).children[]
-    const m2id = mouse2id(screen)
+    m2id = mouse2id(screen)
+    result = [robj]
+    bb = value(boundingbox(robj))
+    mini, w = minimum(bb), widths(bb)
+    rect = SimpleRectangle(mini[1] - 2gap, mini[2] - 2gap, w[1] + 2gap, w[2] + 2gap)
+    bg = visualize(rect, color = background_color, model = robj[:model]).children[]
+    ids = (robj.id, bg.id)
     is_pressed = droprepeats(map(screen.inputs[:key_pressed]) do isclicked
-        isclicked && value(m2id).id == robj.id
+        id = value(m2id)
+        isclicked && is_same_id(id, ids)
     end)
 
     robj[:model] = const_lift(is_pressed, robj[:model]) do ip, old
         ip && return old
         scalematrix(Vec3f0(0.95))*old
     end
-    robj, is_pressed
+    Context(bg, robj), is_pressed
 end
 
 
