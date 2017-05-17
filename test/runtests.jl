@@ -7,7 +7,6 @@ function isheadless()
 end
 
 if isheadless()
-    # need this branch for better coverage report!
     include("test_static.jl")
 else
     include("test_interactive.jl")
