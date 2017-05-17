@@ -7,7 +7,7 @@ GeometryTypes 0.2
 GLFW
 ModernGL
 FixedSizeArrays
-Reactive 0.4.1
+Reactive 0.5.0
 
 FixedPointNumbers
 ColorVectorSpace
