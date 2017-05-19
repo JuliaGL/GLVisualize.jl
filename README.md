@@ -57,7 +57,7 @@ It is planned to integrate this more nicely with the higher level interface in P
 
 #### Demo of GPU computing and visualization of the GPU object with GLVisualize
 GLVisualize is GPU accelerated and we can use this fact to display computations run on the GPU as efficient as possible.
-This is a demo using the unreleased packages [CUDAnative](https://github.com/JuliaGPU/CUDAnative.jl) and [GPUArrays](https://github.com/JuliaGPU/GPUArrays.jl) to run Julia code on the GPU and visualize the result.
+This is a demo using the packages [CUDAnative](https://github.com/JuliaGPU/CUDAnative.jl) and [GPUArrays](https://github.com/JuliaGPU/GPUArrays.jl) to run Julia code on the GPU and visualize the result.
 Note that the CPU version takes around 60 seconds for every iteration. GPU acceleration brought this down to interactive speeds at around 0.12s per iteration!
 
 [<img src="https://cloud.githubusercontent.com/assets/1010467/18793533/79b04714-81bb-11e6-9fa0-ed273888b7cf.png" width="489">](https://vimeo.com/184020541)
