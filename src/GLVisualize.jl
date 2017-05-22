@@ -45,7 +45,7 @@ else
 end
 
 
-typealias GLBoundingBox AABB{Float32}
+const GLBoundingBox = AABB{Float32}
 
 export renderloop
 

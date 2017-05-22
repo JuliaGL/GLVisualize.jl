@@ -75,8 +75,8 @@ import Base: getindex, length, next, start, done
 to_cpu_mem(x) = x
 to_cpu_mem(x::GPUArray) = gpu_data(x)
 
-typealias ScaleTypes Union{Vector, Vec, AbstractFloat, Void, Grid}
-typealias PositionTypes Union{Vector, Point, AbstractFloat, Void, Grid}
+const ScaleTypes = Union{Vector, Vec, AbstractFloat, Void, Grid}
+const PositionTypes = Union{Vector, Point, AbstractFloat, Void, Grid}
 
 type ScalarRepeat{T}
     scalar::T
@@ -231,7 +231,7 @@ end
 immutable Intensity{N, T} <: FixedVector{N, T}
     _::NTuple{N, T}
 end
-typealias GLIntensity Intensity{1, Float32}
+const GLIntensity = Intensity{1, Float32}
 (::Type{Intensity{1,T}}){T,Tc}(x::Color{Tc,1}) = Intensity{1,T}(gray(x))
 export Intensity,GLIntensity
 
