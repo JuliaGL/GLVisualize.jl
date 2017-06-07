@@ -27,7 +27,7 @@ function extract_edit_menu(
     K = keytype(edit_dict)
     signal_dict = Dict{K, Any}()
     for (k, v) in edit_dict
-        label = UTF8String(string(k))
+        label = String(string(k))
         s = makesignal2(v)
         if applicable(widget, s, edit_screen)
             vis, sig = widget(s, edit_screen,

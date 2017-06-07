@@ -5,7 +5,7 @@ function edit_line(
         kw_args...
     )
     mouse_hover = mouse2id(window)
-    inds = reinterpret(Cuint, collect(partition(Cuint(0):Cuint(length(line)-1),2,1)))
+    inds = reinterpret(Cuint, collect(partition(Cuint(0):Cuint(length(line)-1) , 2, 1)))
     line_robj = visualize(
         line, :linesegment;
         indices = inds,

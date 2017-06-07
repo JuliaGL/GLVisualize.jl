@@ -14,10 +14,10 @@ Most 2D camera's use the Ctrl modifier to make editing easier.
 # the array is 512x512 after all
 const N = 256
 const range = linspace(-5f0, 5f0, N)
-const data = zeros(Intensity{1,Float32}, N, N)
+const data = zeros(Intensity{Float32}, N, N)
 
 function contour_inner(i, x, y)
-    Intensity{1,Float32}(sin(1.3*x*i)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x))
+    Intensity{Float32}(sin(1.3*x*i)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x))
 end
 
 function contourdata(t)

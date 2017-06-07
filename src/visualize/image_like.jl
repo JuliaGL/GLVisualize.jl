@@ -1,7 +1,11 @@
 """
 A matrix of colors is interpreted as an image
 """
-function _default{T <: Colorant}(main::MatTypes{T}, ::Style, data::Dict)
+
+_default(::Signal{Array{RGBA{U8}, 2}}, ::Style{:default}, ::Dict{Symbol,Any})
+
+
+function _default(main::MatTypes{T}, ::Style, data::Dict) where T <: Colorant
     @gen_defaults! data begin
         spatialorder = "yx"
     end
@@ -284,7 +288,7 @@ function _default{T <: VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict
         hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
         light_position   = Vec3f0(0.25, 1.0, 3.0)
         light_intensity  = Vec3f0(15.0)
-        modelinv        = modelinv
+        modelinv         = modelinv
 
         color_map        = default(Vector{RGBA}, s) => Texture
         color_norm       = color_map == nothing ? nothing : const_lift(extrema2f0, main)

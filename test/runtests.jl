@@ -1,19 +1,12 @@
-for pkg in ("GLAbstraction", "GeometryTypes", "GLWindow")
-    Pkg.checkout(pkg, "sd/staticarrays")
-end
-Pkg.checkout("ModernGL", "sd/v06")
-Pkg.checkout("StaticArrays", "sd/fixedsizearrays")
-Pkg.clone("https://github.com/JuliaGraphics/FreeTypeAbstraction.jl.git")
-Pkg.checkout("FreeTypeAbstraction", "sd/v06")
 include("micro.jl")
 
-function isheadless()
+function is_ci()
     get(ENV, "TRAVIS", "") == "true" ||
     get(ENV, "APPVEYOR", "") == "true" ||
     get(ENV, "CI", "") == "true"
 end
 
-if isheadless()
+if is_ci()
     # need this branch for better coverage report!
     cd(Pkg.dir("GLAbstraction")) do
         run(`git fetch origin`)

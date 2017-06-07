@@ -113,18 +113,10 @@ function position_calc(x...)
     _position_calc(filter(x->!isa(x, Void), x)...)
 end
 function glsllinspace(position::Grid, gi, index)
-    """
-    (((float(position.dims[$gi])-($(index)+1)) *
-        position.minimum[$gi] + $(index)*position.maximum[$gi]) *
-        position.multiplicator[$gi])
-    """
+    "position.ref[$gi] + ($index - position.offset[$gi]) * position._step[$gi]"
 end
 function glsllinspace(grid::Grid{1}, gi, index)
-    """
-    (((float(position.dims)-($(index)+1)) *
-        position.minimum + $(index)*position.maximum) *
-        position.multiplicator)
-    """
+    "position.ref + ($index - position.offset) * position._step"
 end
 function grid_pos(grid::Grid{1})
     "$(glsllinspace(grid, 0, "index"))"

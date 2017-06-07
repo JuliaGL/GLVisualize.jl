@@ -50,22 +50,21 @@ Base.next(g::Grid, i) = g[i], i+1
 
 GLAbstraction.isa_gl_struct(x::Grid) = true
 GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"
-function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N,T}, uniform_name::Symbol)
+function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N, T}, uniform_name::Symbol)
     return Dict{Symbol, Any}(
-        Symbol("$uniform_name.minimum") => Vec{N,Float32}(map(first, g.dims)),
-        Symbol("$uniform_name.maximum") => Vec{N,Float32}(map(last, g.dims)),
-        Symbol("$uniform_name.dims")    => Vec{N,Cint}(map(length, g.dims)),
-        Symbol("$uniform_name.multiplicator") => Vec{N,Float32}(map(x->1/x.divisor, g.dims)),
+        Symbol("$uniform_name.ref") => Vec{N, Float32}(map(x-> eltype(x)(x.ref), g.dims)),
+        Symbol("$uniform_name.offset") => Vec{N, Float32}(map(x-> eltype(x)(x.offset), g.dims)),
+        Symbol("$uniform_name._step") => Vec{N, Float32}(map(x-> step(x), g.dims)),
+        Symbol("$uniform_name.dims") => Vec{N, Cint}(map(length, g.dims))
     )
 end
-function GLAbstraction.gl_convert_struct{T}(g::Grid{1,T}, uniform_name::Symbol)
+function GLAbstraction.gl_convert_struct{T}(g::Grid{1, T}, uniform_name::Symbol)
+    x = g.dims[1]
     return Dict{Symbol, Any}(
-        Symbol("$uniform_name.minimum") => Float32(first(g.dims[1])),
-        Symbol("$uniform_name.maximum") => Float32(last(g.dims[1])),
-        Symbol("$uniform_name.dims")    => Cint(length(g.dims[1])),
-        Symbol("$uniform_name.multiplicator") => Float32(1/g.dims[1].divisor),
-
-
+        Symbol("$uniform_name.ref") => Float32(eltype(x)(x.ref)),
+        Symbol("$uniform_name.offset") => Float32(eltype(x)(x.offset)),
+        Symbol("$uniform_name._step") => Float32(step(x)),
+        Symbol("$uniform_name.dims") => Cint(length(x))
     )
 end
 import Base: getindex, length, next, start, done
@@ -212,11 +211,11 @@ end
 
 
 
-immutable Intensity{T <: AbstractFloat} <: FieldVector{T}
+immutable Intensity{T <: AbstractFloat} <: FieldVector{1, T}
     i::T
 end
-@inline Intensity{T <: AbstractFloat}(i::NTuple{1, T}) = Intensity{T}(i[1])
-@inline (::Type{Intensity{T}}){T <: AbstractFloat}(i::Intensity) = I(i.i)
+@inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Tuple) = I(i...)
+@inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Intensity) = I(i.i)
 (::Type{Intensity{T}}){T <: AbstractFloat, Tc}(x::Color{Tc, 1}) = Intensity{T}(gray(x))
 
 @compat const GLIntensity = Intensity{Float32}

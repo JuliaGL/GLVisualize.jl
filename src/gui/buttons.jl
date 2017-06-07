@@ -165,7 +165,8 @@ function play_slider(
         startidx = 1, play_signal = play_s,
         slider_length = slider_length
     )
-    slider_w, play_button, Context(point_robj, line)
+    viz = visualize([play_button, slider_s], direction = 1)
+    slider_w, viz
 end
 
 

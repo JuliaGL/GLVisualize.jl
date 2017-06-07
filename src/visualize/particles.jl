@@ -12,7 +12,7 @@ the most sense for the datatype.
 const Primitives3D = Union{AbstractGeometry{3}, AbstractMesh}
 #2D primitives AKA sprites, since they are shapes mapped onto a 2D rectangle
 const Sprites = Union{AbstractGeometry{2}, Shape, Char, Type}
-const AllPrimitives = Union{AbstractGeometry, Shape, Char}
+const AllPrimitives = Union{AbstractGeometry, Shape, Char, AbstractMesh}
 
 
 """
@@ -20,11 +20,11 @@ We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
 performance.
 """
-function _default{G<:GeometryPrimitive{2}}(
+function _default{G <: GeometryPrimitive{2}}(
         geometry::TOrSignal{G}, s::Style, data::Dict
     )
     data[:offset] = Vec2f0(0)
-    _default((geometry, const_lift(x->Point2f0[minimum(x)], geometry)), s, data)
+    _default((geometry, const_lift(x-> Point2f0[minimum(x)], geometry)), s, data)
 end
 
 """
@@ -121,7 +121,7 @@ function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
     @gen_defaults! data begin
         scale = nothing
         scale_x::Float32 = step(grid.dims[1])
-        scale_y::Float32 = N==1 ? 1f0 : step(grid.dims[2])
+        scale_y::Float32 = N == 1 ? 1f0 : step(grid.dims[2])
         scale_z = const_lift(vec, heightfield_s)
         color = nothing
         color_map  = color == nothing ? default(Vector{RGBA}) : nothing
@@ -136,7 +136,7 @@ will be spaced out on a grid defined
 by `ranges` and will use the floating points as the
 z position for the primitives.
 """
-function _default{P<:Sprites, T<:AbstractFloat, N}(
+function _default{P <: Sprites, T <: AbstractFloat, N}(
         main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict
     )
     primitive, heightfield_s = main
@@ -157,7 +157,7 @@ end
 """
 Sprites primitives with a vector of floats are treated as something barplot like
 """
-function _default{P<:Sprites, T<:AbstractFloat}(
+function _default{P <: AllPrimitives, T <: AbstractFloat}(
         main::Tuple{P, VecTypes{T}}, s::Style, data::Dict
     )
     primitive, heightfield_s = main
@@ -166,6 +166,7 @@ function _default{P<:Sprites, T<:AbstractFloat}(
         ranges = linspace(0f0, 1f0, length(heightfield))
     end
     grid = Grid(heightfield, ranges)
+    delete!(data, :ranges)
     @gen_defaults! data begin
         scale            = nothing
         scale_x::Float32 = step(grid.dims[1])
@@ -243,10 +244,10 @@ function meshparticle(p, s, data)
              nothing
         end => TextureBuffer
 
-        instances   = const_lift(length, position)
+        instances = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)
-        shading    = true
-        shader      = GLVisualizeShader(
+        shading = true
+        shader = GLVisualizeShader(
             "util.vert", "particles.vert", "fragment_output.frag", "standard.frag",
             view = Dict(
                 "position_calc" => position_calc(position, position_x, position_y, position_z, TextureBuffer),
@@ -305,7 +306,7 @@ Extracts the offset from a primitive.
 #primitive_offset(prim::GeometryPrimitive) = Vec2f0(minimum(prim))
 
 primitive_offset(x, scale::Void) = Vec2f0(0) # default offset
-primitive_offset(x, scale) = const_lift(./, scale, -2f0)  # default offset
+primitive_offset(x, scale) = const_lift(/, scale, -2f0)  # default offset
 
 
 """
@@ -323,24 +324,24 @@ primitive_distancefield(::Char) = get_texture_atlas().images
 
 
 
-if isdefined(Images, :ImageAxes)
-    """
-    Particles with an image as primitive
-    """
-    function _default{Pr <: HasAxesArray, P <: Point}(
-        p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
-    )
-        _default((const_lift(img -> gl_convert(img), p[1]), p[2]), s, data)
-    end
-else
-    include_string("""
-    function _default{Pr <: Images.Image, P <: Point}(
-            p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
-        )
-        _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
-    end
-    """)
-end
+# if isdefined(Images, :ImageAxes)
+#     """
+#     Particles with an image as primitive
+#     """
+#     function _default{Pr <: HasAxesArray, P <: Point}(
+#         p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
+#     )
+#         _default((const_lift(img -> gl_convert(img), p[1]), p[2]), s, data)
+#     end
+# else
+#     include_string("""
+#     function _default{Pr <: Images.Image, P <: Point}(
+#             p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
+#         )
+#         _default((const_lift(img -> img.data, p[1]), p[2]), s, data)
+#     end
+#     """)
+# end
 function _default{C <: Colorant, P <: Point}(
         p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
     )

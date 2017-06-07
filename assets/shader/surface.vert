@@ -2,11 +2,10 @@
 {{GLSL_EXTENSIONS}}
 
 struct Grid2D{
-    vec2 minimum;
-    vec2 maximum;
+    vec2 ref;
+    vec2 offset;
+    vec2 _step;
     ivec2 dims;
-    vec2 multiplicator;
-
 };
 
 struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data

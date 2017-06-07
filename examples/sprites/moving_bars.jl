@@ -13,7 +13,7 @@ primitive = SimpleRectangle(0f0, -0.5f0, 1f0, 1f0)
 scalars = rand(10f0:0.01f0:200f0, 200)
 
 function interpolate(a, scalars, t)
-    [ae+((be-ae)*t) for (ae, be) in zip(a,scalars)]
+    [ae + ((be - ae) * t) for (ae, be) in zip(a, scalars)]
 end
 t = const_lift(*, timesignal, 10f0)
 v0 = (scalars, rand(10f0:0.01f0:200f0, 200), scalars)
@@ -34,8 +34,11 @@ bars = visualize(
     color_norm = Vec2f0(-40, 200),
     color_map = GLVisualize.default(Vector{RGBA})
 )
-_view(bars, window, camera=:orthographic_pixel)
 
+# x = linspace(0, 600, 20)
+# @which convert(Float64, x.ref)
+
+_view(bars, window, camera = :orthographic_pixel)
 if !isdefined(:runtests)
     renderloop(window)
 end
