@@ -15,7 +15,7 @@ Example showing how to create different screens.
 # the parent resizes. There is also y/x_partition_abs, which will not resize and
 # the units are absolute pixel values.
 texta, viewa = y_partition(window.area, 20)
-view2da, view3da = x_partition(window.area, 50)
+view2da, view3da = x_partition(viewa, 50)
 
 # create a couple of screens from these areas
 textscreen = Screen(

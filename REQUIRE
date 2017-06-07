@@ -13,6 +13,7 @@ MeshIO
 GLFW
 ModernGL
 
+
 FixedPointNumbers
 ColorVectorSpace
 ColorTypes
@@ -25,7 +26,13 @@ FileIO
 SignedDistanceFields
 FreeType
 Iterators
-Packing
+FileIO
+MeshIO
 UnicodeFun
-
 Compat 0.18
+Quaternions
+
+# We went through extra length to be compatible to most Images versions
+Images
+AxisArrays
+ImageAxes
