@@ -1,12 +1,17 @@
 julia 0.6-pre
 
-GLWindow 0.3
-GLAbstraction 0.3.1
-GeometryTypes 0.2
+GLWindow 0.3 # 0.5.0 after tag
+GLAbstraction 0.3.1 # 0.5.0 after tag
+GeometryTypes 0.2.0 # 0.4.0 after tag
+StaticArrays 0.5.0
+Reactive 0.5.0
+
+FreeTypeAbstraction # needs a tag as well
+
+MeshIO
 
 GLFW
 ModernGL
-Reactive
 
 FixedPointNumbers
 ColorVectorSpace
@@ -16,7 +21,6 @@ Colors
 Images
 Quaternions
 FileIO
-MeshIO
 
 SignedDistanceFields
 FreeType

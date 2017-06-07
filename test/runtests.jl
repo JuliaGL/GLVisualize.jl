@@ -7,11 +7,15 @@ function is_ci()
 end
 
 if is_ci()
-    # need this branch for better coverage report!
-    cd(Pkg.dir("GLAbstraction")) do
-        run(`git fetch origin`)
-        run(`git checkout master`)
-    end
+
+    # TODO remove before final merge
+    Pkg.checkout("FreeTypeAbstraction", "sd/06")
+    Pkg.checkout("Packing", "sd/06")
+    Pkg.checkout("GLWindow", "sd/staticarrays")
+    Pkg.checkout("MeshIO", "sd/staticarrays")
+    Pkg.checkout("GLAbstraction", "sd/staticarrays")
+    Pkg.checkout("GeometryTypes", "sd/fixes_rebased")
+
     include("test_static.jl")
 else
     include("test_interactive.jl")
