@@ -77,40 +77,7 @@ type RunnerConfig
     current_file
     buttons
 end
-const preserved_signals = Set([])
-
-add_all_signals!(signal::Void) = nothing
-function add_all_signals!(signal)
-    push!(preserved_signals, signal)
-    for a in signal.actions
-        add_all_signals!(a.recipient.value)
-    end
-end
-should_preserve(signal::Void, preserved_signals) = false
-
-function should_preserve(signal, preserved_signals)
-    if signal in preserved_signals
-        return true
-    else
-        for elem in signal.actions
-            if should_preserve(elem.recipient.value, preserved_signals)
-                return true
-            end
-        end
-    end
-    false
-end
-clean_up_signals!(signal::Void) = nothing
-function clean_up_signals!(signal)
-    if !should_preserve(signal, preserved_signals)
-        close(signal, false)
-    else
-        for elem in signal.actions
-            clean_up_signals!(elem.recipient.value)
-        end
-    end
-    return
-end
+const source_signals = Dict()
 
 const text_signals = Dict(
     :title => Signal(UTF8String, "Nothing to show"),
@@ -156,7 +123,10 @@ function create_screens(rootscreen)
     )
     # `copy` all signals to make cleaning up easier
     for (k, v) in view_screen.inputs
-        view_screen.inputs[k] = map(identity, v)
+        x = Signal(value(v))
+        bind!(x, v, false)
+        view_screen.inputs[k] = x
+        source_signals[k] = v
     end
     code_screen = Screen(rootscreen, area = view_area, hidden = code_hide)
     GLVisualize.add_screen(view_screen)
@@ -225,7 +195,6 @@ function create_screens(rootscreen)
     last_y = iconsize+1
     for k in [:rewind, :back, :play, :forward, :fastforward]
         b, s = buttons[k]
-        push!(preserved_signals, s)
 
         _w, _h, _ = widths(value(boundingbox(b)))
         ratio = _w / _h
@@ -519,14 +488,21 @@ function make_tests(config)
                 close(io)
             end
             empty!(window)
-            empty!(config.buttons[:timesignal].actions)
+            #empty!(config.buttons[:timesignal].actions)
             window.color = RGBA{Float32}(1,1,1,1)
             window.clear = true
             GLVisualize.empty_screens!()
             GLVisualize.add_screen(window) # make window default again!
-            for (k, s) in window.inputs
-                empty!(s.actions)
+            for (k, src_signal) in source_signals
+                if haskey(window.inputs, k)
+                    secondary = window.inputs[k]
+                    unbind!(secondary, src_signal)
+                end
+                secondary = Signal(value(src_signal))
+                bind!(secondary, src_signal, false)
+                window.inputs[k] = secondary
             end
+            #window.inputs[:source_signals] = signals
             empty!(window.cameras)
             gc()
         end
