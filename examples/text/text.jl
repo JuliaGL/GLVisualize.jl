@@ -40,7 +40,7 @@ end
 _view(visualize(s), window, camera = :orthographic_pixel)
 
 # text won't come out centered by default, so lets center it!
-#center!(window, :orthographic_pixel)
+center!(window, :orthographic_pixel)
 
 if !isdefined(:runtests)
     renderloop(window)
