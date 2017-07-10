@@ -35,7 +35,7 @@ frame_viz = visualize(fbuffer)
 
 # instead of circle you can also use unicode charactes (e.g. '+')
 position_viz = visualize(
-    (Circle{Float32}(0, 1.5mm), positions),
+    (Circle{Float32}(Point2f0(0), 1.5mm), positions),
     color = RGBA(1f0, 0f0, 0f0, 0.6f0)
 )
 gpu_position = position_viz.children[][:position]

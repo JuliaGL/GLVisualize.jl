@@ -43,14 +43,15 @@ Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.mouse
 
 
 function get_rotation(m)
-    xs = norm(Vec3f0(Tuple(m)[1][1:3]))
-    ys = norm(Vec3f0(Tuple(m)[2][1:3]))
-    zs = norm(Vec3f0(Tuple(m)[3][1:3]))
+    idx = Vec3(1, 2, 3)
+    xs = norm(m[1, idx])
+    ys = norm(m[2, idx])
+    zs = norm(m[3, idx])
     Mat4f0(
-        (m[1,1]/xs, m[1,2]/xs, m[1,3]/xs, 0),
-        (m[2,1]/ys, m[2,2]/ys, m[2,3]/ys, 0),
-        (m[3,1]/zs, m[3,2]/zs, m[3,3]/zs, 0),
-        (0     , 0     , 0     , 1),
+        m[1,1]/xs, m[1,2]/xs, m[1,3]/xs, 0,
+        m[2,1]/ys, m[2,2]/ys, m[2,3]/ys, 0,
+        m[3,1]/zs, m[3,2]/zs, m[3,3]/zs, 0,
+        0     , 0     , 0     , 1,
     )
 end
 

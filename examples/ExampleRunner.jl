@@ -12,32 +12,18 @@ using FileIO, GeometryTypes, Reactive, Images
 export RunnerConfig
 import GLVisualize: toggle_button, slider, button, mm, create_video_stream, add_frame!
 
-import Compat: String, UTF8String
-
 include("mouse.jl")
 
 
 const installed_pkgs = Pkg.installed()
 
-const hasplots = false# get(installed_pkgs, "Plots", v"0") > v"0.9.3"
-const is_04 = VERSION.minor == 4
+const hasplots = get(installed_pkgs, "Plots", v"0") > v"0.9.3"
 
 if !hasplots
-    message = is_04 ? "0.5 only" : "not installed"
-    message = "Plots.jl is $message, excluding a lot of interesting examples from the tests
+    message = "Plots.jl is not installed, excluding a lot of interesting examples from the tests
     and a nice summary.\n"
-    if !is_04
-        message *= "Please consider doing: `Pkg.add(\"Plots\"); Pkg.checkout(\"Plots\", \"dev\")`"
-    end
+    message *= "Please consider executing: `Pkg.add(\"Plots\")`"
     warn(message)
-end
-
-if is_04
-    warn("
-        This is the last version of GLVisualize supporting 0.4.
-        GLVisualize already contains a few constructs which only perform optimally
-        on 0.5. We recommend upgrading to 0.5 as soon as possible.
-    ")
 end
 
 include("texthighlight.jl")
@@ -80,9 +66,9 @@ end
 const source_signals = Dict()
 
 const text_signals = Dict(
-    :title => Signal(UTF8String, "Nothing to show"),
-    :message => Signal(UTF8String, "\n"),
-    :codepath => Signal(UTF8String, ""),
+    :title => Signal(String, "Nothing to show"),
+    :message => Signal(String, "\n"),
+    :codepath => Signal(String, ""),
 )
 
 
@@ -384,12 +370,63 @@ to_toggle(v0, b) = !v0
 
 import GLWindow: poll_reactive, poll_glfw, sleep_pessimistic
 
-function make_tests(config)
-    i = 1; frames = 0; window = config.window; break_loop = false
-    # start in run through when recording images
-    runthrough = config.record_image ? 1 : 0 # -1, backwards, 0 no running, 1 forward
 
-    function increase(x = runthrough)
+function inner_test(path, config, window, break_loop, runthrough, increase)
+    try
+        test_module = _test_include(path, config)
+        display_msg(test_module, config)
+        timings = Float64[]
+        frames = 0;
+        @eval poll_glfw()
+        @eval poll_reactive()
+        @eval poll_reactive()
+        yield()
+        while !break_loop[] && isopen(config.rootscreen)
+            tic()
+            poll_glfw()
+            if Base.n_avail(Reactive._messages) > 0
+                poll_reactive()
+                poll_reactive() # two times for secondary signals
+                render_frame(config.rootscreen)
+                swapbuffers(config.rootscreen)
+            end
+            frames += 1
+            t = toq()
+            if length(timings) < 1000 && frames > 2
+                push!(timings, t)
+            end
+            yield() # yield in timings? Seems fair
+            GLWindow.sleep_pessimistic((1/60) - t)
+            (runthrough[] != 0 && frames > 20) && break
+        end
+        record_thumbnail(config) # record thumbnail in the end
+        config[:timings] = timings
+        break_loop[] = false
+        runthrough[] != 0 && increase()
+        for n in names(test_module, true)
+            x = getfield(test_module, n)
+            if n != :timesignal && isa(x, Signal) && !(x in values(window.inputs))
+                close(x, false)
+            end
+        end
+    catch e
+        increase() # skip example
+        bt = catch_backtrace()
+        ex = CapturedException(e, bt)
+        showerror(STDERR, ex)
+        config[:success] = false
+        config[:exception] = ex
+        return false
+    end
+    true
+end
+
+function make_tests(config)
+    i = 1; frames = 0; window = config.window; break_loop = Ref(false)
+    # start in run through when recording images
+    runthrough = Ref(config.record_image ? 1 : 0) # -1, backwards, 0 no running, 1 forward
+
+    function increase(x = runthrough[])
         x = x == 0 ? 1 : x
         i = max(i+x, 1)
         if i <= length(failed) && failed[i]
@@ -398,115 +435,43 @@ function make_tests(config)
         i
     end
 
-    preserve(map(config.buttons[:back][2], init=0) do clicked
-        clicked && (break_loop = true; increase(-1))
-    end)
-    preserve(map(config.buttons[:forward][2], init=0) do clicked
-        clicked && (break_loop = true; increase(1))
-    end)
-
-    preserve(map(config.buttons[:fastforward][2], init = 0) do toggled
+    foreach(config.buttons[:back][2], init=0) do clicked
+        clicked && (break_loop[] = true; increase(-1))
+    end
+    foreach(config.buttons[:forward][2], init=0) do clicked
+        clicked && (break_loop[] = true; increase(1))
+    end
+    foreach(config.buttons[:fastforward][2], init = 0) do toggled
         # reset frames, so we loop a few times longer before loading next example
         # this will keep the buttons responsive
         frames = 0
-        runthrough = !toggled ? 1 : 0
-    end)
-    preserve(map(config.buttons[:rewind][2], init = 0) do toggled
+        runthrough[] = !toggled ? 1 : 0
+    end
+    foreach(config.buttons[:rewind][2], init = 0) do toggled
         frames = 0
-        runthrough = !toggled ? -1 : 0
-    end)
+        runthrough[] = !toggled ? -1 : 0
+    end
+
     failed = fill(false, length(config.files))
     Reactive.stop() # stop Reactive! We be pollin' ourselves!
     io = nothing
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]
-        try
-            test_module = _test_include(path, config)
-
-            display_msg(test_module, config)
-            timings = Float64[]
-            frames = 0;
-            poll_glfw()
-            poll_reactive()
-            poll_reactive()
-            yield()
-
-            io, buffer = if config.record
-                name = basename(config.current_file)[1:end-3]
-                name = name * ".mkv"
-                name = joinpath(config.screencast_folder, name)
-                create_video_stream(name, config.rootscreen)
-            else
-                nothing, nothing
-            end
-
-            while !break_loop && isopen(config.rootscreen)
-                tic()
-                poll_glfw()
-                if Base.n_avail(Reactive._messages) > 0
-                    poll_reactive()
-                    poll_reactive() # two times for secondary signals
-                    render_frame(config.rootscreen)
-                    swapbuffers(config.rootscreen)
-                end
-                frames += 1
-                t = toq()
-                if length(timings) < 1000 && frames > 2
-                    push!(timings, t)
-                end
-                if config.record_image
-                    name = basename(config.current_file)[1:end-3]
-                    name = joinpath(config.screencast_folder, name * ".png")
-                    GLWindow.screenshot(config.rootscreen, path = name)
-                    break
-                end
-                config.record && add_frame!(io, config.rootscreen, buffer)
-                yield() # yield in timings? Seems fair
-                GLWindow.sleep_pessimistic((1/60) - t)
-                (runthrough != 0 && frames > 20) && break
-            end
-            record_thumbnail(config) # record thumbnail in the end
-            config[:timings] = timings
-            break_loop = false
-            runthrough != 0 && increase()
-            for n in names(test_module, true)
-                x = getfield(test_module, n)
-                if n != :timesignal && isa(x, Signal) && !(x in values(window.inputs))
-                    close(x, false)
-                end
-            end
-        catch e
-            #failed[i] = true
-            increase() # skip example
-            bt = catch_backtrace()
-            ex = CapturedException(e, bt)
-            showerror(STDERR, ex)
-            config[:success] = false
-            config[:exception] = ex
-        finally
-            if config.record && io != nothing
-                close(io)
-            end
-            empty!(window)
-            #empty!(config.buttons[:timesignal].actions)
-            window.color = RGBA{Float32}(1,1,1,1)
-            window.clear = true
-            GLVisualize.empty_screens!()
-            GLVisualize.add_screen(window) # make window default again!
-            for (k, src_signal) in source_signals
-                if haskey(window.inputs, k)
-                    secondary = window.inputs[k]
-                    unbind!(secondary, src_signal)
-                end
-                secondary = Signal(value(src_signal))
-                bind!(secondary, src_signal, false)
-                window.inputs[k] = secondary
-            end
-            #window.inputs[:source_signals] = signals
-            empty!(window.cameras)
-            gc()
-        end
+        failed[i] = @eval inner_test($path, $config, $window, $break_loop, $runthrough, $increase)
         yield()
+        empty!(window)
+        window.color = RGBA{Float32}(1,1,1,1)
+        window.clear = true
+        GLVisualize.empty_screens!()
+        empty!(window.cameras)
+        GLVisualize.add_screen(window) # make window default again!
+        slider = config.buttons[:timesignal]
+        for childweakref in Reactive.nodes[Reactive.edges[slider.id]]
+            # remove signals depending on slider
+            child = childweakref.value
+            child.parents = Tuple(Iterators.filter(p-> p != slider, child.parents))
+        end
+        gc()
     end
 
 end

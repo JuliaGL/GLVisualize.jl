@@ -26,18 +26,18 @@ function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, data::Dict)
 end
 
 function list_translation(lastposition, gap, direction, bb)
-    directionmask     = unit(Vec3f0, abs(direction))
-    alignmask         = abs(1-directionmask)
-    move2align        = (alignmask.*lastposition)-minimum(bb) #zeros direction
-    move2nextposition = sign(direction)*(directionmask.*widths(bb))
-    nextpos           = lastposition + move2nextposition + (directionmask.*gap)
+    directionmask     = unit(Vec3f0, abs.(direction))
+    alignmask         = abs.(1 - directionmask)
+    move2align        = (alignmask .* lastposition) - minimum(bb) #zeros direction
+    move2nextposition = sign.(direction) * (directionmask .* widths(bb))
+    nextpos           = lastposition + move2nextposition + (directionmask .* gap)
     lastposition+move2align, nextpos
 end
 
 function visualize{T <: Composable}(list::Vector{T}, s::Style, data::Dict)
     @gen_defaults! data begin
         direction    = 2 #axis of 3D dimension, can be signed
-        gap          = 0.1f0*unit(Vec3f0, abs(direction))
+        gap          = 0.1f0 * unit(Vec3f0, abs.(direction))
         lastposition = Vec3f0(0)
         size         = Vec3f0(1)
     end

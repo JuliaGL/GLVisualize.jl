@@ -23,6 +23,7 @@ function create_mosaic(io, folder, width = 150)
     end
 end
 
+ENV["CI_REPORT_DIR"] = homedir()*"/Desktop/gltest/"
 if haskey(ENV, "CI_REPORT_DIR")
     full_folder = ENV["CI_REPORT_DIR"]
     recording = true
@@ -30,6 +31,7 @@ else
     recording = false
     full_folder = ""
 end
+
 files = [
     "introduction/rotate_robj.jl",
     "introduction/screens.jl",
@@ -69,6 +71,7 @@ config = ExampleRunner.RunnerConfig(
     rootscreen = rootscreen
 )
 window = config.window
+isdir(full_folder)
 
 if recording
     imgpath = joinpath(full_folder, "images")
@@ -99,20 +102,18 @@ for path in config.files
         config[:success] = false
         config[:exception] = ex
     finally
+        yield()
         empty!(window)
-        empty!(config.buttons[:timesignal].actions)
         window.color = RGBA{Float32}(1,1,1,1)
         window.clear = true
         GLVisualize.empty_screens!()
-        GLVisualize.add_screen(window) # make window default again!
-        for (k, s) in window.inputs
-            empty!(s.actions)
-        end
         empty!(window.cameras)
+        GLVisualize.add_screen(window) # make window default again!
         gc()
     end
     yield()
 end
+
 failures = filter(config.attributes) do k, dict
     !dict[:success]
 end

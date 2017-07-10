@@ -159,7 +159,7 @@ function wireframe(
         decompose(Point3f0, g) # get the point representation of the geometry
     end
     # Get line index representation
-    indices = decompose(Face{2, GLuint, -1}, value(geometry))
+    indices = decompose(Face{2, GLIndex}, value(geometry))
     data[:indices] = reinterpret(GLuint, indices)
     _default(points, style"linesegment"(), data)
 end

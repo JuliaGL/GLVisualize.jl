@@ -23,11 +23,11 @@ function extract_edit_menu(
     screen_w = widths(edit_screen)[1] - round(Int, 10mm)
     pos = 1mm
     widget_text = 4mm
-    visses = Pair{UTF8String, Context{GLAbstraction.DeviceUnit}}[]
+    visses = Pair{String, Context{GLAbstraction.DeviceUnit}}[]
     K = keytype(edit_dict)
     signal_dict = Dict{K, Any}()
     for (k, v) in edit_dict
-        label = UTF8String(string(k))
+        label = String(string(k))
         s = makesignal2(v)
         if applicable(widget, s, edit_screen)
             vis, sig = widget(s, edit_screen,

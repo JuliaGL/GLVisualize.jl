@@ -113,18 +113,10 @@ function position_calc(x...)
     _position_calc(filter(x->!isa(x, Void), x)...)
 end
 function glsllinspace(position::Grid, gi, index)
-    """
-    (((float(position.dims[$gi])-($(index)+1)) *
-        position.minimum[$gi] + $(index)*position.maximum[$gi]) *
-        position.multiplicator[$gi])
-    """
+    "position.ref[$gi] + ($index - position.offset[$gi]) * position._step[$gi]"
 end
 function glsllinspace(grid::Grid{1}, gi, index)
-    """
-    (((float(position.dims)-($(index)+1)) *
-        position.minimum + $(index)*position.maximum) *
-        position.multiplicator)
-    """
+    "position.ref + ($index - position.offset) * position._step"
 end
 function grid_pos(grid::Grid{1})
     "$(glsllinspace(grid, 0, "index"))"
@@ -167,22 +159,22 @@ function _position_calc{T<:AbstractFloat}(
 """
 end
 
-function _position_calc{T<:AbstractFloat}(
+function _position_calc{T <: AbstractFloat}(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{TextureBuffer}
     )
     "pos = vec3(texelFetch(position_x, index).x, position_y, position_z);"
 end
-function _position_calc{T<:AbstractFloat}(
+function _position_calc{T <: AbstractFloat}(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{GLBuffer}
     )
     "pos = vec3(position_x, position_y, position_z);"
 end
-function _position_calc{T<:FixedVector}(
+function _position_calc{T <: StaticVector}(
         position_xyz::VecTypes{T}, target::Type{TextureBuffer}
     )
     "pos = texelFetch(position, index).xyz;"
 end
-function _position_calc{T<:FixedVector}(
+function _position_calc{T <: StaticVector}(
         position_xyz::VecTypes{T}, target::Type{GLBuffer}
     )
     len = length(T)

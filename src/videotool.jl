@@ -10,7 +10,7 @@ function create_video_stream(path, window)
     tex = GLWindow.framebuffer(window).color
     res = size(tex)
     io, process = open(`ffmpeg -f rawvideo -pixel_format rgb24 -s:v $(res[1])x$(res[2]) -i pipe:0 -vf vflip -y $path`, "w")
-    io, Array(RGB{N0f8}, res) # tmp buffer
+    io, Matrix{RGB{N0f8}}(res) # tmp buffer
 end
 
 """
@@ -31,6 +31,6 @@ function webm_batchconvert(oldpath, newpath, scale = 0.5)
         f = joinpath(oldpath, file)
         name, ext = splitext(file)
         out = joinpath(newpath, name * ".webm")
-        run(`ffmpeg -i $f -c:v libvpx-vp9 -threads 16 -b:v 2000k -c:a libvorbis -threads 16 -vf scale=iw*$scale:ih*$scale $out`)
+        run(`ffmpeg -i $f -c:v libvpx-vp9 -threads 16 -b:v 2000k -c:a libvorbis -threads 16 -vf scale=iw$("*")$scale:ih$("*")$scale $out`)
     end
 end

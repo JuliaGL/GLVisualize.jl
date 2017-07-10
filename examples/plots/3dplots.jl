@@ -1,10 +1,11 @@
 using Plots, GLVisualize, GeometryTypes, Colors
+
 pl_size = if !isempty(GLVisualize.get_screens())
     widths(GLVisualize.current_screen())
 else
-    (1000,1000)
+    (1000, 1000)
 end
-glvisualize(size=pl_size)
+glvisualize(size = pl_size)
 
 description = """
 How to create different 3D plots with Plots.jl
@@ -20,7 +21,7 @@ end
 # step through the `time`
 function lorenz(array::Vector, a=5.0,b=2.0,c=6.0,d=0.01)
     t0 = Point3f0(0.1, 0, 0)
-    for i=eachindex(array)
+    for i = eachindex(array)
         t0 = lorenz(t0, a,b,c,d)
         array[i] = t0
     end
@@ -47,14 +48,14 @@ end
 
 phi,theta = mgrid(0f0:dphi:(pi+dphi*1.5f0), 0f0:dtheta:(2f0*pi+dtheta*1.5f0));
 m0 = 4f0; m1 = 3f0; m2 = 2f0; m3 = 3f0; m4 = 6f0; m5 = 2f0; m6 = 6f0; m7 = 4f0;
-a = sin(m0*phi).^m1;
-b = cos(m2*phi).^m3;
-c = sin(m4*theta).^m5;
-d = cos(m6*theta).^m7;
+a = sin.(m0*phi).^m1;
+b = cos.(m2*phi).^m3;
+c = sin.(m4*theta).^m5;
+d = cos.(m6*theta).^m7;
 r = a + b + c + d;
-x = r.*sin(phi).*cos(theta);
-y = r.*cos(phi);
-z = r.*sin(phi).*sin(theta);
+x = r.*sin.(phi).*cos(theta);
+y = r.*cos.(phi);
+z = r.*sin.(phi).*sin.(theta);
 surface1 = Plots.surface(x,y,z)
 
 

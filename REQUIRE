@@ -1,29 +1,24 @@
-# I plan to release an 0.6 only version after this,
-# so we need to cap everything that relies on StaticArrays (that's making it 0.6 only)
-
-# this shouldn't include 0.6!
-julia 0.5
+julia 0.6
 
 # Packages that soon will rely on StaticArrays
-GLWindow 0.3.3 0.5
-GLAbstraction 0.3.2 0.5
-GeometryTypes 0.2 0.4
-Packing 0.0.4 0.1
+GLWindow 0.5
+GLAbstraction 0.5
+GeometryTypes 0.4
+Packing 0.1
 Reactive 0.5
-
-# packages with stable interface
 
 GLFW
 ModernGL
-FixedSizeArrays
+
 
 FixedPointNumbers
 ColorVectorSpace
 ColorTypes
 Colors
+
 SignedDistanceFields
 FreeType
-Iterators
+IterTools
 FileIO
 MeshIO
 UnicodeFun

@@ -5,7 +5,7 @@ printforslider(io::IOBuffer, x::AbstractFloat, numberwidth::Int=5) = print(io, @
 printforslider(io::IOBuffer, x::Integer, numberwidth::Int=5) = print(io, @sprintf("%5d", x)[1:numberwidth])
 printforslider(x::Integer, numberwidth::Int=5) = @sprintf("%5d", x)[1:numberwidth]
 printforslider(x::AbstractFloat, numberwidth::Int=5) = @sprintf("%0.5f", x)[1:numberwidth]
-function printforslider(x::FixedVector, numberwidth=5)
+function printforslider(x::StaticVector, numberwidth=5)
     io = IOBuffer()
     for elem in x
         printforslider(io, elem, numberwidth)
@@ -17,10 +17,10 @@ function num2glstring(x, numberwidth)
     str   = printforslider(x, numberwidth)
     atlas = get_texture_atlas()
     font  = defaultfont()
-    Vec4f0[glyph_uv_width!(atlas, c, font) for c=str]
+    Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
 end
 
-FixedSizeArrays.unit{T <: Real}(::Type{T}, _) = one(T)
+StaticArrays.FixedSizeArrays.unit{T <: Real}(::Type{T}, _) = one(T)
 
 
 function add_mouse_drags(t0, mouse_down1, mouseposition1, objectid, id_tolookfor, glyph_width)
@@ -46,11 +46,11 @@ function slide(startvalue, slide_pos, range::Range)
     clamp(val, range)
 end
 
-function widget{T <: Union{FixedVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
+function widget{T <: Union{StaticVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
     widget(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
 end
 
-function range_default{T<:FixedVector}(::Type{T})
+function range_default{T<:StaticVector}(::Type{T})
     range_default(eltype(T))
 end
 function range_default{T<:AbstractFloat}(::Type{T})
@@ -66,7 +66,7 @@ end
 function calc_val{T<:Integer}(sval::T, val, range)
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
-function widget{T <: FixedVector}(
+function widget{T <: StaticVector}(
         slider_value::Signal{T}, window;
         numberwidth = 5, range = range_default(T),
         text_scale = 4mm,

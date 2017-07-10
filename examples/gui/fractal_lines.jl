@@ -2,7 +2,7 @@
 # https://cre8math.com/2015/10/04/creating-fractals/
 
 using GLVisualize, GLAbstraction, Reactive, GeometryTypes, Colors, GLWindow
-import GLVisualize: slider, mm, button
+import GLVisualize: slider, mm, button, labeled_slider
 
 if !isdefined(:runtests)
     window = glscreen()
@@ -49,7 +49,7 @@ function generate_fractal(angles, depth = 5)
     push!(levels, depth)
     mini, maxi = extrema(result)
     w = 1 ./ maximum(maxi - mini)
-    map!(result) do p
+    map!(result, result) do p
         1000 * (p - mini) .* w
     end
     # invert
@@ -63,29 +63,14 @@ editarea, viewarea = x_partition_abs(window.area, round(Int, 8.2 * iconsize))
 edit_screen = Screen(
     window, area = editarea,
     color = RGBA{Float32}(0.0f0, 0.0f0, 0.0f0, 1f0),
-    stroke = (1f0, RGBA{Float32}(0.13f0, 0.13f0, 0.13f0, 13f0))
+    stroke = (1f0, RGBA{Float32}(0.13f0, 0.13f0, 0.13f0, 1f0))
 )
 viewscreen = Screen(
     window, area = viewarea,
     color = RGBA(0.0f0, 0.0f0, 0.0f0, 1f0)
 )
 
-function labeled_slider(range, window)
-    visual, signal = slider(
-        range, window;
-        slider_length = 6 * iconsize,
-        icon_size = Signal(iconsize / 2),
-        knob_scale = 3mm,
-    )
-    text = visualize(
-        map(string, signal), # convert to string
-        relative_scale = 5mm,
-        color = RGBA(1f0, 1f0, 1f0, 1f0)
-    )
-    # put in list and visualize so it will get displayed side to side
-    # direction = first dimension --> x dimension
-    visualize([visual, text],  direction = 1, gap = Vec3f0(3mm, 0, 0)), signal
-end
+
 angles = ntuple(4) do i
     labeled_slider(0.0:1.0:360.0, edit_screen)
 end

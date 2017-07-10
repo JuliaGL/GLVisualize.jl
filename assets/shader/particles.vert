@@ -5,23 +5,23 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
     bool _; //empty structs are not allowed
 };
 struct Grid1D{
-    float minimum;
-    float maximum;
+    float ref;
+    float offset;
+    float _step;
     int dims;
-    float multiplicator;
 };
 struct Grid2D{
-    vec2 minimum;
-    vec2 maximum;
+    vec2 ref;
+    vec2 offset;
+    vec2 _step;
     ivec2 dims;
-    vec2 multiplicator;
 
 };
 struct Grid3D{
-    vec3 minimum;
-    vec3 maximum;
+    vec3 ref;
+    vec3 offset;
+    vec3 _step;
     ivec3 dims;
-    vec3 multiplicator;
 };
 
 in vec3 vertices;
@@ -67,6 +67,7 @@ vec3 get_rotation(vec3 rotation, int index){
 }
 vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
 vec3 _scale(vec3          scale, float   scale_x, samplerBuffer scale_y, float         scale_z, int index);
+vec3 _scale(Nothing       scale, float   scale_x, samplerBuffer scale_y, float         scale_z, int index);
 vec3 _scale(vec3          scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
 vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
 
@@ -109,6 +110,10 @@ float get_intensity(vec3 rotation, samplerBuffer position_z, int index){
     return texelFetch(position_z, index).x;
 }
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
+
+float get_intensity(vec3 rotation, float scale_z, int index){
+    return scale_z;
+}
 
 vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index, int len){
     float _intensity = get_intensity(rotation, scale_z, index);

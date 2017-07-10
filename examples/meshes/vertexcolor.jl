@@ -17,8 +17,8 @@ faces = decompose(GLTriangle, sphere, 50)
 colors = RGBA{Float32}[RGBA{Float32}(rand(), rand(), rand(), 1.) for i=1:length(vertices)]
 
 sphere_mesh = GLNormalVertexcolorMesh(
-    vertices=vertices, faces=faces,
-    color=colors
+    vertices = vertices, faces = faces,
+    color = colors
 )
 _view(visualize(sphere_mesh), window)
 

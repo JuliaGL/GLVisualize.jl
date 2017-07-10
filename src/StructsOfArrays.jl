@@ -1,4 +1,5 @@
 module StructsOfArrays
+using Compat
 
 export StructOfArrays, ScalarRepeat
 
@@ -27,7 +28,7 @@ Base.done(sr::ScalarRepeat, i) = false
     is_ts = length(T.types) == 1 && T.types[1] <: Tuple
     :($is_ts)
 end
-struct_eltypes{T}(struct::T) = struct_eltypes(T)
+struct_eltypes{T}(::T) = struct_eltypes(T)
 function struct_eltypes{T}(::Type{T})
     if is_tuple_struct(T) #special case tuple types (E.g. FixedSizeVectors)
         return eltypes = T.types[1].parameters
@@ -68,7 +69,7 @@ function StructOfArrays(T::Type, a, rest...)
     StructOfArrays{T, N, arrtuple}(arrays)
 end
 
-Base.linearindexing{T<:StructOfArrays}(::Type{T}) = Base.LinearFast()
+Base.IndexStyle(::Type{<:StructOfArrays}) = IndexLinear()
 
 @generated function Base.similar{T}(A::StructOfArrays, ::Type{T}, dims::Dims)
     if isbits(T) && length(T.types) > 1
@@ -85,15 +86,17 @@ Base.convert{T,S,N}(::Type{StructOfArrays{T}}, A::AbstractArray{S,N}) =
 Base.convert{T,N}(::Type{StructOfArrays}, A::AbstractArray{T,N}) =
     convert(StructOfArrays{T,N}, A)
 
-function Base.size(A::StructOfArrays)
+function Base.size{T, N, U}(A::StructOfArrays{T, N, U})
     for elem in A.arrays
         if isa(elem, AbstractArray)
             return size(elem)
         end
     end
-    ()
+    # if none has a size, size is inf!
+    ntuple(Val{N}) do i
+        typemax(Int)
+    end
 end
-Base.size(A::StructOfArrays, d) = size(A)[d]
 
 @generated function Base.getindex{T}(A::StructOfArrays{T}, i::Integer...)
     n = length(struct_eltypes(T))

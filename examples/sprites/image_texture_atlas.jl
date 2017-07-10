@@ -16,11 +16,11 @@ yrange = linspace(0, h, n)
 scale  = Vec2f0(step(xrange), step(yrange))
 
 # position in a grid
-positions = foldp(Point2f0[(i/(n*n))*700 for i in 1:(n*n)], timesignal) do v0, t
+positions = foldp([Point2f0((i/(n*n))*700) for i in 1:(n*n)], timesignal) do v0, t
     for i=1:(n*n)
         xi,yi = ind2sub((n,n), i)
         x,y = xrange[xi], yrange[yi]
-        @inbounds v0[i] = Point2f0(x+(sin(t*2*pi)*400),y+(sin(0+y*t*0.01)*200)+(cos(t*2*pi)*200))
+        @inbounds v0[i] = Point2f0(x+(sin(t*2*pi)*400), y+(sin(0+y*t*0.01)*200)+(cos(t*2*pi)*200))
     end
     v0
 end

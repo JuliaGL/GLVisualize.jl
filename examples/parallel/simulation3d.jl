@@ -12,7 +12,7 @@ and visualize objects created on the main process.
 const workerid = workers()[]
 
 using Images, GeometryTypes, GLVisualize, Reactive, GLWindow, Colors
-using FixedSizeArrays, GLAbstraction
+using GLAbstraction
 
 # Parallel helper function to launch our glvisualize operations on the process,
 # on which we run GLVisualize

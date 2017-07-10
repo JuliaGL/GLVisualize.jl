@@ -14,9 +14,10 @@ function print_type(x::TypeVar)
     string(x.name)
 end
 print_type(x::TypeName) = print_type(x.name)
+print_type(x::UnionAll) = sprint(io-> show(io, x))
 print_type(x) = print_type(x.name)
 function print_type(x::Union)
-    "Union{$(join(map(print_type, x.types), " "))}"
+    "Union{$(join(map(print_type, Base.uniontypes(x)), " "))}"
 end
 
 
@@ -91,24 +92,31 @@ function all_docs(io = STDOUT)
     default_docs = metadict[Base.Docs.Binding(GLVisualize, :_default)].docs
 
     for method in method_table
-        sig = (method.sig.parameters[2:end]...,)
-        tvars = _tuple(method.tvars)
-        sparam = if !isempty(tvars)
-            string("{", join(map(x-> string(x), tvars), ", "), "}")
-        else
-            ""
-        end
-        docstr = get_doc(default_docs, Tuple{sig...})
-        arg1 = print_type(sig[1])
-        arg2 = sig[2].parameters[1]
-        arg2 = if isa(arg2,  TypeVar) #
-            ""
-        else
-            string(", :", arg2)
-        end
-        print(io, docstr)
-        println(io, "visualize", sparam, "(", arg1, arg2, ")")
+        println(io, method)
         println(io)
+        # sig_types = method.sig
+        # if isa(sig_types, UnionAll)
+        #     sig_types = Base.unwrap_unionall(sig_types)
+        # end
+        # sig = (sig_types.parameters[2:end]...,)
+        # world = typemax(UInt)
+        # x = first(Base._methods(GLVisualize._default, Tuple{sig...}, -1, world))
+        # tvars = _tuple(x)[2:end]
+        # sparam = if !isempty(tvars)
+        #     string("{", join(map(x-> string(x), tvars), ", "), "}")
+        # else
+        #     ""
+        # end
+        # docstr = get_doc(default_docs, Tuple{sig...})
+        # arg1 = print_type(sig[1])
+        # arg2 = if isa(sig[2],  UnionAll) #
+        #     ""
+        # else
+        #     string(", :", sig[2].parameters[1])
+        # end
+        # print(io, docstr)
+        # println(io, "visualize", sparam, "(", arg1, arg2, ")")
+        # println(io)
     end
 
 end

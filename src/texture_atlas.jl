@@ -173,7 +173,7 @@ insert_glyph!(atlas::TextureAtlas, glyph::Char, font) = get!(atlas.mapping, (gly
     push!(atlas.attributes, uv_offset_width)
     push!(atlas.scale, Vec2f0(width_nopadd + 2))
     push!(atlas.extent, extent)
-    atlas.index = i+1
+    atlas.index = i + 1
     return i
 end
 
@@ -188,10 +188,10 @@ function sdistancefield(img, downsample = 8, pad = 8*downsample)
     end
     w, h = w + 2pad, h + 2pad #pad this, to avoid cuttoffs
 
-    in_or_out = Array(Bool, w, h)
+    in_or_out = Matrix{Bool}(w, h)
     @inbounds for i=1:w, j=1:h
         x, y = i-pad, j-pad
-        in_or_out[i,j] = checkbounds(Bool, img, x, y) && img[x,y] > 0.5*255
+        in_or_out[i,j] = checkbounds(Bool, img, x, y) && img[x,y] > 0.5 * 255
     end
     yres, xres = div(w, downsample), div(h, downsample)
     sd = sdf(in_or_out, xres, yres)

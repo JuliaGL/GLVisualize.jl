@@ -1,6 +1,6 @@
 using Images, Colors, GeometryTypes
 using Reactive, FileIO, GLVisualize, Compat
-using GLAbstraction, GeometryTypes, GLWindow
+using GLAbstraction, GeometryTypes, GLWindow, ImageFiltering
 
 if !isdefined(:runtests)
     window = glscreen()
@@ -30,7 +30,7 @@ end
 Applies a gaussian filter to `img` and converts it to RGBA{N0f8}
 """
 function myfilter(img, sigma)
-    img = Images.imfilter_gaussian(img, [sigma, sigma])
+    img = imfilter(img, KernelFactors.IIRGaussian((sigma, sigma)))
     # map color compononts and clamp them
     clamp01.(img)
 end

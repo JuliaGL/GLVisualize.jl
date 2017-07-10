@@ -4,23 +4,22 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
     bool _; //empty structs are not allowed
 };
 struct Grid1D{
-    float minimum;
-    float maximum;
+    float ref;
+    float offset;
+    float _step;
     int dims;
-    float multiplicator;
 };
 struct Grid2D{
-    vec2 minimum;
-    vec2 maximum;
+    vec2 ref;
+    vec2 offset;
+    vec2 _step;
     ivec2 dims;
-    vec2 multiplicator;
-
 };
 struct Grid3D{
-    vec3 minimum;
-    vec3 maximum;
+    vec3 ref;
+    vec3 offset;
+    vec3 _step;
     ivec3 dims;
-    vec3 multiplicator;
 };
 struct Light{
     vec3 diffuse;
@@ -197,7 +196,9 @@ vec3 _scale(Nothing scale, float scale_x, float scale_y, samplerBuffer scale_z, 
 vec3 _scale(vec3 scale, float scale_x, samplerBuffer scale_y, float scale_z, int index){
     return vec3(scale_x, getindex(scale_y, index).x, scale_z);
 }
-
+vec3 _scale(Nothing scale, float scale_x, samplerBuffer scale_y, float scale_z, int index){
+    return vec3(scale_x, getindex(scale_y, index).x, scale_z);
+}
 
 vec4 color_lookup(float intensity, vec4 color, vec2 norm){
     return color;

@@ -14,7 +14,7 @@ sphere = GLNormalMesh(Sphere(Point3f0(0.5), 0.5f0), 24)
 c = collect(linspace(0.1f0,1.0f0,10f0))
 rotation = map(rotationmatrix_z, const_lift(*, timesignal, 2f0*pi))
 # create a visualisation
-vis = visualize((sphere, c), model=rotation, scale_y=0.1f0)
+vis = visualize((sphere, c))
 _view(vis, window)
 
 if !isdefined(:runtests)
