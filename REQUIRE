@@ -1,6 +1,6 @@
 julia 0.6
 
-# Packages that soon will rely on StaticArrays
+StaticArrays 0.6.0
 GLWindow 0.5
 GLAbstraction 0.5
 GeometryTypes 0.4
@@ -10,12 +10,11 @@ Reactive 0.5
 GLFW
 ModernGL
 
+Colors 0.7.0
+ColorVectorSpace 0.2
+FixedPointNumbers 0.3.0
 
-FixedPointNumbers
-ColorVectorSpace
-ColorTypes
-Colors
-
+#FreeTypeAbstraction
 SignedDistanceFields
 FreeType
 IterTools
@@ -25,7 +24,7 @@ UnicodeFun
 Compat 0.18
 Quaternions
 
-# We went through extra length to be compatible to most Images versions
-Images
+
+Images 0.9.1
 AxisArrays
 ImageAxes
