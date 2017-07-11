@@ -3,7 +3,7 @@ julia 0.6
 StaticArrays 0.6.0
 GLWindow 0.5
 GLAbstraction 0.5
-GeometryTypes 0.4
+GeometryTypes 0.4.1
 Packing 0.1
 Reactive 0.5
 
