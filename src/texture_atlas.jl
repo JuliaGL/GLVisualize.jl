@@ -67,29 +67,34 @@ begin #basically a singleton for the textureatlas
 
     function cached_load()
         if isfile(_cache_path)
-            return open(_cache_path) do io
-                dict = deserialize(io)
-                tex = atlas_texture(dict[:images])
-                dict[:images] = tex
-                fields = map(fieldnames(TextureAtlas)) do n
-                    v = dict[n]
-                    isa(v, Vector) ? copy(v) : v # otherwise there seems to be a problem with resizing
+            try
+                return open(_cache_path) do io
+                    dict = deserialize(io)
+                    tex = atlas_texture(dict[:images])
+                    dict[:images] = tex
+                    fields = map(fieldnames(TextureAtlas)) do n
+                        v = dict[n]
+                        isa(v, Vector) ? copy(v) : v # otherwise there seems to be a problem with resizing
+                    end
+                    TextureAtlas(fields...)
                 end
-                TextureAtlas(fields...)
+            catch e
+                info("You can likely ignore the following warning, if you just switched Julia versions for GLVisualize")
+                warn(e)
+                rm(_cache_path)
             end
-        else
-            atlas = TextureAtlas()
-            info("Caching fonts, this may take a while. Needed only on first run!")
-            for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
-                insert_glyph!(atlas, c, defaultfont())
-            end
-            for c in _tobe_cached
-                insert_glyph!(atlas, c, defaultfont())
-            end
-
-            to_cache(atlas) # cache it
-            return atlas
         end
+        atlas = TextureAtlas()
+        info("Caching fonts, this may take a while. Needed only on first run!")
+        for c in '\u0000':'\u00ff' #make sure all ascii is mapped linearly
+            insert_glyph!(atlas, c, defaultfont())
+        end
+        for c in _tobe_cached
+            insert_glyph!(atlas, c, defaultfont())
+        end
+
+        to_cache(atlas) # cache it
+        return atlas
     end
 
     function to_cache(atlas)
