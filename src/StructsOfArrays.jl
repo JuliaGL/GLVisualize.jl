@@ -1,5 +1,4 @@
 module StructsOfArrays
-using Compat
 
 export StructOfArrays, ScalarRepeat
 

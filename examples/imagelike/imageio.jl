@@ -1,6 +1,6 @@
-using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO, Compat
+using GLVisualize, GeometryTypes, GLAbstraction, Colors, FileIO
 if !isdefined(:runtests)
-	window = glscreen()
+    window = glscreen()
 end
 
 description = """
@@ -11,7 +11,7 @@ load and display animated images.
 
 # a few helper functions to generate images
 
-@compat const NColor{N, T} = Colorant{T, N}
+const NColor{N, T} = Colorant{T, N}
 fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)
 fillcolor{T <: NColor{3}}(::Type{T}) = T(0,1,0)
 
@@ -57,5 +57,5 @@ _view(img_vis, window)
 
 
 if !isdefined(:runtests)
-	renderloop(window)
+    renderloop(window)
 end

@@ -1,5 +1,5 @@
 using Images, Colors, GeometryTypes
-using Reactive, FileIO, GLVisualize, Compat
+using Reactive, FileIO, GLVisualize
 using GLAbstraction, GeometryTypes, GLWindow, ImageFiltering
 
 if !isdefined(:runtests)

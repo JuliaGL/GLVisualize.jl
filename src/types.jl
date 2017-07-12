@@ -218,7 +218,7 @@ end
 @inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Intensity) = I(i.i)
 (::Type{Intensity{T}}){T <: AbstractFloat, Tc}(x::Color{Tc, 1}) = Intensity{T}(gray(x))
 
-@compat const GLIntensity = Intensity{Float32}
+const GLIntensity = Intensity{Float32}
 export Intensity, GLIntensity
 
 

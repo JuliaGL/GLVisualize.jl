@@ -167,7 +167,7 @@ end
 
 immutable GridPreRender end
 
-@compat function (::GridPreRender)()
+function (::GridPreRender)()
     glEnable(GL_CULL_FACE)
     glDepthMask(GL_FALSE)
     glCullFace(GL_BACK)

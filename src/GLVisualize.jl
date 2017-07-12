@@ -7,7 +7,6 @@ using GLAbstraction
 using ModernGL
 using StaticArrays
 using GeometryTypes
-using ColorTypes
 using Colors
 using Reactive
 using Quaternions
@@ -18,7 +17,6 @@ using SignedDistanceFields
 using FreeType
 import IterTools
 using Base.Markdown
-using Compat   # in preparation for Julia 0.6
 using FreeTypeAbstraction
 
 import ColorVectorSpace
@@ -36,8 +34,6 @@ import AxisArrays, ImageAxes, Images
 const HasAxesArray{T, N} = Union{AxisArrays.AxisArray{T, N}, Images.ImageMetadata.ImageMetaAxis{T, N}}
 const AxisMatrix{T} = HasAxesArray{T, 2}
 
-
-using Compat
 
 const GLBoundingBox = AABB{Float32}
 

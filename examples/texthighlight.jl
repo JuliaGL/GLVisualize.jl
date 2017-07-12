@@ -3,8 +3,6 @@ using Highlights.Format
 using Highlights.Tokens
 using Highlights.Themes
 
-import Compat: readstring
-
 if !isdefined(Highlights.Themes, :has_fg)
     has_fg(style) = style.fg.active
     css2color(c) = RGBA{Float32}(c.r/255, c.g/255, c.b/255, 1)

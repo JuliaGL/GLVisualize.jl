@@ -6,7 +6,6 @@ using GLWindow
 using GLAbstraction
 using ModernGL
 using GeometryTypes
-using ColorTypes
 using Colors
 using Reactive
 using Quaternions

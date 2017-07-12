@@ -119,8 +119,8 @@ function default_boundingbox(main, model)
     main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
     const_lift(*, model, AABB{Float32}(main))
 end
-@compat (::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
-@compat (::Type{AABB{T}}){T}(a::GPUArray) = AABB{T}(gpu_data(a))
+(::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
+(::Type{AABB{T}}){T}(a::GPUArray) = AABB{T}(gpu_data(a))
 
 
 """

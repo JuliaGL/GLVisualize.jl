@@ -226,7 +226,7 @@ end
 
 immutable VolumePrerender
 end
-@compat function (::VolumePrerender)()
+function (::VolumePrerender)()
     GLAbstraction.StandardPrerender()()
     glEnable(GL_CULL_FACE)
     glCullFace(GL_FRONT)

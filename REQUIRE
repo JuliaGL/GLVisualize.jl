@@ -9,7 +9,7 @@ ModernGL 0.2
 
 MeshIO 0.1.0
 Packing 0.1
-Reactive 0.5
+Reactive 0.5.2
 
 GLFW
 
@@ -24,7 +24,6 @@ FreeType
 IterTools
 FileIO
 UnicodeFun
-Compat 0.18
 Quaternions
 
 

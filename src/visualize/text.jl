@@ -369,7 +369,7 @@ function textedit_signals(inputs, background, text)
 
     preserve(const_lift(update_positions, text_sig, Signal(text), Signal(background[:style_index])))
     preserve(foldp(visualize_selection, 0:0, selection,    Signal(background[:style_index])))
-    const_lift(Compat.String, text_sig), selection
+    const_lift(String, text_sig), selection
 end
 
 
@@ -548,7 +548,7 @@ end
 #         clipboard_data = clipboard()
 #     catch e # clipboard throws error when there is no data (WTF)
 #     end
-#     return Compat.String(clipboard_data)
+#     return String(clipboard_data)
 # end
 #
 # export clipboardpaste
@@ -558,9 +558,9 @@ end
 #     isnewline(x[1]) && return '\n'
 #     ID_TO_CHAR[x[1]]
 # end
-# function Base.Compat.String(v::GPUVector{GLSprite})
+# function String(v::GPUVector{GLSprite})
 #     data = gpu_data(v)
-#     Compat.String(join(map(back2julia, data)))
+#     String(join(map(back2julia, data)))
 # end
 # # const_lift will have a boolean value at first argument position
 # copyclipboard(_, text_selection) = copyclipboard(text_selection)
