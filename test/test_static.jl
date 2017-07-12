@@ -23,7 +23,6 @@ function create_mosaic(io, folder, width = 150)
     end
 end
 
-ENV["CI_REPORT_DIR"] = homedir()*"/Desktop/gltest/"
 if haskey(ENV, "CI_REPORT_DIR")
     full_folder = ENV["CI_REPORT_DIR"]
     recording = true
