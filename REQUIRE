@@ -4,6 +4,7 @@ StaticArrays 0.6.0
 GLWindow 0.5
 GLAbstraction 0.5
 GeometryTypes 0.4.1
+MeshIO 0.1.0
 Packing 0.1
 Reactive 0.5
 
@@ -15,16 +16,16 @@ ColorVectorSpace 0.2
 FixedPointNumbers 0.3.0
 
 FreeTypeAbstraction 0.1.0
-SignedDistanceFields
+SignedDistanceFields 0.2.0
+
 FreeType
 IterTools
 FileIO
-MeshIO
 UnicodeFun
 Compat 0.18
 Quaternions
 
 
-Images 0.9.1
+Images 0.9.1 # better 0.6 support
 AxisArrays
 ImageAxes
