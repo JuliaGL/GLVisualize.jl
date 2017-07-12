@@ -14,7 +14,7 @@ Colors 0.7.0
 ColorVectorSpace 0.2
 FixedPointNumbers 0.3.0
 
-#FreeTypeAbstraction
+FreeTypeAbstraction 0.1.0
 SignedDistanceFields
 FreeType
 IterTools
