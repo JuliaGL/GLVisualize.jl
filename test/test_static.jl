@@ -51,7 +51,7 @@ files = [
 
 map!(x-> GLVisualize.dir("examples", x), files, files)
 files = union(files, ExampleRunner.flatten_paths(GLVisualize.dir("examples")))
-push!(files, GLVisualize.dir("test", "summary.jl"))
+#push!(files, GLVisualize.dir("test", "summary.jl"))
 files = unique(normpath.(files))
 # Create an examplerunner, that displays all examples in the example folder, plus
 # a runtest specific summary.

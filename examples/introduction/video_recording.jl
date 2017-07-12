@@ -22,7 +22,6 @@ while true # for some reason, folder retured by mktempdir isn't usable -.-
     name = path * "/$(randstring()).mkv"
     isfile(name) || break
 end
-name
 # create a stream to which we can add frames
 io, buffer = GLVisualize.create_video_stream(name, window)
 for i=1:10 # record 10 frames

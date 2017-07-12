@@ -7,6 +7,7 @@ function is_ci()
 end
 
 if is_ci()
+    println("is CI")
     cd(Pkg.dir("GLAbstraction")) do
         run(`git checkout master`)
     end
