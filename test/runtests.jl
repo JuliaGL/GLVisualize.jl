@@ -7,13 +7,6 @@ function is_ci()
 end
 
 if is_ci()
-    println("is CI")
-    cd(Pkg.dir("GLAbstraction")) do
-        run(`git checkout master`)
-    end
-    cd(Pkg.dir("GLWindow")) do
-        run(`git checkout master`)
-    end
     include("test_static.jl")
 else
     include("test_interactive.jl")
