@@ -1,4 +1,4 @@
-**Build status**: [![](https://ci.maleadt.net/buildbot/julia/badge.svg?builder=GLVisualize.jl:%20Julia%200.5%20(x86-64)&badge=Julia%20v0.5)](https://ci.maleadt.net/buildbot/julia/builders/GLVisualize.jl%3A%20Julia%200.5%20%28x86-64%29)
+**Build status**: [![](https://ci.maleadt.net/buildbot/julia/badge.svg?builder=GLVisualize.jl:%20Julia%200.6%20(x86-64)&badge=Julia%20v0.6)](https://ci.maleadt.net/buildbot/julia/builders/GLVisualize.jl%3A%20Julia%200.6%20%28x86-64%29)
 
 **Code coverage**: [![Coverage Status](https://coveralls.io/repos/github/JuliaGL/GLVisualize.jl/badge.svg?branch=HEAD)](https://coveralls.io/github/JuliaGL/GLVisualize.jl?branch=HEAD)
 
