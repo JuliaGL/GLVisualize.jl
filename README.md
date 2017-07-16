@@ -70,7 +70,6 @@ Example code on the website is out of date, pleaser refer to [examples folder](h
 
 
 Known problems:
-- boundingboxes are not always correct
 - On Mac OS, you need to make sure that Homebrew.jl works correctly, which was not the case on some tested machines (needed to checkout master and then rebuild)
 - GLFW needs `cmake` and `xorg-dev` `libglu1-mesa-dev` on linux (can be installed via `sudo apt-get install xorg-dev libglu1-mesa-dev`).
 
