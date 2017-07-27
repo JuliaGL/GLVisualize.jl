@@ -238,9 +238,9 @@ void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 ligh
 {
     vec4 position_camspace = viewmodel * vec4(vertex,  1);
     // normal in world space
-    o_normal               = normal;
+    o_normal               = vec3(transpose(inverse(viewmodel)) * vec4(normal,0));
     // direction to light
-    o_lightdir             = normalize(light[3] - vertex);
+    o_lightdir             = normalize(light[3] - vec3(position_camspace));
     // direction to camera
     o_vertex               = -position_camspace.xyz;
     // screen space coordinates of the vertex
