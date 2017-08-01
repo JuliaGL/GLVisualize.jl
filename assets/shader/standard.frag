@@ -56,7 +56,6 @@ void write2framebuffer(vec4 color, uvec2 id);
 void main(){
     vec4 color = get_color(color, o_uv);
     {{light_calc}}
-
     write2framebuffer(
         color,
         o_id
