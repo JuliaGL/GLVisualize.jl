@@ -13,10 +13,16 @@ end
 
 function _default{M <: GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
+        shading = true
+    end
+    if !shading
+        mesh = const_lift(x-> convert(GLPlainMesh, x), mesh)
+    end
+    @gen_defaults! data begin
         main = mesh
         color = default(RGBA{Float32}, s)
         boundingbox = const_lift(GLBoundingBox, mesh)
-        shading = true
+
         shader = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "standard.vert", "standard.frag",
             view = Dict("light_calc" => light_calc(shading))
