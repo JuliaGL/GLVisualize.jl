@@ -14,12 +14,6 @@ end
 function _default{M <: GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
         shading = true
-    end
-    view = if !shading
-        # we need to remove the normals, because they're unused
-        mesh = const_lift(x-> convert(GLPlainMesh, x), mesh)
-    end
-    @gen_defaults! data begin
         main = mesh
         color = default(RGBA{Float32}, s)
         boundingbox = const_lift(GLBoundingBox, mesh)
@@ -33,16 +27,6 @@ end
 function _default{M <: GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
     @gen_defaults! data begin
         shading = true
-    end
-    if !shading
-        # TODO remove this hack in a more graceful way!
-        mesh = const_lift(mesh) do x
-            dict = attributes(mesh)
-            delete!(dict, :normals)
-            GeometryTypes.homogenousmesh(dict)
-        end
-    end
-    @gen_defaults! data begin
         main = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
         color = nothing
