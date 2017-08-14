@@ -46,7 +46,7 @@ function slide(startvalue, slide_pos, range::Range)
     clamp(val, range)
 end
 
-function widget{T <: Union{StaticVector, Real}}(x::T, inputs, numberwidth=5;kw_args...)
+function widget(x::T, inputs, numberwidth=5;kw_args...) where T <: Union{StaticVector, Real}
     widget(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
 end
 
@@ -60,18 +60,18 @@ function range_default{T<:Integer}(::Type{T})
     T(-100):T(1):T(100)
 end
 
-function calc_val{T<:AbstractFloat}(sval::T, val, range)
+function calc_val(sval::T, val, range) where T<:AbstractFloat
     clamp(sval+(val*step(range)), first(range), last(range))
 end
-function calc_val{T<:Integer}(sval::T, val, range)
+function calc_val(sval::T, val, range) where T<:Integer
     clamp(sval+(round(T, val)*step(range)), first(range), last(range))
 end
-function widget{T <: StaticVector}(
+function widget(
         slider_value::Signal{T}, window;
         numberwidth = 5, range = range_default(T),
         text_scale = 4mm,
         kw_args...
-    )
+    ) where T <: StaticVector
     last_x = 0f0
     le_sigs = []
     gap = text_scale * 2f0 # 2 characters gap
@@ -96,11 +96,11 @@ function widget{T <: StaticVector}(
 
     Context(le_tuple...), map(T, le_sigs...)
 end
-function widget{T <: Real}(
+function widget(
         slider_value::Signal{T}, window;
         text_scale = 4mm,
         numberwidth = 5, range = range_default(T), kw_args...
-    )
+    ) where T <: Real
     @materialize mouse_buttons_pressed, mouseposition = window.inputs
     startvalue        = value(slider_value)
     slider_value_str  = map(printforslider, slider_value)

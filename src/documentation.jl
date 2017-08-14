@@ -1,13 +1,13 @@
 
 pretty_print(x::Signal) = string(value(x))
 pretty_print(x::Vector) = string("[", first(x), "...", last(x), "]")
-pretty_print{T}(x::Matrix{T}) = string("Matrix{", T, "}")
+pretty_print(x::Matrix{T}) where {T} = string("Matrix{", T, "}")
 pretty_print(x::DataType) = string(x.name.name)
 pretty_print(x) = string(x)
 
 print_type(x::Function) = string(x.env.name)
 print_type(x::Symbol) = string(":", x)
-function print_type{T<:Tuple}(x::Type{T})
+function print_type(x::Type{T}) where T<:Tuple
     "($(join(map(print_type, x.parameters), ", ")))"
 end
 function print_type(x::TypeVar)
@@ -84,7 +84,7 @@ end
 _tuple(x) = (x,)
 _tuple(x::Core.SimpleVector) = tuple(x...)
 _tuple(x::Tuple) = x
-_tuple{T<:Tuple}(x::Type{T}) = tuple(x.parameters...)
+_tuple(x::Type{T}) where {T<:Tuple} = tuple(x.parameters...)
 
 function all_docs(io = STDOUT)
     method_table = methods(GLVisualize._default)

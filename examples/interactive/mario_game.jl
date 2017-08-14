@@ -9,7 +9,7 @@ You can move mario around with the arrow keys
 """
 const record_interactive = true
 
-type Mario{T}
+mutable struct Mario{T}
     x             ::T
     y             ::T
     vx            ::T

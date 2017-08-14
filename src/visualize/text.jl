@@ -1,12 +1,12 @@
 
-immutable SpriteElem{N,T}
+struct SpriteElem{N,T}
     offset::Vec{2,T}
     uv_offset_width::Vec{4,T}
     position::Point{N, T}
     color::RGBA{Float32}
     scale::Vec{2,T}
 end
-type Text
+mutable struct Text
     offsets
     uv_offset_width
     positions
@@ -76,7 +76,7 @@ function Text(robj::RenderObject)
         atlas
     )
 end
-type RichText
+mutable struct RichText
     text::Text
     inlined_objects::Vector
     links::Vector

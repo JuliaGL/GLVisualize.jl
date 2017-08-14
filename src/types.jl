@@ -8,7 +8,7 @@ end
 Base.ndims{N,T}(::Grid{N,T}) = N
 
 Grid(ranges::Range...) = Grid(ranges)
-function Grid{N, T}(a::Array{T, N})
+function Grid(a::Array{T, N}) where {N, T}
     s = Vec{N, Float32}(size(a))
     smax = maximum(s)
     s = s./smax
@@ -25,7 +25,7 @@ Due to the approach, the tuple `ranges` can consist of NTuple(2, T)
 and all kind of range types. The constructor will make sure that all ranges match
 the size of the dimension of the array `a`.
 """
-function Grid{T, N}(a::AbstractArray{T, N}, ranges::Tuple)
+function Grid(a::AbstractArray{T, N}, ranges::Tuple) where {T, N}
     length(ranges) =! N && throw(ArgumentError(
         "You need to supply a range for every dimension of the array. Given: $ranges
         given Array: $(typeof(a))"
@@ -37,7 +37,7 @@ end
 
 Base.length(p::Grid) = prod(size(p))
 Base.size(p::Grid) = map(length, p.dims)
-function Base.getindex{N,T}(p::Grid{N,T}, i)
+function Base.getindex(p::Grid{N,T}, i) where {N,T}
     inds = ind2sub(size(p), i)
     Point{N, eltype(T)}(ntuple(Val{N}) do i
         p.dims[i][inds[i]]
@@ -49,8 +49,8 @@ Base.done(g::Grid, i) = i > length(g)
 Base.next(g::Grid, i) = g[i], i+1
 
 GLAbstraction.isa_gl_struct(x::Grid) = true
-GLAbstraction.toglsltype_string{N,T}(t::Grid{N,T}) = "uniform Grid$(N)D"
-function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N, T}, uniform_name::Symbol)
+GLAbstraction.toglsltype_string(t::Grid{N,T}) where {N,T} = "uniform Grid$(N)D"
+function GLAbstraction.gl_convert_struct(g::Grid{N, T}, uniform_name::Symbol) where {N,T}
     return Dict{Symbol, Any}(
         Symbol("$uniform_name.ref") => Vec{N, Float32}(map(x-> eltype(x)(x.ref), g.dims)),
         Symbol("$uniform_name.offset") => Vec{N, Float32}(map(x-> eltype(x)(x.offset), g.dims)),
@@ -58,7 +58,7 @@ function GLAbstraction.gl_convert_struct{N,T}(g::Grid{N, T}, uniform_name::Symbo
         Symbol("$uniform_name.dims") => Vec{N, Cint}(map(length, g.dims))
     )
 end
-function GLAbstraction.gl_convert_struct{T}(g::Grid{1, T}, uniform_name::Symbol)
+function GLAbstraction.gl_convert_struct(g::Grid{1, T}, uniform_name::Symbol) where T
     x = g.dims[1]
     return Dict{Symbol, Any}(
         Symbol("$uniform_name.ref") => Float32(eltype(x)(x.ref)),
@@ -83,7 +83,7 @@ end
 Base.ndims(::ScalarRepeat) = 1
 Base.getindex(s::ScalarRepeat, i...) = s.scalar
 #should setindex! really be allowed? It will set the index for the whole row...
-Base.setindex!{T}(s::ScalarRepeat{T}, value, i...) = (s.scalar = T(value))
+Base.setindex!(s::ScalarRepeat{T}, value, i...) where {T} = (s.scalar = T(value))
 Base.eltype{T}(::ScalarRepeat{T}) = T
 
 Base.start(::ScalarRepeat) = 1
@@ -122,7 +122,7 @@ Base.size(g::GridZRepeat) = size(g.z)
 Base.size(g::GridZRepeat, i) = size(g.z, i)
 Base.IndexStyle(::Type{<:GridZRepeat}) = Base.IndexLinear()
 
-function Base.getindex{G,T}(g::GridZRepeat{G, T}, i)
+function Base.getindex(g::GridZRepeat{G, T}, i) where {G,T}
     pxy = g.grid[i]
     Point{3, T}(pxy[1], pxy[2], g.z[i])
 end
@@ -216,7 +216,7 @@ struct Intensity{T <: AbstractFloat} <: FieldVector{1, T}
 end
 @inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Tuple) = I(i...)
 @inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Intensity) = I(i.i)
-(::Type{Intensity{T}}){T <: AbstractFloat, Tc}(x::Color{Tc, 1}) = Intensity{T}(gray(x))
+Intensity{T}(x::Color{Tc, 1}) where {T <: AbstractFloat, Tc} = Intensity{T}(gray(x))
 
 const GLIntensity = Intensity{Float32}
 export Intensity, GLIntensity
