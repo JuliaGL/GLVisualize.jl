@@ -1,7 +1,7 @@
 """
 Determines if of Image Type
 """
-function isa_image{T<:Matrix}(x::Type{T})
+function isa_image(x::Type{T}) where T<:Matrix
     eltype(T) <: Union{Colorant, Colors.Fractional}
 end
 isa_image(x::Matrix) = isa_image(typeof(x))
@@ -119,8 +119,8 @@ function default_boundingbox(main, model)
     main == nothing && return Signal(AABB{Float32}(Vec3f0(0), Vec3f0(1)))
     const_lift(*, model, AABB{Float32}(main))
 end
-(::Type{AABB})(a::GPUArray) = AABB{Float32}(gpu_data(a))
-(::Type{AABB{T}}){T}(a::GPUArray) = AABB{T}(gpu_data(a))
+AABB(a::GPUArray) = AABB{Float32}(gpu_data(a))
+AABB{T}(a::GPUArray) where {T} = AABB{T}(gpu_data(a))
 
 
 """
@@ -170,12 +170,12 @@ function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
     end)
 end
 
-points2f0{T}(positions::Vector{T}, range::Range) = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]
+points2f0(positions::Vector{T}, range::Range) where {T} = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]
 
-extrema2f0{T<:Intensity,N}(x::Array{T,N}) = Vec2f0(extrema(reinterpret(Float32,x)))
-extrema2f0{T,N}(x::Array{T,N}) = Vec2f0(extrema(x))
+extrema2f0(x::Array{T,N}) where {T<:Intensity,N} = Vec2f0(extrema(reinterpret(Float32,x)))
+extrema2f0(x::Array{T,N}) where {T,N} = Vec2f0(extrema(x))
 extrema2f0(x::GPUArray) = extrema2f0(gpu_data(x))
-function extrema2f0{T<:Vec,N}(x::Array{T,N})
+function extrema2f0(x::Array{T,N}) where {T<:Vec,N}
     _norm = map(norm, x)
     Vec2f0(minimum(_norm), maximum(_norm))
 end
@@ -190,8 +190,8 @@ to_indices(x::VecOrSignal{UnitRange{Int}}) = x
 """
 For integers, we transform it to 0 based indices
 """
-to_indices{I<:Integer}(x::Vector{I}) = indexbuffer(map(i-> Cuint(i-1), x))
-function to_indices{I<:Integer}(x::Signal{Vector{I}})
+to_indices(x::Vector{I}) where {I<:Integer} = indexbuffer(map(i-> Cuint(i-1), x))
+function to_indices(x::Signal{Vector{I}}) where I<:Integer
     x = map(x-> Cuint[i-1 for i=x], x)
     gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
     preserve(const_lift(update!, gpu_mem, x))
@@ -200,8 +200,8 @@ end
 """
 If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
 """
-to_indices{I<:GLuint}(x::Vector{I}) = indexbuffer(x)
-function to_indices{I<:GLuint}(x::Signal{Vector{I}})
+to_indices(x::Vector{I}) where {I<:GLuint} = indexbuffer(x)
+function to_indices(x::Signal{Vector{I}}) where I<:GLuint
     gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
     preserve(const_lift(update!, gpu_mem, x))
     gpu_mem
@@ -214,7 +214,7 @@ to_indices(x) = error(
 
 
 
-function mix_linearly{C<:Colorant}(a::C, b::C, s)
+function mix_linearly(a::C, b::C, s) where C<:Colorant
     RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), (1-s)*alpha(a)+s*alpha(b))
 end
 
@@ -256,7 +256,7 @@ function layoutlinspace(n::Integer)
     end
 end
 xlayout(x::Int) = zip(layoutlinspace(x), Iterators.repeated(""))
-function xlayout{T <: AbstractFloat}(x::AbstractVector{T})
+function xlayout(x::AbstractVector{T}) where T <: AbstractFloat
     zip(x, Iterators.repeated(""))
 end
 
@@ -266,7 +266,7 @@ end
 function ylayout(x::AbstractVector)
     zip(layoutlinspace(length(x)), x)
 end
-function ylayout{T <: Tuple}(x::AbstractVector{T})
+function ylayout(x::AbstractVector{T}) where T <: Tuple
     sizes = map(first, x)
     values = map(last, x)
     zip(sizes, values)

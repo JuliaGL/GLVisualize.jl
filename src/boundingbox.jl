@@ -1,25 +1,25 @@
-AbsoluteRectangle{N,T}(mini::Vec{N,T}, maxi::Vec{N,T}) = HyperRectangle{N,T}(mini, maxi-mini)
+AbsoluteRectangle(mini::Vec{N,T}, maxi::Vec{N,T}) where {N,T} = HyperRectangle{N,T}(mini, maxi-mini)
 
-(::Type{AABB})(a) = AABB{Float32}(a)
-function (B::Type{AABB{T}}){T}(a::Pyramid)
+AABB(a) = AABB{Float32}(a)
+function (B::Type{AABB{T}})(a::Pyramid) where T
     w,h = a.width/T(2), a.length
     m = Vec{3,T}(a.middle)
     B(m-Vec{3,T}(w,w,0), m+Vec{3,T}(w, w, h))
 end
-(B::Type{AABB{T}}){T}(a::Cube) = B(origin(a), widths(a))
-(B::Type{AABB{T}}){T}(a::AbstractMesh) = B(vertices(a))
-(B::Type{AABB{T}}){T}(a::NativeMesh) = B(gpu_data(a.data[:vertices]))
+(B::Type{AABB{T}})(a::Cube) where {T} = B(origin(a), widths(a))
+(B::Type{AABB{T}})(a::AbstractMesh) where {T} = B(vertices(a))
+(B::Type{AABB{T}})(a::NativeMesh) where {T} = B(gpu_data(a.data[:vertices]))
 
 
-function (B::Type{AABB{T}}){T}(
+function (B::Type{AABB{T}})(
         positions, scale, rotation,
         primitive::AABB{T}
-    )
+    ) where T
 
     ti = TransformationIterator(positions, scale, rotation)
     B(ti, primitive)
 end
-function (B::Type{AABB{T}}){T}(instances::Instances)
+function (B::Type{AABB{T}})(instances::Instances) where T
     ti = TransformationIterator(instances)
     B(ti, B(instances.primitive))
 end
@@ -38,9 +38,9 @@ function transform(translation, scale, rotation, points)
     AABB{Float32}(_min, _max-_min)
 end
 
-function (B::Type{AABB{T}}){T}(
+function (B::Type{AABB{T}})(
       ti::TransformationIterator, primitive::AABB{T}
-    )
+    ) where T
     state = start(ti)
     if done(ti, state)
         return primitive

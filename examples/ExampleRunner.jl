@@ -43,7 +43,7 @@ function flatten_paths(path::String, paths = String[])
     paths
 end
 
-type RunnerConfig
+mutable struct RunnerConfig
     resolution
     make_docs
     files

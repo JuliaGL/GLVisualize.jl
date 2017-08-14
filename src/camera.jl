@@ -12,8 +12,8 @@ function cubeside_const_lift(_, id, mousehover)
     Vec3f0(1)
 end
 import Base: +
-Base.clamp{T}(x::T) = clamp(x, T(0),T(1))
-+{T}(a::RGBA{T}, b::Number) = RGBA{T}(clamp(comp1(a)+b), clamp(comp2(a)+b), clamp(comp3(a)+b), clamp(alpha(a)+b))
+Base.clamp(x::T) where {T} = clamp(x, T(0),T(1))
++(a::RGBA{T}, b::Number) where {T} = RGBA{T}(clamp(comp1(a)+b), clamp(comp2(a)+b), clamp(comp3(a)+b), clamp(alpha(a)+b))
 
 function cubeside_color(id, mousehover, startcolors, colortex)
     index = mousehover[2]
@@ -39,7 +39,7 @@ function colored_cube()
     cube_steering = merge(map(GLNormalMesh, quads))
 end
 
-Base.middle{T}(r::SimpleRectangle{T}) = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.mousehover/T(2)))
+Base.middle(r::SimpleRectangle{T}) where {T} = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.mousehover/T(2)))
 
 
 function get_rotation(m)

@@ -37,7 +37,7 @@ function toggle(ispressed::Signal{Bool}, screen, default=true; signal=Signal(def
     signal
 end
 
-function toggle{T<:Union{Int, Tuple, RenderObject}}(id1::Union{Signal{T}, T}, screen, default=true; signal=Signal(default))
+function toggle(id1::Union{Signal{T}, T}, screen, default=true; signal=Signal(default)) where T<:Union{Int, Tuple, RenderObject}
     m2id = mouse2id(screen)
     is_clicked = droprepeats(map(screen.inputs[:mouse_buttons_pressed]) do mbp
         if GLAbstraction.singlepressed(mbp, GLFW.MOUSE_BUTTON_LEFT)
@@ -141,10 +141,10 @@ function slider(
 end
 
 
-function widget{T <: Range}(
+function widget(
         r::Signal{T}, screen::Screen;
         args...
-    )
+    ) where T <: Range
     slider(value(r), screen; args...)
 end
 function playbutton(screen; icon_size = 10mm)

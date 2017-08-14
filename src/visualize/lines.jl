@@ -14,7 +14,7 @@ function sumlengths(points)
 end
 
 intensity_convert(intensity, verts) = intensity
-function intensity_convert{T}(intensity::VecOrSignal{T}, verts)
+function intensity_convert(intensity::VecOrSignal{T}, verts) where T
     if length(value(intensity)) == length(value(verts))
         GLBuffer(intensity)
     else
@@ -42,7 +42,7 @@ function ticks(points, resolution)
 end
 
 
-function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict)
+function _default(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict) where T<:Point
     pv = value(position)
     p_vec = if isa(position, GPUArray)
         position
@@ -102,12 +102,12 @@ function _default{T<:Point}(position::Union{VecTypes{T}, MatTypes{T}}, s::style"
     data
 end
 
-to_points{T}(x::Vector{LineSegment{T}}) = reinterpret(T, x, (length(x)*2,))
+to_points(x::Vector{LineSegment{T}}) where {T} = reinterpret(T, x, (length(x)*2,))
 
-_default{T <: Point}(positions::VecTypes{LineSegment{T}}, s::Style, data::Dict) =
+_default(positions::VecTypes{LineSegment{T}}, s::Style, data::Dict) where {T <: Point} =
     _default(const_lift(to_points, positions), style"linesegment"(), data)
 
-function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", data::Dict)
+function _default(positions::VecTypes{T}, s::style"linesegment", data::Dict) where T <: Point
     @gen_defaults! data begin
         vertex              = positions           => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
@@ -133,7 +133,7 @@ function _default{T <: Point}(positions::VecTypes{T}, s::style"linesegment", dat
     data
 end
 
-function _default{T <: AbstractFloat}(positions::Vector{T}, range::Range, s::style"lines", data::Dict)
+function _default(positions::Vector{T}, range::Range, s::style"lines", data::Dict) where T <: AbstractFloat
     length(positions) != length(range) && throw(
         DimensionMismatsch("length of $(typeof(positions)) $(length(positions)) and $(typeof(range)) $(length(range)) must match")
     )
@@ -142,9 +142,9 @@ end
 
 
 
-function _default{G<:GeometryPrimitive{3}}(
+function _default(
         geometry::TOrSignal{G}, s::style"lines", data::Dict
-    )
+    ) where G<:GeometryPrimitive{3}
     wireframe(geometry, data)
 end
 function _default(
@@ -165,7 +165,7 @@ function wireframe(
 end
 
 
-immutable GridPreRender end
+struct GridPreRender end
 
 function (::GridPreRender)()
     glEnable(GL_CULL_FACE)
@@ -173,7 +173,7 @@ function (::GridPreRender)()
     glCullFace(GL_BACK)
 end
 
-function _default{T<:AABB}(c::TOrSignal{T}, ::Style{:grid}, data)
+function _default(c::TOrSignal{T}, ::Style{:grid}, data) where T<:AABB
     @gen_defaults! data begin
         primitive::GLPlainMesh = c
         bg_color = RGBA{Float32}(0.99,0.99,0.99,1)
@@ -202,7 +202,7 @@ end
 """
 Fast, non anti aliased lines
 """
-function _default{T <: Point}(position::VecTypes{T}, s::style"speedlines", data::Dict)
+function _default(position::VecTypes{T}, s::style"speedlines", data::Dict) where T <: Point
     @gen_defaults! data begin
         vertex       = position => GLBuffer
         color_map    = nothing  => Vec2f0

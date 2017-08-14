@@ -58,12 +58,12 @@ function edit_line(
 end
 
 
-function widget{T}(
+function widget(
         line::Vector{Point{2,T}}, window;
         direction_restriction = Vec2f0(1),
         clampto = (-Inf, Inf),
         kw_args...
-    )
+    ) where T
     vis, sig = edit_line(
         line, direction_restriction, clampto, window;
         kw_args...
@@ -98,14 +98,14 @@ function dragg_gpu(v0, dragg)
     return id, index, p0
 end
 
-immutable ClampFunctor{T}
+struct ClampFunctor{T}
     a::T
     b::T
 end
 
-clampU8{T}(x::RGBA{T}) = RGBA{T}(ntuple(i->clamp(getfield(x, i), 0.,1.), Val{4})...)
+clampU8(x::RGBA{T}) where {T} = RGBA{T}(ntuple(i->clamp(getfield(x, i), 0.,1.), Val{4})...)
 channel_color(channel, value) = RGBA{Float32}(ntuple(i->i==channel ? value : 0.0f0, Val{3})..., 1f0)
-function c_setindex{T}(color::RGBA{T}, val, channel)
+function c_setindex(color::RGBA{T}, val, channel) where T
     v = clamp.(val, 0, 1)
     RGBA{T}(
         1==channel ? v : comp1(color),
@@ -124,7 +124,7 @@ function edit_color(tex, buff, index_value, channel, maxval)
     nothing
 end
 
-function widget{T<:Colorant}(colormap::VecTypes{T}, window;
+function widget(colormap::VecTypes{T}, window;
         area = (300, 30),
         slider_colors = (
             RGBA{Float32}(0.78125,0.1796875,0.41796875),
@@ -134,7 +134,7 @@ function widget{T<:Colorant}(colormap::VecTypes{T}, window;
         ),
         knob_scale = 9f0,
         kw_args...
-    )
+    ) where T<:Colorant
     colors = map(GLAbstraction.gl_promote(T), to_cpu_mem(value(colormap)))
     N = length(colors)
     color_tex = GLAbstraction.gl_convert(Texture, colormap)

@@ -5,7 +5,7 @@ function grid_translation(scale, model_scale, bb, model, i=1, j=1, k=1)
     translationmatrix(Vec3f0(i-1, j-1, k-1).*scale)*scalematrix(model_scale*scale)*translationmatrix(-minimum(bb))*model
 end
 
-function visualize{T <: Composable, N}(grid::Array{T, N}, s::Style, data::Dict)
+function visualize(grid::Array{T, N}, s::Style, data::Dict) where {T <: Composable, N}
     @gen_defaults! data begin
         scale = Vec3f0(1) #axis of 3D dimension, can be signed
     end
@@ -34,7 +34,7 @@ function list_translation(lastposition, gap, direction, bb)
     lastposition+move2align, nextpos
 end
 
-function visualize{T <: Composable}(list::Vector{T}, s::Style, data::Dict)
+function visualize(list::Vector{T}, s::Style, data::Dict) where T <: Composable
     @gen_defaults! data begin
         direction    = 2 #axis of 3D dimension, can be signed
         gap          = 0.1f0 * unit(Vec3f0, abs.(direction))
@@ -52,9 +52,9 @@ end
 
 
 
-function visualize{T <: Pair}(
+function visualize(
         dict::Union{Vector{T}, Dict}, s::Style, data::Dict
-    )
+    ) where T <: Pair
     screen_w = get(data, :width, 100mm)
     text_scale = get(data, :text_scale, 4mm)
     gap = get(data, :gap, 1mm)

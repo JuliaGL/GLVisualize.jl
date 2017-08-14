@@ -24,11 +24,7 @@ import GLAbstraction: N0f8
 export N0f8 # reexport for examples/tests
 using Base.Iterators: filter
 import Base: merge, convert, show
-if VERSION >= v"0.6.0-dev.1015"
-    using Base.Iterators: Repeated, repeated
-else
-    using Base.Repeated
-end
+using Base.Iterators: Repeated, repeated
 
 import AxisArrays, ImageAxes, Images
 const HasAxesArray{T, N} = Union{AxisArrays.AxisArray{T, N}, Images.ImageMetadata.ImageMetaAxis{T, N}}
