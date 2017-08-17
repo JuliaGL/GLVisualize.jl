@@ -32,7 +32,7 @@ for i=1:10 # record 10 frames
     # if you call @async renderloop(window) you can replace this part with yield
     GLWindow.render_frame(window)
     GLWindow.swapbuffers(window)
-    GLWindow.poll_reactive()
+    GLWindow.reactive_run_till_now()
 
     # add the frame from the current window
     GLVisualize.add_frame!(io, window, buffer)

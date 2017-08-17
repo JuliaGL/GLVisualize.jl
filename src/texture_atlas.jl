@@ -1,5 +1,5 @@
 
-type TextureAtlas
+mutable struct TextureAtlas
     rectangle_packer::RectanglePacker
     mapping         ::Dict{Any, Int} # styled glyph to index in sprite_attributes
     index           ::Int

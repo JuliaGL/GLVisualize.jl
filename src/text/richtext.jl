@@ -1,4 +1,4 @@
-type Text
+mutable struct Text
     atlas
     offsets
     uvs
@@ -20,7 +20,7 @@ const TextDefault = Dict(
     :font => GLVisualize.defaultfont()
 )
 
-type RichText
+mutable struct RichText
     defaults::FixedKeyDict
     text::Text
     inlined_objects::Vector

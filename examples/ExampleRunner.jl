@@ -43,7 +43,7 @@ function flatten_paths(path::String, paths = String[])
     paths
 end
 
-type RunnerConfig
+mutable struct RunnerConfig
     resolution
     make_docs
     files
@@ -368,7 +368,7 @@ end
 to_toggle(v0, b) = !v0
 
 
-import GLWindow: poll_reactive, poll_glfw, sleep_pessimistic
+import GLWindow: reactive_run_till_now, poll_glfw, sleep_pessimistic
 
 
 function inner_test(path, config, window, break_loop, runthrough, increase)
@@ -377,21 +377,18 @@ function inner_test(path, config, window, break_loop, runthrough, increase)
         display_msg(test_module, config)
         timings = Float64[]
         frames = 0;
-        @eval poll_glfw()
-        @eval poll_reactive()
-        @eval poll_reactive()
-        yield()
+        poll_glfw()
+        reactive_run_till_now()
         while !break_loop[] && isopen(config.rootscreen)
-            tic()
+            t = time()
             poll_glfw()
             if Base.n_avail(Reactive._messages) > 0
-                poll_reactive()
-                poll_reactive() # two times for secondary signals
+                reactive_run_till_now() # two times for secondary signals
                 render_frame(config.rootscreen)
                 swapbuffers(config.rootscreen)
             end
             frames += 1
-            t = toq()
+            t = time() - t
             if length(timings) < 1000 && frames > 2
                 push!(timings, t)
             end
@@ -453,7 +450,6 @@ function make_tests(config)
     end
 
     failed = fill(false, length(config.files))
-    Reactive.stop() # stop Reactive! We be pollin' ourselves!
     io = nothing
     while i <= length(config.files) && isopen(config.rootscreen)
         path = config.files[i]

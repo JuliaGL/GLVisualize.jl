@@ -84,7 +84,7 @@ for path in config.files
         test_module = ExampleRunner._test_include(path, config)
         ExampleRunner.display_msg(test_module, config)
         GLWindow.poll_glfw()
-        GLWindow.poll_reactive()
+        GLWindow.reactive_run_till_now()
         yield()
         render_frame(config.rootscreen)
         swapbuffers(config.rootscreen)

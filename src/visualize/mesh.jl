@@ -1,4 +1,4 @@
-function _default{M <: GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLNormalAttributeMesh
     @gen_defaults! data begin
         main = mesh
         boundingbox = const_lift(GLBoundingBox, mesh)
@@ -11,7 +11,7 @@ function _default{M <: GLNormalAttributeMesh}(mesh::TOrSignal{M}, s::Style, data
     end
 end
 
-function _default{M <: GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLNormalMesh
     @gen_defaults! data begin
         shading = true
         main = mesh
@@ -24,7 +24,7 @@ function _default{M <: GLNormalMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
         )
     end
 end
-function _default{M <: GLNormalVertexcolorMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLNormalVertexcolorMesh
     @gen_defaults! data begin
         shading = true
         main = mesh
@@ -42,7 +42,7 @@ function _default(mesh::GLNormalColorMesh, s::Style, data::Dict)
     _default(GLNormalMesh(mesh), s, data)
 end
 
-function _default{M <: GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dict)
+function _default(main::TOrSignal{M}, ::style"grid", data::Dict) where M <: GLPlainMesh
     @gen_defaults! data begin
         primitive::GLPlainMesh = main
         color = default(RGBA, s, 1)
@@ -54,7 +54,7 @@ function _default{M <: GLPlainMesh}(main::TOrSignal{M}, ::style"grid", data::Dic
     end
 end
 
-function _default{M <: GLPlainMesh}(mesh::TOrSignal{M}, s::Style, data::Dict)
+function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLPlainMesh
     @gen_defaults! data begin
         primitive::GLPlainMesh = mesh
         color = default(RGBA, s, 1)

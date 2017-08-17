@@ -34,7 +34,7 @@ function _default(main::MatTypes{T}, ::Style, data::Dict) where T <: Colorant
         )
     end
 end
-function _default{T <: Colorant}(main::VecTypes{T}, ::Style, data::Dict)
+function _default(main::VecTypes{T}, ::Style, data::Dict) where T <: Colorant
     @gen_defaults! data begin
         image                 = main => (Texture, "image, can be a Texture or Array of colors")
         primitive::GLUVMesh2D = SimpleRectangle{Float32}(0f0, 0f0, length(value(main)), 50f0) => "the 2D mesh the image is mapped to. Can be a 2D Geometry or mesh"
@@ -51,7 +51,7 @@ end
 """
 A matrix of Intensities will result in a contourf kind of plot
 """
-function _default{T <: Intensity}(main::MatTypes{T}, s::Style, data::Dict)
+function _default(main::MatTypes{T}, s::Style, data::Dict) where T <: Intensity
     main_v = value(main)
     @gen_defaults! data begin
         ranges = (0:size(main_v, 1), 0:size(main_v, 2))
@@ -77,7 +77,7 @@ Float matrix with the style distancefield will be interpreted as a distancefield
 A distancefield is describing a shape, with positive values denoting the inside
 of the shape, negative values the outside and 0 the border
 """
-function _default{T <: AbstractFloat}(main::MatTypes{T}, s::style"distancefield", data::Dict)
+function _default(main::MatTypes{T}, s::style"distancefield", data::Dict) where T <: AbstractFloat
     @gen_defaults! data begin
         distancefield = main => Texture
         shape         = DISTANCEFIELD
@@ -95,7 +95,7 @@ export play
 Slice a 3D array along axis `timedim` at time `t`.
 This can be used to treat a 3D array like a video and create an image stream from it.
 """
-function play{T}(array::Array{T, 3}, timedim::Integer, t::Integer)
+function play(array::Array{T, 3}, timedim::Integer, t::Integer) where T
     index = ntuple(dim-> dim == timedim ? t : Colon(), Val{3})
     array[index...]
 end
@@ -106,7 +106,7 @@ end
 Plays a video stream from VideoIO.jl. You need to supply the image `buffer`,
 which will be reused for better performance.
 """
-function play{T}(buffer::Array{T, 2}, video_stream, t)
+function play(buffer::Array{T, 2}, video_stream, t) where T
     eof(video_stream) && seekstart(video_stream)
     w, h = size(buffer)
     buffer = reinterpret(UInt8, buffer, (3, w,h))
@@ -127,7 +127,7 @@ _gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
 
 Turns an Image into a video stream
 """
-function play{T}(img::HasAxesArray{T, 3})
+function play(img::HasAxesArray{T, 3}) where T
     ax = timeaxis(img)
     if timeaxis(img) != nothing
         return const_lift(play, unwrap(img), timedim(img), loop(1:length(ax)))
@@ -138,7 +138,7 @@ end
 """
 Takes a 3D image and decides if it is a volume or an animated Image.
 """
-function _default{T}(img::HasAxesArray{T, 3}, s::Style, data::Dict)
+function _default(img::HasAxesArray{T, 3}, s::Style, data::Dict) where T
     # We could do this as a @traitfn, except that those don't
     # currently mix well with non-trait specialization.
     if timeaxis(img) != nothing
@@ -156,7 +156,7 @@ function _default{T}(img::HasAxesArray{T, 3}, s::Style, data::Dict)
         _default(unwrap(img), s, data)
     end
 end
-function _default{T <: AxisMatrix}(img::TOrSignal{T}, s::Style, data::Dict)
+function _default(img::TOrSignal{T}, s::Style, data::Dict) where T <: AxisMatrix
     @gen_defaults! data begin
         ranges = const_lift(img) do img
             ps = pixelspacing(img)
@@ -173,7 +173,7 @@ end
 """
 Displays 3D array as movie with 3rd dimension as time dimension
 """
-function _default{T}(img::AbstractArray{T, 3}, s::Style, data::Dict)
+function _default(img::AbstractArray{T, 3}, s::Style, data::Dict) where T
     video_signal = const_lift(play, unwrap(img), 3, loop(1:size(img, 3)))
     return _default(video_signal, s, data)
 end
@@ -208,7 +208,7 @@ const VolumeElTypes = Union{Gray, AbstractFloat, Intensity}
 
 const default_style = Style{:default}()
 
-function _default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::Dict)
+function _default(a::VolumeTypes{T}, s::Style{:iso}, data::Dict) where T <: VolumeElTypes
     data = @gen_defaults! data begin
         isovalue  = 0.5f0
         algorithm = IsoValue
@@ -216,7 +216,7 @@ function _default{T <: VolumeElTypes}(a::VolumeTypes{T}, s::Style{:iso}, data::D
      _default(a, default_style, data)
 end
 
-function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict)
+function _default(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict) where T<:VolumeElTypes
     data = @gen_defaults! data begin
         absorption = 1f0
         algorithm  = Absorption
@@ -224,7 +224,7 @@ function _default{T<:VolumeElTypes}(a::VolumeTypes{T}, s::Style{:absorption}, da
     _default(a, default_style, data)
 end
 
-immutable VolumePrerender
+struct VolumePrerender
 end
 function (::VolumePrerender)()
     GLAbstraction.StandardPrerender()()
@@ -232,7 +232,7 @@ function (::VolumePrerender)()
     glCullFace(GL_FRONT)
 end
 
-function _default{T <: VolumeElTypes}(main::VolumeTypes{T}, s::Style, data::Dict)
+function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeElTypes
     modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
     @gen_defaults! data begin
         intensities      = main => Texture

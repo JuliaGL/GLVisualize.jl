@@ -3,7 +3,7 @@ julia 0.6
 StaticArrays 0.6.0
 GeometryTypes 0.4.1
 
-GLWindow 0.6 # 0.6 for fullscreen
+GLWindow 0.7 # 0.7 for reactive_run_till_now
 GLAbstraction 0.5
 ModernGL 0.1.0
 
