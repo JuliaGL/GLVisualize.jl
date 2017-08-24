@@ -5,10 +5,10 @@ function std_checkbox()
     )
 end
 
-function widget{T<:Union{Bool, UInt8}}(tick::Signal{T}, window;
+function widget(tick::Signal{T}, window;
         checkbox = std_checkbox(), area=(50, 50),
         kw_args...
-    )
+    ) where T<:Union{Bool, UInt8}
     icon = map(tick) do t
         checkbox[Bool(t) ? 1 : 2]
     end
@@ -25,9 +25,9 @@ function choice_visual(x; kw_args...)
     visualize(x; kw_args...)
 end
 
-function widget{T <: Enum}(enum::Signal{T}, window;
+function widget(enum::Signal{T}, window;
         kw_args...
-    )
+    ) where T <: Enum
     all_enums = collect(instances(T))
     i0 = findfirst(x-> x==value(enum), all_enums)
     widget(Signal(all_enums), window; kw_args...)
@@ -49,9 +49,9 @@ function myscale!(robj, target)
     set_arg!(robj, :boundingbox, Signal(m*bb))
 end
 
-function widget{T <: AbstractVector}(choices::Signal{T}, window;
+function widget(choices::Signal{T}, window;
         text_scale = 4mm, start_idx = 1, area = (150, 30), kw_args...
-    )
+    ) where T <: AbstractVector
     choices_v = value(choices)
     show_area = SimpleRectangle{Float32}(0, 0, area...)
     vizzes = map(enumerate(choices_v)) do i_c

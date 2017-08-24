@@ -20,9 +20,9 @@ We plot simple Geometric primitives as particles with length one.
 At some point, this should all be appended to the same particle system to increase
 performance.
 """
-function _default{G <: GeometryPrimitive{2}}(
+function _default(
         geometry::TOrSignal{G}, s::Style, data::Dict
-    )
+    ) where G <: GeometryPrimitive{2}
     data[:offset] = Vec2f0(0)
     _default((geometry, const_lift(x-> Point2f0[minimum(x)], geometry)), s, data)
 end
@@ -31,20 +31,20 @@ end
 Vectors of floats are treated as barplots, so they get a HyperRectangle as
 default primitive.
 """
-function _default{T <: AbstractFloat}(main::VecTypes{T}, s::Style, data::Dict)
+function _default(main::VecTypes{T}, s::Style, data::Dict) where T <: AbstractFloat
     _default((centered(HyperRectangle{2, Float32}), main), s, data)
 end
 """
 Matrices of floats are represented as 3D barplots with cubes as primitive
 """
-function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style, data::Dict)
+function _default(main::MatTypes{T}, s::Style, data::Dict) where T <: AbstractFloat
     _default((AABB(Vec3f0(-0.5,-0.5,0), Vec3f0(1.0)), main), s, data)
 end
 """
 Vectors of n-dimensional points get ndimensional rectangles as default
 primitives. (Particles)
 """
-function _default{P <: Point}(main::VecTypes{P}, s::Style, data::Dict)
+function _default(main::VecTypes{P}, s::Style, data::Dict) where P <: Point
     N = length(P)
     @gen_defaults! data begin
         scale = N == 2 ? Vec2f0(30) : Vec3f0(0.03) # for 2D points we assume they're in pixels
@@ -56,14 +56,14 @@ end
 3D matrices of vectors are 3D vector field with a pyramid (arrow) like default
 primitive.
 """
-function _default{T<:Vec}(main::ArrayTypes{T, 3}, s::Style, data::Dict)
+function _default(main::ArrayTypes{T, 3}, s::Style, data::Dict) where T<:Vec
     _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
 end
 """
 2D matrices of vectors are 2D vector field with a an unicode arrow as the default
 primitive.
 """
-function _default{T<:Vec}(main::ArrayTypes{T, 2}, s::Style, data::Dict)
+function _default(main::ArrayTypes{T, 2}, s::Style, data::Dict) where T<:Vec
     _default(('⬆', main), s, data)
 end
 
@@ -71,9 +71,9 @@ end
 Vectors with `Vec` as element type are treated as vectors of rotations.
 The position is assumed to be implicitely on the grid the vector defines (1D,2D,3D grid)
 """
-function _default{P<:AllPrimitives, T<:Vec, N}(
+function _default(
         main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict
-    )
+    ) where {P<:AllPrimitives, T<:Vec, N}
     primitive, rotation_s = main
     rotation_v = value(rotation_s)
     @gen_defaults! data begin
@@ -109,9 +109,9 @@ arrays of floats with any geometry primitive, will be spaced out on a grid defin
 by `ranges` and will use the floating points as the
 height for the primitives (`scale_z`)
 """
-function _default{P<:AbstractGeometry, T<:AbstractFloat, N}(
+function _default(
         main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict
-    )
+    ) where {P<:AbstractGeometry, T<:AbstractFloat, N}
     primitive, heightfield_s = main
     heightfield = value(heightfield_s)
     @gen_defaults! data begin
@@ -136,9 +136,9 @@ will be spaced out on a grid defined
 by `ranges` and will use the floating points as the
 z position for the primitives.
 """
-function _default{P <: Sprites, T <: AbstractFloat, N}(
+function _default(
         main::Tuple{P, ArrayTypes{T,N}}, s::Style, data::Dict
-    )
+    ) where {P <: Sprites, T <: AbstractFloat, N}
     primitive, heightfield_s = main
     heightfield = value(heightfield_s)
     @gen_defaults! data begin
@@ -158,9 +158,9 @@ end
 """
 Sprites primitives with a vector of floats are treated as something barplot like
 """
-function _default{P <: AllPrimitives, T <: AbstractFloat}(
+function _default(
         main::Tuple{P, VecTypes{T}}, s::Style, data::Dict
-    )
+    ) where {P <: AllPrimitives, T <: AbstractFloat}
     primitive, heightfield_s = main
     heightfield = value(heightfield_s)
     @gen_defaults! data begin
@@ -182,15 +182,15 @@ end
 
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to meshparticle
-function _default{Pr <: Primitives3D, P <: Point}(
+function _default(
         p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict
-    )
+    ) where {Pr <: Primitives3D, P <: Point}
     meshparticle(p, s, data)
 end
 
-function _default{Pr <: Primitives3D, G <: Tuple}(
+function _default(
         p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
-    )
+    ) where {Pr <: Primitives3D, G <: Tuple}
     @gen_defaults! data begin
         primitive = p[1]
         position         = nothing => TextureBuffer
@@ -202,9 +202,9 @@ function _default{Pr <: Primitives3D, G <: Tuple}(
     meshparticle(p, s, data)
 end
 
-function _default{Pr <: Primitives3D, G <: Grid}(
+function _default(
         p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
-    )
+    ) where {Pr <: Primitives3D, G <: Grid}
     meshparticle(p, s, data)
 end
 
@@ -270,7 +270,7 @@ end
 This is the most primitive particle system, which uses simple points as primitives.
 This is supposed to be the fastest way of displaying particles!
 """
-_default{T <: Point}(position::VecTypes{T}, s::style"speed", data::Dict) = @gen_defaults! data begin
+_default(position::VecTypes{T}, s::style"speed", data::Dict) where {T <: Point} = @gen_defaults! data begin
     vertex       = position => GLBuffer
     color_map    = nothing  => Vec2f0
     color        = (color_map == nothing ? default(RGBA{Float32}, s) : nothing) => GLBuffer
@@ -288,7 +288,7 @@ end
 returns the Shape for the distancefield algorithm
 """
 primitive_shape(::Char) = DISTANCEFIELD
-primitive_shape{X}(x::X) = primitive_shape(X)
+primitive_shape(x::X) where {X} = primitive_shape(X)
 primitive_shape{T<:Circle}(::Type{T}) = CIRCLE
 primitive_shape{T<:SimpleRectangle}(::Type{T}) = RECTANGLE
 primitive_shape{T<:HyperRectangle{2}}(::Type{T}) = RECTANGLE
@@ -343,9 +343,9 @@ primitive_distancefield(::Char) = get_texture_atlas().images
 #     end
 #     """)
 # end
-function _default{C <: Colorant, P <: Point}(
+function _default(
         p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
-    )
+    ) where {C <: Colorant, P <: Point}
     data[:image] = p[1] # we don't want this to be overwritten by user
     @gen_defaults! data begin
         scale = map(Vec2f0, const_lift(size, p[1]))
@@ -354,9 +354,9 @@ function _default{C <: Colorant, P <: Point}(
     end
     sprites(p, s, data)
 end
-function _default{C <: AbstractFloat, P <: Point}(
+function _default(
         p::Tuple{TOrSignal{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
-    )
+    ) where {C <: AbstractFloat, P <: Point}
     data[:distancefield] = p[1] # we don't want this to be overwritten by user
     @gen_defaults! data begin
         scale = map(Vec2f0, const_lift(size, p[1]))
@@ -366,9 +366,9 @@ function _default{C <: AbstractFloat, P <: Point}(
     sprites(p, s, data)
 end
 
-function _default{C <: Colorant, P <: Point}(
+function _default(
         p::Tuple{Vector{Matrix{C}}, VecTypes{P}}, s::Style, data::Dict
-    )
+    ) where {C <: Colorant, P <: Point}
     images = p[1]
     isempty(images) && error("Can not display empty vector of images as primitive")
     images = sort(images, by=size)
@@ -404,15 +404,15 @@ end
 
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to sprites
-_default{Primitive<:Sprites, P<:Point}(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) =
+_default(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) where {Primitive<:Sprites, P<:Point} =
     sprites(p,s,data)
 
-_default{Primitive<:Sprites, G<:Grid}(p::Tuple{Primitive, G}, s::Style, data::Dict) =
+_default(p::Tuple{Primitive, G}, s::Style, data::Dict) where {Primitive<:Sprites, G<:Grid} =
     sprites(p,s,data)
 
-function _default{Pr <: Sprites, G <: Tuple}(
+function _default(
             p::Tuple{Pr, G}, s::Style, data::Dict
-        )
+        ) where {Pr <: Sprites, G <: Tuple}
         @gen_defaults! data begin
             shape      = primitive_shape(p[1])
             position   = nothing => GLBuffer
@@ -497,7 +497,7 @@ end
 Transforms text into a particle system of sprites, by inferring the
 texture coordinates in the texture atlas, widths and positions of the characters.
 """
-function _default{S <: AbstractString}(main::TOrSignal{S}, s::Style, data::Dict)
+function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractString
     @gen_defaults! data begin
         relative_scale  = 4mm #
         start_position  = Point2f0(0)

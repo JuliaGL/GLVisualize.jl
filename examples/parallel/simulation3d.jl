@@ -44,9 +44,9 @@ function p_empty!()
 end
 
 
-function solve_particles!{N, T}(
+function solve_particles!(
         positions::AbstractVector{Point{N, T}}, s, dt::T = T(0.01)
-    )
+    ) where {N, T}
     P = Point{N, T}
     # since Points are immutable, and we don't have comprehensions yet, there is
     # a map(index _> ..., ::Point) which we can use
@@ -70,7 +70,7 @@ end
 Generic implementation of initialising `N` dimensional points on an `N` dimensional
 Sphere.
 """
-function startpositions{T}(N, radius::T, n)
+function startpositions(N, radius::T, n) where T
     sphere = HyperSphere(Point{N, T}(0), T(radius))
     n = N == 3 ? floor(Int, sqrt(n)) : n # n must be n^2 for 3D Sphere
     decompose(Point{N, T}, sphere, n)

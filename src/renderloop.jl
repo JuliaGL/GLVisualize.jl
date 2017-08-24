@@ -32,7 +32,7 @@ function cleanup()
 end
 
 
-immutable Millimeter
+struct Millimeter
 end
 global const mm = Millimeter()
 
@@ -125,7 +125,7 @@ function fold_bounce(v0, _)
     (val, range, index, direction)
 end
 
-function bounce{T}(range::Range{T}, rate=60)
+function bounce(range::Range{T}, rate=60) where T
     t = get_timer_signal(rate)
     map(first, foldp(fold_bounce, (first(range), range, 1, 1), t))
 end

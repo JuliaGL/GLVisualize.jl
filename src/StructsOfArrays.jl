@@ -2,18 +2,18 @@ module StructsOfArrays
 
 export StructOfArrays, ScalarRepeat
 
-immutable StructOfArrays{T,N,U<:Tuple} <: AbstractArray{T,N}
+struct StructOfArrays{T,N,U<:Tuple} <: AbstractArray{T,N}
     arrays::U
 end
 
 
-type ScalarRepeat{T}
+mutable struct ScalarRepeat{T}
     scalar::T
 end
 Base.ndims(::ScalarRepeat) = 1
 Base.getindex(s::ScalarRepeat, i...) = s.scalar
 #should setindex! really be allowed? It will set the index for the whole row...
-Base.setindex!{T}(s::ScalarRepeat{T}, value, i...) = (s.scalar = T(value))
+Base.setindex!(s::ScalarRepeat{T}, value, i...) where {T} = (s.scalar = T(value))
 Base.eltype{T}(::ScalarRepeat{T}) = T
 
 Base.start(::ScalarRepeat) = 1
@@ -85,7 +85,7 @@ Base.convert{T,S,N}(::Type{StructOfArrays{T}}, A::AbstractArray{S,N}) =
 Base.convert{T,N}(::Type{StructOfArrays}, A::AbstractArray{T,N}) =
     convert(StructOfArrays{T,N}, A)
 
-function Base.size{T, N, U}(A::StructOfArrays{T, N, U})
+function Base.size(A::StructOfArrays{T, N, U}) where {T, N, U}
     for elem in A.arrays
         if isa(elem, AbstractArray)
             return size(elem)
@@ -104,7 +104,7 @@ end
     )
 end
 
-function _getindex{T}(x::T, i)
+function _getindex(x::T, i) where T
     is_tuple_struct(T) ? x[i] : getfield(x, i)
 end
 @generated function Base.setindex!{T}(A::StructOfArrays{T}, x, i::Integer...)

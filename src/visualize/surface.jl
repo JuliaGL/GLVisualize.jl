@@ -8,7 +8,7 @@ function surfboundingbox(grid, position_z)
     map(AABB{Float32}, arr)
 end
 
-function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatTypes{T}}, s::Style{:surface}, data::Dict)
+function _default(main::Tuple{MatTypes{T}, MatTypes{T}, MatTypes{T}}, s::Style{:surface}, data::Dict) where T <: AbstractFloat
     @gen_defaults! data begin
         position_x = main[1] => (Texture, "x position, must be an `Matrix{Float}`")
         position_y = main[2] => (Texture, "y position, must be an `Matrix{Float}`")
@@ -19,7 +19,7 @@ function _default{T <: AbstractFloat}(main::Tuple{MatTypes{T}, MatTypes{T}, MatT
     surface(position_z, s, data)
 end
 
-function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, data::Dict)
+function _default(main::MatTypes{T}, s::Style{:surface}, data::Dict) where T <: AbstractFloat
     @gen_defaults! data begin
         ranges = ((-1f0, 1f0), (-1f0,1f0)) => "x, and y position given as `(start, endvalue)` or any `Range`"
     end
@@ -27,7 +27,7 @@ function _default{T <: AbstractFloat}(main::MatTypes{T}, s::Style{:surface}, dat
     _default((Grid(value(main), value(ranges)), main), s, data)
 end
 
-function _default{G <: Grid{2}, T <: AbstractFloat}(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict)
+function _default(main::Tuple{G, MatTypes{T}}, s::Style{:surface}, data::Dict) where {G <: Grid{2}, T <: AbstractFloat}
     xrange = main[1].dims[1];yrange = main[1].dims[2]
     xscale = (maximum(xrange) - minimum(xrange)) / (length(xrange)-1)
     yscale = (maximum(yrange) - minimum(yrange)) / (length(yrange)-1)
@@ -133,9 +133,9 @@ function grid_pos(grid::Grid{3})
 end
 
 
-function _position_calc{T<:AbstractFloat}(
+function _position_calc(
         grid::Grid{2}, position_z::MatTypes{T}, target::Type{Texture}
-    )
+    ) where T<:AbstractFloat
     """
 
     int index1D = index + offseti.x + offseti.y * position.dims.x + (index/(position.dims.x-1));
@@ -145,9 +145,9 @@ function _position_calc{T<:AbstractFloat}(
     """
 end
 
-function _position_calc{T<:AbstractFloat}(
+function _position_calc(
         position_x::MatTypes{T}, position_y::MatTypes{T}, position_z::MatTypes{T}, target::Type{Texture}
-    )
+    ) where T<:AbstractFloat
 """
     int index1D = index + offseti.x + offseti.y * dims.x + (index/(dims.x-1));
     ivec2 index2D = ind2sub(dims, index1D);
@@ -159,43 +159,43 @@ function _position_calc{T<:AbstractFloat}(
 """
 end
 
-function _position_calc{T <: AbstractFloat}(
+function _position_calc(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{TextureBuffer}
-    )
+    ) where T <: AbstractFloat
     "pos = vec3(texelFetch(position_x, index).x, position_y, position_z);"
 end
-function _position_calc{T <: AbstractFloat}(
+function _position_calc(
         position_x::VecTypes{T}, position_y::T, position_z::T, target::Type{GLBuffer}
-    )
+    ) where T <: AbstractFloat
     "pos = vec3(position_x, position_y, position_z);"
 end
-function _position_calc{T <: StaticVector}(
+function _position_calc(
         position_xyz::VecTypes{T}, target::Type{TextureBuffer}
-    )
+    ) where T <: StaticVector
     "pos = texelFetch(position, index).xyz;"
 end
-function _position_calc{T <: StaticVector}(
+function _position_calc(
         position_xyz::VecTypes{T}, target::Type{GLBuffer}
-    )
+    ) where T <: StaticVector
     len = length(T)
     filler = join(ntuple(x->0, 3-len), ", ")
     needs_comma = len != 3 ? ", " : ""
     "pos = vec3(position $needs_comma $filler);"
 end
-function _position_calc{T<:AbstractFloat}(
+function _position_calc(
         position_x::VecTypes{T}, position_y::VecTypes{T}, position_z::VecTypes{T},
         target::Type{TextureBuffer}
-    )
+    ) where T<:AbstractFloat
     "pos = vec3(
         texelFetch(position_x, index).x,
         texelFetch(position_y, index).x,
         texelFetch(position_z, index).x
     );"
 end
-function _position_calc{T<:AbstractFloat}(
+function _position_calc(
         position_x::VecTypes{T}, position_y::VecTypes{T}, position_z::VecTypes{T},
         target::Type{GLBuffer}
-    )
+    ) where T<:AbstractFloat
     "pos = vec3(
         position_x,
         position_y,
@@ -217,9 +217,9 @@ function _position_calc(
     pos = vec3($(grid_pos(position)), 0);
     "
 end
-function _position_calc{T}(
+function _position_calc(
         position::Grid{2}, ::VecTypes{T}, target::Type{GLBuffer}
-    )
+    ) where T
     "
     ivec2 index2D = ind2sub(position.dims, index);
     pos = vec3($(grid_pos(position)), position_z);
