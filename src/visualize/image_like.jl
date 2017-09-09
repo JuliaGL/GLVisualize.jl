@@ -128,9 +128,9 @@ _gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
 Turns an Image into a video stream
 """
 function play(img::HasAxesArray{T, 3}) where T
-    ax = timeaxis(img)
-    if timeaxis(img) != nothing
-        return const_lift(play, unwrap(img), timedim(img), loop(1:length(ax)))
+    ax = ImageAxes.timeaxis(img)
+    if ImageAxes.timeaxis(img) != nothing
+        return const_lift(play, unwrap(img), ImageAxes.timedim(img), loop(1:length(ax)))
     end
     error("Image has no time axis: axes(img) = $(axes(img))")
 end
@@ -141,13 +141,13 @@ Takes a 3D image and decides if it is a volume or an animated Image.
 function _default(img::HasAxesArray{T, 3}, s::Style, data::Dict) where T
     # We could do this as a @traitfn, except that those don't
     # currently mix well with non-trait specialization.
-    if timeaxis(img) != nothing
+    if ImageAxes.timeaxis(img) != nothing
         data[:spatialorder] = "yx"
-        timedim = timedim(img)
-        video_signal = const_lift(play, unwrap(img), timedim, loop(1:size(img, timedim)))
+        td = ImageAxes.timedim(img)
+        video_signal = const_lift(play, unwrap(img), td, loop(1:size(img, timedim)))
         return _default(video_signal, s, data)
     else
-        ps = pixelspacing(img)
+        ps = ImageAxes.pixelspacing(img)
         spacing = Vec3f0(map(x-> x / maximum(ps), ps))
         pdims   = Vec3f0(map(length, indices(img)))
         dims    = pdims .* spacing
@@ -159,7 +159,7 @@ end
 function _default(img::TOrSignal{T}, s::Style, data::Dict) where T <: AxisMatrix
     @gen_defaults! data begin
         ranges = const_lift(img) do img
-            ps = pixelspacing(img)
+            ps = ImageAxes.pixelspacing(img)
             spacing = Vec2f0(map(x-> x / maximum(ps), ps))
             pdims   = Vec2f0(map(length, indices(img)))
             dims    = pdims .* spacing
