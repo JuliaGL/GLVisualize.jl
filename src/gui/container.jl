@@ -9,9 +9,9 @@ end
 makesignal2(v) = Signal(v)
 makesignal2(s::Signal) = s
 makesignal2(v::GPUArray) = v
-keytype{K, T}(::Dict{K, T}) = K
-keytype{K, T}(::AbstractVector{Pair{K, T}}) = K
-keytype{K}(::AbstractVector{Pair{K}}) = K
+keytype(::Dict{K, T}) where {K, T} = K
+keytype(::AbstractVector{Pair{K, T}}) where {K, T} = K
+keytype(::AbstractVector{Pair{K}}) where {K} = K
 keytype(x) = Any
 
 

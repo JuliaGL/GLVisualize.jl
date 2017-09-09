@@ -119,8 +119,8 @@ unwrap(img::Images.ImageMeta) = unwrap(data(img))
 unwrap(img::AxisArrays.AxisArray) = unwrap(img.data)
 unwrap(img::AbstractArray) = img
 
-GLAbstraction.gl_convert{T}(::Type{T}, img::AbstractArray) = _gl_convert(T, unwrap(img))
-_gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
+GLAbstraction.gl_convert(::Type{T}, img::AbstractArray) where {T} = _gl_convert(T, unwrap(img))
+_gl_convert(::Type{T}, img::Array) where {T} = gl_convert(T, img)
 
 """
     play(img)

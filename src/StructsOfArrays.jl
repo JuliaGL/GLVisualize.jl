@@ -14,7 +14,7 @@ Base.ndims(::ScalarRepeat) = 1
 Base.getindex(s::ScalarRepeat, i...) = s.scalar
 #should setindex! really be allowed? It will set the index for the whole row...
 Base.setindex!(s::ScalarRepeat{T}, value, i...) where {T} = (s.scalar = T(value))
-Base.eltype{T}(::ScalarRepeat{T}) = T
+Base.eltype(::ScalarRepeat{T}) where {T} = T
 
 Base.start(::ScalarRepeat) = 1
 Base.next(sr::ScalarRepeat, i) = sr.scalar, i+1
@@ -23,12 +23,12 @@ Base.done(sr::ScalarRepeat, i) = false
 
 # since this is used in hot loops, and T.types[.] doesn't play well with compiler
 # this needs to be a generated function
-@generated function is_tuple_struct{T}(::Type{T})
+@generated function is_tuple_struct(::Type{T}) where T
     is_ts = length(T.types) == 1 && T.types[1] <: Tuple
     :($is_ts)
 end
-struct_eltypes{T}(::T) = struct_eltypes(T)
-function struct_eltypes{T}(::Type{T})
+struct_eltypes(::T) where {T} = struct_eltypes(T)
+function struct_eltypes(::Type{T}) where T
     if is_tuple_struct(T) #special case tuple types (E.g. FixedSizeVectors)
         return eltypes = T.types[1].parameters
     else
@@ -39,7 +39,7 @@ end
 make_iterable(x::AbstractArray) = x
 make_iterable(x) = ScalarRepeat(x)
 
-@generated function StructOfArrays{T}(::Type{T}, dim1::Integer, rest::Integer...)
+@generated function StructOfArrays(::Type{T}, dim1::Integer, rest::Integer...) where T
     (!isleaftype(T) || T.mutable) && return :(throw(ArgumentError("can only create an StructOfArrays of leaf type immutables")))
     isempty(T.types) && return :(throw(ArgumentError("cannot create an StructOfArrays of an empty or bitstype")))
     dims = (dim1, rest...)
@@ -70,7 +70,7 @@ end
 
 Base.IndexStyle(::Type{<:StructOfArrays}) = IndexLinear()
 
-@generated function Base.similar{T}(A::StructOfArrays, ::Type{T}, dims::Dims)
+@generated function Base.similar(A::StructOfArrays, ::Type{T}, dims::Dims) where T
     if isbits(T) && length(T.types) > 1
         :(StructOfArrays(T, dims))
     else
@@ -78,11 +78,11 @@ Base.IndexStyle(::Type{<:StructOfArrays}) = IndexLinear()
     end
 end
 
-Base.convert{T,S,N}(::Type{StructOfArrays{T,N}}, A::AbstractArray{S,N}) =
+Base.convert(::Type{StructOfArrays{T,N}}, A::AbstractArray{S,N}) where {T,S,N} =
     copy!(StructOfArrays(T, size(A)), A)
-Base.convert{T,S,N}(::Type{StructOfArrays{T}}, A::AbstractArray{S,N}) =
+Base.convert(::Type{StructOfArrays{T}}, A::AbstractArray{S,N}) where {T,S,N} =
     convert(StructOfArrays{T,N}, A)
-Base.convert{T,N}(::Type{StructOfArrays}, A::AbstractArray{T,N}) =
+Base.convert(::Type{StructOfArrays}, A::AbstractArray{T,N}) where {T,N} =
     convert(StructOfArrays{T,N}, A)
 
 function Base.size(A::StructOfArrays{T, N, U}) where {T, N, U}
@@ -97,7 +97,7 @@ function Base.size(A::StructOfArrays{T, N, U}) where {T, N, U}
     end
 end
 
-@generated function Base.getindex{T}(A::StructOfArrays{T}, i::Integer...)
+@generated function Base.getindex(A::StructOfArrays{T}, i::Integer...) where T
     n = length(struct_eltypes(T))
     Expr(:block, Expr(:meta, :inline),
          :($T($([:(A.arrays[$j][i...]) for j = 1:n]...)))
@@ -107,7 +107,7 @@ end
 function _getindex(x::T, i) where T
     is_tuple_struct(T) ? x[i] : getfield(x, i)
 end
-@generated function Base.setindex!{T}(A::StructOfArrays{T}, x, i::Integer...)
+@generated function Base.setindex!(A::StructOfArrays{T}, x, i::Integer...) where T
     n = length(struct_eltypes(T))
     quote
         $(Expr(:meta, :inline))

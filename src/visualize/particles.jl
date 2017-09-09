@@ -209,7 +209,7 @@ function _default(
 end
 
 # make conversion of mesh signals work. TODO move to GeometryTypes?
-function Base.convert{T<:GeometryTypes.HomogenousMesh}(::Type{T}, mesh::Signal)
+function Base.convert(::Type{T}, mesh::Signal) where T<:GeometryTypes.HomogenousMesh
     map(T, mesh)
 end
 """
@@ -289,9 +289,9 @@ returns the Shape for the distancefield algorithm
 """
 primitive_shape(::Char) = DISTANCEFIELD
 primitive_shape(x::X) where {X} = primitive_shape(X)
-primitive_shape{T<:Circle}(::Type{T}) = CIRCLE
-primitive_shape{T<:SimpleRectangle}(::Type{T}) = RECTANGLE
-primitive_shape{T<:HyperRectangle{2}}(::Type{T}) = RECTANGLE
+primitive_shape(::Type{T}) where {T<:Circle} = CIRCLE
+primitive_shape(::Type{T}) where {T<:SimpleRectangle} = RECTANGLE
+primitive_shape(::Type{T}) where {T<:HyperRectangle{2}} = RECTANGLE
 primitive_shape(x::Shape) = x
 
 """

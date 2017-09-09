@@ -20,7 +20,7 @@ function num2glstring(x, numberwidth)
     Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
 end
 
-StaticArrays.FixedSizeArrays.unit{T <: Real}(::Type{T}, _) = one(T)
+StaticArrays.FixedSizeArrays.unit(::Type{T}, _) where {T <: Real} = one(T)
 
 
 function add_mouse_drags(t0, mouse_down1, mouseposition1, objectid, id_tolookfor, glyph_width)
@@ -50,13 +50,13 @@ function widget(x::T, inputs, numberwidth=5;kw_args...) where T <: Union{StaticV
     widget(typemin(T):eps(T):typemax(T), inputs, numberwidth; start_value=x, kw_args...)
 end
 
-function range_default{T<:StaticVector}(::Type{T})
+function range_default(::Type{T}) where T<:StaticVector
     range_default(eltype(T))
 end
-function range_default{T<:AbstractFloat}(::Type{T})
+function range_default(::Type{T}) where T<:AbstractFloat
     T(-100):T(0.01):T(100)
 end
-function range_default{T<:Integer}(::Type{T})
+function range_default(::Type{T}) where T<:Integer
     T(-100):T(1):T(100)
 end
 
