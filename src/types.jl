@@ -5,7 +5,7 @@
 struct Grid{N, T <: Range}
     dims::NTuple{N, T}
 end
-Base.ndims{N,T}(::Grid{N,T}) = N
+Base.ndims(::Grid{N,T}) where {N,T} = N
 
 Grid(ranges::Range...) = Grid(ranges)
 function Grid(a::Array{T, N}) where {N, T}
@@ -84,7 +84,7 @@ Base.ndims(::ScalarRepeat) = 1
 Base.getindex(s::ScalarRepeat, i...) = s.scalar
 #should setindex! really be allowed? It will set the index for the whole row...
 Base.setindex!(s::ScalarRepeat{T}, value, i...) where {T} = (s.scalar = T(value))
-Base.eltype{T}(::ScalarRepeat{T}) = T
+Base.eltype(::ScalarRepeat{T}) where {T} = T
 
 Base.start(::ScalarRepeat) = 1
 Base.next(sr::ScalarRepeat, i) = sr.scalar, i+1
@@ -132,28 +132,28 @@ end
 
 
 
-function ArrayOrStructOfArray{T}(::Type{T}, array::Void, a, elements...)
+function ArrayOrStructOfArray(::Type{T}, array::Void, a, elements...) where T
     StructOfArrays(T, a, elements...)
 end
-function ArrayOrStructOfArray{T}(::Type{T}, array::StaticVector, a, elements...)
+function ArrayOrStructOfArray(::Type{T}, array::StaticVector, a, elements...) where T
     StructOfArrays(T, a, elements...)
 end
-function ArrayOrStructOfArray{T}(::Type{T}, scalar::StaticVector, a::Void, elements::Void...)
+function ArrayOrStructOfArray(::Type{T}, scalar::StaticVector, a::Void, elements::Void...) where T
     ScalarRepeat(transform_convert(T, scalar))
 end
-function ArrayOrStructOfArray{T1,T2}(::Type{T1}, array::Array{T2}, a::Void, elements::Void...)
+function ArrayOrStructOfArray(::Type{T1}, array::Array{T2}, a::Void, elements::Void...) where {T1,T2}
     array
 end
-function ArrayOrStructOfArray{T1<:Point}(::Type{T1}, grid::Grid, x::Void, y::Void, z::Array)
+function ArrayOrStructOfArray(::Type{T1}, grid::Grid, x::Void, y::Void, z::Array) where T1<:Point
     GridZRepeat(grid, z)
 end
-function ArrayOrStructOfArray{T1<:Point}(::Type{T1}, array::Grid, a::Void, elements::Void...)
+function ArrayOrStructOfArray(::Type{T1}, array::Grid, a::Void, elements::Void...) where T1<:Point
     array
 end
-function ArrayOrStructOfArray{T}(::Type{T}, scalar::T)
+function ArrayOrStructOfArray(::Type{T}, scalar::T) where T
     ScalarRepeat(scalar)
 end
-function ArrayOrStructOfArray{T}(::Type{T}, array::Array)
+function ArrayOrStructOfArray(::Type{T}, array::Array) where T
     array
 end
 
@@ -214,8 +214,8 @@ end
 struct Intensity{T <: AbstractFloat} <: FieldVector{1, T}
     i::T
 end
-@inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Tuple) = I(i...)
-@inline (I::Type{Intensity{T}}){T <: AbstractFloat}(i::Intensity) = I(i.i)
+@inline (I::Type{Intensity{T}})(i::Tuple) where {T <: AbstractFloat} = I(i...)
+@inline (I::Type{Intensity{T}})(i::Intensity) where {T <: AbstractFloat} = I(i.i)
 Intensity{T}(x::Color{Tc, 1}) where {T <: AbstractFloat, Tc} = Intensity{T}(gray(x))
 
 const GLIntensity = Intensity{Float32}
