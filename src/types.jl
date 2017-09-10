@@ -1,5 +1,5 @@
 @enum Shape CIRCLE RECTANGLE ROUNDED_RECTANGLE DISTANCEFIELD TRIANGLE
-@enum RaymarchAlgorithm IsoValue Absorption MaximumIntensityProjection
+@enum RaymarchAlgorithm IsoValue Absorption MaximumIntensityProjection AbsorptionRGBA IndexedAbsorptionRGBA
 @enum CubeSides TOP BOTTOM FRONT BACK RIGHT LEFT
 
 struct Grid{N, T <: Range}

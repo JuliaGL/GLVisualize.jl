@@ -6,7 +6,7 @@ struct Nothing{ //Nothing type, to encode if some variable doesn't contain any d
 in vec3 frag_vert;
 in vec3 frag_uv;
 
-uniform sampler3D intensities;
+{{volumedata_type}} volumedata;
 
 uniform vec3 light_position = vec3(1.0, 1.0, 3.0);
 uniform vec3 light_intensity = vec3(15.0);
@@ -20,6 +20,7 @@ uniform vec3 eyeposition;
 
 uniform vec3 ambient = vec3(0.15, 0.15, 0.20);
 
+uniform mat4 model;
 uniform mat4 modelinv;
 uniform int algorithm;
 uniform float isovalue;
@@ -61,26 +62,45 @@ vec4 color_lookup(float intensity, samplerBuffer color_ramp, vec2 norm, Nothing 
     return texelFetch(color_ramp, int(_normalize(intensity, norm.x, norm.y)*textureSize(color_ramp)));
 }
 
+vec4 color_lookup(float intensity, samplerBuffer color_ramp, Nothing norm, Nothing color)
+{
+    return vec4(0);  // stub method
+}
+
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm, Nothing color)
 {
     return texture(color_ramp, _normalize(intensity, norm.x, norm.y));
 }
 
+vec4 color_lookup(samplerBuffer colormap, int index)
+{
+    return texelFetch(colormap, index);
+}
+
+vec4 color_lookup(sampler1D colormap, int index)
+{
+    return texelFetch(colormap, index, 0);
+}
+
+vec4 color_lookup(Nothing colormap, int index)
+{
+    return vec4(0);
+}
 
 float GetDensity(vec3 pos)
 {
-    return texture(intensities, pos).x;
+    return texture(volumedata, pos).x;
 }
 
 vec3 gennormal(vec3 uvw, vec3 gradient_delta)
 {
     vec3 a,b;
-    a.x = texture(intensities, uvw - vec3(gradient_delta.x,0.0,0.0) ).r;
-    b.x = texture(intensities, uvw + vec3(gradient_delta.x,0.0,0.0) ).r;
-    a.y = texture(intensities, uvw - vec3(0.0,gradient_delta.y,0.0) ).r;
-    b.y = texture(intensities, uvw + vec3(0.0,gradient_delta.y,0.0) ).r;
-    a.z = texture(intensities, uvw - vec3(0.0,0.0,gradient_delta.z) ).r;
-    b.z = texture(intensities, uvw + vec3(0.0,0.0,gradient_delta.z) ).r;
+    a.x = texture(volumedata, uvw - vec3(gradient_delta.x,0.0,0.0) ).r;
+    b.x = texture(volumedata, uvw + vec3(gradient_delta.x,0.0,0.0) ).r;
+    a.y = texture(volumedata, uvw - vec3(0.0,gradient_delta.y,0.0) ).r;
+    b.y = texture(volumedata, uvw + vec3(0.0,gradient_delta.y,0.0) ).r;
+    a.z = texture(volumedata, uvw - vec3(0.0,0.0,gradient_delta.z) ).r;
+    b.z = texture(volumedata, uvw + vec3(0.0,0.0,gradient_delta.z) ).r;
     return normalize(a - b);
 }
 
@@ -123,7 +143,7 @@ vec4 volume(vec3 front, vec3 dir, float stepsize)
     pos += stepsize_dir;//apply first, to padd
     for (i; i < num_samples && (!is_outside(pos) || i < 3); ++i, pos += stepsize_dir) {
 
-        float density = texture(intensities, pos).x * density_factor;
+        float density = texture(volumedata, pos).x * density_factor;
         if (density <= 0.0)
             continue;
 
@@ -136,7 +156,7 @@ vec4 volume(vec3 front, vec3 dir, float stepsize)
         vec3 lpos = pos + lightDir;
         int s = 0;
         for (s; s < num_ligth_samples; ++s) {
-            float ld = texture(intensities, lpos).x;
+            float ld = texture(volumedata, lpos).x;
             Tl *= 1.0-absorption*stepsize*ld;
             if (Tl <= 0.01)
             lpos += lightDir;
@@ -147,6 +167,57 @@ vec4 volume(vec3 front, vec3 dir, float stepsize)
     }
     return vec4(Lo, 1-T);
 }
+
+vec4 volumergba(vec3 front, vec3 dir, float stepsize)
+{
+    vec3  stepsize_dir = normalize(dir) * stepsize;
+    // The per-voxel alpha channel is specified in units of opacity/length.
+    // If our voxels are not isotropic, then the distance that we trace through
+    // depends on the direction.
+    float stepsize_world = length(model*vec4(stepsize_dir, 0));
+    vec3  pos = front;
+    float T = 1.0;
+    vec3 Lo = vec3(0.0);
+    int i = 0;
+    pos += stepsize_dir;//apply first, to padd
+    for (i; i < num_samples && (!is_outside(pos) || i < 3); ++i, pos += stepsize_dir) {
+
+        vec4 density = texture(volumedata, pos);
+        float opacity = stepsize_world*density.a;
+        T *= 1.0-opacity;
+        if (T <= 0.01)
+            break;
+
+        Lo += (T*opacity)*density.rgb;
+    }
+    return vec4(Lo, 1-T);
+}
+
+vec4 volumeindexedrgba(vec3 front, vec3 dir, float stepsize)
+{
+    vec3  stepsize_dir = normalize(dir) * stepsize;
+    // The per-voxel alpha channel is specified in units of opacity/length.
+    // If our voxels are not isotropic, then the distance that we trace through
+    // depends on the direction.
+    float stepsize_world = length(model*vec4(stepsize_dir, 0));
+    vec3  pos = front;
+    float T = 1.0;
+    vec3 Lo = vec3(0.0);
+    int i = 0;
+    pos += stepsize_dir;//apply first, to padd
+    for (i; i < num_samples && (!is_outside(pos) || i < 3); ++i, pos += stepsize_dir) {
+
+        int index = int(texture(volumedata, pos).x) - 1;
+        vec4 density = color_lookup(color_map, index);
+        float opacity = stepsize_world*density.a;
+        Lo += (T*opacity)*density.rgb;
+        T *= 1.0-opacity;
+        if (T <= 0.01)
+            break;
+    }
+    return vec4(Lo, 1-T);
+}
+
 vec4 isosurface(vec3 front, vec3 dir, float stepsize)
 {
     vec3  stepsize_dir  = dir * stepsize;
@@ -159,7 +230,7 @@ vec4 isosurface(vec3 front, vec3 dir, float stepsize)
 
     for (i; i < num_samples && (!is_outside(pos) || i == 1); ++i, pos += stepsize_dir)
     {
-        float density = texture(intensities, pos).x;
+        float density = texture(volumedata, pos).x;
         if (density <= 0.0)
             continue;
         if(abs(density - isovalue) < isorange)
@@ -185,7 +256,7 @@ vec4 mip(vec3 front, vec3 dir, float stepsize)
     float maximum = 0.0;
     for (i; i < num_samples && !is_outside(pos); ++i, pos += stepsize_dir)
     {
-        float density = texture(intensities, pos).x;
+        float density = texture(volumedata, pos).x;
         if(maximum < density)
             maximum = density;
     }
@@ -205,8 +276,12 @@ void main()
         color = isosurface(frag_uv, dir, step_size);
     else if(algorithm == 1)
         color = volume(frag_uv, dir, step_size);
-    else
+    else if(algorithm == 2)
         color = mip(frag_uv, dir, step_size);
+    else if(algorithm == 3)
+        color = volumergba(frag_uv, dir, step_size);
+    else
+        color = volumeindexedrgba(frag_uv, dir, step_size);
 
     write2framebuffer(color, uvec2(objectid, 0));
 }
