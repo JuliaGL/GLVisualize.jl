@@ -224,6 +224,13 @@ function _default(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict) where T<
     _default(a, default_style, data)
 end
 
+function _default(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict) where T<:RGBA
+    data = @gen_defaults! data begin
+        algorithm  = AbsorptionRGBA
+    end
+    _default(a, default_style, data)
+end
+
 struct VolumePrerender
 end
 function (::VolumePrerender)()
@@ -235,7 +242,7 @@ end
 function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeElTypes
     modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
     @gen_defaults! data begin
-        intensities      = main => Texture
+        volumedata       = main => Texture
         dimensions       = Vec3f0(1)
         hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
         light_position   = Vec3f0(0.25, 1.0, 3.0)
@@ -251,6 +258,55 @@ function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeE
         absorption       = 1f0
         isovalue         = 0.5f0
         isorange         = 0.01f0
+        shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
+        prerender        = VolumePrerender()
+        postrender       = () -> begin
+            glDisable(GL_CULL_FACE)
+        end
+    end
+end
+
+function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: RGBA
+    model = const_lift(identity, get(data, :model, eye(Mat4f0)))
+    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
+    @gen_defaults! data begin
+        volumedata       = main => Texture
+        dimensions       = Vec3f0(1)
+        hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
+        model            = model
+        modelinv         = modelinv
+
+        # These don't do anything but are needed for type specification in the frag shader
+        color_map        = nothing
+        color_norm       = nothing
+        color            = color_map == nothing ? default(RGBA, s) : nothing
+
+        algorithm        = AbsorptionRGBA
+        boundingbox      = hull
+        shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
+        prerender        = VolumePrerender()
+        postrender       = () -> begin
+            glDisable(GL_CULL_FACE)
+        end
+    end
+end
+
+function _default(main::IndirectArray{T}, s::Style, data::Dict) where T <: RGBA
+    model = const_lift(identity, get(data, :model, eye(Mat4f0)))
+    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
+    @gen_defaults! data begin
+        volumedata       = main.index => Texture
+        dimensions       = Vec3f0(1)
+        hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
+        model            = model
+        modelinv         = modelinv
+
+        color_map        = main.values => TextureBuffer
+        color_norm       = nothing
+        color            = nothing
+
+        algorithm        = IndexedAbsorptionRGBA
+        boundingbox      = hull
         shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
         prerender        = VolumePrerender()
         postrender       = () -> begin

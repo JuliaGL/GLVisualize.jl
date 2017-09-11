@@ -28,3 +28,4 @@ ColorVectorSpace
 Images 0.9.0 # first version working on 0.6
 AxisArrays
 ImageAxes
+IndirectArrays
