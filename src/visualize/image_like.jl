@@ -231,6 +231,8 @@ function _default(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict) where T<
     _default(a, default_style, data)
 end
 
+modeldefault(dimensions) = SMatrix{4,4,Float32}([eye(3,3) -dimensions/2; zeros(1,3) 1])
+
 struct VolumePrerender
 end
 function (::VolumePrerender)()
@@ -240,10 +242,13 @@ function (::VolumePrerender)()
 end
 
 function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeElTypes
-    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
+    @gen_defaults! data begin
+        dimensions       = Vec3f0(1)
+    end
+    modeldflt = modeldefault(data[:dimensions])
+    modelinv = const_lift(inv, get(data, :model, modeldflt))
     @gen_defaults! data begin
         volumedata       = main => Texture
-        dimensions       = Vec3f0(1)
         hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
         light_position   = Vec3f0(0.25, 1.0, 3.0)
         light_intensity  = Vec3f0(15.0)
@@ -267,11 +272,14 @@ function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeE
 end
 
 function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: RGBA
-    model = const_lift(identity, get(data, :model, eye(Mat4f0)))
-    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
+    @gen_defaults! data begin
+        dimensions       = Vec3f0(1)
+    end
+    modeldflt = modeldefault(data[:dimensions])
+    model = const_lift(identity, get(data, :model, modeldflt))
+    modelinv = const_lift(inv, get(data, :model, modeldflt))
     @gen_defaults! data begin
         volumedata       = main => Texture
-        dimensions       = Vec3f0(1)
         hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
         model            = model
         modelinv         = modelinv
@@ -292,11 +300,14 @@ function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: RGBA
 end
 
 function _default(main::IndirectArray{T}, s::Style, data::Dict) where T <: RGBA
-    model = const_lift(identity, get(data, :model, eye(Mat4f0)))
-    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
+    @gen_defaults! data begin
+        dimensions       = Vec3f0(1)
+    end
+    modeldflt = modeldefault(data[:dimensions])
+    model = const_lift(identity, get(data, :model, modeldflt))
+    modelinv = const_lift(inv, get(data, :model, modeldflt))
     @gen_defaults! data begin
         volumedata       = main.index => Texture
-        dimensions       = Vec3f0(1)
         hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
         model            = model
         modelinv         = modelinv
