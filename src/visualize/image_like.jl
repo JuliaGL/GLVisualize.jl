@@ -119,8 +119,8 @@ unwrap(img::Images.ImageMeta) = unwrap(data(img))
 unwrap(img::AxisArrays.AxisArray) = unwrap(img.data)
 unwrap(img::AbstractArray) = img
 
-GLAbstraction.gl_convert{T}(::Type{T}, img::AbstractArray) = _gl_convert(T, unwrap(img))
-_gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
+GLAbstraction.gl_convert(::Type{T}, img::AbstractArray) where {T} = _gl_convert(T, unwrap(img))
+_gl_convert(::Type{T}, img::Array) where {T} = gl_convert(T, img)
 
 """
     play(img)
@@ -128,9 +128,9 @@ _gl_convert{T}(::Type{T}, img::Array) = gl_convert(T, img)
 Turns an Image into a video stream
 """
 function play(img::HasAxesArray{T, 3}) where T
-    ax = timeaxis(img)
-    if timeaxis(img) != nothing
-        return const_lift(play, unwrap(img), timedim(img), loop(1:length(ax)))
+    ax = ImageAxes.timeaxis(img)
+    if ImageAxes.timeaxis(img) != nothing
+        return const_lift(play, unwrap(img), ImageAxes.timedim(img), loop(1:length(ax)))
     end
     error("Image has no time axis: axes(img) = $(axes(img))")
 end
@@ -141,13 +141,13 @@ Takes a 3D image and decides if it is a volume or an animated Image.
 function _default(img::HasAxesArray{T, 3}, s::Style, data::Dict) where T
     # We could do this as a @traitfn, except that those don't
     # currently mix well with non-trait specialization.
-    if timeaxis(img) != nothing
+    if ImageAxes.timeaxis(img) != nothing
         data[:spatialorder] = "yx"
-        timedim = timedim(img)
-        video_signal = const_lift(play, unwrap(img), timedim, loop(1:size(img, timedim)))
+        td = ImageAxes.timedim(img)
+        video_signal = const_lift(play, unwrap(img), td, loop(1:size(img, timedim)))
         return _default(video_signal, s, data)
     else
-        ps = pixelspacing(img)
+        ps = ImageAxes.pixelspacing(img)
         spacing = Vec3f0(map(x-> x / maximum(ps), ps))
         pdims   = Vec3f0(map(length, indices(img)))
         dims    = pdims .* spacing
@@ -159,7 +159,7 @@ end
 function _default(img::TOrSignal{T}, s::Style, data::Dict) where T <: AxisMatrix
     @gen_defaults! data begin
         ranges = const_lift(img) do img
-            ps = pixelspacing(img)
+            ps = ImageAxes.pixelspacing(img)
             spacing = Vec2f0(map(x-> x / maximum(ps), ps))
             pdims   = Vec2f0(map(length, indices(img)))
             dims    = pdims .* spacing
@@ -224,6 +224,15 @@ function _default(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict) where T<
     _default(a, default_style, data)
 end
 
+function _default(a::VolumeTypes{T}, s::Style{:absorption}, data::Dict) where T<:RGBA
+    data = @gen_defaults! data begin
+        algorithm  = AbsorptionRGBA
+    end
+    _default(a, default_style, data)
+end
+
+modeldefault(dimensions) = SMatrix{4,4,Float32}([eye(3,3) -dimensions/2; zeros(1,3) 1])
+
 struct VolumePrerender
 end
 function (::VolumePrerender)()
@@ -233,10 +242,13 @@ function (::VolumePrerender)()
 end
 
 function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeElTypes
-    modelinv = const_lift(inv, get(data, :model, eye(Mat4f0)))
     @gen_defaults! data begin
-        intensities      = main => Texture
         dimensions       = Vec3f0(1)
+    end
+    modeldflt = modeldefault(data[:dimensions])
+    modelinv = const_lift(inv, get(data, :model, modeldflt))
+    @gen_defaults! data begin
+        volumedata       = main => Texture
         hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
         light_position   = Vec3f0(0.25, 1.0, 3.0)
         light_intensity  = Vec3f0(15.0)
@@ -251,6 +263,61 @@ function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeE
         absorption       = 1f0
         isovalue         = 0.5f0
         isorange         = 0.01f0
+        shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
+        prerender        = VolumePrerender()
+        postrender       = () -> begin
+            glDisable(GL_CULL_FACE)
+        end
+    end
+end
+
+function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: RGBA
+    @gen_defaults! data begin
+        dimensions       = Vec3f0(1)
+    end
+    modeldflt = modeldefault(data[:dimensions])
+    model = const_lift(identity, get(data, :model, modeldflt))
+    modelinv = const_lift(inv, get(data, :model, modeldflt))
+    @gen_defaults! data begin
+        volumedata       = main => Texture
+        hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
+        model            = model
+        modelinv         = modelinv
+
+        # These don't do anything but are needed for type specification in the frag shader
+        color_map        = nothing
+        color_norm       = nothing
+        color            = color_map == nothing ? default(RGBA, s) : nothing
+
+        algorithm        = AbsorptionRGBA
+        boundingbox      = hull
+        shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
+        prerender        = VolumePrerender()
+        postrender       = () -> begin
+            glDisable(GL_CULL_FACE)
+        end
+    end
+end
+
+function _default(main::IndirectArray{T}, s::Style, data::Dict) where T <: RGBA
+    @gen_defaults! data begin
+        dimensions       = Vec3f0(1)
+    end
+    modeldflt = modeldefault(data[:dimensions])
+    model = const_lift(identity, get(data, :model, modeldflt))
+    modelinv = const_lift(inv, get(data, :model, modeldflt))
+    @gen_defaults! data begin
+        volumedata       = main.index => Texture
+        hull::GLUVWMesh  = AABB{Float32}(Vec3f0(0), dimensions)
+        model            = model
+        modelinv         = modelinv
+
+        color_map        = main.values => TextureBuffer
+        color_norm       = nothing
+        color            = nothing
+
+        algorithm        = IndexedAbsorptionRGBA
+        boundingbox      = hull
         shader           = GLVisualizeShader("fragment_output.frag", "util.vert", "volume.vert", "volume.frag")
         prerender        = VolumePrerender()
         postrender       = () -> begin

@@ -20,7 +20,7 @@ const shortcuts = Dict(
 default returns common defaults for a certain style and datatype.
 This is convenient, to quickly switch out default styles.
 """
-default{T}(::T, s::Style=Style{:default}()) = default(T, s)
+default(::T, s::Style=Style{:default}()) where {T} = default(T, s)
 
 const color_defaults = RGBA{Float32}[
 	RGBA{Float32}(0.0f0,0.74736935f0,1.0f0,1.0f0),
@@ -28,12 +28,12 @@ const color_defaults = RGBA{Float32}[
 	RGBA{Float32}(0, 0, 0, 1.0),
 	RGBA{Float32}(0.78, 0.01, 0, 1.0)
 ]
-function default{T <: Colorant}(::Type{T}, s::Style=Style{:default}(), index=1)
+function default(::Type{T}, s::Style=Style{:default}(), index=1) where T <: Colorant
     index > length(color_defaults) && error("There are only three color defaults.")
     color_defaults[index]
 end
 let _default_colormap = map(RGBA{N0f8}, colormap("Blues", 7))
-    function default{T <: Colorant}(::Type{Vector{T}}, s::Style = Style{:default}())
+    function default(::Type{Vector{T}}, s::Style = Style{:default}()) where T <: Colorant
        _default_colormap
     end
 end

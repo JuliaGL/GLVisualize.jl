@@ -12,8 +12,8 @@ load and display animated images.
 # a few helper functions to generate images
 
 const NColor{N, T} = Colorant{T, N}
-fillcolor{T <: NColor{4}}(::Type{T}) = T(0,1,0,1)
-fillcolor{T <: NColor{3}}(::Type{T}) = T(0,1,0)
+fillcolor(::Type{T}) where {T <: NColor{4}} = T(0,1,0,1)
+fillcolor(::Type{T}) where {T <: NColor{3}} = T(0,1,0)
 
 # create different images with different color types (not an exhaustive list of supported types)
 arrays = map((RGBA{N0f8}, RGBA{Float32}, RGB{N0f8}, RGB{Float32}, BGRA{N0f8}, BGR{Float32})) do C

@@ -27,6 +27,7 @@ import Base: merge, convert, show
 using Base.Iterators: Repeated, repeated
 
 import AxisArrays, ImageAxes, Images
+using IndirectArrays
 const HasAxesArray{T, N} = Union{AxisArrays.AxisArray{T, N}, Images.ImageMetadata.ImageMetaAxis{T, N}}
 const AxisMatrix{T} = HasAxesArray{T, 2}
 
