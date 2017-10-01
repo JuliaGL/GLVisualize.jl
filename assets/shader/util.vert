@@ -234,18 +234,17 @@ out vec3 o_lightdir;
 out vec3 o_vertex;
 
 
-void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 light[4])
+void render(vec4 position_world, vec3 normal, mat4 view, mat4 projection, vec3 light[4])
 {
-    vec4 position_camspace = viewmodel * vec4(vertex,  1);
     // normal in world space
     // TODO move transpose inverse calculation to cpu
-    o_normal               = vec3(transpose(inverse(viewmodel)) * vec4(normal,0));
+    o_normal               = normal;
     // direction to light
-    o_lightdir             = normalize(light[3] - vec3(position_camspace));
+    o_lightdir             = normalize(light[3] - position_world.xyz);
     // direction to camera
-    o_vertex               = -position_camspace.xyz;
+    o_vertex               = -position_world.xyz;
     // screen space coordinates of the vertex
-    gl_Position            = projection * position_camspace;
+    gl_Position            = projection * view * position_world;
 }
 
 
