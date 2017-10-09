@@ -228,7 +228,7 @@ function meshparticle(p, s, data)
         scale_y          = nothing => TextureBuffer
         scale_z          = nothing => TextureBuffer
 
-        rotation         = Vec3f0(0,0,1) => TextureBuffer
+        rotation         = Vec4f0(0,0,0,1) => TextureBuffer
     end
     inst = _Instances(
         position, position_x, position_y, position_z,
@@ -321,6 +321,7 @@ Gets the texture atlas if primitive is a char.
 """
 primitive_distancefield(x) = nothing
 primitive_distancefield(::Char) = get_texture_atlas().images
+primitive_distancefield(::Signal{Char}) = get_texture_atlas().images
 
 
 
@@ -404,17 +405,17 @@ end
 
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to sprites
-_default(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) where {Primitive<:Sprites, P<:Point} =
+_default(p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict) where {Pr <: Sprites, P<:Point} =
     sprites(p,s,data)
 
-_default(p::Tuple{Primitive, G}, s::Style, data::Dict) where {Primitive<:Sprites, G<:Grid} =
+_default(p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict) where {Pr <: Sprites, G<:Grid} =
     sprites(p,s,data)
 
 function _default(
-            p::Tuple{Pr, G}, s::Style, data::Dict
+            p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
         ) where {Pr <: Sprites, G <: Tuple}
         @gen_defaults! data begin
-            shape      = primitive_shape(p[1])
+            shape      = const_lift(primitive_shape, p[1])
             position   = nothing => GLBuffer
             position_x = p[2][1] => GLBuffer
             position_y = p[2][2] => GLBuffer
@@ -429,23 +430,23 @@ Sprites are anything like distance fields, images and simple geometries
 """
 function sprites(p, s, data)
     @gen_defaults! data begin
-        shape       = primitive_shape(p[1])
+        shape       = const_lift(x-> Int32(primitive_shape(x)), p[1])
         position    = p[2]    => GLBuffer
         position_x  = nothing => GLBuffer
         position_y  = nothing => GLBuffer
         position_z  = nothing => GLBuffer
 
-        scale       = primitive_scale(p[1])  => GLBuffer
+        scale       = const_lift(primitive_scale, p[1]) => GLBuffer
         scale_x     = nothing                => GLBuffer
         scale_y     = nothing                => GLBuffer
         scale_z     = nothing                => GLBuffer
 
-        rotation    = Vec3f0(0,0,1)          => GLBuffer
+        rotation    = Vec4f0(0, 0, 0, 1) => GLBuffer
         image       = nothing => Texture
     end
     # TODO don't make this dependant on some shady type dispatch
-    if isa(p[1], Char) && !isa(scale, Vec) # correct dimensions
-        scale = Vec2f0(glyph_scale!(p[1], scale))
+    if isa(value(p[1]), Char) && !isa(value(scale), Vec) # correct dimensions
+        scale = const_lift(s-> Vec2f0(glyph_scale!(p[1], s)), scale)
         data[:scale] = scale
     end
     inst = _Instances(
@@ -464,13 +465,13 @@ function sprites(p, s, data)
         stroke_color    = RGBA{Float32}(0,0,0,0) => GLBuffer
         stroke_width    = 0f0
         glow_width      = 0f0
-        uv_offset_width = primitive_uv_offset_width(p[1]) => GLBuffer
+        uv_offset_width = const_lift(primitive_uv_offset_width, p[1]) => GLBuffer
 
         distancefield   = primitive_distancefield(p[1]) => Texture
         indices         = const_lift(length, p[2]) => to_indices
         boundingbox     = const_lift(GLBoundingBox, inst)
         # rotation and billboard don't go along
-        billboard        = rotation == Vec3f0(0,0,1) => "if `billboard` == true, particles will always face camera"
+        billboard        = rotation == Vec4f0(0,0,0,1) => "if `billboard` == true, particles will always face camera"
         preferred_camera = :orthographic_pixel
         fxaa             = false
         shader           = GLVisualizeShader(
@@ -518,8 +519,8 @@ function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractS
         uv_offset_width = const_lift(main) do str
             Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
         end
-        scale           = const_lift(main, relative_scale) do str, s
-            Vec2f0[glyph_scale!(atlas, c, font, s)  for c = str]
+        scale = const_lift(main, relative_scale) do str, s
+            Vec2f0[glyph_scale!(atlas, c, font, s) for c = str]
         end
     end
 

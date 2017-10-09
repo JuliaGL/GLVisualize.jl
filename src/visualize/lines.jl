@@ -22,7 +22,7 @@ function intensity_convert(intensity::VecOrSignal{T}, verts) where T
     end
 end
 
-
+#TODO NaNMath.min/max?
 dist(a, b) = abs(a-b)
 mindist(x, a, b) = min(dist(a, x), dist(b, x))
 function gappy(x, ps)
@@ -111,7 +111,7 @@ function _default(positions::VecTypes{T}, s::style"linesegment", data::Dict) whe
     @gen_defaults! data begin
         vertex              = positions           => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
-        thickness::Float32  = 2f0                 => GLBuffer
+        thickness           = 2f0                 => GLBuffer
         shape               = RECTANGLE
         pattern             = nothing
         fxaa                = false
