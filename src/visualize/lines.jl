@@ -72,7 +72,7 @@ function _default(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", da
         fxaa                = false
         preferred_camera    = :orthographic_pixel
         boundingbox         = const_lift(x-> GLBoundingBox(to_cpu_mem(x)), value(p_vec))
-        indices             = const_lift(length, p_vec) => to_indices
+        indices             = const_lift(length, p_vec) => to_index_buffer
         shader              = GLVisualizeShader("fragment_output.frag", "util.vert", "lines.vert", "lines.geom", "lines.frag")
         gl_primitive        = GL_LINE_STRIP_ADJACENCY
         startend            = const_lift(p_vec) do vec
@@ -115,7 +115,7 @@ function _default(positions::VecTypes{T}, s::style"linesegment", data::Dict) whe
         shape               = RECTANGLE
         pattern             = nothing
         fxaa                = false
-        indices             = const_lift(length, positions) => to_indices
+        indices             = const_lift(length, positions) => to_index_buffer
         preferred_camera    = :orthographic_pixel
         # TODO update boundingbox
         boundingbox         = GLBoundingBox(to_cpu_mem(value(positions)))
@@ -206,7 +206,7 @@ function _default(position::VecTypes{T}, s::style"speedlines", data::Dict) where
     @gen_defaults! data begin
         vertex       = position => GLBuffer
         color_map    = nothing  => Vec2f0
-        indices      = const_lift(line_indices, position) => to_indices
+        indices      = const_lift(line_indices, position) => to_index_buffer
         color        = (color_map == nothing ? default(RGBA{Float32}, s) : nothing) => GLBuffer
         color_norm   = nothing  => Vec2f0
         intensity    = nothing  => GLBuffer

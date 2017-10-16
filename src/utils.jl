@@ -180,40 +180,6 @@ function extrema2f0(x::Array{T,N}) where {T<:Vec,N}
     Vec2f0(minimum(_norm), maximum(_norm))
 end
 
-
-"""
-Converts index arrays to the OpenGL equivalent.
-"""
-to_indices(x::GLBuffer) = x
-to_indices(x::TOrSignal{Int}) = x
-to_indices(x::VecOrSignal{UnitRange{Int}}) = x
-"""
-For integers, we transform it to 0 based indices
-"""
-to_indices(x::Vector{I}) where {I<:Integer} = indexbuffer(map(i-> Cuint(i-1), x))
-function to_indices(x::Signal{Vector{I}}) where I<:Integer
-    x = map(x-> Cuint[i-1 for i=x], x)
-    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
-    preserve(const_lift(update!, gpu_mem, x))
-    gpu_mem
-end
-"""
-If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
-"""
-to_indices(x::Vector{I}) where {I<:GLuint} = indexbuffer(x)
-function to_indices(x::Signal{Vector{I}}) where I<:GLuint
-    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
-    preserve(const_lift(update!, gpu_mem, x))
-    gpu_mem
-end
-to_indices(x) = error(
-    "Not a valid index type: $x.
-    Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
-)
-
-
-
-
 function mix_linearly(a::C, b::C, s) where C<:Colorant
     RGBA{Float32}((1-s)*comp1(a)+s*comp1(b), (1-s)*comp2(a)+s*comp2(b), (1-s)*comp3(a)+s*comp3(b), (1-s)*alpha(a)+s*alpha(b))
 end
@@ -227,6 +193,37 @@ function color_lookup(cmap, value, color_norm)
     mix_linearly(cmap[i_a], cmap[i_b], scaled)
 end
 
+
+"""
+Converts index arrays to the OpenGL equivalent.
+"""
+to_index_buffer(x::GLBuffer) = x
+to_index_buffer(x::TOrSignal{Int}) = x
+to_index_buffer(x::VecOrSignal{UnitRange{Int}}) = x
+to_index_buffer(x::TOrSignal{UnitRange{Int}}) = x
+"""
+For integers, we transform it to 0 based indices
+"""
+to_index_buffer(x::Vector{I}) where {I<:Integer} = indexbuffer(map(i-> Cuint(i-1), x))
+function to_index_buffer(x::Signal{Vector{I}}) where I<:Integer
+    x = map(x-> Cuint[i-1 for i=x], x)
+    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
+    preserve(const_lift(update!, gpu_mem, x))
+    gpu_mem
+end
+"""
+If already GLuint, we assume its 0 based (bad heuristic, should better be solved with some Index type)
+"""
+to_index_buffer(x::Vector{I}) where {I<:GLuint} = indexbuffer(x)
+function to_index_buffer(x::Signal{Vector{I}}) where I<:GLuint
+    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
+    preserve(const_lift(update!, gpu_mem, x))
+    gpu_mem
+end
+to_index_buffer(x) = error(
+    "Not a valid index type: $x.
+    Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
+)
 
 """
 Creates a moving average and discards values to close together.
