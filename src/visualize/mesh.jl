@@ -24,6 +24,19 @@ function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLNormalM
         )
     end
 end
+function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLNormalUVMesh
+    @gen_defaults! data begin
+        shading = true
+        main = mesh
+        color = default(RGBA{Float32}, s) => Texture
+        boundingbox = const_lift(GLBoundingBox, mesh)
+
+        shader = GLVisualizeShader(
+            "fragment_output.frag", "util.vert", "uv_normal.vert", "standard.frag",
+            view = Dict("light_calc" => light_calc(shading))
+        )
+    end
+end
 function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLNormalVertexcolorMesh
     @gen_defaults! data begin
         shading = true
