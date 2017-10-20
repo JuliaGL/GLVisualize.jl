@@ -220,8 +220,13 @@ function to_index_buffer(x::Signal{Vector{I}}) where I<:GLuint
     preserve(const_lift(update!, gpu_mem, x))
     gpu_mem
 end
+function to_index_buffer(x::Signal{Vector{I}}) where I <: Face{2, GLIndex}
+    gpu_mem = GLBuffer(value(x), buffertype = GL_ELEMENT_ARRAY_BUFFER)
+    preserve(const_lift(update!, gpu_mem, x))
+    gpu_mem
+end
 to_index_buffer(x) = error(
-    "Not a valid index type: $x.
+    "Not a valid index type: $(typeof(x)).
     Please choose from Int, Vector{UnitRange{Int}}, Vector{Int} or a signal of either of them"
 )
 
