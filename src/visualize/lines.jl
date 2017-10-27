@@ -87,7 +87,7 @@ function _default(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", da
     if pattern != nothing
         if !isa(pattern, Texture)
             if !isa(pattern, Vector)
-                error("Pattern needs to be a Vector of floats")
+                error("Pattern needs to be a Vector of floats. Found: $(typeof(pattern))")
             end
             tex = GLAbstraction.Texture(ticks(pattern, 100), x_repeat = :repeat)
             data[:pattern] = tex
