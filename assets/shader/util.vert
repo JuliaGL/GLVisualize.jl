@@ -95,6 +95,7 @@ vec3 qmul(vec4 quat, vec3 vec){
 void rotate(Nothing r, int index, inout vec3 V, inout vec3 N){} // no-op
 void rotate(vec4 q, int index, inout vec3 V, inout vec3 N){
     V = qmul(q, V);
+    N = qmul(q, N);
     //N = normalize(vec3(rot*vec4(N, 0)));
 }
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N){
@@ -228,7 +229,7 @@ vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm
 out vec3 o_normal;
 out vec3 o_lightdir;
 out vec3 o_vertex;
-
+uniform mat3 normalmatrix;
 
 void render(vec4 position_world, vec3 normal, mat4 view, mat4 projection, vec3 light[4])
 {

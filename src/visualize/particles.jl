@@ -212,23 +212,45 @@ end
 function Base.convert(::Type{T}, mesh::Signal) where T<:GeometryTypes.HomogenousMesh
     map(T, mesh)
 end
+
+
+function to_meshcolor(color::TOrSignal{Vector{T}}) where T <: Colorant
+    TextureBuffer(color)
+end
+
+function to_meshcolor(color::TOrSignal{Matrix{T}}) where T <: Colorant
+    Texture(color)
+end
+function to_meshcolor(color)
+    color
+end
+
+function to_mesh(mesh::GeometryPrimitive)
+    gl_convert(const_lift(GLNormalMesh, mesh))
+end
+
+function to_mesh(mesh::TOrSignal{<: HomogenousMesh})
+    gl_convert(value(mesh))
+end
+
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
 function meshparticle(p, s, data)
     @gen_defaults! data begin
-        primitive::GLNormalMesh = p[1]
-        position         = p[2] => TextureBuffer
-        position_x       = nothing => TextureBuffer
-        position_y       = nothing => TextureBuffer
-        position_z       = nothing => TextureBuffer
+        primitive = p[1] => to_mesh
+        position = p[2] => TextureBuffer
+        position_x = nothing => TextureBuffer
+        position_y = nothing => TextureBuffer
+        position_z = nothing => TextureBuffer
 
-        scale            = Vec3f0(1) => TextureBuffer
-        scale_x          = nothing => TextureBuffer
-        scale_y          = nothing => TextureBuffer
-        scale_z          = nothing => TextureBuffer
+        scale = Vec3f0(1) => TextureBuffer
+        scale_x = nothing => TextureBuffer
+        scale_y = nothing => TextureBuffer
+        scale_z = nothing => TextureBuffer
 
-        rotation         = Vec4f0(0,0,0,1) => TextureBuffer
+        rotation = Vec4f0(0,0,0,1) => TextureBuffer
+        texturecoordinates = nothing
     end
     inst = _Instances(
         position, position_x, position_y, position_z,
@@ -242,8 +264,8 @@ function meshparticle(p, s, data)
         color      = if color_map == nothing
             default(RGBA{Float32}, s)
         else
-             nothing
-        end => TextureBuffer
+            nothing
+        end => to_meshcolor
 
         instances = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)

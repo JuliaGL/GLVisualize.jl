@@ -26,6 +26,7 @@ struct Grid3D{
 
 in vec3 vertices;
 in vec3 normals;
+{{texturecoordinates_type}} texturecoordinates;
 
 uniform vec3 light[4];
 uniform mat4 view, model, projection;
@@ -119,8 +120,16 @@ vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_no
     return color_lookup(_intensity, color_map, color_norm);
 }
 
+
+vec4 _color(sampler2D color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len){
+    return vec4(0);
+}
+
 void render(vec4 vertices, vec3 normal, mat4 view, mat4 projection, vec3 light[4]);
 
+
+vec2 get_uv(Nothing x){return vec2(0.0);}
+vec2 get_uv(vec2 x){return vec2(1.0 - x.y, x.x);}
 
 void main(){
     int index = gl_InstanceID;
@@ -132,7 +141,7 @@ void main(){
     vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
     o_color    = _color(color, intensity, color_map, color_norm, index, len);
     V *= scale;
-    o_uv = vec2(0.0);
+    o_uv = get_uv(texturecoordinates);
     rotate(rotation, index, V, N);
     render(model * vec4(pos + V, 1), (model * vec4(N, 0)).xyz, view, projection, light);
 }
