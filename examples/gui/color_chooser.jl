@@ -29,7 +29,7 @@ _view(layout!(SimpleRectangle{Float32}(0,120,60,60), c_v), edit_screen, camera=:
 
 function multirandomwalk(n1, n2)
     a = rand(Point3f0, n1)*2f0
-    r = Array(Point3f0, n1*n2)
+    r = Array{Point3f0}(n1*n2)
     i = 1
     for j=1:n1
         pstart = a[j]
