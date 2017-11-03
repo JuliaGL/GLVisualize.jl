@@ -144,12 +144,12 @@ function to_anglelengths(angles, line)
     end
     angles
 end
-v0 = to_anglelengths(Array(Tuple{Float32, Float32}, 4), value(line_s))
+v0 = to_anglelengths(Array{Tuple{Float32, Float32}}(4), value(line_s))
 
 angle_vec1 = foldp(to_anglelengths, v0, line_s)
 
 angle_s = map(last, angles)
-anglevec2 = foldp(Array(Tuple{Float32, Float32}, 4), angle_s...) do angles, s...
+anglevec2 = foldp(Array{Tuple{Float32, Float32}}(4), angle_s...) do angles, s...
     for i=1:4
         angles[i] = s[i], 1.0
     end
