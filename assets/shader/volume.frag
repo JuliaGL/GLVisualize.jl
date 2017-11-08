@@ -26,15 +26,16 @@ uniform int algorithm;
 uniform float isovalue;
 uniform float isorange;
 
-const float max_distance = 1.0;
+const float max_distance = 1.3;
 
-const int num_samples = 128;
+const int num_samples = 200;
 const float step_size = max_distance / float(num_samples);
 const int num_ligth_samples = 16;
 const float lscale = max_distance / float(num_ligth_samples);
 const float density_factor = 9;
 
 const float eps = 0.0001;
+
 bool intersect(vec3 ray_origin, vec3 ray_dir, vec3 center, vec3 normal, out vec3 intersect){
     float denom = dot(normal, ray_dir);
     if (abs(denom) > eps) // if not orthogonal
@@ -132,6 +133,11 @@ bool is_outside(vec3 position)
     return (position.x > 1.0 || position.y > 1.0 || position.z > 1.0 || position.x < 0.0 || position.y < 0.0 || position.z < 0.0);
 }
 
+// Simple random generator found: http://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+float rand(){
+    return fract(sin(gl_FragCoord.x * 12.9898 + gl_FragCoord.y * 78.233) * 43758.5453);
+}
+
 
 vec4 volume(vec3 front, vec3 dir, float stepsize)
 {
@@ -211,7 +217,7 @@ vec4 volumeindexedrgba(vec3 front, vec3 dir, float stepsize)
         vec4 density = color_lookup(color_map, index);
         float opacity = stepsize_world*density.a;
         Lo += (T*opacity)*density.rgb;
-        T *= 1.0-opacity;
+        T *= 1.0 - opacity;
         if (T <= 0.01)
             break;
     }
@@ -220,31 +226,37 @@ vec4 volumeindexedrgba(vec3 front, vec3 dir, float stepsize)
 
 vec4 isosurface(vec3 front, vec3 dir, float stepsize)
 {
-    vec3  stepsize_dir  = dir * stepsize;
-    vec3  pos           = front;
-    vec3  Lo            = vec3(0.0);
-    int   i             = 0;
-    vec4 _color         = vec4(0.0);
-    pos += stepsize_dir;//apply first, to padd
-    vec4 difuse_color   = color_lookup(isovalue, color_map, color_norm, color);
+    vec3  stepsize_dir = dir * stepsize;
+    vec3  pos = front;
+    vec3  Lo = vec3(0.0);
+    int   i = 0;
+    float T = 1.0;
+    pos += (stepsize_dir * rand());//apply first, to padd and reduce sampling artifacts
+
+    vec4 difuse_color = color_lookup(isovalue, color_map, color_norm, color);
+    float opacity = difuse_color.a;
 
     for (i; i < num_samples && (!is_outside(pos) || i == 1); ++i, pos += stepsize_dir)
     {
         float density = texture(volumedata, pos).x;
         if (density <= 0.0)
             continue;
+
         if(abs(density - isovalue) < isorange)
         {
             vec3 N = gennormal(pos, vec3(stepsize));
             vec3 L = normalize(light_position - pos);
             vec3 L2 = -L;
-            Lo = blinn_phong(N, pos, L, difuse_color.rgb);
-            Lo += blinn_phong(N, pos, L2, difuse_color.rgb);
-            _color = vec4(Lo, 1);
-            break;
+
+            Lo += (T*opacity) * blinn_phong(N, pos, L, difuse_color.rgb);
+            Lo += (T*opacity) * blinn_phong(N, pos, L2, difuse_color.rgb);
+            T *= 1.0 - opacity;
+
+            if (T <= 0.01)
+                break;
         }
     }
-    return _color;
+    return vec4(Lo, 1.0 - T);
 }
 
 vec4 mip(vec3 front, vec3 dir, float stepsize)
