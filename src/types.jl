@@ -204,6 +204,27 @@ function qmul(quat, vec)
     )
 end
 
+# For quaternions
+function to_rotation_mat(x::Vec{4, T}) where T
+    Mat4{T}(Quaternions.Quaternion(x[4], x[1], x[2], x[3], true))
+end
+# For relative rotations of a vector
+function to_rotation_mat(x::StaticVector{3, T}) where T
+    rotation = Vec3f0(transform_convert(Point3f0, x))
+    v, u = normalize(rotation), Vec3f0(0,0,1)
+    # Unfortunately, we have to check for when u == -v, as u + v
+    # in this case will be (0, 0, 0), which cannot be normalized.
+    q = if (u == -v)
+        # 180 degree rotation around any orthogonal vector
+        other = (abs(dot(u, Vec{3, T}(1,0,0))) < 1.0) ? Vec{3, T}(1,0,0) : Vec{3, T}(0,1,0)
+        Quaternions.qrotation(normalize(cross(u, other)), T(180))
+    else
+        half = normalize(u+v)
+        vc = cross(u, half)
+        Quaternions.Quaternion(dot(u, half), vc[1], vc[2], vc[3])
+    end
+    Mat4{T}(q)
+end
 function next(t::TransformationIterator, state)
     _translation, st = next(t.translation, state[1])
     _scale, ss = next(t.scale, state[2])
@@ -211,10 +232,8 @@ function next(t::TransformationIterator, state)
 
     translation = Point3f0(transform_convert(Vec3f0, _translation))
     scale = Vec3f0(transform_convert(Point3f0, _scale))
-    rotation = _rotation
-    T = Float32
-    q = Quaternion(rotation[4], rotation[1], rotation[2], rotation[3], true)
-    ((translation, scale, Mat4{T}(q)), (st, ss, sr))
+    rotation = to_rotation_mat(_rotation)
+    ((translation, scale, rotation), (st, ss, sr))
 end
 
 

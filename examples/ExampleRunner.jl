@@ -205,7 +205,7 @@ function RunnerConfig(;
         exclude_dirs = [
             "parallel", "compose", "mouse.jl", "richtext.jl",
             "ExampleRunner.jl", "grids.jl",
-            "texthighlight.jl"
+            "texthighlight.jl", "gtk_events.jl", "gtk_example.jl", "gtk_mwe.jl"
         ],
         number_of_frames = 360,
         interactive_time = 5.0,
@@ -214,7 +214,7 @@ function RunnerConfig(;
         record = true,
         record_image = false,
         thumbnail = true,
-        rootscreen = glscreen(resolution=resolution)
+        rootscreen = glscreen(resolution = resolution)
     )
     w, h = resolution
     resize!(rootscreen, w*mm, h*mm)

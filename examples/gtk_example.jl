@@ -131,12 +131,12 @@ function setup_screen()
     Gtk.setproperty!(parent, Symbol("is-focus"), false)
     box = Gtk.Box(:v)
     push!(parent, box)
-    # sl = GtkReactive.slider(linspace(0.0, 1.0, 100))
-    # push!(box, sl)
-    # mesh_color = map(sl) do val
-    #     RGBA{Float32}(val, 0,0,1)
-    # end
-    mesh_color = Signal(RGBA{Float32}(1,0,0,1))
+    sl = GtkReactive.slider(linspace(0.0, 1.0, 100))
+    push!(box, sl)
+    mesh_color = map(sl) do val
+        RGBA{Float32}(val, 0,0,1)
+    end
+    # mesh_color = Signal(RGBA{Float32}(1,0,0,1))
 
     gl_area = Gtk.GLArea()
     Gtk.gl_area_set_required_version(gl_area, 3, 3)
