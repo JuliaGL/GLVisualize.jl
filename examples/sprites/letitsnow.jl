@@ -39,7 +39,7 @@ colors          = RGBA{Float32}[color_ramp[rand(1:50)] for i=1:N]
 snowflakes = visualize(
     ('❄', particles),
     color = colors,
-    scale = 0.6, 
+    scale = Vec2f0(0.6),
     billboard = true, model = rotation
 )
 

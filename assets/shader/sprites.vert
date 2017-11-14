@@ -62,6 +62,7 @@ float get_rotation_len(Nothing rotation){
 float get_rotation_len(vec4 rotation){
     return 1.0;
 }
+
 vec3 _scale(Nothing scale, float scale_x, float scale_y, Nothing scale_z, int index){
     float len = get_rotation_len(rotation);
     return vec3(scale_x,scale_y, len);

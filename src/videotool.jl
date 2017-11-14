@@ -5,7 +5,7 @@
 immutable VideoStream
     io
     buffer
-    scene
+    window
 end
 
 """
@@ -17,16 +17,16 @@ function create_video_stream(path, window)
     tex = GLWindow.framebuffer(window).color
     res = size(tex)
     io, process = open(`ffmpeg -f rawvideo -pixel_format rgb24 -s:v $(res[1])x$(res[2]) -i pipe:0 -vf vflip -y $path`, "w")
-    VideoStream(io, Matrix{RGB{N0f8}}(res)) # tmp buffer
+    VideoStream(io, Matrix{RGB{N0f8}}(res), window) # tmp buffer
 end
 
 """
 Adds a video frame to a stream created with `create_video_stream`
 """
-function add_frame!(io, window, buffer)
+function add_frame!(io)
     #codec = `-codec:v libvpx -quality good -cpu-used 0 -b:v 500k -qmin 10 -qmax 42 -maxrate 500k -bufsize 1000k -threads 8`
-    tex = GLWindow.framebuffer(window).color
-    write(io, map(RGB{N0f8}, gpu_data(tex)))
+    tex = GLWindow.framebuffer(io.window).color
+    write(io.io, map(RGB{N0f8}, gpu_data(tex)))
 end
 
 """

@@ -251,15 +251,18 @@ function rotation_between(u::StaticVector{3, T}, v::StaticVector{3, T}) where T
     end
     Vec4f0(q.v1, q.v2, q.v3, q.s)
 end
-
 vec2quaternion(rotation::StaticVector{4}) = rotation
 
+function vec2quaternion(r::StaticVector{2})
+    vec2quaternion(Vec3f0(r[1], r[2], 0))
+end
 function vec2quaternion(rotation::StaticVector{3})
-    rotation_between(Vec3f0(rotation), Vec3f0(1, 0, 0))
+    rotation_between(Vec3f0(rotation), Vec3f0(0, 0, 1))
 end
 
-vec2quaternion(rotation::VecTypes) = const_lift(x-> vec2quaternion.(x), rotation)
 
+vec2quaternion(rotation::VecTypes) = const_lift(x-> vec2quaternion.(x), rotation)
+vec2quaternion(rotation::Signal{<: StaticVector}) = map(vec2quaternion, rotation)
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
@@ -482,6 +485,10 @@ Main assemble functions for sprite particles.
 Sprites are anything like distance fields, images and simple geometries
 """
 function sprites(p, s, data)
+    rot = get!(data, :rotation, Vec4f0(0, 0, 0, 1))
+    rot = vec2quaternion(rot)
+    delete!(data, :rotation)
+
     @gen_defaults! data begin
         shape       = const_lift(x-> Int32(primitive_shape(x)), p[1])
         position    = p[2]    => GLBuffer
@@ -494,7 +501,7 @@ function sprites(p, s, data)
         scale_y     = nothing                => GLBuffer
         scale_z     = nothing                => GLBuffer
 
-        rotation    = Vec4f0(0, 0, 0, 1) => GLBuffer
+        rotation    = rot => GLBuffer
         image       = nothing => Texture
     end
     # TODO don't make this dependant on some shady type dispatch

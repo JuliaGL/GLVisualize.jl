@@ -209,6 +209,9 @@ function to_rotation_mat(x::Vec{4, T}) where T
     Mat4{T}(Quaternions.Quaternion(x[4], x[1], x[2], x[3], true))
 end
 # For relative rotations of a vector
+function to_rotation_mat(x::StaticVector{2, T}) where T
+    to_rotation_mat(Vec3f0(x[1], x[2], 0))
+end
 function to_rotation_mat(x::StaticVector{3, T}) where T
     rotation = Vec3f0(transform_convert(Point3f0, x))
     v, u = normalize(rotation), Vec3f0(0, 0, 1)
