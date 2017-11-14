@@ -34,9 +34,8 @@ scale_start  = Vec3f0[Vec3f0(1,1,rand()) for i=1:length(ps)]
 scale        = foldp(scale_gen, scale_start, t)
 colorstart   = color_gen(zeros(RGBA{N0f8}, length(ps)), value(t))
 color        = foldp(color_gen, colorstart, t)
-rotation     = -sphere.normals
-
-cats = visualize((cat, ps), scale=scale, color=color, rotation=rotation)
+rotation     = sphere.normals
+cats = visualize((cat, ps), scale = scale, color = color, rotation = rotation)
 
 _view(cats, window)
 

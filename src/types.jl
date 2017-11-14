@@ -211,7 +211,7 @@ end
 # For relative rotations of a vector
 function to_rotation_mat(x::StaticVector{3, T}) where T
     rotation = Vec3f0(transform_convert(Point3f0, x))
-    v, u = normalize(rotation), Vec3f0(0,0,1)
+    v, u = normalize(rotation), Vec3f0(0, 0, 1)
     # Unfortunately, we have to check for when u == -v, as u + v
     # in this case will be (0, 0, 0), which cannot be normalized.
     q = if (u == -v)

@@ -73,12 +73,12 @@ vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, sampler
 
 vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, Nothing scale_z, int index){
     vec4 rot = get_rotation(rotation, index);
-    return vec3(scale_x,scale_y, length(rot));
+    return vec3(scale_x, scale_y, length(rot));
 }
 vec3 _scale(vec2 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index);
+
 vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){
-    vec4 rot = get_rotation(rotation, index);
-    return vec3(scale.xy, scale.z*length(rot));
+    return scale;
 }
 
 
@@ -99,7 +99,7 @@ vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 co
 vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index, int len);
 
 float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
-    return length(texelFetch(rotation, index).xyz);
+    return texelFetch(rotation, index).w;
 }
 float get_intensity(vec4 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(Nothing rotation, Nothing position_z, int index){return -1.0;}
@@ -134,14 +134,13 @@ vec2 get_uv(vec2 x){return vec2(1.0 - x.y, x.x);}
 void main(){
     int index = gl_InstanceID;
     o_id      = uvec2(objectid, index+1);
-    vec3 V    = vertices;
+    vec3 s = _scale(scale, scale_x, scale_y, scale_z, index);
+    vec3 V    = vertices * s;
     vec3 N    = normals;
     vec3 pos;
     {{position_calc}}
-    vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
     o_color    = _color(color, intensity, color_map, color_norm, index, len);
-    V *= scale;
     o_uv = get_uv(texturecoordinates);
     rotate(rotation, index, V, N);
-    render(model * vec4(pos + V, 1), (model * vec4(N, 0)).xyz, view, projection, light);
+    render(model * vec4(pos + V, 1), N, view, projection, light);
 }

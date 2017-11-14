@@ -57,7 +57,7 @@ end
 primitive.
 """
 function _default(main::ArrayTypes{T, 3}, s::Style, data::Dict) where T<:Vec
-    _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
+    _default((Pyramid(Point3f0(0, 0, -0.5), 1f0, 1f0), main), s, data)
 end
 """
 2D matrices of vectors are 2D vector field with a an unicode arrow as the default
@@ -73,7 +73,7 @@ The position is assumed to be implicitely on the grid the vector defines (1D,2D,
 """
 function _default(
         main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict
-    ) where {P<:AllPrimitives, T<:Vec, N}
+    ) where {P <: AllPrimitives, T <: Vec, N}
     primitive, rotation_s = main
     rotation_v = value(rotation_s)
     @gen_defaults! data begin
@@ -233,10 +233,41 @@ function to_mesh(mesh::TOrSignal{<: HomogenousMesh})
     gl_convert(value(mesh))
 end
 
+function orthogonal(v::T) where T <: StaticVector{3}
+    x, y, z = abs.(v)
+    other = x < y ? (x < z ? unit(T, 1) : unit(T, 3)) : (y < z ? unit(T, 2) : unit(T, 3))
+    return cross(v, other)
+end
+
+function rotation_between(u::StaticVector{3, T}, v::StaticVector{3, T}) where T
+    k_cos_theta = dot(u, v)
+    k = sqrt((norm(u) ^ 2) * (norm(v) ^ 2))
+
+    q = if (k_cos_theta / k) ≈ T(-1)
+        # 180 degree rotation around any orthogonal vector
+        Quaternion(T(0), normalize(orthogonal(u))...)
+    else
+        normalize(Quaternion(k_cos_theta + k, cross(u, v)...))
+    end
+    Vec4f0(q.v1, q.v2, q.v3, q.s)
+end
+
+vec2quaternion(rotation::StaticVector{4}) = rotation
+
+function vec2quaternion(rotation::StaticVector{3})
+    rotation_between(Vec3f0(rotation), Vec3f0(1, 0, 0))
+end
+
+vec2quaternion(rotation::VecTypes) = const_lift(x-> vec2quaternion.(x), rotation)
+
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
 function meshparticle(p, s, data)
+
+    rot = get!(data, :rotation, Vec4f0(0, 0, 0, 1))
+    rot = vec2quaternion(rot)
+    delete!(data, :rotation)
     @gen_defaults! data begin
         primitive = p[1] => to_mesh
         position = p[2] => TextureBuffer
@@ -249,7 +280,7 @@ function meshparticle(p, s, data)
         scale_y = nothing => TextureBuffer
         scale_z = nothing => TextureBuffer
 
-        rotation = Vec4f0(0,0,0,1) => TextureBuffer
+        rotation = rot => TextureBuffer
         texturecoordinates = nothing
     end
     inst = _Instances(
@@ -436,15 +467,15 @@ _default(p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict) where {Pr <: Sprites,
 function _default(
             p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
         ) where {Pr <: Sprites, G <: Tuple}
-        @gen_defaults! data begin
-            shape      = const_lift(primitive_shape, p[1])
-            position   = nothing => GLBuffer
-            position_x = p[2][1] => GLBuffer
-            position_y = p[2][2] => GLBuffer
-            position_z = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
-        end
-        sprites(p, s, data)
+    @gen_defaults! data begin
+        shape      = const_lift(primitive_shape, p[1])
+        position   = nothing => GLBuffer
+        position_x = p[2][1] => GLBuffer
+        position_y = p[2][2] => GLBuffer
+        position_z = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
     end
+    sprites(p, s, data)
+end
 
 """
 Main assemble functions for sprite particles.

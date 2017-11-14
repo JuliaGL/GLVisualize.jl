@@ -95,8 +95,7 @@ vec3 qmul(vec4 quat, vec3 vec){
 void rotate(Nothing r, int index, inout vec3 V, inout vec3 N){} // no-op
 void rotate(vec4 q, int index, inout vec3 V, inout vec3 N){
     V = qmul(q, V);
-    N = qmul(q, N);
-    //N = normalize(vec3(rot*vec4(N, 0)));
+    N = normalize(qmul(q, N));
 }
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N){
     vec4 r = texelFetch(vectors, index);
