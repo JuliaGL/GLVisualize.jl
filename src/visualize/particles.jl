@@ -261,13 +261,13 @@ function vec2quaternion(rotation::StaticVector{3})
 end
 
 
+vec2quaternion(rotation::VecTypes{Vec4f0}) = rotation
 vec2quaternion(rotation::VecTypes) = const_lift(x-> vec2quaternion.(x), rotation)
 vec2quaternion(rotation::Signal{<: StaticVector}) = map(vec2quaternion, rotation)
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
 function meshparticle(p, s, data)
-
     rot = get!(data, :rotation, Vec4f0(0, 0, 0, 1))
     rot = vec2quaternion(rot)
     delete!(data, :rotation)
