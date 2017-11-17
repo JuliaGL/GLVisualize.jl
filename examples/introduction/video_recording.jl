@@ -24,7 +24,7 @@ while true # for some reason, folder retured by mktempdir isn't usable -.-
 end
 
 # create a stream to which we can add frames
-io, buffer = GLVisualize.create_video_stream(name, window)
+io = GLVisualize.create_video_stream(name, window)
 for i=1:10 # record 10 frames
     # do something
     GLAbstraction.set_arg!(kitty, :color, RGBA{Float32}(1, 0, 1-(i/10), i/10))
@@ -35,10 +35,10 @@ for i=1:10 # record 10 frames
     GLWindow.reactive_run_till_now()
 
     # add the frame from the current window
-    GLVisualize.add_frame!(io, window, buffer)
+    GLVisualize.add_frame!(io)
 end
 # closing the stream will trigger writing the video!
-close(io)
+close(io.io)
 
 # clean up, only when we're not recording this!
 if !haskey(ENV, "CI_REPORT_DIR")

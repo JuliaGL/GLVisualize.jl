@@ -26,6 +26,7 @@ struct Grid3D{
 
 in vec3 vertices;
 in vec3 normals;
+{{texturecoordinates_type}} texturecoordinates;
 
 uniform vec3 light[4];
 uniform mat4 view, model, projection;
@@ -33,7 +34,7 @@ uniform uint objectid;
 uniform int len;
 
 flat out uvec2 o_id;
-     out vec4  o_color;
+out vec4 o_color;
 out vec2 o_uv;
 
 {{position_type}} position;
@@ -48,21 +49,20 @@ ivec3 ind2sub(ivec3 dim, int linearindex);
 {{rotation_type}}   rotation;
 void rotate(Nothing       vectors, int index, inout vec3 vertices, inout vec3 normal);
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N);
-void rotate(vec3          vectors, int index, inout vec3 vertices, inout vec3 normal);
-
+void rotate(vec4          vectors, int index, inout vec3 vertices, inout vec3 normal);
 
 
 {{scale_type}}   scale; // so in the case of distinct x,y,z, there's no chance to unify them under one variable
 {{scale_x_type}} scale_x;
 {{scale_y_type}} scale_y;
 {{scale_z_type}} scale_z;
-vec3 get_rotation(samplerBuffer rotation, int index){
-    return texelFetch(rotation, index).xyz;
+vec4 get_rotation(samplerBuffer rotation, int index){
+    return texelFetch(rotation, index);
 }
-vec3 get_rotation(Nothing rotation, int index){
-    return vec3(0,0,1);
+vec4 get_rotation(Nothing rotation, int index){
+    return vec4(0,0,0,1);
 }
-vec3 get_rotation(vec3 rotation, int index){
+vec4 get_rotation(vec4 rotation, int index){
     return rotation;
 }
 vec3 _scale(samplerBuffer scale, Nothing scale_x, Nothing       scale_y, Nothing       scale_z, int index);
@@ -72,13 +72,13 @@ vec3 _scale(vec3          scale, float   scale_x, float         scale_y, sampler
 vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, samplerBuffer scale_z, int index);
 
 vec3 _scale(Nothing       scale, float   scale_x, float         scale_y, Nothing scale_z, int index){
-    vec3 rot = get_rotation(rotation, index);
-    return vec3(scale_x,scale_y, length(rot));
+    vec4 rot = get_rotation(rotation, index);
+    return vec3(scale_x, scale_y, length(rot));
 }
 vec3 _scale(vec2 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index);
+
 vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){
-    vec3 rot = get_rotation(rotation, index);
-    return vec3(scale.xy, scale.z*length(rot));
+    return scale;
 }
 
 
@@ -99,19 +99,19 @@ vec4 _color(Nothing color, samplerBuffer intensity, sampler1D color_map, vec2 co
 vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_norm, int index, int len);
 
 float get_intensity(samplerBuffer rotation, Nothing position_z, int index){
-    return length(texelFetch(rotation, index).xyz);
+    return texelFetch(rotation, index).w;
 }
-float get_intensity(vec3 rotation, Nothing position_z, int index){return length(rotation);}
+float get_intensity(vec4 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(Nothing rotation, Nothing position_z, int index){return -1.0;}
 float get_intensity(Nothing rotation, samplerBuffer position_z, int index){
     return texelFetch(position_z, index).x;
 }
-float get_intensity(vec3 rotation, samplerBuffer position_z, int index){
+float get_intensity(vec4 rotation, samplerBuffer position_z, int index){
     return texelFetch(position_z, index).x;
 }
 vec4 color_lookup(float intensity, sampler1D color_ramp, vec2 norm);
 
-float get_intensity(vec3 rotation, float scale_z, int index){
+float get_intensity(vec4 rotation, float scale_z, int index){
     return scale_z;
 }
 
@@ -120,21 +120,27 @@ vec4 _color(Nothing color, Nothing intensity, sampler1D color_map, vec2 color_no
     return color_lookup(_intensity, color_map, color_norm);
 }
 
-void render(vec3 vertices, vec3 normals, mat4 viewmodel, mat4 projection, vec3 light[4]);
+
+vec4 _color(sampler2D color, Nothing intensity, Nothing color_map, Nothing color_norm, int index, int len){
+    return vec4(0);
+}
+
+void render(vec4 vertices, vec3 normal, mat4 view, mat4 projection, vec3 light[4]);
 
 
+vec2 get_uv(Nothing x){return vec2(0.0);}
+vec2 get_uv(vec2 x){return vec2(1.0 - x.y, x.x);}
 
 void main(){
-	int index = gl_InstanceID;
+    int index = gl_InstanceID;
     o_id      = uvec2(objectid, index+1);
-    vec3 V    = vertices;
+    vec3 s = _scale(scale, scale_x, scale_y, scale_z, index);
+    vec3 V    = vertices * s;
     vec3 N    = normals;
     vec3 pos;
-	{{position_calc}}
-    vec3 scale = _scale(scale, scale_x, scale_y, scale_z, index);
+    {{position_calc}}
     o_color    = _color(color, intensity, color_map, color_norm, index, len);
-    V *= scale;
-    o_uv = vec2(0.0);
+    o_uv = get_uv(texturecoordinates);
     rotate(rotation, index, V, N);
-    render(pos + V, N, view*model, projection, light);
+    render(model * vec4(pos + V, 1), N, view, projection, light);
 }

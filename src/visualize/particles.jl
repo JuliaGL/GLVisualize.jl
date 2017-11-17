@@ -57,7 +57,7 @@ end
 primitive.
 """
 function _default(main::ArrayTypes{T, 3}, s::Style, data::Dict) where T<:Vec
-    _default((Pyramid(Point3f0(0,0,-0.5), 1f0, 0.2f0), main), s, data)
+    _default((Pyramid(Point3f0(0, 0, -0.5), 1f0, 1f0), main), s, data)
 end
 """
 2D matrices of vectors are 2D vector field with a an unicode arrow as the default
@@ -73,7 +73,7 @@ The position is assumed to be implicitely on the grid the vector defines (1D,2D,
 """
 function _default(
         main::Tuple{P, ArrayTypes{T, N}}, s::Style, data::Dict
-    ) where {P<:AllPrimitives, T<:Vec, N}
+    ) where {P <: AllPrimitives, T <: Vec, N}
     primitive, rotation_s = main
     rotation_v = value(rotation_s)
     @gen_defaults! data begin
@@ -212,23 +212,79 @@ end
 function Base.convert(::Type{T}, mesh::Signal) where T<:GeometryTypes.HomogenousMesh
     map(T, mesh)
 end
+
+
+function to_meshcolor(color::TOrSignal{Vector{T}}) where T <: Colorant
+    TextureBuffer(color)
+end
+
+function to_meshcolor(color::TOrSignal{Matrix{T}}) where T <: Colorant
+    Texture(color)
+end
+function to_meshcolor(color)
+    color
+end
+
+function to_mesh(mesh::GeometryPrimitive)
+    gl_convert(const_lift(GLNormalMesh, mesh))
+end
+
+function to_mesh(mesh::TOrSignal{<: HomogenousMesh})
+    gl_convert(value(mesh))
+end
+
+function orthogonal(v::T) where T <: StaticVector{3}
+    x, y, z = abs.(v)
+    other = x < y ? (x < z ? unit(T, 1) : unit(T, 3)) : (y < z ? unit(T, 2) : unit(T, 3))
+    return cross(v, other)
+end
+
+function rotation_between(u::StaticVector{3, T}, v::StaticVector{3, T}) where T
+    k_cos_theta = dot(u, v)
+    k = sqrt((norm(u) ^ 2) * (norm(v) ^ 2))
+
+    q = if (k_cos_theta / k) ≈ T(-1)
+        # 180 degree rotation around any orthogonal vector
+        Quaternion(T(0), normalize(orthogonal(u))...)
+    else
+        normalize(Quaternion(k_cos_theta + k, cross(u, v)...))
+    end
+    Vec4f0(q.v1, q.v2, q.v3, q.s)
+end
+vec2quaternion(rotation::StaticVector{4}) = rotation
+
+function vec2quaternion(r::StaticVector{2})
+    vec2quaternion(Vec3f0(r[1], r[2], 0))
+end
+function vec2quaternion(rotation::StaticVector{3})
+    rotation_between(Vec3f0(rotation), Vec3f0(0, 0, 1))
+end
+
+
+vec2quaternion(rotation::VecTypes{Vec4f0}) = rotation
+vec2quaternion(rotation::VecTypes) = const_lift(x-> vec2quaternion.(x), rotation)
+vec2quaternion(rotation::Signal{<: StaticVector}) = map(vec2quaternion, rotation)
 """
 This is the main function to assemble particles with a GLNormalMesh as a primitive
 """
 function meshparticle(p, s, data)
+    rot = get!(data, :rotation, Vec4f0(0, 0, 0, 1))
+    rot = vec2quaternion(rot)
+    delete!(data, :rotation)
     @gen_defaults! data begin
-        primitive::GLNormalMesh = p[1]
-        position         = p[2] => TextureBuffer
-        position_x       = nothing => TextureBuffer
-        position_y       = nothing => TextureBuffer
-        position_z       = nothing => TextureBuffer
+        primitive = p[1] => to_mesh
+        position = p[2] => TextureBuffer
+        position_x = nothing => TextureBuffer
+        position_y = nothing => TextureBuffer
+        position_z = nothing => TextureBuffer
 
-        scale            = Vec3f0(1) => TextureBuffer
-        scale_x          = nothing => TextureBuffer
-        scale_y          = nothing => TextureBuffer
-        scale_z          = nothing => TextureBuffer
+        scale = Vec3f0(1) => TextureBuffer
+        scale_x = nothing => TextureBuffer
+        scale_y = nothing => TextureBuffer
+        scale_z = nothing => TextureBuffer
 
-        rotation         = Vec3f0(0,0,1) => TextureBuffer
+        rotation = rot => TextureBuffer
+        texturecoordinates = nothing
     end
     inst = _Instances(
         position, position_x, position_y, position_z,
@@ -242,8 +298,8 @@ function meshparticle(p, s, data)
         color      = if color_map == nothing
             default(RGBA{Float32}, s)
         else
-             nothing
-        end => TextureBuffer
+            nothing
+        end => to_meshcolor
 
         instances = const_lift(length, position)
         boundingbox = const_lift(GLBoundingBox, inst)
@@ -321,6 +377,7 @@ Gets the texture atlas if primitive is a char.
 """
 primitive_distancefield(x) = nothing
 primitive_distancefield(::Char) = get_texture_atlas().images
+primitive_distancefield(::Signal{Char}) = get_texture_atlas().images
 
 
 
@@ -404,48 +461,52 @@ end
 
 # There is currently no way to get the two following two signatures
 # under one function, which is why we delegate to sprites
-_default(p::Tuple{Primitive, VecTypes{P}}, s::Style, data::Dict) where {Primitive<:Sprites, P<:Point} =
+_default(p::Tuple{TOrSignal{Pr}, VecTypes{P}}, s::Style, data::Dict) where {Pr <: Sprites, P<:Point} =
     sprites(p,s,data)
 
-_default(p::Tuple{Primitive, G}, s::Style, data::Dict) where {Primitive<:Sprites, G<:Grid} =
+_default(p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict) where {Pr <: Sprites, G<:Grid} =
     sprites(p,s,data)
 
 function _default(
-            p::Tuple{Pr, G}, s::Style, data::Dict
+            p::Tuple{TOrSignal{Pr}, G}, s::Style, data::Dict
         ) where {Pr <: Sprites, G <: Tuple}
-        @gen_defaults! data begin
-            shape      = primitive_shape(p[1])
-            position   = nothing => GLBuffer
-            position_x = p[2][1] => GLBuffer
-            position_y = p[2][2] => GLBuffer
-            position_z = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
-        end
-        sprites(p, s, data)
+    @gen_defaults! data begin
+        shape      = const_lift(primitive_shape, p[1])
+        position   = nothing => GLBuffer
+        position_x = p[2][1] => GLBuffer
+        position_y = p[2][2] => GLBuffer
+        position_z = length(p[2]) > 2 ? p[2][3] : 0f0 => GLBuffer
     end
+    sprites(p, s, data)
+end
 
 """
 Main assemble functions for sprite particles.
 Sprites are anything like distance fields, images and simple geometries
 """
 function sprites(p, s, data)
+    rot = get!(data, :rotation, Vec4f0(0, 0, 0, 1))
+    rot = vec2quaternion(rot)
+    delete!(data, :rotation)
+
     @gen_defaults! data begin
-        shape       = primitive_shape(p[1])
+        shape       = const_lift(x-> Int32(primitive_shape(x)), p[1])
         position    = p[2]    => GLBuffer
         position_x  = nothing => GLBuffer
         position_y  = nothing => GLBuffer
         position_z  = nothing => GLBuffer
 
-        scale       = primitive_scale(p[1])  => GLBuffer
+        scale       = const_lift(primitive_scale, p[1]) => GLBuffer
         scale_x     = nothing                => GLBuffer
         scale_y     = nothing                => GLBuffer
         scale_z     = nothing                => GLBuffer
 
-        rotation    = Vec3f0(0,0,1)          => GLBuffer
+        rotation    = rot => GLBuffer
         image       = nothing => Texture
     end
     # TODO don't make this dependant on some shady type dispatch
-    if isa(p[1], Char) && !isa(scale, Vec) # correct dimensions
-        scale = Vec2f0(glyph_scale!(p[1], scale))
+    if isa(value(p[1]), Char) && !isa(value(scale), Vec) # correct dimensions
+        scale = const_lift(s-> Vec2f0(glyph_scale!(p[1], s)), scale)
         data[:scale] = scale
     end
     inst = _Instances(
@@ -464,13 +525,13 @@ function sprites(p, s, data)
         stroke_color    = RGBA{Float32}(0,0,0,0) => GLBuffer
         stroke_width    = 0f0
         glow_width      = 0f0
-        uv_offset_width = primitive_uv_offset_width(p[1]) => GLBuffer
+        uv_offset_width = const_lift(primitive_uv_offset_width, p[1]) => GLBuffer
 
         distancefield   = primitive_distancefield(p[1]) => Texture
-        indices         = const_lift(length, p[2]) => to_indices
+        indices         = const_lift(length, p[2]) => to_index_buffer
         boundingbox     = const_lift(GLBoundingBox, inst)
         # rotation and billboard don't go along
-        billboard        = rotation == Vec3f0(0,0,1) => "if `billboard` == true, particles will always face camera"
+        billboard        = rotation == Vec4f0(0,0,0,1) => "if `billboard` == true, particles will always face camera"
         preferred_camera = :orthographic_pixel
         fxaa             = false
         shader           = GLVisualizeShader(
@@ -518,8 +579,8 @@ function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractS
         uv_offset_width = const_lift(main) do str
             Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
         end
-        scale           = const_lift(main, relative_scale) do str, s
-            Vec2f0[glyph_scale!(atlas, c, font, s)  for c = str]
+        scale = const_lift(main, relative_scale) do str, s
+            Vec2f0[glyph_scale!(atlas, c, font, s) for c = str]
         end
     end
 

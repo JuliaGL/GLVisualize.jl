@@ -4,9 +4,7 @@ using GLVisualize, GeometryTypes, Reactive, GLAbstraction, Colors, GLWindow, Mod
 
 description = """
 Example showing a basic interactive setup for working inside the REPL/Atom/Jupyter.
-It also shows how to not clear what has been drawn. Note that this is currently
-not working correctly and generates cool smoke like artifacts. This will
-work in the future by making the canvas creation more flexible.
+It also shows how to not clear what has been drawn.
 The camera is fixed, since otherwise it would smear the whole image.
 """
 

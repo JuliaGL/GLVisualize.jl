@@ -104,13 +104,13 @@ function _Instances(position,px,py,pz, scale,sx,sy,sz, rotation, primitive)
     args = map(to_cpu_mem, args)
     p = const_lift(ArrayOrStructOfArray, Point3f0, args[1:4]...)
     s = const_lift(ArrayOrStructOfArray, Vec3f0, args[5:8]...)
-    r = const_lift(ArrayOrStructOfArray, Vec3f0, args[9])
+    r = const_lift(ArrayOrStructOfArray, Vec4f0, args[9])
     const_lift(Instances, args[10], p, s, r)
 end
 function _Instances(position, scale, rotation, primitive)
     p = const_lift(ArrayOrStructOfArray, Point3f0, position)
     s = const_lift(ArrayOrStructOfArray, Vec3f0, scale)
-    r = const_lift(ArrayOrStructOfArray, Vec3f0, rotation)
+    r = const_lift(ArrayOrStructOfArray, Vec4f0, rotation)
     const_lift(Instances, primitive, p, s, r)
 end
 
@@ -184,6 +184,50 @@ end
 
 import GeometryTypes: transform_convert
 
+function qmul(quat, vec)
+    num = quat[1] * 2f0;
+    num2 = quat[2] * 2f0;
+    num3 = quat[3] * 2f0;
+    num4 = quat[1] * num;
+    num5 = quat[2] * num2;
+    num6 = quat[3] * num3;
+    num7 = quat[1] * num2;
+    num8 = quat[1] * num3;
+    num9 = quat[2] * num3;
+    num10 = quat[4] * num;
+    num11 = quat[4] * num2;
+    num12 = quat[4] * num3;
+    return Point3f0(
+        (1f0 - (num5 + num6)) * vec[1] + (num7 - num12) * vec[2] + (num8 + num11) * vec[3],
+        (num7 + num12) * vec[1] + (1f0 - (num4 + num6)) * vec[2] + (num9 - num10) * vec[3],
+        (num8 - num11) * vec[1] + (num9 + num10) * vec[2] + (1f0 - (num4 + num5)) * vec[3]
+    )
+end
+
+# For quaternions
+function to_rotation_mat(x::Vec{4, T}) where T
+    Mat4{T}(Quaternions.Quaternion(x[4], x[1], x[2], x[3], true))
+end
+# For relative rotations of a vector
+function to_rotation_mat(x::StaticVector{2, T}) where T
+    to_rotation_mat(Vec3f0(x[1], x[2], 0))
+end
+function to_rotation_mat(x::StaticVector{3, T}) where T
+    rotation = Vec3f0(transform_convert(Point3f0, x))
+    v, u = normalize(rotation), Vec3f0(0, 0, 1)
+    # Unfortunately, we have to check for when u == -v, as u + v
+    # in this case will be (0, 0, 0), which cannot be normalized.
+    q = if (u == -v)
+        # 180 degree rotation around any orthogonal vector
+        other = (abs(dot(u, Vec{3, T}(1,0,0))) < 1.0) ? Vec{3, T}(1,0,0) : Vec{3, T}(0,1,0)
+        Quaternions.qrotation(normalize(cross(u, other)), T(180))
+    else
+        half = normalize(u+v)
+        vc = cross(u, half)
+        Quaternions.Quaternion(dot(u, half), vc[1], vc[2], vc[3])
+    end
+    Mat4{T}(q)
+end
 function next(t::TransformationIterator, state)
     _translation, st = next(t.translation, state[1])
     _scale, ss = next(t.scale, state[2])
@@ -191,22 +235,8 @@ function next(t::TransformationIterator, state)
 
     translation = Point3f0(transform_convert(Vec3f0, _translation))
     scale = Vec3f0(transform_convert(Point3f0, _scale))
-    rotation = Vec3f0(transform_convert(Point3f0, _rotation))
-    v,u = normalize(rotation), Vec3f0(0,0,1)
-    # Unfortunately, we have to check for when u == -v, as u + v
-    # in this case will be (0, 0, 0), which cannot be normalized.
-    T = Float32
-    local q::Quaternion{T}
-    if (u == -v)
-        # 180 degree rotation around any orthogonal vector
-        other = (abs(dot(u, Vec{3, T}(1,0,0))) < 1.0) ? Vec{3, T}(1,0,0) : Vec{3, T}(0,1,0)
-        q = Quaternions.qrotation(normalize(cross(u, other)), T(180))
-    else
-        half = normalize(u+v)
-        vc = cross(u, half)
-        q = Quaternions.Quaternion(dot(u, half), vc[1], vc[2], vc[3])
-    end
-    ((translation, scale, Mat4{T}(q)), (st, ss, sr))
+    rotation = to_rotation_mat(_rotation)
+    ((translation, scale, rotation), (st, ss, sr))
 end
 
 

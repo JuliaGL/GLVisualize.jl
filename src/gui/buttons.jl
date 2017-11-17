@@ -1,6 +1,6 @@
 function button(a, screen; kw_args...)
     robj = visualize(a; kw_args...).children[]
-    const m2id = mouse2id(screen)
+    m2id = mouse2id(screen)
     is_pressed = droprepeats(map(screen.inputs[:key_pressed]) do isclicked
         isclicked && value(m2id).id == robj.id
     end)
