@@ -84,7 +84,7 @@ function surface(main, s::Style{:surface}, data::Dict)
         wireframe        = false
         image            = nothing => Texture
         distancefield    = nothing => Texture
-        shading          = true
+        shading         = true
         normal           = shading
     end
     @gen_defaults! data begin

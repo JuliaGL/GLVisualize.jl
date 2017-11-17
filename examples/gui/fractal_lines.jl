@@ -56,11 +56,10 @@ function generate_fractal(angles, depth = 5)
     result, levels
 end
 
-iconsize = 5mm
-textsize = 5mm
+iconsize = 8mm
 
 
-editarea, viewarea = x_partition_abs(window.area, round(Int, 12 * iconsize))
+editarea, viewarea = x_partition_abs(window.area, round(Int, 8.2 * iconsize))
 edit_screen = Screen(
     window, area = editarea,
     color = RGBA{Float32}(0.0f0, 0.0f0, 0.0f0, 1f0),
@@ -73,21 +72,21 @@ viewscreen = Screen(
 
 
 angles = ntuple(4) do i
-    labeled_slider(0.0:1.0:360.0, edit_screen, text_scale = textsize, icon_size = iconsize, knob_scale = 3mm)
+    labeled_slider(0.0:1.0:360.0, edit_screen)
 end
 
-iterations_v, iterations_s = labeled_slider(1:11, edit_screen, text_scale = textsize, icon_size = iconsize, knob_scale = 3mm)
+iterations_v, iterations_s = labeled_slider(1:11, edit_screen)
 
 cmap_v, cmap_s = widget(
     map(RGBA{Float32}, colormap("Blues", 5)),
     edit_screen;
-    area = (12 * iconsize, iconsize/3),
-    knob_scale = 1.3mm,
+    area = (7.5 * iconsize, iconsize/3),
+    knob_scale = 1.5mm,
 )
 
 thickness_v, thickness_s = widget(
     Signal(0.4f0), edit_screen,
-    text_scale = textsize,
+    text_scale = 5mm,
     range = 0f0:0.05f0:20f0
 )
 
@@ -101,7 +100,7 @@ segments = Point2f0[
 
 # we could restrict the movement of the points with the kw_arg clampto
 # But I don't really feel like restricting the user here ;)
-line_v, line_s = widget(segments, edit_screen, knob_scale = 1.5mm)
+line_v, line_s = widget(segments, edit_screen)
 
 center_v, center_s = button("⛶", relative_scale = iconsize, edit_screen)
 
@@ -120,8 +119,8 @@ controls = Pair[
 
 _view(visualize(
     controls,
-    text_scale = textsize,
-    width = 12iconsize
+    text_scale = 4mm,
+    width = 8iconsize
 ), edit_screen, camera = :fixed_pixel)
 
 function to_anglelengths(angles, line)

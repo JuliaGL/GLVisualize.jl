@@ -66,7 +66,7 @@ function cubecamera(
         trans       = Signal(Vec3f0(0)),
         theta       = Signal(Vec3f0(0))
     )
-    T = Float32
+    const T = Float32
     @materialize mouse_buttons_pressed, mouseposition, buttons_pressed = window.inputs
     dd = doubleclick(mouse_buttons_pressed, 0.3)
     mousehover = GLWindow.mouse2id(window)

@@ -71,34 +71,38 @@ mat4 rotationmatrix_y(float angle){
         0, 0, 0, 1);
 }
 
-vec3 qmul(vec4 quat, vec3 vec){
-    float num = quat.x * 2.0;
-    float num2 = quat.y * 2.0;
-    float num3 = quat.z * 2.0;
-    float num4 = quat.x * num;
-    float num5 = quat.y * num2;
-    float num6 = quat.z * num3;
-    float num7 = quat.x * num2;
-    float num8 = quat.x * num3;
-    float num9 = quat.y * num3;
-    float num10 = quat.w * num;
-    float num11 = quat.w * num2;
-    float num12 = quat.w * num3;
-    return vec3(
-        (1.0 - (num5 + num6)) * vec.x + (num7 - num12) * vec.y + (num8 + num11) * vec.z,
-        (num7 + num12) * vec.x + (1.0 - (num4 + num6)) * vec.y + (num9 - num10) * vec.z,
-        (num8 - num11) * vec.x + (num9 + num10) * vec.y + (1.0 - (num4 + num5)) * vec.z
-    );
+const vec3 UP_VECTOR = vec3(0,0,1);
+mat4 rotation_mat(vec3 direction){
+    direction = normalize(direction);
+    mat4 rot = mat4(1.0);
+    if(direction == UP_VECTOR)
+        return rot;
+    vec3 xaxis = normalize(cross(UP_VECTOR, direction));
+
+    vec3 yaxis = normalize(cross(direction, xaxis));
+
+    rot[0][0] = xaxis.x;
+    rot[1][0] = yaxis.x;
+    rot[2][0] = direction.x;
+
+    rot[0][1] = xaxis.y;
+    rot[1][1] = yaxis.y;
+    rot[2][1] = direction.y;
+
+    rot[0][2] = xaxis.z;
+    rot[1][2] = yaxis.z;
+    rot[2][2] = direction.z;
+
+    return rot;
 }
-
-
 void rotate(Nothing r, int index, inout vec3 V, inout vec3 N){} // no-op
-void rotate(vec4 q, int index, inout vec3 V, inout vec3 N){
-    V = qmul(q, V);
-    N = normalize(qmul(q, N));
+void rotate(vec3 direction, int index, inout vec3 V, inout vec3 N){
+    mat4 rot = rotation_mat(direction);
+    V = vec3(rot*vec4(V, 1));
+    //N = normalize(vec3(rot*vec4(N, 0)));
 }
 void rotate(samplerBuffer vectors, int index, inout vec3 V, inout vec3 N){
-    vec4 r = texelFetch(vectors, index);
+    vec3 r = texelFetch(vectors, index).xyz;
     rotate(r, index, V, N);
 }
 
@@ -228,19 +232,20 @@ vec4 _color(Nothing color, float intensity, sampler1D color_map, vec2 color_norm
 out vec3 o_normal;
 out vec3 o_lightdir;
 out vec3 o_vertex;
-uniform mat3 normalmatrix;
 
-void render(vec4 position_world, vec3 normal, mat4 view, mat4 projection, vec3 light[4])
+
+void render(vec3 vertex, vec3 normal, mat4 viewmodel, mat4 projection, vec3 light[4])
 {
+    vec4 position_camspace = viewmodel * vec4(vertex,  1);
     // normal in world space
     // TODO move transpose inverse calculation to cpu
-    o_normal               = normal;
+    o_normal               = vec3(transpose(inverse(viewmodel)) * vec4(normal,0));
     // direction to light
-    o_lightdir             = normalize(light[3] - position_world.xyz);
+    o_lightdir             = normalize(light[3] - vec3(position_camspace));
     // direction to camera
-    o_vertex               = -position_world.xyz;
+    o_vertex               = -position_camspace.xyz;
     // screen space coordinates of the vertex
-    gl_Position            = projection * view * position_world;
+    gl_Position            = projection * position_camspace;
 }
 
 

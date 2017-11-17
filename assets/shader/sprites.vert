@@ -49,20 +49,19 @@ vec3 _scale(vec2    scale, float   scale_x, float   scale_y, float   scale_z, in
 {{offset_type}} offset;
 
 {{rotation_type}} rotation;
+vec3 _rotation(Nothing r){return vec3(0,0,1);}
+vec3 _rotation(vec2 r){return vec3(r, 3.1415926535897);}
+vec3 _rotation(vec3 r){return r;}
 
-vec4 _rotation(Nothing r){return vec4(0,0,0,1);}
-vec4 _rotation(vec2 r){return vec4(r, 0, 1);}
-vec4 _rotation(vec3 r){return vec4(r, 1);}
-vec4 _rotation(vec4 r){return r;}
-
+float get_rotation_len(vec2 rotation){
+    return length(rotation);
+}
 float get_rotation_len(Nothing rotation){
     return 1.0;
 }
-
-float get_rotation_len(vec4 rotation){
-    return 1.0;
+float get_rotation_len(vec3 rotation){
+    return length(rotation);
 }
-
 vec3 _scale(Nothing scale, float scale_x, float scale_y, Nothing scale_z, int index){
     float len = get_rotation_len(rotation);
     return vec3(scale_x,scale_y, len);
@@ -77,7 +76,6 @@ vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int i
 {{intensity_type}}    intensity;
 {{color_norm_type}}   color_norm;
 
-float get_intensity(vec4 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(vec3 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(vec2 rotation, Nothing position_z, int index){return length(rotation);}
 float get_intensity(Nothing rotation, float position_z, int index){return position_z;}
@@ -103,7 +101,7 @@ out int   g_primitive_index;
 out vec3  g_position;
 out vec4  g_offset_width;
 out vec4  g_uv_offset_width;
-out vec4  g_rotation;
+out vec3  g_rotation;
 out vec4  g_color;
 out vec4  g_stroke_color;
 out vec4  g_glow_color;

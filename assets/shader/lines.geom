@@ -30,18 +30,20 @@ uniform float pattern_length;
 
 vec2 screen_space(vec4 vertex)
 {
-    return vec2(vertex.xy / vertex.w) * resolution;
+    return vec2( vertex.xy / vertex.w ) * resolution;
 }
-void emit_vertex(vec2 position, vec2 uv, int index, float ratio)
+void emit_vertex(vec2 position, vec2 uv, int index)
 {
     vec4 inpos  = gl_in[index].gl_Position;
-    f_uv        = vec2((g_lastlen[index] * ratio) / pattern_length / (thickness+4) / 2.0, uv.y);
+    float vx    = (g_lastlen[index]/maxlength) * 80 * inpos.w;
+    f_uv        = vec2(vx, uv.y);
     f_color     = g_color[index];
     gl_Position = vec4((position/resolution)*inpos.w, inpos.z, inpos.w);
     f_id        = g_id[index];
     f_thickness = thickness;
     EmitVertex();
 }
+#define AA_THICKNESS 3.0
 
 vec2 compute_miter(vec2 normal_a, vec2 normal_b)
 {
@@ -54,7 +56,7 @@ vec2 compute_miter(vec2 normal_a, vec2 normal_b)
 }
 
 uniform int max_primtives;
-const float infinity = 1.0 / 0.0;
+const float infinity = 1. / 0.;
 
 void main(void)
 {
@@ -100,9 +102,6 @@ void main(void)
 
     float xstart = g_lastlen[1];
     float xend   = g_lastlen[2];
-
-    float ratio = length(p2 - p1) / (xend - xstart);
-
     /*
     over 90
          v0
@@ -128,30 +127,30 @@ void main(void)
         // close the gap
         if(gap){
             if (g_startend[0] == 0){
-                emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0, ratio);
-                emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0, ratio);
-                emit_vertex(p1 + thickness_aa * n1, vec2(1, uvy), 1, ratio);
+                emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0);
+                emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0);
+                emit_vertex(p1 + thickness_aa * n1, vec2(1, uvy), 1);
             }
-            emit_vertex(p1 + thickness_aa * n0, vec2(1, -uvy), 1, ratio);
-            emit_vertex(p1 + thickness_aa * n1, vec2(1, -uvy), 1, ratio);
-            emit_vertex(p1,                     vec2(0, 0.0), 1, ratio);
+            emit_vertex(p1 + thickness_aa * n0, vec2(1, -uvy), 1);
+            emit_vertex(p1 + thickness_aa * n1, vec2(1, -uvy), 1);
+            emit_vertex(p1,                     vec2(0, 0.0), 1);
             EndPrimitive();
         }else{
             if (g_startend[0] == 0){
-                emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0, ratio);
-                emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0, ratio);
-                emit_vertex(p1 + length_a * miter_a, vec2(1, -uvy), 1, ratio);
+                emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0);
+                emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0);
+                emit_vertex(p1 + length_a * miter_a, vec2(1, -uvy), 1);
             }
-            emit_vertex(p1 - thickness_aa * n0, vec2(1, uvy), 1, ratio);
-            emit_vertex(p1,                     vec2(0, 0.0), 1, ratio);
-            emit_vertex(p1 - thickness_aa * n1, vec2(1, uvy), 1, ratio);
+            emit_vertex(p1 - thickness_aa * n0, vec2(1, uvy), 1);
+            emit_vertex(p1,                     vec2(0, 0.0), 1);
+            emit_vertex(p1 - thickness_aa * n1, vec2(1, uvy), 1);
             EndPrimitive();
         }
         miter_a = n1;
         length_a = thickness_aa;
     }else if(g_startend[0] == 0){
-        emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0, ratio);
-        emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0, ratio);
+        emit_vertex(p0 + thickness_aa * n0, vec2(1, -uvy), 0);
+        emit_vertex(p0 - thickness_aa * n0, vec2(1, uvy), 0);
     }
 
     vec2 nc = n2;
@@ -163,15 +162,15 @@ void main(void)
 
     // generate the triangle strip
 
-    emit_vertex(p1 + length_a * miter_a, vec2( 0, -uvy), 1, ratio);
-    emit_vertex(p1 - length_a * miter_a, vec2( 0, uvy), 1, ratio);
+    emit_vertex(p1 + length_a * miter_a, vec2( 0, -uvy), 1);
+    emit_vertex(p1 - length_a * miter_a, vec2( 0, uvy), 1);
 
-    emit_vertex(p2 + length_b * miter_b, vec2( 0, -uvy ), 2, ratio);
-    emit_vertex(p2 - length_b * miter_b, vec2( 0, uvy), 2, ratio);
+    emit_vertex(p2 + length_b * miter_b, vec2( 0, -uvy ), 2);
+    emit_vertex(p2 - length_b * miter_b, vec2( 0, uvy), 2);
 
     if(g_startend[3] == 1) //last primitive
     {
-        emit_vertex(p3 + (thickness_aa) * nc, vec2(0, -uvy), 3, ratio);
-        emit_vertex(p3 - (thickness_aa) * nc, vec2(0, uvy), 3, ratio);
+        emit_vertex(p3 + (thickness_aa) * nc, vec2(0, -uvy), 3);
+        emit_vertex(p3 - (thickness_aa) * nc, vec2(0, uvy), 3);
     }
 }
