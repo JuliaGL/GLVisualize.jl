@@ -345,9 +345,9 @@ returns the Shape for the distancefield algorithm
 """
 primitive_shape(::Char) = DISTANCEFIELD
 primitive_shape(x::X) where {X} = primitive_shape(X)
-primitive_shape(::Type{T}) where {T<:Circle} = CIRCLE
-primitive_shape(::Type{T}) where {T<:SimpleRectangle} = RECTANGLE
-primitive_shape(::Type{T}) where {T<:HyperRectangle{2}} = RECTANGLE
+primitive_shape(::Type{T}) where {T <: Circle} = CIRCLE
+primitive_shape(::Type{T}) where {T <: SimpleRectangle} = RECTANGLE
+primitive_shape(::Type{T}) where {T <: HyperRectangle{2}} = RECTANGLE
 primitive_shape(x::Shape) = x
 
 """
@@ -558,6 +558,11 @@ end
 Transforms text into a particle system of sprites, by inferring the
 texture coordinates in the texture atlas, widths and positions of the characters.
 """
+function _default(main::Tuple{TOrSignal{S}, P}, s::Style, data::Dict) where {S <: AbstractString, P}
+    data[:position] = main[2]
+    _default(main[1], s, data)
+end
+
 function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractString
     @gen_defaults! data begin
         relative_scale  = 4mm #
@@ -583,6 +588,6 @@ function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractS
             Vec2f0[glyph_scale!(atlas, c, font, s) for c = str]
         end
     end
-
+    delete!(data, :font)
     _default((DISTANCEFIELD, position), s, data)
 end
