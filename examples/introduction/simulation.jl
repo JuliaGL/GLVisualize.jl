@@ -84,8 +84,8 @@ function init(res = (800,800))
     # returns a new signal with the returnvalue of that callback. Since we don't
     # use that signal, Reactive will try to garbage collect it, which is why we need
     # to call preserve on it.
-    preserve(map(window.inputs[:keyboard_buttons]) do kam
-        key, action, mods = kam
+    preserve(map(window.inputs[:keyboard_buttons]) do ksam
+        key, scancode, action, mods = ksam
         if key == GLFW.KEY_S
             println("saving screenshot")
             screenshot(window, path="screenshot.jpg")
