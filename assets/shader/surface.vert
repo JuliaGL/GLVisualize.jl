@@ -35,6 +35,7 @@ vec4 get_color(vec4 color, float _intensity, Nothing color_map, Nothing color_no
 vec4 get_color(Nothing color, float _intensity, sampler1D color_map, vec2 color_norm, int index){
     return color_lookup(_intensity, color_map, color_norm);
 }
+
 vec4 get_color(sampler2D color, float _intensity, Nothing b, Nothing c, int index){
     return vec4(0); // we fetch the color in fragment shader
 }

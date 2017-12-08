@@ -2,21 +2,12 @@
 
 flat in uvec2 o_id;
 
-{{color_type}} color;
+in vec4 o_color;
 
-vec4 get_color(vec4 color){
-    return color;
-}
-vec4 get_color(vec3 color){
-    return vec4(color, 1);
-}
 
 
 void write2framebuffer(vec4 color, uvec2 id);
 
 void main(){
-    write2framebuffer(
-        get_color(color),
-        o_id
-    );
+    write2framebuffer(o_color, o_id);
 }

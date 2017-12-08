@@ -72,6 +72,22 @@ const text_signals = Dict(
 )
 
 
+function children(x::Signal)
+    filter(x-> x != nothing, (x-> x.value).(Reactive.nodes[Reactive.edges[x.id]]))
+end
+
+
+function disconnect!(x::Signal, toremove::Signal)
+    x.parents = (Iterators.filter(x-> x != toremove, x.parents)...,)
+end
+
+function disconnect_all_children!(x::Signal)
+    for child in children(x)
+        disconnect!(child, x)
+    end
+end
+
+
 function create_screens(rootscreen)
     # partition screen into 4 areas at 15% and 17%
     iconsize = 10mm
@@ -382,17 +398,19 @@ function inner_test(path, config, window, break_loop, runthrough, increase)
         while !break_loop[] && isopen(config.rootscreen)
             t = time()
             poll_glfw()
-            if Base.n_avail(Reactive._messages) > 0
-                reactive_run_till_now() # two times for secondary signals
-                render_frame(config.rootscreen)
-                swapbuffers(config.rootscreen)
-            end
+            # TODO figure out why a waiting renderloop isn't working with the play button.
+            # I suppose fpwswhen doesn't push a value to _messages?
+            # if Base.n_avail(Reactive._messages) > 0
+            #     reactive_run_till_now() # two times for secondary signals
+            render_frame(config.rootscreen)
+            swapbuffers(config.rootscreen)
+            # end
             frames += 1
             t = time() - t
             if length(timings) < 1000 && frames > 2
                 push!(timings, t)
             end
-            yield() # yield in timings? Seems fair
+            yield()
             GLWindow.sleep_pessimistic((1/60) - t)
             (runthrough[] != 0 && frames > 20) && break
         end
@@ -465,7 +483,18 @@ function make_tests(config)
         for childweakref in Reactive.nodes[Reactive.edges[slider.id]]
             # remove signals depending on slider
             child = childweakref.value
-            child.parents = Tuple(Iterators.filter(p-> p != slider, child.parents))
+            if child != nothing
+                child.parents = Tuple(Iterators.filter(p-> p != slider, child.parents))
+            end
+        end
+        for (k, s) in window.inputs
+            if !(k in (
+                    :cursor_position,
+                    :window_size,
+                    :framebuffer_size
+                ))
+                disconnect_all_children!(s)
+            end
         end
         gc()
     end

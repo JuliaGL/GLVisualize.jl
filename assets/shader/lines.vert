@@ -40,6 +40,7 @@ vec4 to_vec4(vec2 v){return vec4(v, 0, 1);}
 int get_startend(float se){return int(se);}
 int get_startend(Nothing se){return 2;}
 
+uniform float move_to_cam = 1.0;
 
 void main()
 {
@@ -49,5 +50,7 @@ void main()
     g_startend = get_startend(startend);
     g_color = _color(color, intensity, color_map, color_norm, index, dims.x*dims.y);
     g_line_connections = uint(index/dims.x);
-    gl_Position = projection*view*model*to_vec4(vertex);
+    vec4 poscamspace =  projection*view*model*to_vec4(vertex);
+    poscamspace.z = move_to_cam * poscamspace.z;
+    gl_Position = poscamspace;
 }

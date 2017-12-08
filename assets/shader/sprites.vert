@@ -44,8 +44,6 @@ vec3 _scale(Nothing scale, float   scale_x, float   scale_y, float   scale_z, in
 vec3 _scale(vec3    scale, float   scale_x, float   scale_y, float   scale_z, int index);
 vec3 _scale(vec2    scale, float   scale_x, float   scale_y, float   scale_z, int index);
 
-
-
 {{offset_type}} offset;
 
 {{rotation_type}} rotation;
@@ -67,6 +65,7 @@ vec3 _scale(Nothing scale, float scale_x, float scale_y, Nothing scale_z, int in
     float len = get_rotation_len(rotation);
     return vec3(scale_x,scale_y, len);
 }
+
 vec3 _scale(vec3 scale, Nothing scale_x, Nothing scale_y, Nothing scale_z, int index){
     float len = get_rotation_len(rotation);
     return vec3(scale.xy, scale.z*len);
@@ -112,7 +111,7 @@ out vec4  g_glow_color;
 
 void main(){
     int index         = gl_VertexID;
-	g_primitive_index = index;
+    g_primitive_index = index;
     vec3 pos;
     {{position_calc}}
     g_position        = pos;

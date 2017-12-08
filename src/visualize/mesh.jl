@@ -67,10 +67,15 @@ function _default(main::TOrSignal{M}, ::style"grid", data::Dict) where M <: GLPl
     end
 end
 
-function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: GLPlainMesh
+
+const VertexcolorMesh{VT, FT, NT, CT} = HMesh{Point{3, VT}, FT, Void, Void, Vector{CT}, Void, Void}
+const GLVertexcolorMesh = NormalVertexcolorMesh{Float32, GLTriangle, Float32, RGBA{Float32}}
+
+function _default(mesh::TOrSignal{M}, s::Style, data::Dict) where M <: Union{GLVertexcolorMesh, GLPlainMesh}
     @gen_defaults! data begin
-        primitive::GLPlainMesh = mesh
-        color = default(RGBA, s, 1)
+        primitive = mesh
+        color = hascolors(primitive) ? nothing : default(RGBA, s, 1)
+        vertex_color = nothing
         boundingbox = const_lift(GLBoundingBox, mesh)
         shader = GLVisualizeShader("fragment_output.frag", "plain.vert", "plain.frag")
     end

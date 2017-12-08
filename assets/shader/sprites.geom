@@ -68,13 +68,9 @@ void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
 {
     vec4 sprite_position, final_position;
     vec4 datapoint = projection*view*model*vec4(g_position[0], 1);
-    if(scale_primitive)
-        final_position = model*vec4(vertex, 0, 0);
-    else{
-        final_position = vec4(vertex, 0, 0);
-    }
+    final_position = vec4(vertex, 0, 0);
     if(billboard){
-        final_position = projection*final_position;
+        final_position = projection * final_position;
     }else{
         final_position = projection * view * vec4(
             qmul(g_rotation[0], final_position.xyz), 0
@@ -111,11 +107,12 @@ void main(void)
     vec2 scale_rel = (final_scale/o_w.zw);
     float hfs = glow_stroke/2.0;
     vec4 uv_min_max = vec4(-scale_rel, scale_rel); //minx, miny, maxx, maxy
-    vec4 vertices = vec4(-hfs+o_w.xy, (o_w.zw)+o_w.xy+glow_stroke); // use offset as origin quad (x,y,w,h)
+    // use offset as origin quad (x,y,w,h)
+    vec4 vertices = vec4(-hfs+o_w.xy, (o_w.zw)+o_w.xy+glow_stroke);
     f_scale = vec2(stroke_width, glow_width)/o_w.zw;
     emit_vertex(vertices.xy, uv_min_max.xw, uv_o_w.xw);
-    emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);
     emit_vertex(vertices.zy, uv_min_max.zw, uv_o_w.zw);
+    emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);
     emit_vertex(vertices.zw, uv_min_max.zy, uv_o_w.zy);
     EndPrimitive();
 }

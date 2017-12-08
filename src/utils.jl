@@ -337,3 +337,13 @@ function layoutscreens(parent, layout;
     end
     result
 end
+
+# Only colors with Alpha can be transparent
+function is_transparent(x::TransparentColor)
+    alpha(x) < 1.0
+end
+is_transparent(x::Colorant) = false
+
+is_transparent(x::Signal) = map(is_transparent, x)
+is_transparent(x::AbstractArray{<: Colorant}) = false
+is_transparent(x::AbstractArray{<: TransparentColor}) = any(is_transparent, x)
