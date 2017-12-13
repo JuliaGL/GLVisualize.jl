@@ -340,10 +340,12 @@ _default(position::VecTypes{T}, s::style"speed", data::Dict) where {T <: Point} 
     gl_primitive = GL_POINTS
 end
 
+
+const CharPrims = Union{Signal{Char}, AbstractVector{Char}, Char, Signal{<:AbstractVector{Char}}}
 """
 returns the Shape for the distancefield algorithm
 """
-primitive_shape(::Char) = DISTANCEFIELD
+primitive_shape(::CharPrims) = DISTANCEFIELD
 primitive_shape(x::X) where {X} = primitive_shape(X)
 primitive_shape(::Type{T}) where {T <: Circle} = CIRCLE
 primitive_shape(::Type{T}) where {T <: SimpleRectangle} = RECTANGLE
@@ -369,6 +371,7 @@ primitive_offset(x, scale) = const_lift(/, scale, -2f0)  # default offset
 """
 Extracts the uv offset and width from a primitive.
 """
+primitive_uv_offset_width(c::AbstractVector{Char}) = glyph_uv_width!.(c)
 primitive_uv_offset_width(c::Char) = glyph_uv_width!(c)
 primitive_uv_offset_width(x) = Vec4f0(0,0,1,1)
 
@@ -376,8 +379,7 @@ primitive_uv_offset_width(x) = Vec4f0(0,0,1,1)
 Gets the texture atlas if primitive is a char.
 """
 primitive_distancefield(x) = nothing
-primitive_distancefield(::Char) = get_texture_atlas().images
-primitive_distancefield(::Signal{Char}) = get_texture_atlas().images
+primitive_distancefield(::CharPrims) = get_texture_atlas().images
 
 
 
@@ -481,6 +483,22 @@ function _default(
 end
 
 """
+Vectorized glyph scale
+"""
+v_glypscale!(p::Char, s::Vec) = Vec2f0(glyph_scale!(p, s))
+v_glypscale!(p::AbstractVector{Char}, s::Vec) = Vec2f0.(glyph_scale!.(p, (s,)))
+v_glypscale!(p, s) = Vec2f0.(glyph_scale!.(p, s))
+
+
+function to_primitives(offset::StaticVector{2}, scale::StaticVector{2})
+    o = offset ./ scale
+    SimpleRectangle{Float32}(o[1], o[2], 1, 1)
+end
+to_primitives(offsets::AbstractVector{<: StaticVector{2}}, scale::AbstractVector) = to_primitives.(offsets, scale)
+to_primitives(offsets::AbstractVector{<: StaticVector{2}}, scale::StaticVector{2}) = to_primitives.(offsets, (scale,))
+
+
+"""
 Main assemble functions for sprite particles.
 Sprites are anything like distance fields, images and simple geometries
 """
@@ -488,7 +506,6 @@ function sprites(p, s, data)
     rot = get!(data, :rotation, Vec4f0(0, 0, 0, 1))
     rot = vec2quaternion(rot)
     delete!(data, :rotation)
-
     @gen_defaults! data begin
         shape       = const_lift(x-> Int32(primitive_shape(x)), p[1])
         position    = p[2]    => GLBuffer
@@ -497,25 +514,28 @@ function sprites(p, s, data)
         position_z  = nothing => GLBuffer
 
         scale       = const_lift(primitive_scale, p[1]) => GLBuffer
-        scale_x     = nothing                => GLBuffer
-        scale_y     = nothing                => GLBuffer
-        scale_z     = nothing                => GLBuffer
+        scale_x     = nothing => GLBuffer
+        scale_y     = nothing => GLBuffer
+        scale_z     = nothing => GLBuffer
 
         rotation    = rot => GLBuffer
         image       = nothing => Texture
     end
     # TODO don't make this dependant on some shady type dispatch
-    if isa(value(p[1]), Char) && !isa(value(scale), Vec) # correct dimensions
-        scale = const_lift(s-> Vec2f0(glyph_scale!(p[1], s)), scale)
+    if isa(p[1], CharPrims) # correct dimensions
+        scale = const_lift(v_glypscale!, p[1], scale)
         data[:scale] = scale
     end
+    @gen_defaults! data begin
+        offset = primitive_offset(p[1], scale) => GLBuffer
+    end
+    prims = const_lift(to_primitives, offset, scale)
     inst = _Instances(
         position, position_x, position_y, position_z,
         scale, scale_x, scale_y, scale_z,
-        rotation, SimpleRectangle{Float32}(0,0,1,1)
+        rotation, prims
     )
     @gen_defaults! data begin
-        offset          = primitive_offset(p[1], scale) => GLBuffer
         intensity       = nothing => GLBuffer
         color_map       = nothing => Texture
         color_norm      = nothing
@@ -537,7 +557,7 @@ function sprites(p, s, data)
         shader           = GLVisualizeShader(
             "fragment_output.frag", "util.vert", "sprites.geom",
             "sprites.vert", "distance_shape.frag",
-            view = Dict("position_calc"=>position_calc(position, position_x, position_y, position_z, GLBuffer))
+            view = Dict("position_calc" => position_calc(position, position_x, position_y, position_z, GLBuffer))
         )
         gl_primitive = GL_POINTS
     end
@@ -550,6 +570,9 @@ function sprites(p, s, data)
         data[:intensity] = intensity_convert(intensity, position_x)
         data[:len] = const_lift(length, position_x)
     end
+    if isa(scale, VecTypes)
+        data[:scale] = gl_convert(GLBuffer, scale)
+    end
     data
 end
 
@@ -558,11 +581,17 @@ end
 Transforms text into a particle system of sprites, by inferring the
 texture coordinates in the texture atlas, widths and positions of the characters.
 """
-function _default(main::Tuple{TOrSignal{S}, P}, s::Style, data::Dict) where {S <: AbstractString, P}
+function _default(main::Tuple{TOrSignal{S}, P}, s::Style, data::Dict) where {S <: AbstractVector{Char}, P}
     data[:position] = main[2]
     _default(main[1], s, data)
 end
 
+function text_prerender()
+    glDisable(GL_DEPTH_TEST)
+    glDepthMask(GL_TRUE)
+    glDisable(GL_CULL_FACE)
+    enabletransparency()
+end
 function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractString
     @gen_defaults! data begin
         relative_scale  = 4mm #
@@ -575,12 +604,7 @@ function _default(main::TOrSignal{S}, s::Style, data::Dict) where S <: AbstractS
         scale_primitive = true
         position        = const_lift(calc_position, main, start_position, relative_scale, font, atlas)
         offset          = const_lift(calc_offset, main, relative_scale, font, atlas)
-        prerender       = () -> begin
-            glDisable(GL_DEPTH_TEST)
-            glDepthMask(GL_TRUE)
-            glDisable(GL_CULL_FACE)
-            enabletransparency()
-        end
+        prerender       = text_prerender
         uv_offset_width = const_lift(main) do str
             Vec4f0[glyph_uv_width!(atlas, c, font) for c = str]
         end

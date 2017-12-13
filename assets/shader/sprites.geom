@@ -76,7 +76,7 @@ void emit_vertex(vec2 vertex, vec2 uv, vec2 uv_offset)
             qmul(g_rotation[0], final_position.xyz), 0
         );
     }
-    gl_Position = datapoint+final_position;
+    gl_Position = datapoint + final_position;
 
     f_uv              = uv;
     f_uv_offset       = uv_offset;
@@ -102,14 +102,14 @@ void main(void)
     // v1*      * v2
     vec4 o_w = g_offset_width[0];
     vec4 uv_o_w = g_uv_offset_width[0];
-    float glow_stroke = max(glow_width, 0)+max(stroke_width, 0); //we don't need negativity here
-    vec2 final_scale = o_w.zw+glow_stroke;
-    vec2 scale_rel = (final_scale/o_w.zw);
-    float hfs = glow_stroke/2.0;
+    float glow_stroke = max(glow_width, 0) + max(stroke_width, 0); //we don't need negativity here
+    vec2 final_scale = o_w.zw + glow_stroke;
+    vec2 scale_rel = (final_scale / o_w.zw);
+    float hfs = glow_stroke / 2.0;
     vec4 uv_min_max = vec4(-scale_rel, scale_rel); //minx, miny, maxx, maxy
     // use offset as origin quad (x,y,w,h)
-    vec4 vertices = vec4(-hfs+o_w.xy, (o_w.zw)+o_w.xy+glow_stroke);
-    f_scale = vec2(stroke_width, glow_width)/o_w.zw;
+    vec4 vertices = vec4(-hfs+o_w.xy, (o_w.zw) + o_w.xy + hfs);
+    f_scale = vec2(stroke_width, glow_width) / o_w.zw;
     emit_vertex(vertices.xy, uv_min_max.xw, uv_o_w.xw);
     emit_vertex(vertices.zy, uv_min_max.zw, uv_o_w.zw);
     emit_vertex(vertices.xw, uv_min_max.xy, uv_o_w.xy);

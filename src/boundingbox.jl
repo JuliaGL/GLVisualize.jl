@@ -21,7 +21,7 @@ function (B::Type{AABB{T}})(
 end
 function (B::Type{AABB{T}})(instances::Instances) where T
     ti = TransformationIterator(instances)
-    B(ti, B(instances.primitive))
+    B(ti, B.(instances.primitive))
 end
 
 function transform(translation, scale, rotation, points)
@@ -38,6 +38,28 @@ function transform(translation, scale, rotation, points)
     AABB{Float32}(_min, _max-_min)
 end
 
+
+function (B::Type{AABB{T}})(
+      ti::TransformationIterator, primitives::AbstractVector{AABB{T}}
+    ) where T
+    state = start(ti)
+    prim = first(primitives)
+    done(ti, state) && isempty(primitives) && return AABB{T}()
+    done(ti, state) && error("No iterations, but primitives: $ti, primitives: $(length(primitives))")
+    tsr::Tuple{Point3f0, Vec3f0, Mat4f0}, state = next(ti, state)
+    points = decompose(Point3f0, prim)::Vector{Point3f0}
+    bb = transform(tsr[1], tsr[2], tsr[3], points)
+    i = 1
+    while !done(ti, state)
+        tsr, state = next(ti, state)
+        prim = primitives[i]
+        points = decompose(Point3f0, prim)
+        translatet_bb = transform(tsr[1], tsr[2], tsr[3], points)
+        bb = union(bb, translatet_bb)
+        i += 1
+    end
+    bb
+end
 function (B::Type{AABB{T}})(
       ti::TransformationIterator, primitive::AABB{T}
     ) where T
