@@ -257,7 +257,7 @@ function vec2quaternion(r::StaticVector{2})
     vec2quaternion(Vec3f0(r[1], r[2], 0))
 end
 function vec2quaternion(rotation::StaticVector{3})
-    rotation_between(Vec3f0(rotation), Vec3f0(0, 0, 1))
+    rotation_between(Vec3f0(0, 0, 1), Vec3f0(rotation))
 end
 
 
