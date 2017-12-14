@@ -14,10 +14,10 @@ struct lightSource
   float spotCutoff, spotExponent;
   vec3 spotDirection;
 };
-const int numberOfLights = 2;
+const int numberOfLights = 1;
 lightSource lights[numberOfLights];
 lightSource light0 = lightSource(
-  vec4(0.0,  1.0,  2.0, 0.0),  // last coordinate 1 <-> 0 to avoid spot light WARNING
+  vec4(10.0,  10.0,  20.0, 0.0),  // last coordinate 1 <-> 0 to avoid spot light WARNING
   vec4(1.0,  1.0,  1.0, 1.0),
   vec4(1.0,  1.0,  1.0, 1.0),
   0.0, 1.0, 0.0,
@@ -25,7 +25,7 @@ lightSource light0 = lightSource(
   vec3(0.0, 0.0, 0.0)
 );
 lightSource light1 = lightSource(
-    vec4(0.0, -2.0,  0.0, 0.0), // last coordinate 1 <-> 0 to avoid spot light WARNING
+    vec4(0.0, -20.0,  10.0, 0.0), // last coordinate 1 <-> 0 to avoid spot light WARNING
     vec4(2.0,  0.0,  0.0, 1.0),
     vec4(0.1,  0.1,  0.1, 1.0),
     0.0, 1.0, 0.0,
@@ -82,7 +82,7 @@ vec4 get_color(sampler2D color, vec2 uv){
 vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color){
     // WARNING fix variable number of lights
     lights[0] = light0;
-    lights[1] = light1;
+    //lights[1] = light1;
 
     float attenuation;
     // initialize total lighting with ambient lighting
