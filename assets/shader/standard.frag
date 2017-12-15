@@ -1,51 +1,58 @@
 {{GLSL_VERSION}}
-///////////////////////////////////////////////////////////////////////////////
-// light stuff
-// WARNING to be defined for spot lights ??? Varying, in/out ?
-vec4 position = vec4(0.0,  1.0,  2.0, 1.0);  // position of the vertex (and fragment) in world space
-//
 
+///////////////////////////////////////////////////////////////////////////////
+uniform vec3 ambientcolor;
+const int numberOfLights = 5;
 struct lightSource
 {
-  vec4 position;
-  vec4 diffuse;
-  vec4 specular;
-  float constantAttenuation, linearAttenuation, quadraticAttenuation;
-  float spotCutoff, spotExponent;
-  vec3 spotDirection;
+    vec3 color;
+    vec3 position;
+    int onoff; // == 0 or 1
 };
-const int numberOfLights = 1;
-lightSource lights[numberOfLights];
+uniform vec3 position1;
+uniform vec3 position2;
+uniform vec3 position3;
+uniform vec3 position4;
+uniform vec3 position5;
+uniform vec3 colorlight1;
+uniform vec3 colorlight2;
+uniform vec3 colorlight3;
+uniform vec3 colorlight4;
+uniform vec3 colorlight5;
+uniform int onoff1; uniform int onoff2;
+uniform int onoff3; uniform int onoff4; uniform int onoff5;
 lightSource light0 = lightSource(
-  vec4(10.0,  10.0,  20.0, 0.0),  // last coordinate 1 <-> 0 to avoid spot light WARNING
-  vec4(1.0,  1.0,  1.0, 1.0),
-  vec4(1.0,  1.0,  1.0, 1.0),
-  0.0, 1.0, 0.0,
-  180.0, 0.0,
-  vec3(0.0, 0.0, 0.0)
+    colorlight1,    // color
+    position1,      // position
+    onoff1
 );
 lightSource light1 = lightSource(
-    vec4(0.0, -20.0,  10.0, 0.0), // last coordinate 1 <-> 0 to avoid spot light WARNING
-    vec4(2.0,  0.0,  0.0, 1.0),
-    vec4(0.1,  0.1,  0.1, 1.0),
-    0.0, 1.0, 0.0,
-    80.0, 10.0,
-    vec3(0.0, 1.0, 0.0)
+    colorlight2,    // color
+    position2,      // position
+    onoff2
 );
-vec4 scene_ambient = vec4(0.2, 0.2, 0.2, 1.0);
-
-struct material
-{
-  vec4 ambient;
-  vec4 diffuse;
-  vec4 specular;
-  float shininess;
-};
-material frontMaterial = material(
-  vec4(0.2, 0.2, 0.2, 1.0),
-  vec4(1.0, 0.8, 0.8, 1.0),
-  vec4(1.0, 1.0, 1.0, 1.0),
-  5.0);
+lightSource light2 = lightSource(
+    colorlight3,    // color
+    position3,      // position
+    onoff3
+);
+lightSource light3 = lightSource(
+    colorlight4,    // color
+    position4,      // position
+    onoff4
+);
+lightSource light4 = lightSource(
+    colorlight5,    // color
+    position5,      // position
+    onoff5
+);
+lightSource lights[numberOfLights];
+uniform vec4 material; //vec4(1., 0.4, 0.5, 1.);
+/*
+(ambient, diffuse, specular, specularcolorcoeff) ∈ [0, 1]
+default vec4(1., 0.4, 0.5, 1.);
+*/
+uniform float shininess;
 ///////////////////////////////////////////////////////////////////////////////
 struct Nothing{ //Nothing type, to encode if some variable doesn't contain any data
     bool _; //empty structs are not allowed
@@ -79,62 +86,46 @@ vec4 get_color(sampler2D color, vec2 uv){
     return texture(color, uv);
 }
 
+/*
+1) L light direction still needed as input parameters?
+2) Term pow(max(0.0, dot(reflect(-L, N), V)), shininess) different
+   from first implementation??
+*/
 vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color){
-    // WARNING fix variable number of lights
-    lights[0] = light0;
-    //lights[1] = light1;
 
-    float attenuation;
+    // define lights
+    lights[0] = light0;
+    lights[1] = light1;
+    lights[2] = light2;
+    lights[3] = light3;
+    lights[4] = light4;
     // initialize total lighting with ambient lighting
-    vec3 totalLighting = vec3(scene_ambient) * vec3(frontMaterial.ambient);
+    vec3 totalLighting = material[0] * vec3(ambientcolor);
 
     for (int index = 0; index < numberOfLights; index++) // for all light sources
     {
-        if (0.0 == lights[index].position.w) // directional light?
+        if (lights[index].onoff == 1)
         {
-            attenuation = 1.0; // no attenuation
+            //??? L
             L = normalize(vec3(lights[index].position));
-        }
-        else // point light or spotlight (or other kind of light)
-        {
-            vec3 positionToLightSource = vec3(lights[index].position - position);
-            float distance = length(positionToLightSource);
-            L = normalize(positionToLightSource);
-            attenuation = 1.0 / (lights[index].constantAttenuation
-                + lights[index].linearAttenuation * distance
-                + lights[index].quadraticAttenuation * distance * distance);
 
-                if (lights[index].spotCutoff <= 90.0) // spotlight?
-                {
-                    float clampedCosine = max(0.0, dot(-L, normalize(lights[index].spotDirection)));
-                    if (clampedCosine < cos(radians(lights[index].spotCutoff))) // outside of spotlight cone?
-                    {
-                        attenuation = 0.0;
-                    }
-                    else
-                    {
-                        attenuation = attenuation * pow(clampedCosine, lights[index].spotExponent);
-                    }
-                }
-        }
-        // WARNING
-        // color only added here which do not correspond to the tuto. OK ????
-        vec3 diffuseReflection = attenuation
-        * vec3(lights[index].diffuse) * vec3(frontMaterial.diffuse)
-        * max(0.0, dot(N, L)) * color;
+            vec3 diffuseReflection = material[1] * vec3(lights[index].color) *
+                                     max(0.0, dot(N, L)) * color;
 
-        vec3 specularReflection;
-        if (dot(N, L) < 0.0) // light source on the wrong side?
-        {
-            specularReflection = vec3(0.0, 0.0, 0.0); // no specular reflection
+            vec3 specularReflection;
+            if (dot(N, L) < 0.0) // light source on the wrong side?
+            {
+                specularReflection = vec3(0.0, 0.0, 0.0); // no specular reflection
+            }
+            else // light source on the right side
+            {
+                vec3 specularcolor = (1 - material[3]) * vec3(lights[index].color) +
+                                      material[3] *vec3(1);
+                specularReflection = material[2] * vec3(specularcolor) *
+                                     pow(max(dot(L, N), 0.0), shininess);
+            }
+            totalLighting = totalLighting + diffuseReflection + specularReflection;
         }
-        else // light source on the right side
-        {
-            specularReflection = attenuation * vec3(lights[index].specular) * vec3(frontMaterial.specular)
-            * pow(max(0.0, dot(reflect(-L, N), V)), frontMaterial.shininess);
-        }
-
-        totalLighting = totalLighting + diffuseReflection + specularReflection;
     }
     return totalLighting;
 }
