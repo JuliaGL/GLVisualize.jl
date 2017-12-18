@@ -1,7 +1,7 @@
 {{GLSL_VERSION}}
 
 ///////////////////////////////////////////////////////////////////////////////
-uniform vec3 ambientcolor;
+uniform vec3 ambientcolor;// = vec3(0.3, 0.3, 0.3);
 const int numberOfLights = 5;
 struct lightSource
 {
@@ -26,6 +26,11 @@ lightSource light0 = lightSource(
     position1,      // position
     onoff1
 );
+// lightSource light0 = lightSource(
+//     vec3(0.3, 0.3, 0.3),    // color
+//     vec3(0.3, 30., 100.),      // position
+//     1
+// );
 lightSource light1 = lightSource(
     colorlight2,    // color
     position2,      // position
@@ -47,7 +52,7 @@ lightSource light4 = lightSource(
     onoff5
 );
 lightSource lights[numberOfLights];
-uniform vec4 material; //vec4(1., 0.4, 0.5, 1.);
+uniform vec4 material; // = vec4(1., 0.4, 0.5, 1.);
 /*
 (ambient, diffuse, specular, specularcolorcoeff) ∈ [0, 1]
 default vec4(1., 0.4, 0.5, 1.);
