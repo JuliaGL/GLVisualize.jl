@@ -7,6 +7,15 @@ function default(main::ANY, s::ANY, data::ANY)
         light = _default_light
         preferred_camera = :perspective
         is_transparent_pass = Cint(false)
+
+        # default lights attributes of a scene
+        material = Vec4f0(1., 0.4, 0.5, 1.) # (ambient, diffuse, specular, specularcolorcoeff) ∈ [0, 1]
+        shininess = Float32(8.); ambientcolor = Vec3f0(0.01)
+        onoff1 = 1; position1 = Vec3f0(10.0, 100.0, 200.0); colorlight1 = Vec3f0(1.)
+        onoff2 = 0; position2 = Vec3f0(10.0, 100.0, -200.0); colorlight2 = Vec3f0(1.)
+        onoff3 = 0; position3 = Vec3f0(10.0, 100.0, 200.0); colorlight3 = Vec3f0(1.)
+        onoff4 = 0; position4 = Vec3f0(10.0, 100.0, 200.0); colorlight4 = Vec3f0(1.)
+        onoff5 = 0; position5 = Vec3f0(10.0, 100.0, 200.0); colorlight5 = Vec3f0(1.)
     end
 end
 
