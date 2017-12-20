@@ -112,7 +112,7 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 L, vec3 color){
         if (lights[index].onoff == 1)
         {
             //??? L
-            L = normalize(V - vec3(lights[index].position));
+            L = normalize(vec3(lights[index].position) - V);
 
             vec3 diffuseReflection = material[1] * vec3(lights[index].color) *
                                      max(0.0, dot(N, L)) * color;
