@@ -1,10 +1,14 @@
 
 function default(main::ANY, s::ANY, data::ANY)
-    _default_light = Vec3f0[Vec3f0(1.0,1.0,1.0), Vec3f0(0.1,0.1,0.1), Vec3f0(0.9,0.9,0.9), Vec3f0(20,20,20)]
+    # other default lights attributes of a scene are defined in utils.jl
+    # in the function lightingoptions!
+    _default_light = Vec3f0[Vec3f0(1.0, 1.0, 1.0), Vec3f0(20, 20, 20)]
     data = _default(main, s, copy(data))
     @gen_defaults! data begin # make sure every object has these!
         model = eye(Mat4f0)
         light = _default_light
+        lighting = Lighting([_default_light[end], Vec3f0(-[_default_light[end]...])],
+                            [Vec3f0(1), Vec3f0(0.4)])
         preferred_camera = :perspective
         is_transparent_pass = Cint(false)
     end

@@ -50,10 +50,46 @@ function assemble_robj(data, program, bb, primitive, pre_fun, post_fun)
     robj
 end
 
+function lightingoptions!(data)
+    numberoflights = 5
+    _default_light = Vec3f0(20, 20, 20)
+    if value(data[:light])[end] != _default_light
+        # default direct and back lighting using the signgle attribute light
+        # using the initial light of intensity 0.4
+        data[:lighting] = Lighting([value(data[:light])[end], Vec3f0(-[value(data[:light])[end]...])],
+                                   [Vec3f0(1), Vec3f0(0.4)])
+    end
+    # export values in hard coded variables
+    for k = 1:numberoflights
+        data[Symbol("onoff", string(k))] = 0
+        data[Symbol("lightposition", string(k))] = Vec3f0(0)
+        data[Symbol("lightcolor", string(k))] = Vec3f0(1)
+    end
+    for k = 1:min(numberoflights, length(value(data[:lighting]).positions))
+        data[Symbol("onoff", string(k))] = 1
+        data[Symbol("lightposition", string(k))] = value(data[:lighting]).positions[k]
+        data[Symbol("lightcolor", string(k))] = value(data[:lighting]).colors[k]
+    end
+    # add ambientcolor / material / shininess  if not defined by argument
+    if :ambientcolor ∉ keys(data)
+        data[:ambientcolor] =  value(data[:lighting]).ambientcolor
+    end
+    if :material ∉ keys(data)
+        data[:material] =  value(data[:lighting]).material
+    end
+    if :shininess ∉ keys(data)
+        data[:shininess] =  value(data[:lighting]).shininess
+    end
+    for symbl in [:ambientcolor, :material, :shininess]
+        data[symbl] = value(data[symbl])
+    end
+    data
+end
 
 function assemble_shader(data)
     shader = data[:shader]
     delete!(data, :shader)
+    lightingoptions!(data)
     default_bb = Signal(centered(AABB))
     bb  = get(data, :boundingbox, default_bb)
     if bb == nothing || isa(bb, Signal{Void})

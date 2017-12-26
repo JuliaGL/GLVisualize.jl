@@ -269,3 +269,35 @@ struct GLVisualizeShader <: AbstractLazyShader
         new(map(x-> assetpath("shader", x), paths), args)
     end
 end
+
+# lighting related type
+"""
+    Lighting(positions::Array{Vec3f0, 1}, colors::Array{Vec3f0, 1},
+              ambientcolor::Vec3f0, material::Vec4f0, shininess::Float32)
+
+# Arguments
+* the single attribute light is still take into account if :light[end] != default_light
+  using the backlight intensity 0.4
+* material descibes the fields (ambient, diffuse, specular, specularcolorcoeff) ∈ [0, 1]
+"""
+struct Lighting
+    positions::Array{Vec3f0, 1}
+    colors::Array{Vec3f0, 1}
+    ambientcolor::Vec3f0
+    material::Vec4f0
+    shininess::Float32
+end
+ambientcolordefault = Vec3f0(0.02)
+materialdefault = Vec4f0(.9, 0.5, 0.2, .9)
+shininessdefault = Float32(20.)
+function Lighting(lights::Array{Vec3f0, 1})
+    Lighting(lights, [Vec3f0(1.) for k = 1:length(lights)],
+             ambientcolordefault, materialdefault, shininessdefault)
+end
+function Lighting(lights::Array{Vec3f0, 1}, lightscolors::Array{Vec3f0, 1})
+    Lighting(lights, lightscolors,
+             ambientcolordefault, materialdefault, shininessdefault)
+end
+function  GLAbstraction.gl_convert(x::GLVisualize.Lighting)
+    return x
+end
