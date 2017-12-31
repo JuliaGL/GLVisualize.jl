@@ -287,9 +287,9 @@ struct Lighting
     material::Vec4f0
     shininess::Float32
 end
-ambientcolordefault = Vec3f0(0.02)
-materialdefault = Vec4f0(.9, 0.5, 0.2, .9)
-shininessdefault = Float32(20.)
+ambientcolordefault = Vec3f0(0.1)
+materialdefault = Vec4f0(.9, 0.7, 0.3, .9)
+shininessdefault = Float32(5.)
 function Lighting(lights::Array{Vec3f0, 1})
     Lighting(lights, [Vec3f0(1.) for k = 1:length(lights)],
              ambientcolordefault, materialdefault, shininessdefault)
