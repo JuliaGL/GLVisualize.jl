@@ -41,7 +41,7 @@ for x = 0:2
             GLNormalMesh(GeometryTypes.HyperRectangle(Vec3f0(x - δ, 2 - y - δ - 4 , - δ),
                                                       Vec3f0(3 * δ / 2, 3 * δ / 2 , 3 * δ / 2)))
         end
-        material = Vec4f0(as, 0.4, 0.8, 1.)
+        material = Vec4f0(as, materialdefault[2:end]...)
         GLVisualize._view(GLVisualize.visualize(lmesh, color = RGBA{Float32}(1, 0, 0, 1.),
                                                 ambientcolor = Vec3f0(ac...),
                                                 lighting = lighting, shininess = shininessdefault,
