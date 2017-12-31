@@ -62,12 +62,12 @@ function lightingoptions!(data)
     # export values in hard coded variables
     for k = 1:numberoflights
         data[Symbol("onoff", string(k))] = 0
-        data[Symbol("lightposition", string(k))] = Vec3f0(0)
+        data[Symbol("lightdirection", string(k))] = Vec3f0(0)
         data[Symbol("lightcolor", string(k))] = Vec3f0(1)
     end
-    for k = 1:min(numberoflights, length(value(data[:lighting]).positions))
+    for k = 1:min(numberoflights, length(value(data[:lighting]).directions))
         data[Symbol("onoff", string(k))] = 1
-        data[Symbol("lightposition", string(k))] = value(data[:lighting]).positions[k]
+        data[Symbol("lightdirection", string(k))] = value(data[:lighting]).directions[k]
         data[Symbol("lightcolor", string(k))] = value(data[:lighting]).colors[k]
     end
     # add ambientcolor / material / shininess  if not defined by argument
