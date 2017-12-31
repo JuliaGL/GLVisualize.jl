@@ -11,14 +11,14 @@ uniform float shininess;
 struct lightSource
 {
     vec3 color;
-    vec3 position;
+    vec3 direction;
     int onoff; // == 0 or 1
 };
-uniform vec3 lightposition1;
-uniform vec3 lightposition2;
-uniform vec3 lightposition3;
-uniform vec3 lightposition4;
-uniform vec3 lightposition5;
+uniform vec3 lightdirection1;
+uniform vec3 lightdirection2;
+uniform vec3 lightdirection3;
+uniform vec3 lightdirection4;
+uniform vec3 lightdirection5;
 uniform vec3 lightcolor1;
 uniform vec3 lightcolor2;
 uniform vec3 lightcolor3;
@@ -28,27 +28,27 @@ uniform int onoff1; uniform int onoff2;
 uniform int onoff3; uniform int onoff4; uniform int onoff5;
 lightSource light0 = lightSource(
     lightcolor1,    // color
-    lightposition1,      // position
+    lightdirection1,      // direction
     onoff1
 );
 lightSource light1 = lightSource(
     lightcolor2,    // color
-    lightposition2,      // position
+    lightdirection2,      // direction
     onoff2
 );
 lightSource light2 = lightSource(
     lightcolor3,    // color
-    lightposition3,      // position
+    lightdirection3,      // direction
     onoff3
 );
 lightSource light3 = lightSource(
     lightcolor4,    // color
-    lightposition4,      // position
+    lightdirection4,      // direction
     onoff4
 );
 lightSource light4 = lightSource(
     lightcolor5,    // color
-    lightposition5,      // position
+    lightdirection5,      // direction
     onoff5
 );
 lightSource lights[numberoflights];
@@ -84,6 +84,10 @@ vec4 get_color(samplerBuffer color, vec2 uv){
 vec4 get_color(sampler2D color, vec2 uv){
     return texture(color, uv);
 }
+// http://www.opengl-tutorial.org/fr/beginners-tutorials/tutorial-8-basic-shading/
+// https://github.com/JuliaGL/GLVisualize.jl/blob/master/assets/shader/standard.frag
+// https://en.wikibooks.org/wiki/GLSL_Programming/GLUT/Multiple_Lights
+// https://fr.mathworks.com/matlabcentral/answers/91652-how-do-the-ambientstrength-diffusestrength-and-specularstrength-properties-of-the-material-command
 vec3 blinnphong(vec3 N, vec3 V, vec3 color){
     // define lights
     lights[0] = light0;
@@ -98,24 +102,18 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 color){
     {
         if (lights[index].onoff == 1)
         {
-            vec3 L = normalize(vec3(lights[index].position) - V);
+            vec3 Ldir = normalize(vec3(lights[index].direction));
+            float cosTheta = clamp(dot(Ldir, N), 0, 1);
+            vec3 R = normalize(Ldir + V);
+            float cosAlpha = clamp(dot(R, N), 0, 1);
 
             vec3 diffuseReflection = material[1] * vec3(lights[index].color) *
-                                     max(0.0, dot(N, L)) * color;
-
-            vec3 specularReflection;
-            if (dot(N, L) < 0.0) // light source on the wrong side?
-            {
-                specularReflection = vec3(0.0, 0.0, 0.0); // no specular reflection
-            }
-            else // light source on the right side
-            {
-                vec3 specularcolor = (1 - material[3]) * vec3(lights[index].color) +
-                                      material[3] *vec3(1);
-                specularReflection = material[2] * vec3(specularcolor) *
-                                     pow(max(dot(L, N), 0.0), shininess);
-            }
-            totalLighting = totalLighting + diffuseReflection + specularReflection;
+                                     cosTheta * color;
+            vec3 specularcolor = (1 - material[3]) * vec3(lights[index].color) +
+                                  material[3] * vec3(1);
+            vec3 specularReflection =  material[2] * vec3(specularcolor) *
+                                       pow(cosAlpha, shininess);
+            totalLighting = totalLighting +  diffuseReflection + specularReflection;
         }
     }
     return totalLighting;

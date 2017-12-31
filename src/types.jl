@@ -272,8 +272,8 @@ end
 
 # lighting related type
 """
-    Lighting(positions::Array{Vec3f0, 1}, colors::Array{Vec3f0, 1},
-              ambientcolor::Vec3f0, material::Vec4f0, shininess::Float32)
+    Lighting(directions::Array{Vec3f0, 1}, colors::Array{Vec3f0, 1},
+             ambientcolor::Vec3f0, material::Vec4f0, shininess::Float32)
 
 # Arguments
 * the single attribute light is still take into account if :light[end] != default_light
@@ -281,7 +281,7 @@ end
 * material descibes the fields (ambient, diffuse, specular, specularcolorcoeff) ∈ [0, 1]
 """
 struct Lighting
-    positions::Array{Vec3f0, 1}
+    directions::Array{Vec3f0, 1}
     colors::Array{Vec3f0, 1}
     ambientcolor::Vec3f0
     material::Vec4f0
