@@ -99,8 +99,9 @@ vec3 blinnphong(vec3 N, vec3 V, vec3 color){
         {
             vec3 Ldir = normalize(vec3(lights[index].direction));
             float cosTheta = clamp(dot(Ldir, N), 0, 1);
-            vec3 R = normalize(Ldir + V);
-            float cosAlpha = clamp(dot(R, N), 0, 1);
+            vec3 R = reflect(- Ldir, N);
+             // should the normalize(vec3(1)) be replaced by E = normalize(EyeDirection_cameraspace)
+            float cosAlpha = clamp(dot(R, normalize(vec3(1))), 0, 1);
 
             vec3 diffuseReflection = material[1] * vec3(lights[index].color) *
                                      cosTheta * color;
