@@ -131,13 +131,7 @@ function setup_screen()
     Gtk.setproperty!(parent, Symbol("is-focus"), false)
     box = Gtk.Box(:v)
     push!(parent, box)
-    sl = GtkReactive.slider(linspace(0.0, 1.0, 100))
-    push!(box, sl)
-    mesh_color = map(sl) do val
-        RGBA{Float32}(val, 0,0,1)
-    end
-    # mesh_color = Signal(RGBA{Float32}(1,0,0,1))
-
+    mesh_color = Signal(RGBA{Float32}(1,0,0,1))
     gl_area = Gtk.GLArea()
     Gtk.gl_area_set_required_version(gl_area, 3, 3)
     GLAbstraction.new_context()
@@ -158,3 +152,101 @@ end
 
 parent = setup_screen();
 Gtk.showall(parent)
+
+using Gtk, GLVisualize, GLWindow
+
+function window_area!(window::Screen)
+    callback = Gtk.@sigatom function (widget::Gtk.GtkGLArea, width::Int32, height::Int32)
+        rect_signal = window.inputs[:window_area]
+        push!(rect_signal, IRect(minimum(value(rect_signal)), width, height))
+        return true
+    end
+    gl_area = window.glcontext.window # the Gtk.gl_area
+    signal_connect(callback, gl_area, "resize")
+    return
+end
+
+function scroll_event!(window::Screen)
+    callback = Gtk.@sigatom function (widget::Gtk.GtkGLArea, s::Gtk.GdkEventScroll)
+        if s.event_type == Gtk.GdkEventType.GDK_SCROLL
+            scroll = window.inputs[:scroll]
+            dirs = if s.direction == 0
+                (0.0, 1.0)
+            elseif s.direction == 1
+                (0.0, -1.0)
+            elseif s.direction == 2
+                (-1.0, 0.0)
+            elseif s.direction == 3
+                (1.0, 0.0)
+            else
+                (0.0, 0.0)
+            end
+            push!(scroll, dirs)
+            push!(scroll, (0.0, 0.0))
+        end
+        return true
+    end
+    gl_area = window.glcontext.window # the Gtk.gl_area
+    signal_connect(callback, gl_area, "scroll-event")
+    add_events(gl_area, GConstants.GdkEventMask.SCROLL) # same
+    return
+end
+
+function to_mouse_button(x)
+    if x == 1
+        0
+    elseif x == 2
+        1
+    elseif x == 3
+        2
+    else
+        # TODO turn into error
+        warn("Button is $x, while $(Gtk.GdkModifierType.BUTTON1)")
+        Mouse.left
+    end
+end
+function mousebuttons!(window::Screen)
+    callback = Gtk.@sigatom function (widget::Gtk.GtkGLArea, event::Gtk.GdkEventButton)
+        button = to_mouse_button(event.button)
+        action = event.event_type
+        if (action in Gtk.GdkEventType.BUTTON_PRESS:Gtk.GdkEventType.TRIPLE_BUTTON_PRESS) ||
+                action == Gtk.GdkEventType.BUTTON_RELEASE
+
+            set_s = window.inputs[:mouse_buttons_pressed]
+            set = value(set_s)
+            if action in Gtk.GdkEventType.BUTTON_PRESS:Gtk.GdkEventType.TRIPLE_BUTTON_PRESS
+                push!(set, button)
+            elseif action == GdkEventType.BUTTON_RELEASE
+                delete!(set, button)
+            else
+                warn("unknown action: $(action)")
+            end
+            push!(set_s, set) # trigger event
+        end
+        return true
+    end
+    gl_area = window.glcontext.window
+    Gtk.add_events(gl_area,
+        Gtk.GConstants.GdkEventMask.GDK_BUTTON_PRESS_MASK |
+        Gtk.GConstants.GdkEventMask.GDK_BUTTON_RELEASE_MASK
+    )
+    Gtk.signal_connect(callback, gl_area, "button_press_event")
+    Gtk.signal_connect(callback, gl_area, "button_release_event")
+    return
+end
+function mouse!(window::Screen)
+    callback = Gtk.@sigatom function (widget::Gtk.GtkGLArea, s::Gtk.GdkEventMotion)
+        if s.event_type == Gtk.GdkEventType.GDK_MOTION_NOTIFY
+            pos = window.inputs[:mouseposition]
+            push!(pos, (s.x, s.y))
+        end
+        return true
+    end
+    gl_area = window.glcontext.window # the Gtk.gl_area
+    add_events(gl_area, GConstants.GdkEventMask.POINTER_MOTION)
+    signal_connect(callback, gl_area, "motion-notify-event")
+    return true
+end
+scroll_event!(screen[])
+mouse!(screen[])
+mousebuttons!(screen[])
