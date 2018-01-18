@@ -22,7 +22,7 @@ using FreeTypeAbstraction
 import ColorVectorSpace
 import GLAbstraction: N0f8
 export N0f8 # reexport for examples/tests
-using Base.Iterators: filter
+
 import Base: merge, convert, show
 using Base.Iterators: Repeated, repeated
 

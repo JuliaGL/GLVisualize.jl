@@ -110,7 +110,7 @@ end
 
 
 function position_calc(x...)
-    _position_calc(filter(x->!isa(x, Void), x)...)
+    _position_calc(Iterators.filter(x->!isa(x, Void), x)...)
 end
 function glsllinspace(position::Grid, gi, index)
     "position.ref[$gi] + ($index - position.offset[$gi]) * position._step[$gi]"
