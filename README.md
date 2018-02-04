@@ -38,22 +38,6 @@ Image marker type and hover:
 
 [<img src="https://cloud.githubusercontent.com/assets/1010467/18789986/5caf3a34-81ad-11e6-8c58-d0a4b40ccce3.png" width="489">](https://vimeo.com/181942008 "Image Cloud")
 
-#### [GLPlot.jl](https://github.com/SimonDanisch/GLPlot.jl), a GUI for plotting with GLVisualize
-GLPlot allows you to interact with your plots and create GUI elements.
-
-![lorenz attractor](https://cloud.githubusercontent.com/assets/1010467/18789098/f3fe7962-81a9-11e6-8305-8ffe9d4e6921.gif)
-
-#### Hybrid GLPlot, Plots.jl
-
-These examples use the lower level API of GLVisualize+GLPlot to allow interactions that would not be possible with Plots.jl alone.
-It is planned to integrate this more nicely with the higher level interface in Plots.jl.
-
-[<img src="https://cloud.githubusercontent.com/assets/1010467/18790024/7d5f4a58-81ad-11e6-9535-e2408bbea679.png" width="489">](https://vimeo.com/180307247 "Volume Plot")
-
-[<img src="https://cloud.githubusercontent.com/assets/1010467/18790072/a888fde6-81ad-11e6-829a-f0210711584d.png" width="489">](https://vimeo.com/181694236 "Surface")
-
-[<img src="https://cloud.githubusercontent.com/assets/1010467/18789938/284fc0f6-81ad-11e6-8497-e14ac65fceb4.png" width="489">](https://vimeo.com/183115490 "Image filtering")
-
 #### Demo of GPU computing and visualization of the GPU object with GLVisualize
 GLVisualize is GPU accelerated and we can use this fact to display computations run on the GPU as efficient as possible.
 This is a demo using the packages [CUDAnative](https://github.com/JuliaGPU/CUDAnative.jl) and [GPUArrays](https://github.com/JuliaGPU/GPUArrays.jl) to run Julia code on the GPU and visualize the result.
