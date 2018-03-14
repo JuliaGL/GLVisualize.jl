@@ -56,7 +56,7 @@ function _default(main::MatTypes{T}, s::Style, data::Dict) where T <: Intensity
     @gen_defaults! data begin
         ranges = (0:size(main_v, 1), 0:size(main_v, 2))
     end
-    x, y, xw, yh = first(ranges[1]), first(ranges[2]), last(ranges[1]), last(ranges[2])
+    x, y, xw, yh = minimum(ranges[1]), minimum(ranges[2]), maximum(ranges[1]), maximum(ranges[2])
     @gen_defaults! data begin
         intensity             = main => Texture
         color_map             = default(Vector{RGBA{N0f8}},s) => Texture

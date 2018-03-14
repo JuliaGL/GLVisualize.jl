@@ -3,27 +3,32 @@ mutable struct TextureAtlas
     rectangle_packer::RectanglePacker
     mapping         ::Dict{Any, Int} # styled glyph to index in sprite_attributes
     index           ::Int
-    images          ::Texture{Float16, 2}
+    data            ::Matrix{Float16}
+    images          ::Nullable{Texture{Float16, 2}} # TODO completely remove texture from here
     attributes      ::Vector{Vec4f0}
     scale           ::Vector{Vec2f0}
     extent          ::Vector{FontExtent{Float64}}
 end
-function atlas_texture(data)
-    images = Texture(
-        data,
-        minfilter = :linear,
-        magfilter = :linear,
-        anisotropic = 16f0,
-    )
+
+function get_texture!(atlas::TextureAtlas = get_texture_atlas())
+    if isnull(atlas.images)
+        atlas.images = Nullable(Texture(
+            atlas.data,
+            minfilter = :linear,
+            magfilter = :linear,
+            anisotropic = 16f0,
+        ))
+    end
+    get(atlas.images)
 end
 
 function TextureAtlas(initial_size = (2048, 2048))
-    images = atlas_texture(zeros(Float16, initial_size...))
     TextureAtlas(
         RectanglePacker(SimpleRectangle(0, 0, initial_size...)),
         Dict{Any, Int}(),
         1,
-        images,
+        zeros(Float16, initial_size...),
+        Nullable{Texture{Float16, 2}}(),
         Vec4f0[],
         Vec2f0[],
         FontExtent{Float64}[]
@@ -38,7 +43,7 @@ begin #basically a singleton for the textureatlas
         'π','∮','⋅','→','∞','∑','∏','∀','∈','ℝ','⌈','⌉','−','⌊','⌋','α','∧','β','∨','ℕ','⊆','₀',
         '⊂','ℤ','ℚ','ℂ','⊥','≠','≡','≤','≪','⊤','⇒','⇔','₂','⇌','Ω','⌀',
     ]
-    const local _atlas_cache = Dict{WeakRef, TextureAtlas}()
+    const local _atlas_cache = Dict{GLAbstraction.GLContext, TextureAtlas}()
     const local _cache_path = joinpath(dirname(@__FILE__), "..", ".cache", "texture_atlas.jls")
     const local _default_font = Vector{Ptr{FreeType.FT_FaceRec}}[]
     const local _alternative_fonts = Vector{Ptr{FreeType.FT_FaceRec}}[]
@@ -70,8 +75,7 @@ begin #basically a singleton for the textureatlas
             try
                 return open(_cache_path) do io
                     dict = deserialize(io)
-                    tex = atlas_texture(dict[:images])
-                    dict[:images] = tex
+                    dict[:images] = Nullable{Texture{Float16, 2}}()
                     fields = map(fieldnames(TextureAtlas)) do n
                         v = dict[n]
                         isa(v, Vector) ? copy(v) : v # otherwise there seems to be a problem with resizing
@@ -102,19 +106,16 @@ begin #basically a singleton for the textureatlas
             mkdir(dirname(_cache_path))
         end
         open(_cache_path, "w") do io
-            dict = Dict(
-                [(n, getfield(atlas, n)) for n in fieldnames(atlas)]
-            )
-            dict[:images] = gpu_data(dict[:images])
+            dict = Dict(map(fieldnames(atlas)) do name
+                name => getfield(atlas, name)
+            end)
+            dict[:images] = nothing # don't cache texture
             serialize(io, dict)
         end
     end
 
-    function get_texture_atlas(window=current_screen())
-        root = WeakRef(GLWindow.rootscreen(window))
-        # remove dead bodies
-        filter!((k, v)-> _is_alive(k), _atlas_cache)
-        get!(_atlas_cache, root) do
+    function get_texture_atlas(context = GLAbstraction.current_context())
+        get!(_atlas_cache, context) do
             cached_load() # initialize only on demand
         end
     end
@@ -165,7 +166,7 @@ end
 
 insert_glyph!(atlas::TextureAtlas, glyph::Char, font) = get!(atlas.mapping, (glyph, font)) do
     uv, extent, width_nopadd, pad = render(atlas, glyph, font)
-    tex_size       = Vec2f0(size(atlas.images))
+    tex_size       = Vec2f0(size(atlas.data))
     uv_start       = Vec2f0(uv.x, uv.y)
     uv_width       = Vec2f0(uv.w, uv.h)
     real_start     = uv_start + pad - 1 # include padding
@@ -200,7 +201,7 @@ function sdistancefield(img, downsample = 8, pad = 8*downsample)
     end
     yres, xres = div(w, downsample), div(h, downsample)
     sd = sdf(in_or_out, xres, yres)
-    map(Float16, sd)
+    Float16.(sd)
 end
 
 function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
@@ -216,6 +217,7 @@ function GLAbstraction.render(atlas::TextureAtlas, glyph::Char, font)
     rect = SimpleRectangle(0, 0, size(sd)...)
     uv = push!(atlas.rectangle_packer, rect) #find out where to place the rectangle
     uv == nothing && error("texture atlas is too small. Resizing not implemented yet. Please file an issue at GLVisualize if you encounter this") #TODO resize surface
-    atlas.images[uv.area] = sd
+    atlas.data[uv.area] = sd
+    isnull(atlas.images) || (get(atlas.images)[uv.area] = sd)
     uv.area, extent, Vec2f0(size(bitmap)) ./ downsample, pad
 end
