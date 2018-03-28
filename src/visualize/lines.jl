@@ -107,11 +107,14 @@ to_points(x::Vector{LineSegment{T}}) where {T} = reinterpret(T, x, (length(x)*2,
 _default(positions::VecTypes{LineSegment{T}}, s::Style, data::Dict) where {T <: Point} =
     _default(const_lift(to_points, positions), style"linesegment"(), data)
 
+buffer_or_float(x::Number) = Float32(x)
+buffer_or_float(x) = GLBuffer(x)
+
 function _default(positions::VecTypes{T}, s::style"linesegment", data::Dict) where T <: Point
     @gen_defaults! data begin
-        vertex              = positions           => GLBuffer
+        vertex              = positions => GLBuffer
         color               = default(RGBA, s, 1) => GLBuffer
-        thickness           = 2f0                 => GLBuffer
+        thickness           = 2f0 => buffer_or_float
         shape               = RECTANGLE
         pattern             = nothing
         fxaa                = false
