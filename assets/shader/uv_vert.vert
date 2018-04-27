@@ -15,6 +15,6 @@ vec4 _position(vec2 p){return vec4(p,0,1);}
 
 void main(){
 	o_uv        = texturecoordinates;
-    o_objectid  = uvec2(objectid, gl_VertexID+1);
+	o_objectid  = uvec2(objectid, gl_VertexID+1);
 	gl_Position = projection * view * model * _position(vertices);
 }
