@@ -1,6 +1,7 @@
 {{GLSL_VERSION}}
 
 in vec2 o_uv;
+flat in uvec2 o_objectid;
 
 {{intensity_type}} intensity;
 uniform sampler1D color_map;
@@ -41,5 +42,5 @@ void main(){
         lines = aastep(0.5 - half_stroke, 0.5 + half_stroke, lines);
         color = mix(texture(color_map, i), stroke_color, lines);
     }
-    write2framebuffer(color, uvec2(0));
+    write2framebuffer(color, uvec2(o_objectid.x, 0));
 }
