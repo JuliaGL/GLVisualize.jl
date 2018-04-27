@@ -243,7 +243,7 @@ end
 
 function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: VolumeElTypes
     @gen_defaults! data begin
-        dimensions       = Vec3f0(1)
+        dimensions = Vec3f0(1)
     end
     modeldflt = modeldefault(data[:dimensions])
     modelinv = const_lift(inv, get(data, :model, modeldflt))
@@ -273,7 +273,7 @@ end
 
 function _default(main::VolumeTypes{T}, s::Style, data::Dict) where T <: RGBA
     @gen_defaults! data begin
-        dimensions       = Vec3f0(1)
+        dimensions = Vec3f0(1)
     end
     modeldflt = modeldefault(data[:dimensions])
     model = const_lift(identity, get(data, :model, modeldflt))
