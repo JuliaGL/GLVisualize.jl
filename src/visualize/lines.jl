@@ -21,7 +21,13 @@ function intensity_convert(intensity::VecOrSignal{T}, verts) where T
         Texture(intensity)
     end
 end
-
+function intensity_convert_tex(intensity::VecOrSignal{T}, verts) where T
+    if length(value(intensity)) == length(value(verts))
+        TextureBuffer(intensity)
+    else
+        Texture(intensity)
+    end
+end
 #TODO NaNMath.min/max?
 dist(a, b) = abs(a-b)
 mindist(x, a, b) = min(dist(a, x), dist(b, x))
