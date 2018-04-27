@@ -224,6 +224,38 @@ vec4 volumeindexedrgba(vec3 front, vec3 dir, float stepsize)
     return vec4(Lo, 1-T);
 }
 
+vec4 contours(vec3 front, vec3 dir, float stepsize)
+{
+    vec3  stepsize_dir = normalize(dir) * stepsize;
+    // The per-voxel alpha channel is specified in units of opacity/length.
+    // If our voxels are not isotropic, then the distance that we trace through
+    // depends on the direction.
+    float stepsize_world = length(model*vec4(stepsize_dir, 0));
+    vec3  pos = front;
+    float T = 1.0;
+    vec3 Lo = vec3(0.0);
+    int i = 0;
+    pos += stepsize_dir;//apply first, to padd
+    for (i; i < num_samples && (!is_outside(pos) || i < 3); ++i, pos += stepsize_dir) {
+
+        float intensity = texture(volumedata, pos).x;
+        vec4 density = color_lookup(intensity, color_map, color_norm, color);
+        float opacity = density.a;
+        if(opacity > 0.0){
+            vec3 N = gennormal(pos, vec3(stepsize));
+            vec3 L = normalize(light_position - pos);
+            vec3 L2 = -L;
+
+            Lo += (T*opacity) * blinn_phong(N, pos, L, density.rgb);
+            Lo += (T*opacity) * blinn_phong(N, pos, L2, density.rgb);
+            T *= 1.0 - opacity;
+            if (T <= 0.01)
+                break;
+        }
+    }
+    return vec4(Lo, 1-T);
+}
+
 vec4 isosurface(vec3 front, vec3 dir, float stepsize)
 {
     vec3  stepsize_dir = dir * stepsize;
@@ -292,8 +324,10 @@ void main()
         color = mip(frag_uv, dir, step_size);
     else if(algorithm == 3)
         color = volumergba(frag_uv, dir, step_size);
-    else
+    else if(algorithm == 4)
         color = volumeindexedrgba(frag_uv, dir, step_size);
+    else
+        color = contours(frag_uv, dir, step_size);
 
     write2framebuffer(color, uvec2(objectid, 0));
 }
