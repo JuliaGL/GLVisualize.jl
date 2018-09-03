@@ -3,7 +3,19 @@
 **Code coverage**: [![Coverage Status](https://coveralls.io/repos/github/JuliaGL/GLVisualize.jl/badge.svg?branch=HEAD)](https://coveralls.io/github/JuliaGL/GLVisualize.jl?branch=HEAD)
 
 
-# GLVisualize
+
+
+
+# GLVisualize isn't under active development anymore, since all it's features + code have been added to Makie:
+https://github.com/JuliaPlots/Makie.jl
+
+
+
+
+
+
+
+## GLVisualize
 
 GLVisualize is an interactive 2D/3D visualization library completely written in OpenGL and Julia.
 Its focus is on performance and allowing to display animations/interactions as smooth as possible.
