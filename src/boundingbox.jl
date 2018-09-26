@@ -46,7 +46,7 @@ function (B::Type{AABB{T}})(
         return primitive
     end
     tsr::Tuple{Point3f0, Vec3f0, Mat4f0}, state = next(ti, state)
-    points = decompose(Point3f0, primitive)::Vector{Point3f0}
+    points = decompose(Point3f0, primitive) #::Vector{Point3f0}
     bb = transform(tsr[1], tsr[2], tsr[3], points)
     while !done(ti, state)
         tsr, state = next(ti, state)

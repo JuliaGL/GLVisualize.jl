@@ -108,7 +108,7 @@ function fold_loop(v0, _)
     (val, range, index)
 end
 
-function loop(range::Range, rate=60)
+function loop(range::AbstractRange, rate=60)
     t = get_timer_signal(rate)
     map(first, foldp(fold_loop, (first(range), range, 1), t))
 end
@@ -125,7 +125,7 @@ function fold_bounce(v0, _)
     (val, range, index, direction)
 end
 
-function bounce(range::Range{T}, rate=60) where T
+function bounce(range::AbstractRange{T}, rate=60) where T
     t = get_timer_signal(rate)
     map(first, foldp(fold_bounce, (first(range), range, 1, 1), t))
 end

@@ -1,3 +1,4 @@
+using Printf
 
 drag_x(drag_id) = drag_id[1][1]
 
@@ -39,9 +40,9 @@ function add_mouse_drags(t0, mouse_down1, mouseposition1, objectid, id_tolookfor
     (accum, mouse_down1, Vec2f0(0), 0, accum, 0)
 end
 
-Base.clamp(x, r::Range) = clamp(x, first(r), last(r))
+Base.clamp(x, r::AbstractRange) = clamp(x, first(r), last(r))
 
-function slide(startvalue, slide_pos, range::Range)
+function slide(startvalue, slide_pos, range::AbstractRange)
     val = startvalue + (slide_pos*step(range))
     clamp(val, range)
 end

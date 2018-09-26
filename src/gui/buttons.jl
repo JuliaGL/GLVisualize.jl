@@ -144,7 +144,7 @@ end
 function widget(
         r::Signal{T}, screen::Screen;
         args...
-    ) where T <: Range
+    ) where T <: AbstractRange
     slider(value(r), screen; args...)
 end
 function playbutton(screen; icon_size = 10mm)

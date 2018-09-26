@@ -13,7 +13,7 @@ isa_image(x::Matrix) = isa_image(typeof(x))
 isa_image(x) = false
 
 # Splits a dictionary in two dicts, via a condition
-function Base.split(condition::Function, associative::Associative)
+function Base.split(condition::Function, associative::AbstractDict)
     A = similar(associative)
     B = similar(associative)
     for (key, value) in associative
@@ -170,7 +170,7 @@ function dragged_on(robj::RenderObject, button::MouseButton, window::Screen)
     end)
 end
 
-points2f0(positions::Vector{T}, range::Range) where {T} = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]
+points2f0(positions::Vector{T}, range::AbstractRange) where {T} = Point2f0[Point2f0(range[i], positions[i]) for i=1:length(range)]
 
 extrema2f0(x::Array{T,N}) where {T<:Intensity,N} = Vec2f0(extrema(reinterpret(Float32,x)))
 extrema2f0(x::Array{T,N}) where {T,N} = Vec2f0(extrema(x))

@@ -16,7 +16,7 @@ using Packing
 using SignedDistanceFields
 using FreeType
 import IterTools
-using Base.Markdown
+using Markdown
 using FreeTypeAbstraction
 
 import ColorVectorSpace

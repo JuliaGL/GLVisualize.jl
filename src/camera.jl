@@ -1,3 +1,5 @@
+using Statistics
+
 function cubeside_const_lift(_, id, mousehover)
     h_id, h_index = value(mousehover)
     if h_id == id && h_index >= 1 && h_index <= 6
@@ -28,7 +30,7 @@ function colored_cube()
     ydir    = Vec3f0(0f0,1f0,0f0)
     zdir    = Vec3f0(0f0,0f0,1f0)
     origin  = Vec3f0(-0.5)
-    const quads = [
+    quads = [
         (Quad(origin + zdir,   xdir, ydir), RGBA(1.0f0,0f0,0f0,1f0)), # Top
         (Quad(origin,          ydir, xdir), RGBA(0.5f0,0f0,0f0,1f0)), # Bottom
         (Quad(origin + ydir,   zdir, xdir), RGBA(0f0,1.0f0,0f0,1f0)), #Front
@@ -39,7 +41,7 @@ function colored_cube()
     cube_steering = merge(map(GLNormalMesh, quads))
 end
 
-Base.middle(r::SimpleRectangle{T}) where {T} = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.mousehover/T(2)))
+middle(r::SimpleRectangle{T}) where {T} = Point{2, T}(r.x+(r.w/T(2)), r.y+(r.mousehover/T(2)))
 
 
 function get_rotation(m)
