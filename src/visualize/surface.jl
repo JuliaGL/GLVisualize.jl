@@ -54,11 +54,9 @@ end
 function light_calc(x::Bool)
     if x
         """
-        vec3 L      = normalize(o_lightdir);
         vec3 N      = normalize(o_normal);
-        vec3 light1 = blinnphong(N, o_vertex, L, color.rgb);
-        vec3 light2 = blinnphong(N, o_vertex, -L, color.rgb);
-        color       = vec4(light1 + light2 * 0.4, color.a);
+        vec3 light1 = blinnphong(N, o_vertex, color.rgb);
+        color       = vec4(light1, color.a);
         """
     else
         ""
