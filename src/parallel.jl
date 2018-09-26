@@ -14,6 +14,7 @@ using FileIO
 using Packing
 using SignedDistanceFields
 using FreeType
+using Distributed
 
 
 # Parallel helper function to launch our glvisualize operations on the process,

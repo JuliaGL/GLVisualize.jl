@@ -42,7 +42,10 @@ function ticks(points, resolution)
 end
 
 
-function _default(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict) where T<:Point
+_default(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict) where T<:Point = _default_l(position, s, data)
+_default(position::Union{Array{T,1}, GPUArray{T,1}, Signal{Array{T,1}}}, s::style"lines", data::Dict) where T<:Point = _default_l(position, s, data)
+
+function _default_l(position::Union{VecTypes{T}, MatTypes{T}}, s::style"lines", data::Dict) where T<:Point
     pv = value(position)
     p_vec = if isa(position, GPUArray)
         position
@@ -137,7 +140,7 @@ function _default(positions::VecTypes{T}, s::style"linesegment", data::Dict) whe
     data
 end
 
-function _default(positions::Vector{T}, range::Range, s::style"lines", data::Dict) where T <: AbstractFloat
+function _default(positions::Vector{T}, range::AbstractRange, s::style"lines", data::Dict) where T <: AbstractFloat
     length(positions) != length(range) && throw(
         DimensionMismatsch("length of $(typeof(positions)) $(length(positions)) and $(typeof(range)) $(length(range)) must match")
     )

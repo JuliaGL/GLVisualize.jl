@@ -54,7 +54,7 @@ function Base.setindex!(t::Text, value::Char, i::Integer)
     t.scales[i] = gs
 end
 
-function Base.setindex!(t::Text, value::Associative, i::Integer)
+function Base.setindex!(t::Text, value::AbstractDict, i::Integer)
     for (k,v) in value
         getfield(t, k)[i] = v
     end

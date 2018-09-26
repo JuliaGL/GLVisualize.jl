@@ -13,7 +13,7 @@ end
 function print_type(x::TypeVar)
     string(x.name)
 end
-print_type(x::TypeName) = print_type(x.name)
+#print_type(x::TypeName) = print_type(x.name)
 print_type(x::UnionAll) = sprint(io-> show(io, x))
 print_type(x) = print_type(x.name)
 function print_type(x::Union)
